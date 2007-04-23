@@ -16,7 +16,7 @@ namespace CellDotNet
 			TestBuildTree();
 			return;
 
-			Action<int> a = MyMethod;
+			Action<int> a = null;
 			MethodDefinition method;
 
 			method = GetMethod(a);
@@ -101,16 +101,17 @@ namespace CellDotNet
 
 		private static void TestBuildTree()
 		{
-			Action<int> del = delegate(int i)
-			                  	{
-			                  		int j = 8 + (i*5);
-									if (i > 5)
-										j++;
-									while (j < 0)
-									{
-										j--;
-									}
-			                  	};
+			Action<int> del =
+				delegate(int i)
+					{
+						int j = 8 + (i*5);
+						if (i > 5)
+							j++;
+						while (j < 0)
+						{
+							j--;
+						}
+					};
 			MethodDefinition method = GetMethod(del);
 			CompileInfo ci = new CompileInfo(method);
 
@@ -138,36 +139,6 @@ namespace CellDotNet
 			}
 
 			throw new ArgumentException("Can't find the type or method");
-		}
-
-		struct MyStruct
-		{
-			private int i;
-
-			public void Method()
-			{
-				
-			}
-		}
-
-
-		static void IfMethod(int arg)
-		{
-			MyStruct s = new MyStruct();
-			s.Method();
-
-			if (arg == 3)
-				Console.WriteLine();
-			else
-				arg = 345;
-		}
-
-		static private void MyMethod(int intArg)
-		{
-//			XmlReader xr = XmlReader.Create(new StringReader("<root />"));
-//			xr.Read();
-//			xr.ReadOuterXml();
-			Dictionary<int, string> dict = new Dictionary<int, string>();
 		}
 	}
 }

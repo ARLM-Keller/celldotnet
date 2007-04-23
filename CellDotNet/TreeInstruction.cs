@@ -31,7 +31,6 @@ namespace CellDotNet
 			set { _opcode = value; }
 		}
 
-
 		private object _operand;
 		public object Operand
 		{
