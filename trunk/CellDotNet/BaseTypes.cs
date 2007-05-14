@@ -16,6 +16,7 @@ namespace CellDotNet
 			AssemblyDefinition corlib = AssemblyFactory.GetAssembly(typeof (int).Assembly.Location);
 			foreach (TypeDefinition type in corlib.MainModule.Types)
 			{
+//				uint ttok = type.MetadataToken.ToUInt();
 				if (type.MetadataToken == new MetadataToken(typeof(int).MetadataToken))
 					_int32 = type;
 				else if (type.MetadataToken == new MetadataToken(typeof(long).MetadataToken))

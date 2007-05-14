@@ -11,13 +11,13 @@ namespace CellDotNet
 	{
 		private int _lastRegisterNumber;
 
-		Register GetNextVirtualRegister()
+		VirtualRegister GetNextVirtualRegister()
 		{
 			_lastRegisterNumber++;
-			return new Register(_lastRegisterNumber);
+			return new VirtualRegister(_lastRegisterNumber);
 		}
 
-		public void Convert(BasicBlock bb, List<ListInstruction> output)
+		public void Convert(BasicBlock bb, List<SpuInstruction> output)
 		{
 			throw new NotImplementedException();
 		}
