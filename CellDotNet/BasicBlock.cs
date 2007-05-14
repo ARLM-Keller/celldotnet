@@ -6,6 +6,17 @@ namespace CellDotNet
 	/// <summary>
 	/// An extended basic block.
 	/// </summary>
+	/// <remarks>
+	/// From Mono basic block documentation:
+	/// <para>
+	///  A basic block can have multiple exits just fine, as long as the point of
+	/// 'departure' is the last instruction in the basic block. Extended basic
+	/// blocks, on the other hand, may have instructions that leave the block
+	/// midstream. The important thing is that they cannot be _entered_
+	/// midstream, ie, execution of a basic block (or extened bb) always start
+	/// at the beginning of the block, never in the middle.
+	/// </para>
+	/// </remarks>
 	class BasicBlock
 	{
 		private BasicBlock _next;

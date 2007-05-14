@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace CellDotNet
@@ -8,6 +10,7 @@ namespace CellDotNet
 	/// <summary>
 	/// Represents an instruction in an instruction tree.
 	/// </summary>
+	[DebuggerDisplay("{DebuggerDisplay}")]
 	class TreeInstruction
 	{
 		private TreeInstruction _left;
@@ -15,6 +18,29 @@ namespace CellDotNet
 		{
 			get { return _left; }
 			set { _left = value; }
+		}
+
+		private string DebuggerDisplay
+		{
+			get
+			{
+				if (Operand is string || Operand is int)
+				{
+					return "" + Opcode.Code + " " + Operand;
+				}
+				else if (Operand is VariableReference)
+				{
+					VariableReference r = (VariableReference)Operand;
+					return string.Format("{0} {1} ({2})", Opcode, r.Name, r.VariableType.Name);
+				}
+				else if (Operand is FieldReference)
+				{
+					FieldReference f = (FieldReference) Operand;
+					return string.Format("{0} {1} ({2})", Opcode, f.Name, f.FieldType.Name);
+				}
+				else
+					return Opcode.Code.ToString();
+			}
 		}
 
 		private TreeInstruction _right;
@@ -47,6 +73,18 @@ namespace CellDotNet
 			get { return _offset; }
 			set { _offset = value; }
 		}
+
+		private CilType _cliType;
+		/// <summary>
+		/// The CLI type that this instruction evaluates to; if there is no value or the type has not yet been established, None is returned.
+		/// </summary>
+		public CilType CilType
+		{
+			get { return _cliType; }
+			set { _cliType = value; }
+		}
+
+
 
 /*
 		/// <summary>
@@ -105,5 +143,13 @@ namespace CellDotNet
 				return i;
 			}
 		}
+
+//		private CliType _cliTyp;
+//		public CliType CliType
+//		{
+//			get { return _cliTyp; }
+//			set { _cliTyp = value; }
+//		}
+
 	}
 }
