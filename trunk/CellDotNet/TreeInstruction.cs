@@ -74,11 +74,11 @@ namespace CellDotNet
 			set { _offset = value; }
 		}
 
-		private CilType _cliType;
+		private CliType _cliType;
 		/// <summary>
 		/// The CLI type that this instruction evaluates to; if there is no value or the type has not yet been established, None is returned.
 		/// </summary>
-		public CilType CilType
+		public CliType CliType
 		{
 			get { return _cliType; }
 			set { _cliType = value; }
@@ -144,8 +144,8 @@ namespace CellDotNet
 			}
 		}
 
-//		private CliType _cliTyp;
-//		public CliType CliType
+//		private CliStackType _cliTyp;
+//		public CliStackType CliStackType
 //		{
 //			get { return _cliTyp; }
 //			set { _cliTyp = value; }
