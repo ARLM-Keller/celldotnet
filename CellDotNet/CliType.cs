@@ -9,7 +9,7 @@ namespace CellDotNet
 	/// </summary>
 	/// <remarks>
 	/// </remarks>
-	enum CliType
+	enum CliStackType
 	{
 		None = 0,
 		Int32 = 1,
@@ -40,15 +40,13 @@ namespace CellDotNet
 	/// </para>
 	/// </remarks>
 	/// </summary>
-	enum CilType
+	enum CliType
 	{
 		None = 0,
 		Int8,
 		UInt8,
-		Bool,
 		Int16,
 		UInt16,
-		Char,
 		Int32,
 		UInt32,
 		Int64,
@@ -69,9 +67,5 @@ namespace CellDotNet
 		/// The "&amp;" type.
 		/// </summary>
 		ManagedPointer,
-		/// <summary>
-		/// Any method pointer.
-		/// </summary>
-		MethodPointer
 	}
 }

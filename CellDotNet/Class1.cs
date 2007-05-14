@@ -84,7 +84,17 @@ namespace CellDotNet
 			Converter<int, long> del =
 				delegate(int i)
 					{
-						int j = 8 + (i*5);
+						int j;
+
+						char c1;
+						char c2;
+						checked 
+						{
+							j = 8 + (i * 5);
+							c1 = (char)j;
+							c2 = (char)(j + 1);
+						}
+						j += c1 + c2;
 //						DateTime[] arr= new DateTime[0];
 						if (i > 5)
 							j++;
@@ -160,10 +170,10 @@ namespace CellDotNet
 				else
 					Console.Write(" " + inst.Operand);
 			}
-			if (inst.CilType != CilType.None)
-				Console.Write(" " + inst.CilType);
+			if (inst.CliType != CliType.None)
+				Console.Write("   " + inst.CliType);
 			else 
-				Console.Write(" -");
+				Console.Write("   -");
 			Console.WriteLine();
 
 			Console.ResetColor();
