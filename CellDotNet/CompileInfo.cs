@@ -89,7 +89,10 @@ namespace CellDotNet
 				case FlowControl.Call:
 					throw new NotImplementedException("Message call not implemented.");
 				case FlowControl.Cond_Branch:
-					throw new NotImplementedException();
+					if (level != 0)
+						throw new NotImplementedException("Only root branches are implemented.");
+					t = CilType.None;
+//					throw new NotImplementedException();
 					break;
 				case FlowControl.Meta:
 				case FlowControl.Phi:
@@ -135,10 +138,10 @@ namespace CellDotNet
 			// (except macro codes such as ldc.i4.3).
 			CilType t;
 //			Type typeToken = (Type) inst.Operand;
-			Type customType = null;
+//			Type customType = null;
 			TypeReference optype;
 			if (inst.Operand is TypeReference)
-				optype = ((ParameterReference) inst.Operand).ParameterType;
+				optype = ((TypeReference) inst.Operand);
 			else if (inst.Operand is VariableReference)
 				optype = ((VariableReference)inst.Operand).VariableType;
 			else if (inst.Operand is ParameterReference)
@@ -329,7 +332,7 @@ namespace CellDotNet
 					throw new NotImplementedException();
 //					t = CilType.ObjectType;
 //					customType = typeof (object);
-					break;
+//					break;
 				case Code.Newarr: // newarr
 					t = CilType.ObjectType;
 
@@ -408,7 +411,7 @@ namespace CellDotNet
 					throw new NotImplementedException();
 				case Code.Ldarg: // ldarg
 				case Code.Ldloca: // ldloca
-					t = GetCilType(optype.MetadataToken);
+					t = GetCilNumericType(optype);
 					if (!IsNumeric(t))
 						throw new NotImplementedException("Only numeric CIL types are implemented.");
 					if (t == CilType.None)
@@ -417,7 +420,7 @@ namespace CellDotNet
 					break;
 				case Code.Ldloc: // ldloc
 				case Code.Ldarga: // ldarga
-					t = GetCilType(optype.MetadataToken);
+					t = GetCilNumericType(optype);
 					if (!IsNumeric(t))
 						throw new NotImplementedException("Only numeric CIL types are implemented.");
 					if (t == CilType.None)
@@ -457,42 +460,77 @@ namespace CellDotNet
 			       type != CilType.ValueType;
 		}
 
-		private static Dictionary<uint, CilType> s_metadataCilTypes = BuildBasicMetadataCilDictionary();
-		private static Dictionary<uint, CilType> BuildBasicMetadataCilDictionary()
-		{
-			Dictionary<uint, CilType> dict = new Dictionary<uint, CilType>();
-
-			// TODO: the typeof() token values are not what cecil returns...
-			dict.Add((uint) typeof(sbyte).MetadataToken, CilType.Int8);
-			dict.Add((uint) typeof(byte).MetadataToken, CilType.UInt8);
-			dict.Add((uint) typeof(short).MetadataToken, CilType.Int16);
-			dict.Add((uint) typeof(ushort).MetadataToken, CilType.UInt16);
-			dict.Add((uint) typeof(int).MetadataToken, CilType.Int32);
-			dict.Add((uint) typeof(uint).MetadataToken, CilType.UInt32);
-			dict.Add((uint) typeof(long).MetadataToken, CilType.Int64);
-			dict.Add((uint) typeof(ulong).MetadataToken, CilType.UInt64);
-			dict.Add((uint) typeof(IntPtr).MetadataToken, CilType.NativeInt);
-			dict.Add((uint) typeof(UIntPtr).MetadataToken, CilType.NativeUInt);
-			dict.Add((uint) typeof(float).MetadataToken, CilType.Float32);
-			dict.Add((uint) typeof(double).MetadataToken, CilType.Float64);
-
-			return dict;
-		}
+//		private static Dictionary<uint, CilType> s_metadataCilTypes = BuildBasicMetadataCilDictionary();
+//		private static Dictionary<uint, CilType> BuildBasicMetadataCilDictionary()
+//		{
+//			Dictionary<uint, CilType> dict = new Dictionary<uint, CilType>();
+//
+//			// TODO: the typeof() token values are not what cecil returns...
+//			dict.Add((uint) typeof(sbyte).MetadataToken, CilType.Int8);
+//			dict.Add((uint) typeof(byte).MetadataToken, CilType.UInt8);
+//			dict.Add((uint) typeof(short).MetadataToken, CilType.Int16);
+//			dict.Add((uint) typeof(ushort).MetadataToken, CilType.UInt16);
+//			dict.Add((uint) typeof(int).MetadataToken, CilType.Int32);
+//			dict.Add((uint) typeof(uint).MetadataToken, CilType.UInt32);
+//			dict.Add((uint) typeof(long).MetadataToken, CilType.Int64);
+//			dict.Add((uint) typeof(ulong).MetadataToken, CilType.UInt64);
+//			dict.Add((uint) typeof(IntPtr).MetadataToken, CilType.NativeInt);
+//			dict.Add((uint) typeof(UIntPtr).MetadataToken, CilType.NativeUInt);
+//			dict.Add((uint) typeof(float).MetadataToken, CilType.Float32);
+//			dict.Add((uint) typeof(double).MetadataToken, CilType.Float64);
+//
+//			return dict;
+//		}
 
 
 		/// <summary>
 		/// If the token is recognized as a CIL numeric type, that type is returned;
 		/// otherwise, None is returned.
 		/// </summary>
-		/// <param name="token"></param>
+		/// <param name="tref"></param>
 		/// <returns></returns>
-		private static CilType GetCilType(MetadataToken token)
+		private static CilType GetCilNumericType(TypeReference tref)
 		{
-			CilType ct;
-			if (s_metadataCilTypes.TryGetValue(token.ToUInt(), out ct))
-				return ct;
+			// Should be a faster way to do the lookup...
+			switch (tref.FullName)
+			{
+				case "System.Boolean":
+					return CilType.Bool;
+				case "System.Char":
+					return CilType.Char;
+				case "System.Byte":
+					return CilType.UInt8;
+				case "System.SByte":
+					return CilType.Int8;
+				case "System.Short":
+					return CilType.Int16;
+				case "System.UShort":
+					return CilType.UInt16;
+				case "System.Int32":
+					return CilType.Int32;
+				case "System.UInt32":
+					return CilType.UInt32;
+				case "System.Int64":
+					return CilType.Int64;
+				case "System.UInt64":
+					return CilType.UInt64;
+				case "System.Single":
+					return CilType.Float32;
+				case "System.Double":
+					return CilType.Float64;
+				case "System.IntPtr":
+					return CilType.NativeInt;
+				case "System.UIntPtr":
+					return CilType.NativeUInt;
+				default:
+					return CilType.None;
+			}
 
-			return CilType.None;
+//			CilType ct;
+//			if (s_metadataCilTypes.TryGetValue(token.ToUInt(), out ct))
+//				return ct;
+
+//			return CilType.None;
 		}
 
 		/// <summary>
@@ -511,7 +549,7 @@ namespace CellDotNet
 			if (rleft == rright)
 			{
 				if (rleft != CliType.ManagedPointer) 
-					return (CilType) Math.Max((int) rleft, (int) rright);
+					return (CilType) Math.Max((int) left, (int) right);
 				else 
 					return CilType.NativeInt;
 			}
@@ -573,8 +611,6 @@ namespace CellDotNet
 			BasicBlock currblock = new BasicBlock();
 			List<TreeInstruction> stack = new List<TreeInstruction>();
 			List<TreeInstruction> branches = new List<TreeInstruction>();
-
-			TreeInstruction prevroot = null;
 
 			foreach (Instruction inst in method.Body.Instructions)
 			{

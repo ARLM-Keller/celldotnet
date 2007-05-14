@@ -12,6 +12,7 @@ namespace CellDotNet
 		static public void Main(string[] args)
 		{
 			TestBuildTree();
+//			DisplayMetadataTokens(2);
 			return;
 
 			Action<int> a = null;
@@ -68,97 +69,15 @@ namespace CellDotNet
 			}
 		}
 
-		class TreeDrawer
+		private static void DisplayMetadataTokens(int i)
 		{
-			Set<int> _branchTargets;
+			Action<int> del = DisplayMetadataTokens;
+			MethodDefinition method = GetMethod(del);
 
-			void DrawTree(MethodDefinition method, TreeInstruction inst, int level)
-			{
-				Console.Write(new string(' ', level * 2));
 
-				// Branch coloring.
-				bool isBranch = false;
-				bool isTarget = false;
-				if (inst.Opcode.FlowControl == FlowControl.Branch || inst.Opcode.FlowControl == FlowControl.Cond_Branch)
-					isBranch = true;
-				if (_branchTargets.Contains(inst.Offset))
-					isTarget = true;
-
-				if (isBranch && isTarget)
-					Console.ForegroundColor = ConsoleColor.Cyan;
-				else if (isBranch)
-					Console.ForegroundColor = ConsoleColor.DarkCyan;
-				else if (isTarget)
-					Console.ForegroundColor = ConsoleColor.Red;
-
-				Console.Write(inst.Offset.ToString("x4") + " " + inst.Opcode.Name);
-
-				if (inst.Operand != null)
-				{
-					if (inst.Operand is TreeInstruction)
-						Console.Write(" " + ((TreeInstruction)inst.Operand).Offset.ToString("x4"));
-					else  if (inst.Operand is VariableReference)
-						Console.Write(" {0} ({1})", ((VariableReference)inst.Operand).Name, ((VariableReference)inst.Operand).VariableType.Name);
-					else if (inst.Operand is FieldReference)
-						Console.Write(" {0} ({1})", ((FieldReference)inst.Operand).Name, ((FieldReference)inst.Operand).FieldType.Name);
-					else
-						Console.Write(" " + inst.Operand);
-				}
-				Console.WriteLine();
-
-				Console.ResetColor();
-
-				if (inst.Left != null)
-					DrawTree(method, inst.Left, level + 1);
-				if (inst.Right != null)
-					DrawTree(method, inst.Right, level + 1);
-			}
-
-			public void DrawTree(MethodDefinition method, BasicBlock block)
-			{
-				foreach (TreeInstruction root in block.Roots)
-				{
-					DrawTree(method, root, 0);
-				}
-			}
-
-			private void AddBranchTargets(TreeInstruction inst)
-			{
-				if (inst.Opcode.FlowControl == FlowControl.Branch || inst.Opcode.FlowControl == FlowControl.Cond_Branch)
-				{
-					_branchTargets.Add(((TreeInstruction)inst.Operand).Offset);
-				}
-				if (inst.Left != null)
-					AddBranchTargets(inst.Left);
-				if (inst.Right!= null)
-					AddBranchTargets(inst.Right);
-			}
-
-			private void FindBranchTargets(CompileInfo ci, MethodDefinition method)
-			{
-				foreach (BasicBlock block in ci.Blocks)
-				{
-					foreach (TreeInstruction inst in block.Roots)
-					{
-						AddBranchTargets(inst);
-					}
-				}
-			}
-
-			public void DrawMethod(CompileInfo ci, MethodDefinition method, TreeDrawer td)
-			{
-				_branchTargets = new Set<int>();
-				FindBranchTargets(ci, method);
-
-				foreach (BasicBlock block in ci.Blocks)
-				{
-					Console.WriteLine(" - Basic Block:");
-					td.DrawTree(method, block);
-				}
-			}
+			Console.WriteLine("cecil method token: " + method.MetadataToken.ToUInt());
+			Console.WriteLine("reflection method token: " + del.Method.MetadataToken);
 		}
-
-
 
 		private static void TestBuildTree()
 		{
@@ -166,7 +85,7 @@ namespace CellDotNet
 				delegate(int i)
 					{
 						int j = 8 + (i*5);
-						DateTime[] arr= new DateTime[0];
+//						DateTime[] arr= new DateTime[0];
 						if (i > 5)
 							j++;
 						while (j < 0)
@@ -174,7 +93,7 @@ namespace CellDotNet
 							j--;
 						}
 
-						return j;
+						return j * 2;
 					};
 			MethodDefinition method = GetMethod(del);
 			CompileInfo ci = new CompileInfo(method);
@@ -200,6 +119,102 @@ namespace CellDotNet
 			}
 
 			throw new ArgumentException("Can't find the type or method");
+		}
+	}
+
+	class TreeDrawer
+	{
+		Set<int> _branchTargets;
+
+		void DrawTree(MethodDefinition method, TreeInstruction inst, int level)
+		{
+			Console.Write(new string(' ', level * 2));
+
+			// Branch coloring.
+			bool isBranch = false;
+			bool isTarget = false;
+			if (inst.Opcode.FlowControl == FlowControl.Branch || inst.Opcode.FlowControl == FlowControl.Cond_Branch)
+				isBranch = true;
+			if (_branchTargets.Contains(inst.Offset))
+				isTarget = true;
+
+			if (isBranch && isTarget)
+				Console.ForegroundColor = ConsoleColor.Cyan;
+			else if (isBranch)
+				Console.ForegroundColor = ConsoleColor.DarkCyan;
+			else if (isTarget)
+				Console.ForegroundColor = ConsoleColor.Green;
+
+			Console.Write(inst.Offset.ToString("x4") + " " + inst.Opcode.Name);
+
+			if (inst.Operand != null)
+			{
+				if (inst.Operand is TreeInstruction)
+					Console.Write(" " + ((TreeInstruction)inst.Operand).Offset.ToString("x4"));
+				else if (inst.Operand is ParameterReference)
+					Console.Write(" {0} ({1})", ((ParameterReference)inst.Operand).Name, ((ParameterReference)inst.Operand).ParameterType.Name);
+				else if (inst.Operand is VariableReference)
+					Console.Write(" {0} ({1})", ((VariableReference)inst.Operand).Name, ((VariableReference)inst.Operand).VariableType.Name);
+				else if (inst.Operand is FieldReference)
+					Console.Write(" {0} ({1})", ((FieldReference)inst.Operand).Name, ((FieldReference)inst.Operand).FieldType.Name);
+				else
+					Console.Write(" " + inst.Operand);
+			}
+			if (inst.CilType != CilType.None)
+				Console.Write(" " + inst.CilType);
+			else 
+				Console.Write(" -");
+			Console.WriteLine();
+
+			Console.ResetColor();
+
+			if (inst.Left != null)
+				DrawTree(method, inst.Left, level + 1);
+			if (inst.Right != null)
+				DrawTree(method, inst.Right, level + 1);
+		}
+
+		public void DrawTree(MethodDefinition method, BasicBlock block)
+		{
+			foreach (TreeInstruction root in block.Roots)
+			{
+				DrawTree(method, root, 0);
+			}
+		}
+
+		private void AddBranchTargets(TreeInstruction inst)
+		{
+			if (inst.Opcode.FlowControl == FlowControl.Branch || inst.Opcode.FlowControl == FlowControl.Cond_Branch)
+			{
+				_branchTargets.Add(((TreeInstruction)inst.Operand).Offset);
+			}
+			if (inst.Left != null)
+				AddBranchTargets(inst.Left);
+			if (inst.Right!= null)
+				AddBranchTargets(inst.Right);
+		}
+
+		private void FindBranchTargets(CompileInfo ci, MethodDefinition method)
+		{
+			foreach (BasicBlock block in ci.Blocks)
+			{
+				foreach (TreeInstruction inst in block.Roots)
+				{
+					AddBranchTargets(inst);
+				}
+			}
+		}
+
+		public void DrawMethod(CompileInfo ci, MethodDefinition method, TreeDrawer td)
+		{
+			_branchTargets = new Set<int>();
+			FindBranchTargets(ci, method);
+
+			foreach (BasicBlock block in ci.Blocks)
+			{
+				Console.WriteLine(" - Basic Block:");
+				td.DrawTree(method, block);
+			}
 		}
 	}
 }
