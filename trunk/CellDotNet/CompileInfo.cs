@@ -152,6 +152,8 @@ namespace CellDotNet
 			switch (inst.Opcode.Code)
 			{
 				case Code.Nop: // nop
+					t = CliType.None;
+					break;
 				case Code.Ldnull: // ldnull
 					t = CliType.ObjectType;
 					break;

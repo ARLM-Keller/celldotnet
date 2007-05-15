@@ -73,10 +73,13 @@ namespace CellDotNet
 		{
 			Action<int> del = DisplayMetadataTokens;
 			MethodDefinition method = GetMethod(del);
+			TypeReference tref = method.Parameters[0].ParameterType;
 
+			AssemblyNameReference anref = (AssemblyNameReference) tref.Scope;
+			AssemblyDefinition def = tref.Module.Assembly.Resolver.Resolve(anref);
 
-			Console.WriteLine("cecil method token: " + method.MetadataToken.ToUInt());
-			Console.WriteLine("reflection method token: " + del.Method.MetadataToken);
+//			Console.WriteLine("cecil method token: " + method.MetadataToken.ToUInt());
+//			Console.WriteLine("reflection method token: " + del.Method.MetadataToken);
 		}
 
 		private static void TestBuildTree()
