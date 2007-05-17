@@ -55,7 +55,7 @@ namespace CellDotNet
         /// 4 bit instruction code.
         /// </summary>
         RRR,
-        /// <summary>
+        /// <summary>   
         /// Register ra, rt.
         /// Assembler format: "rt,ra,value".
         /// 11 bit instruction code.

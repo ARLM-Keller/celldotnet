@@ -8,14 +8,15 @@ namespace CellDotNet
     /// <summary>
     /// Represents an SPU instruction.
     /// </summary>
-    class SpuInstruction
+    internal class SpuInstruction
     {
-    	public SpuInstruction(SpuOpCode _opcode)
-    	{
-    		this._opcode = _opcode;
-    	}
+        public SpuInstruction(SpuOpCode _opcode)
+        {
+            this._opcode = _opcode;
+        }
 
-    	private SpuOpCode _opcode;
+        private SpuOpCode _opcode;
+
         public SpuOpCode OpCode
         {
             get { return _opcode; }
@@ -23,6 +24,7 @@ namespace CellDotNet
         }
 
         private int _constant;
+
         public int Constant
         {
             get { return _constant; }
@@ -76,25 +78,60 @@ namespace CellDotNet
 
         public UInt32 emit()
         {
+            HardwareRegister reg3 = _source3.Location as HardwareRegister;
+            HardwareRegister reg2 = _source2.Location as HardwareRegister;
+            HardwareRegister reg1 = _source1.Location as HardwareRegister;
+            HardwareRegister dest = _destination.Location as HardwareRegister;
+
+
             switch (_opcode.Format)
             {
                 case SpuInstructionFormat.None:
+                    break;
+                case SpuInstructionFormat.RR:
+                    if (reg1 != null && reg2 != null && dest != null)
+                        return _opcode.OpCode | reg2.Register << 14 | reg1.Register << 7 | dest.Register;
+                    else
+                        throw new Exception("Err.");
+                case SpuInstructionFormat.RR2:
+                    if (reg1 != null && dest != null)
+                        return _opcode.OpCode | reg1.Register << 7 | dest.Register;
+                    else
+                        throw new Exception("Err.");
+                case SpuInstructionFormat.RR1:
+                    if (dest != null)
+                        return _opcode.OpCode | dest.Register;
+                    else
+                        throw new Exception("Err.");
+                case SpuInstructionFormat.RRR:
+                    if (reg1 != null && reg2 != null && reg3 != null && dest != null)
+                        return _opcode.OpCode | dest.Register << 21 | reg2.Register << 14 | reg1.Register << 7 | reg3.Register;
+                    else
+                        throw new Exception("Err.");
+                case SpuInstructionFormat.RI7:
+                    if (reg1 != null && dest != null)
+                        return _opcode.OpCode | ((uint) _constant) & 0x7F << 14 | reg1.Register << 7 | dest.Register;
+                    else
+                        throw new Exception("Err.");
+                case SpuInstructionFormat.RR1DE:
+                case SpuInstructionFormat.RR2DE:
+                    break;
                 case SpuInstructionFormat.RI10:
+                    break;
                 case SpuInstructionFormat.RI16:
                 case SpuInstructionFormat.RI16x:
+                    break;
                 case SpuInstructionFormat.RI18:
-                case SpuInstructionFormat.RI7:
+                    break;
                 case SpuInstructionFormat.RI8:
-                case SpuInstructionFormat.RR:
-                case SpuInstructionFormat.RR1:
-                case SpuInstructionFormat.RR1DE:
-                case SpuInstructionFormat.RR2:
-                case SpuInstructionFormat.RR2DE:
-                case SpuInstructionFormat.RRR:
+                    break;
             }
-
-
             return 0;
+        }
+
+        public String toString()
+        {
+            return "";
         }
     }
 }

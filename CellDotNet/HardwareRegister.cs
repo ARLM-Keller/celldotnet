@@ -9,11 +9,11 @@ namespace CellDotNet
         public static List<StorLocation> getCellRegisteres()
         {
             List<HardwareRegister> regs = new List<HardwareRegister>();
-            Array eregs = Enum.GetValues(typeof(CellRegister));
-            foreach (CellRegister r in eregs)
+
+            for (uint i = 0; i <= 127; i++ )
             {
                 HardwareRegister hr = new HardwareRegister();
-                hr.Register = r;
+                hr.Register = i;
                 regs.Add(hr);
             }
             return new List<StorLocation>();
@@ -32,14 +32,14 @@ namespace CellDotNet
             return regsStack;
         }
 
-        private CellRegister _register;
-        public CellRegister Register
+        private uint _register;
+        public uint Register
         {
             get { return _register; }
             set { _register = value; }
         }
     }
-
+/*
     public enum CellRegister
     {
         REG_0, REG_1, REG_2, REG_3, REG_4, REG_5, REG_6, REG_7, REG_8, REG_9,
@@ -56,4 +56,5 @@ namespace CellDotNet
         REG_110, REG_111, REG_112, REG_113, REG_114, REG_115, REG_116, REG_117, REG_118, REG_119,
         REG_120, REG_121, REG_122, REG_123, REG_124, REG_125, REG_126, REG_127
     }
+ */
 }
