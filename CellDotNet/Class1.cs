@@ -91,12 +91,10 @@ namespace CellDotNet
 
 						char c1;
 						char c2;
-						checked 
-						{
-							j = 8 + (i * 5);
+
+						j = 8 + (i * 5);
 							c1 = (char)j;
 							c2 = (char)(j + 1);
-						}
 						j += c1 + c2;
 //						DateTime[] arr= new DateTime[0];
 						if (i > 5)

@@ -45,6 +45,7 @@
     <Compile Include="CodeGenUtils.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="HardwareRegister.cs" />
+    <Compile Include="ILTreeSpuWriter.cs" />
     <Compile Include="IrOpCode.cs" />
     <Compile Include="CliType.cs" />
     <Compile Include="CompileInfo.cs" />
