@@ -53,7 +53,6 @@
     <Compile Include="RegAlloc.cs" />
     <Compile Include="SimpleLiveAnalyzer.cs" />
     <Compile Include="SortedLinkedList.cs" />
-    <Compile Include="SpuCode.cs" />
     <Compile Include="SpuInstruction.cs" />
     <Compile Include="OpCodeGroup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -63,7 +62,6 @@
     <Compile Include="StorLocation.cs" />
     <Compile Include="VirtualRegister.cs" />
     <Compile Include="Set.cs" />
-    <Compile Include="SpuOpCode.cs" />
     <Compile Include="TreeInstruction.cs" />
   </ItemGroup>
   <ItemGroup>
