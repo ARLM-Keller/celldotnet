@@ -7,7 +7,7 @@ namespace CellDotNet
     /// <summary>
     /// Represents a virtual register.
     /// </summary>
-    public struct VirtualRegister
+    public class VirtualRegister
     {
         public VirtualRegister(int _number)
         {

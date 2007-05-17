@@ -54,9 +54,9 @@ namespace CellDotNet
             get
             {
                 ICollection<VirtualRegister> s = new LinkedList<VirtualRegister>();
-                s.Add(_source1);
-                s.Add(_source2);
-                s.Add(_source3);
+                if (_source1 != null) s.Add(_source1);
+                if (_source2 != null) s.Add(_source2);
+                if (_source3 != null) s.Add(_source3);
                 return s;
             }
         }

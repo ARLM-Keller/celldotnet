@@ -58,6 +58,7 @@
     <Compile Include="OpCodeGroup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SpuInstructionDefinition.cs" />
+    <Compile Include="StackLocation.cs" />
     <Compile Include="StorLocation.cs" />
     <Compile Include="VirtualRegister.cs" />
     <Compile Include="Set.cs" />
