@@ -10,7 +10,12 @@ namespace CellDotNet
     /// </summary>
     class SpuInstruction
     {
-        private SpuOpCode _opcode;
+    	public SpuInstruction(SpuOpCode _opcode)
+    	{
+    		this._opcode = _opcode;
+    	}
+
+    	private SpuOpCode _opcode;
         public SpuOpCode OpCode
         {
             get { return _opcode; }
