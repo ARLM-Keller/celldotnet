@@ -10,44 +10,93 @@ namespace CellDotNet
 	enum SpuInstructionFormat
 	{
 		None,
+		/// <summary>
+		/// Register rb, ra, rt.
+		/// Assembler format: "rt,ra,rb".
+		/// 11 bit instruction code.
+		/// </summary>
 		RR,
 		/// <summary>
+		/// Register ra, rt.
+		/// Assembler format: "rt,ra".
+		/// 11 bit instruction code.
 		/// The RR variant where the bits for the first register (b, bits 11-17) are not used.
-		/// Not an "offical" format variant.
 		/// </summary>
 		RR2,
 		/// <summary>
-		/// An RR variant where only the last register (rt) is used.
+		/// Register rt.
+		/// Assembler format: "rt".
+		/// 11 bit instruction code.
 		/// </summary>
 		RR1,
 		/// <summary>
+		/// Register ra.
+		/// D at bit 12.
+		/// E at bit 13.
+		/// Assembler format: "ra" (no assembler support for the D and E bits).
+		/// 11 bit instruction code.
 		/// An RR variant used for branching where only register ra is used and the D and E 
 		/// branch bits are part of the instruction.
 		/// </summary>
 		RR1DE,
 		/// <summary>
+		/// Register ra, rt.
+		/// 11 bit instruction code.
+		/// D at bit 12.
+		/// E at bit 13.
+		/// Assembler format: "rt,ra" (no assembler support for the D and E bits).
 		/// An RR variant used for branching where only register ra and rt are used and the D and E 
 		/// branch bits are part of the instruction.
 		/// </summary>
 		RR2DE,
+		/// <summary>
+		/// Register rt, rb, ra, rc.
+		/// Assembler format: "rt,ra,rb,rc".
+		/// 4 bit instruction code.
+		/// </summary>
 		RRR,
+		/// <summary>
+		/// Register ra, rt.
+		/// Assembler format: "rt,ra,value".
+		/// 11 bit instruction code.
+		/// 7 bit immediate.
+		/// </summary>
 		RI7,
 		/// <summary>
-		/// This one is not listed in the layout list, but it is used for "Convert Signed Integer to Floating".
-		/// <para>
-		/// <div>10 bit instruction number.</div>
-		/// <div>8 bit immediate value.</div>
-		/// <div>Register RA</div>
-		/// <div>Register RT</div>
-		/// </para>
+		/// Register ra, rt.
+		/// Assembler format: "rt,ra,scale".
+		/// 10 bit instruction code.
+		/// 8 bit immediate.
 		/// </summary>
 		RI8,
+		/// <summary>
+		/// Register ra, rt.
+		/// Assembler format: "rt,ra,value".
+		/// 8 bit instruction code.
+		/// 8 bit immediate.
+		/// </summary>
 		RI10,
+		/// <summary>
+		/// Register rt.
+		/// Assembler format: "rt,symbol".
+		/// 9 bit instruction code.
+		/// 10 bit immediate.
+		/// </summary>
 		RI16,
 		/// <summary>
+		/// No registers.
+		/// Assembler format: "symbol".
+		/// 9 bit instruction code.
+		/// 16 bit immediate.
 		/// An RI16 variant where the last register bits are ignored.
 		/// </summary>
 		RI16x,
+		/// <summary>
+		/// Register rt.
+		/// Assembler format: "rt,symbol".
+		/// 7 bit instruction code.
+		/// 18 bit immediate.
+		/// </summary>
 		RI18
 	}
 
