@@ -73,5 +73,28 @@ namespace CellDotNet
             get { return _destination; }
             set { _destination = value; }
         }
+
+        public UInt32 emit()
+        {
+            switch (_opcode.Format)
+            {
+                case SpuInstructionFormat.None:
+                case SpuInstructionFormat.RI10:
+                case SpuInstructionFormat.RI16:
+                case SpuInstructionFormat.RI16x:
+                case SpuInstructionFormat.RI18:
+                case SpuInstructionFormat.RI7:
+                case SpuInstructionFormat.RI8:
+                case SpuInstructionFormat.RR:
+                case SpuInstructionFormat.RR1:
+                case SpuInstructionFormat.RR1DE:
+                case SpuInstructionFormat.RR2:
+                case SpuInstructionFormat.RR2DE:
+                case SpuInstructionFormat.RRR:
+            }
+
+
+            return 0;
+        }
     }
 }
