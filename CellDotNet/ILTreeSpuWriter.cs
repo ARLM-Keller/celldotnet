@@ -8,18 +8,14 @@ namespace CellDotNet
 	/// <summary>
 	/// This class writes IL trees as SPU instructions.
 	/// </summary>
-	class ILTreeSpuWriter : SpuInstructionWriter
+	class ILTreeSpuWriter
 	{
-		private int _regnum = 1;
+		private SpuInstructionWriter _writer;
 
-		VirtualRegister NextRegister()
+		public void GenerateCode(CompileInfo ci, SpuInstructionWriter writer)
 		{
-			return new VirtualRegister(_regnum);
-			_regnum++;
-		}
+			_writer = writer;
 
-		public void GenerateCode(CompileInfo ci)
-		{
 			foreach (BasicBlock bb in ci.Blocks)
 			{
 				foreach (TreeInstruction root in bb.Roots)
@@ -41,27 +37,14 @@ namespace CellDotNet
 			}
 
 			Code ilcode = inst.Opcode.Code;
+			int oldInstCount = _writer.Instructions.Count;
 			switch (ilcode)
 			{
 				case Code.Nop:
 					return null;
 				case Code.Break:
-					throw new NotImplementedException();
-				case Code.Ldarg_S:
-					break;
-					break;
-				case Code.Starg_S:
-					break;
-				case Code.Ldloc_S:
-					break;
-				case Code.Ldarga_S:
-				case Code.Ldloca_S:
-					break;
-				case Code.Stloc_S:
 					break;
 				case Code.Ldnull:
-					break;
-				case Code.Ldc_I4_S:
 					break;
 				case Code.Ldc_I4:
 					break;
@@ -82,22 +65,6 @@ namespace CellDotNet
 				case Code.Calli:
 					break;
 				case Code.Ret:
-					break;
-				case Code.Br_S:
-					break;
-				case Code.Brfalse_S:
-					break;
-				case Code.Brtrue_S:
-					break;
-				case Code.Beq_S:
-					break;
-				case Code.Bge_S:
-					break;
-				case Code.Bgt_S:
-					break;
-				case Code.Ble_S:
-					break;
-				case Code.Blt_S:
 					break;
 				case Code.Bne_Un_S:
 					break;
@@ -174,6 +141,35 @@ namespace CellDotNet
 				case Code.Stind_R8:
 					break;
 				case Code.Add:
+					switch (inst.Left.CliType)
+					{
+						case CliType.None:
+							break;
+						case CliType.Int8:
+						case CliType.UInt8:
+							return _writer.WriteAh(vrleft, vrright);
+						case CliType.Int16:
+						case CliType.UInt16:
+							return _writer.WriteAh(vrleft, vrright);
+						case CliType.Int32:
+						case CliType.UInt32:
+							return _writer.WriteA(vrleft, vrright);
+						case CliType.Int64:
+						case CliType.UInt64:
+							break;
+						case CliType.NativeInt:
+						case CliType.NativeUInt:
+							break;
+						case CliType.Float32:
+							return _writer.WriteFa(vrleft, vrright);
+						case CliType.Float64:
+							return _writer.WriteDfa(vrleft, vrright);
+						case CliType.ManagedPointer:
+						case CliType.ValueType:
+						case CliType.ObjectType:
+						default:
+							break;
+					}
 					break;
 				case Code.Sub:
 					break;
@@ -423,19 +419,19 @@ namespace CellDotNet
 				case Code.Sizeof:
 				case Code.Refanytype:
 				case Code.Readonly:
-					throw new ILNotImplementedException(inst);
+					break;
 				default:
 					throw new Exception("Invalid opcode: " + ilcode);
 			}
 
-			return NextRegister();
+			throw new ILNotImplementedException(inst);
 		}
 	}
 
 	#region ILNotImplementedException
 
 
-	[global::System.Serializable]
+	[Serializable]
 	class ILNotImplementedException : Exception
 	{
 		//

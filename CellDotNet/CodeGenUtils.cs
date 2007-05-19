@@ -96,9 +96,9 @@ namespace CellDotNet
 		/// <summary>
 		/// {2}
 		/// </summary>
-		public void Write{0}(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		public VirtualRegister Write{0}(VirtualRegister ra, VirtualRegister rb)
 		{{
-			WriteRR({1}, rt, ra, rb);
+			return WriteRR({1}, ra, rb);
 		}}
 ", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
 						break;
@@ -107,9 +107,9 @@ namespace CellDotNet
 		/// <summary>
 		/// {2}
 		/// </summary>
-		public void Write{0}(VirtualRegister rt, VirtualRegister ra)
+		public VirtualRegister Write{0}(VirtualRegister ra)
 		{{
-			WriteRR2({1}, rt, ra);
+			return WriteRR2({1}, ra);
 		}}
 ", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
 						break;
@@ -118,9 +118,9 @@ namespace CellDotNet
 		/// <summary>
 		/// {2}
 		/// </summary>
-		public void Write{0}(VirtualRegister rt)
+		public VirtualRegister Write{0}()
 		{{
-			WriteRR1({1}, rt);
+			return WriteRR1({1});
 		}}
 ", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
 						break;
@@ -142,9 +142,9 @@ namespace CellDotNet
 		/// <summary>
 		/// {2}
 		/// </summary>
-		public void Write{0}(VirtualRegister rt, VirtualRegister ra)
+		public VirtualRegister Write{0}(VirtualRegister ra)
 		{{
-			WriteRR2DE({1}, rt, ra);
+			return WriteRR2DE({1}, ra);
 		}}
 ", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
 						break;
@@ -153,9 +153,9 @@ namespace CellDotNet
 		/// <summary>
 		/// {2}
 		/// </summary>
-		public void Write{0}(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb, VirtualRegister rc)
+		public VirtualRegister Write{0}(VirtualRegister ra, VirtualRegister rb, VirtualRegister rc)
 		{{
-			WriteRRR({1}, rt, ra, rb, rc);
+			return WriteRRR({1}, ra, rb, rc);
 		}}
 ", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
 						break;
@@ -164,9 +164,9 @@ namespace CellDotNet
 		/// <summary>
 		/// {2}
 		/// </summary>
-		public void Write{0}(VirtualRegister rt, VirtualRegister ra, int value)
+		public VirtualRegister Write{0}(VirtualRegister ra, int value)
 		{{
-			WriteRI7({1}, rt, ra, value);
+			return WriteRI7({1}, ra, value);
 		}}
 ", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
 						break;
@@ -175,9 +175,9 @@ namespace CellDotNet
 		/// <summary>
 		/// {2}
 		/// </summary>
-		public void Write{0}(VirtualRegister rt, VirtualRegister ra, int scale)
+		public VirtualRegister Write{0}(VirtualRegister ra, int scale)
 		{{
-			WriteRI8({1}, rt, ra, scale);
+			return WriteRI8({1}, ra, scale);
 		}}
 ", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
 						break;
@@ -186,9 +186,9 @@ namespace CellDotNet
 		/// <summary>
 		/// {2}
 		/// </summary>
-		public void Write{0}(VirtualRegister rt, VirtualRegister ra, int value)
+		public VirtualRegister Write{0}(VirtualRegister ra, int value)
 		{{
-			WriteRI10({1}, rt, ra, value);
+			return WriteRI10({1}, ra, value);
 		}}
 ", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
 						break;
@@ -197,9 +197,9 @@ namespace CellDotNet
 		/// <summary>
 		/// {2}
 		/// </summary>
-		public void Write{0}(VirtualRegister rt, int symbol)
+		public VirtualRegister Write{0}(int symbol)
 		{{
-			WriteRI16({1}, rt, symbol);
+			return WriteRI16({1}, symbol);
 		}}
 ", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
 						break;
@@ -219,9 +219,9 @@ namespace CellDotNet
 		/// <summary>
 		/// {2}
 		/// </summary>
-		public void Write{0}(VirtualRegister rt, int symbol)
+		public VirtualRegister Write{0}(int symbol)
 		{{
-			WriteRI18({1}, rt, symbol);
+			return WriteRI18({1}, symbol);
 		}}
 ", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
 						break;

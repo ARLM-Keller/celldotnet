@@ -11,8 +11,8 @@ namespace CellDotNet
 	{
 		static public void Main(string[] args)
 		{
-			TestBuildTree();
-//			DisplayMetadataTokens(2);
+//			TestBuildTree();
+			DoExtremeSimpleCodeGen();
 			return;
 
 			Action<int> a = null;
@@ -69,6 +69,19 @@ namespace CellDotNet
 			}
 		}
 
+		delegate void NoArgumentDelegate();
+
+		private static void DoExtremeSimpleCodeGen()
+		{
+			NoArgumentDelegate del = delegate() { int j = 3;
+			                                    	int k = j*3;
+			};
+			MethodDefinition method = GetMethod(del);
+
+			CompileInfo ci = new CompileInfo(method);
+			new TreeDrawer().DrawMethod(ci, method);
+		}
+
 		private static void DisplayMetadataTokens(int i)
 		{
 			Action<int> del = DisplayMetadataTokens;
@@ -111,7 +124,7 @@ namespace CellDotNet
 
 
 			TreeDrawer td=  new TreeDrawer();
-			td.DrawMethod(ci, method, td);
+			td.DrawMethod(ci, method);
 		}
 
 		private static MethodDefinition GetMethod(Delegate a)
@@ -216,7 +229,7 @@ namespace CellDotNet
 			}
 		}
 
-		public void DrawMethod(CompileInfo ci, MethodDefinition method, TreeDrawer td)
+		public void DrawMethod(CompileInfo ci, MethodDefinition method)
 		{
 			_branchTargets = new Set<int>();
 			FindBranchTargets(ci, method);
@@ -224,7 +237,7 @@ namespace CellDotNet
 			foreach (BasicBlock block in ci.Blocks)
 			{
 				Console.WriteLine(" - Basic Block:");
-				td.DrawTree(method, block);
+				DrawTree(method, block);
 			}
 		}
 	}
