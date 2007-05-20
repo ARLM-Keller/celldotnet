@@ -74,46 +74,12 @@ namespace CellDotNet
 			set { _offset = value; }
 		}
 
-		private CliType _cliType;
-		/// <summary>
-		/// The CLI type that this instruction evaluates to; if there is no value or the type has not yet been established, None is returned.
-		/// </summary>
-		public CliType CliType
+		private StackTypeDescription _stackTyp;
+		public StackTypeDescription StackType
 		{
-			get { return _cliType; }
-			set { _cliType = value; }
+			get { return _stackTyp; }
+			set { _stackTyp = value; }
 		}
-
-
-
-/*
-		/// <summary>
-		/// Does not work!!
-		/// </summary>
-		/// <returns></returns>
-		public IEnumerable<TreeInstruction> IterateInorder()
-		{
-			Stack<TreeInstruction> s = new Stack<TreeInstruction>();
-			TreeInstruction ptr = this;
-
-			do
-			{
-				while (ptr != null)
-				{
-					s.Push(ptr);
-					ptr = ptr.Left;
-				}
-
-				ptr = s.Pop();
-
-//				action(ptr);
-				yield return ptr;
-
-				ptr = ptr.Right;
-
-			} while (s.Count != 0);
-		}
-*/
 
 		public IEnumerable<TreeInstruction> IterateInorder()
 		{
@@ -143,13 +109,5 @@ namespace CellDotNet
 				return i;
 			}
 		}
-
-//		private CliStackType _cliTyp;
-//		public CliStackType CliStackType
-//		{
-//			get { return _cliTyp; }
-//			set { _cliTyp = value; }
-//		}
-
 	}
 }

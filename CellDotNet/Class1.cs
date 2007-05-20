@@ -11,8 +11,8 @@ namespace CellDotNet
 	{
 		static public void Main(string[] args)
 		{
-//			TestBuildTree();
-			DoExtremeSimpleCodeGen();
+			TestBuildTree();
+//			DoExtremeSimpleCodeGen();
 			return;
 
 			Action<int> a = null;
@@ -69,12 +69,13 @@ namespace CellDotNet
 			}
 		}
 
+		delegate void RefArgumentDelegate(ref int i);
 		delegate void NoArgumentDelegate();
 
 		private static void DoExtremeSimpleCodeGen()
 		{
-			NoArgumentDelegate del = delegate() { int j = 3;
-			                                    	int k = j*3;
+			RefArgumentDelegate del = delegate(ref int i) { int j = 3;
+			                                    	i = j*4;
 			};
 			MethodDefinition method = GetMethod(del);
 
@@ -184,8 +185,8 @@ namespace CellDotNet
 				else
 					Console.Write(" " + inst.Operand);
 			}
-			if (inst.CliType != CliType.None)
-				Console.Write("   " + inst.CliType);
+			if (inst.StackType != StackTypeDescription.None)
+				Console.Write("   " + inst.StackType.CliType);
 			else 
 				Console.Write("   -");
 			Console.WriteLine();
