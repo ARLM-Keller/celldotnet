@@ -16,10 +16,16 @@ namespace CellDotNet
 			get { return _blocks; }
 		}
 
+		private MethodDefinition _methodDefinition;
+		public MethodDefinition MethodDefinition
+		{
+			get { return _methodDefinition; }
+		}
 
 		public CompileInfo(MethodDefinition	method)
 		{
 			method.Body.Simplify();
+			_methodDefinition = method;
 
 			BuildBasicBlocks(method);
 			CheckTreeInstructionCount(method.Body.Instructions.Count);

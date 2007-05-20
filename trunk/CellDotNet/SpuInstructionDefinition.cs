@@ -138,13 +138,15 @@ namespace CellDotNet
             set { _opCode = value; }
         }
 
-
-        public SpuOpCode(string _name, string _title, SpuInstructionFormat _format)
-        {
-            this._name = _name;
-            this._title = _title;
-            this._format = _format;
-        }
+		private bool _noRegisterWrite;
+		/// <summary>
+		/// Some instructions (store) have a common layout, but the rt register is not written to.
+		/// For those instructions, this property returns true.
+		/// </summary>
+		public bool NoRegisterWrite
+		{
+			get { return _noRegisterWrite; }
+		}
 
         public SpuOpCode(string _name, string _title, SpuInstructionFormat _format, String opcode)
         {
@@ -153,6 +155,8 @@ namespace CellDotNet
             this._format = _format;
             this._opCodeWidth = opcode.Length;
             this._opCode = Convert.ToUInt32(opcode, 2) << 32 - this.OpCodeWidth;
+			if (_name.StartsWith("st"))
+				_noRegisterWrite = true;
         }
 
         /// <summary>

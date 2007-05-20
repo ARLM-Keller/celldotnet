@@ -87,12 +87,29 @@ namespace CellDotNet
 				// capitalized name.
 				string ocname = opcode.Name[0].ToString().ToUpper() + opcode.Name.Substring(1);
 
+				bool noRegisterWriteIsHandled = false;
 				switch (opcode.Format)
 				{
 					case SpuInstructionFormat.None:
 						break;
 					case SpuInstructionFormat.RR:
-						tw.Write(@"
+						noRegisterWriteIsHandled = true;
+						if (opcode.NoRegisterWrite)
+						{
+							tw.Write(@"
+		/// <summary>
+		/// {2}
+		/// </summary>
+		public void Write{0}(VirtualRegister ra, VirtualRegister rb, VirtualRegister rt)
+		{{
+			WriteRR({1}, ra, rb, rt);
+		}}
+", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
+							
+						}
+						else
+						{
+							tw.Write(@"
 		/// <summary>
 		/// {2}
 		/// </summary>
@@ -101,6 +118,9 @@ namespace CellDotNet
 			return WriteRR({1}, ra, rb);
 		}}
 ", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
+
+						}
+
 						break;
 					case SpuInstructionFormat.RR2:
 						tw.Write(@"
@@ -182,7 +202,22 @@ namespace CellDotNet
 ", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
 						break;
 					case SpuInstructionFormat.RI10:
-						tw.Write(@"
+						noRegisterWriteIsHandled = true;
+						if (opcode.NoRegisterWrite)
+						{
+							tw.Write(@"
+		/// <summary>
+		/// {2}
+		/// </summary>
+		public void Write{0}(VirtualRegister ra, VirtualRegister rt, int value)
+		{{
+			WriteRI10({1}, ra, rt, value);
+		}}
+", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
+						}
+						else
+						{
+							tw.Write(@"
 		/// <summary>
 		/// {2}
 		/// </summary>
@@ -191,9 +226,25 @@ namespace CellDotNet
 			return WriteRI10({1}, ra, value);
 		}}
 ", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
+						}
 						break;
 					case SpuInstructionFormat.RI16:
-						tw.Write(@"
+						noRegisterWriteIsHandled = true;
+						if (opcode.NoRegisterWrite)
+						{
+							tw.Write(@"
+		/// <summary>
+		/// {2}
+		/// </summary>
+		public void Write{0}(VirtualRegister rt, int symbol)
+		{{
+			WriteRI16({1}, rt, symbol);
+		}}
+", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
+						}
+						else
+						{
+							tw.Write(@"
 		/// <summary>
 		/// {2}
 		/// </summary>
@@ -202,6 +253,8 @@ namespace CellDotNet
 			return WriteRI16({1}, symbol);
 		}}
 ", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
+						}
+
 						break;
 					case SpuInstructionFormat.RI16x:
 						tw.Write(@"
@@ -228,6 +281,9 @@ namespace CellDotNet
 					default:
 						throw new Exception("Invalid instruction format: " + opcode.Format);
 				}
+
+				if (opcode.NoRegisterWrite && !noRegisterWriteIsHandled)
+					throw new Exception("opcode.NoRegisterWrite not handled for opcode " + opcode.Name + ".");
 			}
 
 			tw.Write(@"

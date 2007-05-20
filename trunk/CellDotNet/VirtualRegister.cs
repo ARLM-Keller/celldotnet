@@ -28,7 +28,14 @@ namespace CellDotNet
             set { _location = value; }
         }
 
-        
+		/// <summary>
+		/// Used for disassembly.
+		/// </summary>
+		/// <returns></returns>
+		public override string ToString()
+		{
+			return "$" + Number;
+		}
 
     }
 }
