@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Mono.Cecil.Metadata;
 
 namespace CellDotNet
 {
@@ -70,6 +69,7 @@ namespace CellDotNet
 		/// This is the recursive part of DeriveTypes.
 		/// </summary>
 		/// <param name="inst"></param>
+		/// <param name="level"></param>
 		private static void DeriveType(TreeInstruction inst, int level)
 		{
 			if (inst.Left != null)
@@ -77,21 +77,21 @@ namespace CellDotNet
 			if (inst.Right != null)
 				DeriveType(inst.Right, level + 1);
 
-			CliType t;
+			StackTypeDescription t;
 			switch (inst.Opcode.FlowControl)
 			{
 				case FlowControl.Branch:
 				case FlowControl.Break:
 					if (level != 0)
 						throw new NotImplementedException("Only root branches are implemented.");
-					t = CliType.None;
+					t = StackTypeDescription.None;
 					break;
 				case FlowControl.Call:
 					throw new NotImplementedException("Message call not implemented.");
 				case FlowControl.Cond_Branch:
 					if (level != 0)
 						throw new NotImplementedException("Only root branches are implemented.");
-					t = CliType.None;
+					t = StackTypeDescription.None;
 //					throw new NotImplementedException();
 					break;
 				case FlowControl.Meta:
@@ -110,12 +110,12 @@ namespace CellDotNet
 					break;
 				case FlowControl.Return:
 					if (inst.Left != null)
-						t = inst.Left.CliType;
+						t = inst.Left.StackType;
 					else
-						t = CliType.None;
+						t = StackTypeDescription.None;
 					break;
 				case FlowControl.Throw:
-					t = CliType.None;
+					t = StackTypeDescription.None;
 					break;
 				default:
 					throw new ILException("Default");
@@ -123,7 +123,7 @@ namespace CellDotNet
 
 
 			// TODO: 
-			inst.CliType = t;
+			inst.StackType = t;
 		}
 
 		/// <summary>
@@ -132,11 +132,11 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="inst"></param>
 		/// <param name="level"></param>
-		private static CliType DeriveFlowNextType(TreeInstruction inst, int level)
+		private static StackTypeDescription DeriveFlowNextType(TreeInstruction inst, int level)
 		{
 			// The cases are generated and all opcodes with flow==next are present 
 			// (except macro codes such as ldc.i4.3).
-			CliType t;
+			StackTypeDescription t;
 //			Type typeToken = (Type) inst.Operand;
 //			Type customType = null;
 			TypeReference optype;
@@ -152,58 +152,58 @@ namespace CellDotNet
 			switch (inst.Opcode.Code)
 			{
 				case Code.Nop: // nop
-					t = CliType.None;
+					t = StackTypeDescription.None;
 					break;
 				case Code.Ldnull: // ldnull
-					t = CliType.ObjectType;
+					t = StackTypeDescription.ObjectType;
 					break;
 				case Code.Ldc_I4: // ldc.i4
-					t = CliType.Int32;
+					t = StackTypeDescription.Int32;
 					break;
 				case Code.Ldc_I8: // ldc.i8
-					t = CliType.Int64;
+					t = StackTypeDescription.Int64;
 					break;
 				case Code.Ldc_R4: // ldc.r4
-					t = CliType.Float32;
+					t = StackTypeDescription.Float32;
 					break;
 				case Code.Ldc_R8: // ldc.r8
-					t = CliType.Float64;
+					t = StackTypeDescription.Float64;
 					break;
 				case Code.Dup: // dup
 				case Code.Pop: // pop
 					throw new NotImplementedException("dup, pop");
 				case Code.Ldind_I1: // ldind.i1
-					t = CliType.Int8;
+					t = StackTypeDescription.Int8;
 					break;
 				case Code.Ldind_U1: // ldind.u1
-					t = CliType.UInt8;
+					t = StackTypeDescription.UInt8;
 					break;
 				case Code.Ldind_I2: // ldind.i2
-					t = CliType.Int16;
+					t = StackTypeDescription.Int16;
 					break;
 				case Code.Ldind_U2: // ldind.u2
-					t = CliType.UInt16;
+					t = StackTypeDescription.UInt16;
 					break;
 				case Code.Ldind_I4: // ldind.i4
-					t = CliType.Int32;
+					t = StackTypeDescription.Int32;
 					break;
 				case Code.Ldind_U4: // ldind.u4
-					t = CliType.UInt32;
+					t = StackTypeDescription.UInt32;
 					break;
 				case Code.Ldind_I8: // ldind.i8
-					t = CliType.Int64;
+					t = StackTypeDescription.Int64;
 					break;
 				case Code.Ldind_I: // ldind.i
-					t = CliType.NativeInt;
+					t = StackTypeDescription.NativeInt;
 					break;
 				case Code.Ldind_R4: // ldind.r4
-					t = CliType.Float32;
+					t = StackTypeDescription.Float32;
 					break;
 				case Code.Ldind_R8: // ldind.r8
-					t = CliType.Float64;
+					t = StackTypeDescription.Float64;
 					break;
 				case Code.Ldind_Ref: // ldind.ref
-					t = CliType.ObjectType;
+					t = StackTypeDescription.ObjectType;
 					break;
 				case Code.Stind_Ref: // stind.ref
 				case Code.Stind_I1: // stind.i1
@@ -214,7 +214,7 @@ namespace CellDotNet
 				case Code.Stind_R8: // stind.r8
 					if (level != 0)
 						throw new NotSupportedException();
-					t = CliType.None;
+					t = StackTypeDescription.None;
 					break;
 				case Code.Add: // add
 				case Code.Div: // div
@@ -228,7 +228,7 @@ namespace CellDotNet
 				case Code.Mul_Ovf_Un: // mul.ovf.un
 				case Code.Sub_Ovf: // sub.ovf
 				case Code.Sub_Ovf_Un: // sub.ovf.un
-					t = GetNumericResultType(inst.Left.CliType, inst.Right.CliType);
+					t = GetNumericResultType(inst.Left.StackType, inst.Right.StackType);
 					break;
 				case Code.And: // and
 				case Code.Div_Un: // div.un
@@ -237,25 +237,25 @@ namespace CellDotNet
 				case Code.Rem_Un: // rem.un
 				case Code.Xor: // xor
 					// From CIL table 5.
-					if (inst.Left.CliType == inst.Right.CliType)
-						t = inst.Left.CliType;
+					if (inst.Left.StackType == inst.Right.StackType)
+						t = inst.Left.StackType;
 					else
 					{
 						// Must be native (u)int.
-						if (inst.Left.CliType == CliType.NativeInt)
-							t = CliType.NativeInt;
+						if (inst.Left.StackType.IsSigned)
+							t = StackTypeDescription.NativeInt;
 						else 
-							t = CliType.NativeUInt;
+							t = StackTypeDescription.NativeUInt;
 					}
 					break;
 				case Code.Shl: // shl
 				case Code.Shr: // shr
 				case Code.Shr_Un: // shr.un
 					// CIL table 6.
-					t = inst.Left.CliType;
+					t = inst.Left.StackType;
 					break;
 				case Code.Neg: // neg
-					t = inst.Left.CliType;
+					t = inst.Left.StackType;
 					break;
 				case Code.Cpobj: // cpobj
 				case Code.Ldobj: // ldobj
@@ -274,61 +274,61 @@ namespace CellDotNet
 				case Code.Conv_Ovf_I8_Un: // conv.ovf.i8.un
 				case Code.Conv_I8: // conv.i8
 				case Code.Conv_Ovf_I8: // conv.ovf.i8
-					t = CliType.Int64;
+					t = StackTypeDescription.Int64;
 					break;
 				case Code.Conv_R4: // conv.r4
-					t = CliType.Float32;
+					t = StackTypeDescription.Float32;
 					break;
 				case Code.Conv_R8: // conv.r8
-					t = CliType.Float64;
+					t = StackTypeDescription.Float64;
 					break;
 				case Code.Conv_I1: // conv.i1
 				case Code.Conv_Ovf_I1_Un: // conv.ovf.i1.un
 				case Code.Conv_Ovf_I1: // conv.ovf.i1
-					t = CliType.Int8;
+					t = StackTypeDescription.Int8;
 					break;
 				case Code.Conv_I2: // conv.i2
 				case Code.Conv_Ovf_I2: // conv.ovf.i2
 				case Code.Conv_Ovf_I2_Un: // conv.ovf.i2.un
-					t = CliType.Int16;
+					t = StackTypeDescription.Int16;
 					break;
 				case Code.Conv_Ovf_I4: // conv.ovf.i4
 				case Code.Conv_I4: // conv.i4
 				case Code.Conv_Ovf_I4_Un: // conv.ovf.i4.un
-					t = CliType.Int32;
+					t = StackTypeDescription.Int32;
 					break;
 				case Code.Conv_U4: // conv.u4
 				case Code.Conv_Ovf_U4: // conv.ovf.u4
 				case Code.Conv_Ovf_U4_Un: // conv.ovf.u4.un
-					t = CliType.UInt32;
+					t = StackTypeDescription.UInt32;
 					break;
 				case Code.Conv_R_Un: // conv.r.un
-					t = CliType.Float32; // really F, but we're 32 bit.
+					t = StackTypeDescription.Float32; // really F, but we're 32 bit.
 					break;
 				case Code.Conv_Ovf_U1_Un: // conv.ovf.u1.un
 				case Code.Conv_U1: // conv.u1
 				case Code.Conv_Ovf_U1: // conv.ovf.u1
-					t = CliType.UInt8;
+					t = StackTypeDescription.UInt8;
 					break;
 				case Code.Conv_Ovf_U2_Un: // conv.ovf.u2.un
 				case Code.Conv_U2: // conv.u2
 				case Code.Conv_Ovf_U2: // conv.ovf.u2
-					t = CliType.UInt16;
+					t = StackTypeDescription.UInt16;
 					break;
 				case Code.Conv_U8: // conv.u8
 				case Code.Conv_Ovf_U8_Un: // conv.ovf.u8.un
 				case Code.Conv_Ovf_U8: // conv.ovf.u8
-					t = CliType.UInt64;
+					t = StackTypeDescription.UInt64;
 					break;
 				case Code.Conv_I: // conv.i
 				case Code.Conv_Ovf_I: // conv.ovf.i
 				case Code.Conv_Ovf_I_Un: // conv.ovf.i.un
-					t = CliType.NativeInt;
+					t = StackTypeDescription.NativeInt;
 					break;
 				case Code.Conv_Ovf_U_Un: // conv.ovf.u.un
 				case Code.Conv_Ovf_U: // conv.ovf.u
 				case Code.Conv_U: // conv.u
-					t = CliType.NativeUInt;
+					t = StackTypeDescription.NativeUInt;
 					break;
 				case Code.Box: // box
 					throw new NotImplementedException();
@@ -336,47 +336,47 @@ namespace CellDotNet
 //					customType = typeof (object);
 //					break;
 				case Code.Newarr: // newarr
-					t = CliType.ObjectType;
+//					t = StackTypeDescription.ObjectType;
 
 					throw new NotImplementedException();
 //					customType = Array.;
 				case Code.Ldlen: // ldlen
-					t = CliType.NativeUInt;
+					t = StackTypeDescription.NativeUInt;
 					break;
 				case Code.Ldelema: // ldelema
-					t = CliType.ManagedPointer;
+					throw new NotImplementedException();
+//					t = StackTypeDescription.ManagedPointer;
 //					customty
-					break;
 				case Code.Ldelem_I1: // ldelem.i1
-					t = CliType.Int8;
+					t = StackTypeDescription.Int8;
 					break;
 				case Code.Ldelem_U1: // ldelem.u1
-					t = CliType.UInt8;
+					t = StackTypeDescription.UInt8;
 					break;
 				case Code.Ldelem_I2: // ldelem.i2
-					t = CliType.Int32;
+					t = StackTypeDescription.Int32;
 					break;
 				case Code.Ldelem_U2: // ldelem.u2
-					t = CliType.UInt16;
+					t = StackTypeDescription.UInt16;
 					break;
 				case Code.Ldelem_I4: // ldelem.i4
-					t = CliType.Int32;
+					t = StackTypeDescription.Int32;
 					break;
 				case Code.Ldelem_U4: // ldelem.u4
-					t = CliType.UInt32;
+					t = StackTypeDescription.UInt32;
 					break;
 				case Code.Ldelem_I8: // ldelem.i8
-					t = CliType.Int64;
+					t = StackTypeDescription.Int64;
 					break;
 				case Code.Ldelem_I: // ldelem.i
 					// Guess this can also be unsigned?
-					t = CliType.NativeInt;
+					t = StackTypeDescription.NativeInt;
 					break;
 				case Code.Ldelem_R4: // ldelem.r4
-					t = CliType.Float32;
+					t = StackTypeDescription.Float32;
 					break;
 				case Code.Ldelem_R8: // ldelem.r8
-					t = CliType.Float64;
+					t = StackTypeDescription.Float64;
 					break;
 				case Code.Ldelem_Ref: // ldelem.ref
 					throw new NotImplementedException();
@@ -388,7 +388,7 @@ namespace CellDotNet
 				case Code.Stelem_R4: // stelem.r4
 				case Code.Stelem_R8: // stelem.r8
 				case Code.Stelem_Ref: // stelem.ref
-					t = CliType.None;
+					t = StackTypeDescription.None;
 					break;
 				case Code.Ldelem_Any: // ldelem.any
 				case Code.Stelem_Any: // stelem.any
@@ -406,7 +406,7 @@ namespace CellDotNet
 				case Code.Cgt_Un: // cgt.un
 				case Code.Clt: // clt
 				case Code.Clt_Un: // clt.un
-					t = CliType.Int8; // CLI says int32, but let's try...
+					t = StackTypeDescription.Int8; // CLI says int32, but let's try...
 					break;
 				case Code.Ldftn: // ldftn
 				case Code.Ldvirtftn: // ldvirtftn
@@ -414,23 +414,20 @@ namespace CellDotNet
 				case Code.Ldarg: // ldarg
 				case Code.Ldloca: // ldloca
 					t = GetCilNumericType(optype);
-					if (!IsNumeric(t))
+					if (t == StackTypeDescription.None)
 						throw new NotImplementedException("Only numeric CIL types are implemented.");
-					if (t == CliType.None)
-						throw new Exception("Error...");
 
 					break;
 				case Code.Ldloc: // ldloc
 				case Code.Ldarga: // ldarga
 					t = GetCilNumericType(optype);
-					if (!IsNumeric(t))
+					if (t == StackTypeDescription.None)
 						throw new NotImplementedException("Only numeric CIL types are implemented.");
-					if (t == CliType.None)
-						throw new Exception("Error...");
+
 					break;
 				case Code.Starg: // starg
 				case Code.Stloc: // stloc
-					t = CliType.None;
+					t = StackTypeDescription.None;
 					break;
 				case Code.Localloc: // localloc
 					throw new NotImplementedException();
@@ -448,17 +445,6 @@ namespace CellDotNet
 			}
 
 			return t;
-			throw new NotImplementedException();
-
-		}
-
-		private static bool IsNumeric(CliType type)
-		{
-			return type != CliType.ManagedPointer &&
-			       type != CliType.ValueType &&
-			       type != CliType.None &&
-			       type != CliType.ObjectType &&
-			       type != CliType.ValueType;
 		}
 
 //		private static Dictionary<uint, CliType> s_metadataCilTypes = BuildBasicMetadataCilDictionary();
@@ -485,46 +471,46 @@ namespace CellDotNet
 
 
 		/// <summary>
-		/// If the token is recognized as a CIL numeric type (plus bool,char), that type is returned;
+		/// If the token is recognized as a CIL numeric type (or bool or char), that type is returned;
 		/// otherwise, None is returned.
 		/// </summary>
 		/// <param name="tref"></param>
 		/// <returns></returns>
-		private static CliType GetCilNumericType(TypeReference tref)
+		private static StackTypeDescription GetCilNumericType(TypeReference tref)
 		{
 			// Should be a faster way to do the lookup...
 			switch (tref.FullName)
 			{
 				case "System.Boolean":
-					return CliType.Int8;
+					return StackTypeDescription.Int8;
 				case "System.Char":
-					return CliType.UInt16;
+					return StackTypeDescription.UInt16;
 				case "System.Byte":
-					return CliType.UInt8;
+					return StackTypeDescription.UInt8;
 				case "System.SByte":
-					return CliType.Int8;
+					return StackTypeDescription.Int8;
 				case "System.Short":
-					return CliType.Int16;
+					return StackTypeDescription.Int16;
 				case "System.UShort":
-					return CliType.UInt16;
+					return StackTypeDescription.UInt16;
 				case "System.Int32":
-					return CliType.Int32;
+					return StackTypeDescription.Int32;
 				case "System.UInt32":
-					return CliType.UInt32;
+					return StackTypeDescription.UInt32;
 				case "System.Int64":
-					return CliType.Int64;
+					return StackTypeDescription.Int64;
 				case "System.UInt64":
-					return CliType.UInt64;
+					return StackTypeDescription.UInt64;
 				case "System.Single":
-					return CliType.Float32;
+					return StackTypeDescription.Float32;
 				case "System.Double":
-					return CliType.Float64;
+					return StackTypeDescription.Float64;
 				case "System.IntPtr":
-					return CliType.NativeInt;
+					return StackTypeDescription.NativeInt;
 				case "System.UIntPtr":
-					return CliType.NativeUInt;
+					return StackTypeDescription.NativeUInt;
 				default:
-					return CliType.None;
+					return StackTypeDescription.None;
 			}
 
 //			CliType ct;
@@ -538,39 +524,36 @@ namespace CellDotNet
 		/// Computes the result type of binary numeric operations given the specified input types.
 		/// Computation is done according to table 2 and table 7 in the CIL spec plus intuition.
 		/// </summary>
-		/// <param name="left"></param>
-		/// <param name="right"></param>
 		/// <returns></returns>
-		private static CliType GetNumericResultType(CliType left, CliType right)
+		private static StackTypeDescription GetNumericResultType(StackTypeDescription tleft, StackTypeDescription tright)
 		{
-			CliStackType rleft = GetReducedType(left);
-			CliStackType rright = GetReducedType(right);
-
 			// We are relying on the fact that the enumeration values are sorted by size.
-			if (rleft == rright)
+			if (tleft.CliBasicType == tright.CliBasicType)
 			{
-				if (rleft != CliStackType.ManagedPointer) 
-					return (CliType) Math.Max((int) left, (int) right);
-				else 
-					return CliType.NativeInt;
+				if (!tleft.IsByRef)
+					return new StackTypeDescription(tleft.CliBasicType,  
+						(CliNumericSize) Math.Max((int)tleft.NumericSize, (int)tright.NumericSize), tleft.IsSigned);
+				else
+					return StackTypeDescription.NativeInt;
 			}
 
-			if (rleft == CliStackType.ManagedPointer || rright == CliStackType.ManagedPointer)
+			if (tleft.IsByRef || tright.IsByRef)
 			{
-				if (rleft == CliStackType.ManagedPointer && rright == CliStackType.ManagedPointer)
-					return CliType.NativeInt;
+				if (tleft.IsByRef && tright.IsByRef)
+					return StackTypeDescription.NativeInt;
 
-				return CliType.ManagedPointer;
+				return tleft;
 			}
 
-			if (rleft == CliStackType.NativeInt || rright == CliStackType.NativeInt)
-				return CliType.NativeInt;
+			if (tleft.CliBasicType == CliBasicType.NativeInt || tright.CliBasicType == CliBasicType.NativeInt)
+				return tleft;
 
 			throw new ArgumentException(
-				string.Format("Argument types are not valid cil binary numeric opcodes: Left: {0}; right: {1}.", left, right));
+				string.Format("Argument types are not valid cil binary numeric opcodes: Left: {0}; right: {1}.", tleft.CliType, tright.CliType));
 		}
 
-		private static CliStackType GetReducedType(CliType type)
+/*
+		private static CliStackType GetCliStackType(CliType type)
 		{
 			switch (type)
 			{
@@ -605,6 +588,7 @@ namespace CellDotNet
 					throw new ArgumentOutOfRangeException("type");
 			}
 		}
+*/
 
 
 		private void BuildBasicBlocks(MethodDefinition method)

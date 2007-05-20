@@ -141,6 +141,7 @@ namespace CellDotNet
 				case Code.Stind_R8:
 					break;
 				case Code.Add:
+/*
 					switch (inst.Left.CliType)
 					{
 						case CliType.None:
@@ -170,6 +171,7 @@ namespace CellDotNet
 						default:
 							break;
 					}
+*/
 					break;
 				case Code.Sub:
 					break;
