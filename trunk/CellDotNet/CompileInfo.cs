@@ -478,41 +478,69 @@ namespace CellDotNet
 		/// <returns></returns>
 		private static StackTypeDescription GetCilNumericType(TypeReference tref)
 		{
-			// Should be a faster way to do the lookup...
-			switch (tref.FullName)
+			// Should be a faster way to do the lookup than by name...
+			string fullname;
+
+			// Is it a byref type?
+			ReferenceType reftype = tref as ReferenceType;
+			if (reftype != null)
+				fullname = reftype.ElementType.FullName;
+			else
+				fullname = tref.FullName;
+
+			StackTypeDescription std;
+			switch (fullname)
 			{
 				case "System.Boolean":
-					return StackTypeDescription.Int8;
+					std = StackTypeDescription.Int8;
+					break;
 				case "System.Char":
-					return StackTypeDescription.UInt16;
+					std = StackTypeDescription.UInt16;
+					break;
 				case "System.Byte":
-					return StackTypeDescription.UInt8;
+					std = StackTypeDescription.UInt8;
+					break;
 				case "System.SByte":
-					return StackTypeDescription.Int8;
+					std = StackTypeDescription.Int8;
+					break;
 				case "System.Short":
-					return StackTypeDescription.Int16;
+					std = StackTypeDescription.Int16;
+					break;
 				case "System.UShort":
-					return StackTypeDescription.UInt16;
+					std = StackTypeDescription.UInt16;
+					break;
 				case "System.Int32":
-					return StackTypeDescription.Int32;
+					std = StackTypeDescription.Int32;
+					break;
 				case "System.UInt32":
-					return StackTypeDescription.UInt32;
+					std = StackTypeDescription.UInt32;
+					break;
 				case "System.Int64":
-					return StackTypeDescription.Int64;
+					std = StackTypeDescription.Int64;
+					break;
 				case "System.UInt64":
-					return StackTypeDescription.UInt64;
+					std = StackTypeDescription.UInt64;
+					break;
 				case "System.Single":
-					return StackTypeDescription.Float32;
+					std = StackTypeDescription.Float32;
+					break;
 				case "System.Double":
-					return StackTypeDescription.Float64;
+					std = StackTypeDescription.Float64;
+					break;
 				case "System.IntPtr":
-					return StackTypeDescription.NativeInt;
+					std = StackTypeDescription.NativeInt;
+					break;
 				case "System.UIntPtr":
-					return StackTypeDescription.NativeUInt;
+					std = StackTypeDescription.NativeUInt;
+					break;
 				default:
 					return StackTypeDescription.None;
 			}
 
+			if (reftype != null)
+				std = std.GetByRef();
+
+			return std;
 //			CliType ct;
 //			if (s_metadataCilTypes.TryGetValue(token.ToUInt(), out ct))
 //				return ct;
