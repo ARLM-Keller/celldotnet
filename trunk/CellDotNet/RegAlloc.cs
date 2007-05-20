@@ -8,11 +8,16 @@ namespace CellDotNet
     {
         // TODO Registre allokatoren bør arbejde på hele metoden.
         // returnere true hvis der forekommer spill(indtilvidre håndteres spill ikke!)
-        public bool alloc(List<SpuInstruction> code)
+        // regnum, er altallet af registre som register allokatoren ikke bruger.
+        public bool alloc(List<SpuInstruction> code, int regnum)
         {
-            SortedLinkedList<LiveInterval> activeIntervals = new SortedLinkedList<LiveInterval>(new LiveInterval.ComparByEnd());
+            SortedLinkedList<LiveInterval> activeIntervals =
+                new SortedLinkedList<LiveInterval>(new LiveInterval.ComparByEnd());
             Stack<StorLocation> freeRegisters = HardwareRegister.getCellRegistersAsStack();
-            bool isSpill = false;
+            for (int i = 1; 1 <= regnum; i++) 
+                freeRegisters.Pop();
+
+        bool isSpill = false;
             List<LiveInterval> liveIntervals = SimpleLiveAnalyzer.Analyze(code);
             LiveInterval.sortByStart(liveIntervals);
 

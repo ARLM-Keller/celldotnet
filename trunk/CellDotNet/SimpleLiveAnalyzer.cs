@@ -26,11 +26,15 @@ namespace CellDotNet
                     li.r = def;
                     liveIntervals.Add(def, li);
                 }
+                else
+                {
+                    li.end = i;
+                }
 
                 foreach (VirtualRegister r in uses)
                 {
                     li = liveIntervals[r];
-                    if (li == null) //TODO burde ikke forekomme, så der bør gøres opmærksom på dette hvis det sker.
+                    if (li == null)
                     {
                         li = new LiveInterval();
                         li.start = i;

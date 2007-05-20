@@ -35,6 +35,7 @@ namespace CellDotNet
         /// E at bit 13.
         /// Assembler format: "ra" (no assembler support for the D and E bits).
         /// 11 bit instruction code.
+        /// KMH Reminder, jeg tolker den som en RI7 variant.
         /// An RR variant used for branching where only register ra is used and the D and E 
         /// branch bits are part of the instruction.
         /// </summary>
@@ -45,6 +46,7 @@ namespace CellDotNet
         /// D at bit 12.
         /// E at bit 13.
         /// Assembler format: "rt,ra" (no assembler support for the D and E bits).
+        /// KMH Reminder, jeg tolker den som en RI7 variant.
         /// An RR variant used for branching where only register ra and rt are used and the D and E 
         /// branch bits are part of the instruction.
         /// </summary>
