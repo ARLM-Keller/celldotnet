@@ -146,7 +146,7 @@ namespace CellDotNet
 
 		private string DebuggerDisplay
 		{
-			get { return "" + CliType + (IsByRef ? " byref" : ""); }
+			get { return "" + CliType + (IsByRef ? "&" : ""); }
 		}
 
 		private CliNumericSize _numericSize;

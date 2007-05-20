@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace CellDotNet
@@ -11,10 +12,23 @@ namespace CellDotNet
 	class ILTreeSpuWriter
 	{
 		private SpuInstructionWriter _writer;
+		private Dictionary<ParameterReference, VirtualRegister> _parameters;
+		private Dictionary<VariableReference, VirtualRegister> _variables;
 
 		public void GenerateCode(CompileInfo ci, SpuInstructionWriter writer)
 		{
 			_writer = writer;
+
+			// Create registers for parameters and variables so that they're 
+			// accessible during code generation.
+			// TODO: The parameter registers must end up matching the calling convention.
+			_parameters = new Dictionary<ParameterReference, VirtualRegister>();
+			foreach (ParameterDefinition parameter in ci.MethodDefinition.Parameters)
+				_parameters.Add(parameter, _writer.NextRegister());
+
+			_variables = new Dictionary<VariableReference, VirtualRegister>();
+			foreach (VariableDefinition variable in ci.MethodDefinition.Body.Variables)
+				_variables.Add(variable, _writer.NextRegister());
 
 			foreach (BasicBlock bb in ci.Blocks)
 			{
@@ -47,7 +61,12 @@ namespace CellDotNet
 				case Code.Ldnull:
 					break;
 				case Code.Ldc_I4:
-					break;
+					{
+						int i = (int) inst.Operand;
+						VirtualRegister l = _writer.WriteIlh(i);
+						VirtualRegister u = _writer.WriteIlhu(i >> 16);
+						return _writer.WriteOr(l, u);
+					}
 				case Code.Ldc_I8:
 					break;
 				case Code.Ldc_R4:
@@ -65,7 +84,9 @@ namespace CellDotNet
 				case Code.Calli:
 					break;
 				case Code.Ret:
-					break;
+					if (inst.StackType != StackTypeDescription.None)
+						throw new NotImplementedException("Cannot return values.");
+					return null;
 				case Code.Bne_Un_S:
 					break;
 				case Code.Bge_Un_S:
@@ -133,6 +154,16 @@ namespace CellDotNet
 				case Code.Stind_I2:
 					break;
 				case Code.Stind_I4:
+					{
+						if (!inst.Left.StackType.IsByRef) throw new InvalidILTreeException();
+						VirtualRegister ptr = GetRegisterForReference(inst.Left);
+
+						VirtualRegister loadedvalue = _writer.WriteLqd(ptr, 0);
+						VirtualRegister mask = _writer.WriteCwd(ptr, 0);
+						VirtualRegister combined = _writer.WriteShufb(loadedvalue, vrleft, mask);
+						_writer.WriteStqd(ptr, combined, 0);
+						return null;
+					}
 					break;
 				case Code.Stind_I8:
 					break;
@@ -141,37 +172,6 @@ namespace CellDotNet
 				case Code.Stind_R8:
 					break;
 				case Code.Add:
-/*
-					switch (inst.Left.CliType)
-					{
-						case CliType.None:
-							break;
-						case CliType.Int8:
-						case CliType.UInt8:
-							return _writer.WriteAh(vrleft, vrright);
-						case CliType.Int16:
-						case CliType.UInt16:
-							return _writer.WriteAh(vrleft, vrright);
-						case CliType.Int32:
-						case CliType.UInt32:
-							return _writer.WriteA(vrleft, vrright);
-						case CliType.Int64:
-						case CliType.UInt64:
-							break;
-						case CliType.NativeInt:
-						case CliType.NativeUInt:
-							break;
-						case CliType.Float32:
-							return _writer.WriteFa(vrleft, vrright);
-						case CliType.Float64:
-							return _writer.WriteDfa(vrleft, vrright);
-						case CliType.ManagedPointer:
-						case CliType.ValueType:
-						case CliType.ObjectType:
-						default:
-							break;
-					}
-*/
 					break;
 				case Code.Sub:
 					break;
@@ -396,7 +396,10 @@ namespace CellDotNet
 				case Code.Ldvirtftn:
 					break;
 				case Code.Ldarg:
-					break;
+					{
+						// Do nothing.
+						return null;
+					}
 				case Code.Ldarga:
 					break;
 				case Code.Starg:
@@ -423,14 +426,44 @@ namespace CellDotNet
 				case Code.Readonly:
 					break;
 				default:
-					throw new Exception("Invalid opcode: " + ilcode);
+					throw new InvalidILTreeException("Invalid opcode: " + ilcode);
 			}
 
 			throw new ILNotImplementedException(inst);
 		}
+
+		private VirtualRegister GetRegisterForReference(TreeInstruction inst)
+		{
+			if (inst.Operand is ParameterReference)
+				return _parameters[(ParameterReference)inst.Operand];
+			else if (inst.Operand is VariableReference)
+				return _variables[(VariableReference)inst.Operand];
+			else
+				throw new NotImplementedException();
+		}
 	}
 
 	#region ILNotImplementedException
+
+
+	[global::System.Serializable]
+	public class InvalidILTreeException : Exception
+	{
+		//
+		// For guidelines regarding the creation of new exception types, see
+		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
+		// and
+		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
+		//
+
+		public InvalidILTreeException() { }
+		public InvalidILTreeException(string message) : base(message) { }
+		public InvalidILTreeException(string message, Exception inner) : base(message, inner) { }
+		protected InvalidILTreeException(
+		  System.Runtime.Serialization.SerializationInfo info,
+		  System.Runtime.Serialization.StreamingContext context)
+			: base(info, context) { }
+	}
 
 
 	[Serializable]

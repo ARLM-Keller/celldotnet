@@ -18,7 +18,7 @@ namespace CellDotNet
 
 		private int _regnum = 1;
 
-		private VirtualRegister NextRegister()
+		public VirtualRegister NextRegister()
 		{
 			return new VirtualRegister(_regnum++);
 		}
@@ -36,6 +36,15 @@ namespace CellDotNet
 			inst.Destination = NextRegister();
 			AddInstruction(inst);
 			return inst.Destination;
+		}
+
+		private void WriteRR(SpuOpCode opcode, VirtualRegister ra, VirtualRegister rb, VirtualRegister rt)
+		{
+			SpuInstruction inst = new SpuInstruction(opcode);
+			inst.Source1 = ra;
+			inst.Source2 = rb;
+			inst.Source2 = rt;
+			AddInstruction(inst);
 		}
 
 		private VirtualRegister WriteRR2(SpuOpCode opcode, VirtualRegister ra)
@@ -112,6 +121,15 @@ namespace CellDotNet
 			return inst.Destination;
 		}
 
+		private void WriteRI10(SpuOpCode opcode, VirtualRegister ra, VirtualRegister rt, int scale)
+		{
+			SpuInstruction inst = new SpuInstruction(opcode);
+			inst.Source1 = ra;
+			inst.Source2 = rt;
+			inst.Constant = scale;
+			AddInstruction(inst);
+		}
+
 		private VirtualRegister WriteRI16(SpuOpCode opcode, int symbol)
 		{
 			SpuInstruction inst = new SpuInstruction(opcode);
@@ -119,6 +137,14 @@ namespace CellDotNet
 			inst.Destination = NextRegister();
 			AddInstruction(inst);
 			return inst.Destination;
+		}
+
+		private void WriteRI16(SpuOpCode opcode, VirtualRegister rt, int symbol)
+		{
+			SpuInstruction inst = new SpuInstruction(opcode);
+			inst.Source1 = rt;
+			inst.Constant = symbol;
+			AddInstruction(inst);
 		}
 
 		private void WriteRI16x(SpuOpCode opcode, int symbol)
@@ -160,40 +186,40 @@ namespace CellDotNet
 					case SpuInstructionFormat.None:
 						throw new Exception();
 					case SpuInstructionFormat.RR:
-						tw.Write("{0} ${1}, ${2}, ${3}", inst.OpCode.Name, inst.Destination, inst.Source1, inst.Source2);
+						tw.Write("{0} {1}, {2}, {3}", inst.OpCode.Name, inst.Destination, inst.Source1, inst.Source2);
 						break;
 					case SpuInstructionFormat.RR2:
-						tw.Write("{0} ${1}, ${2}", inst.OpCode.Name, inst.Destination, inst.Source1);
+						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Destination, inst.Source1);
 						break;
 					case SpuInstructionFormat.RR1:
-						tw.Write("{0} ${1}", inst.OpCode.Name, inst.Destination);
+						tw.Write("{0} {1}", inst.OpCode.Name, inst.Destination);
 						break;
 					case SpuInstructionFormat.RR1DE:
-						tw.Write("{0} ${1}", inst.OpCode.Name, inst.Source1);
+						tw.Write("{0} {1}", inst.OpCode.Name, inst.Source1);
 						break;
 					case SpuInstructionFormat.RR2DE:
-						tw.Write("{0} ${1}, ${2}", inst.OpCode.Name, inst.Destination, inst.Source1);
+						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Destination, inst.Source1);
 						break;
 					case SpuInstructionFormat.RRR:
-						tw.Write("{0} ${1}, ${2}, ${3}", inst.OpCode.Name, inst.Destination, inst.Source1, inst.Source2, inst.Source3);
+						tw.Write("{0} {1}, {2}, {3}", inst.OpCode.Name, inst.Destination, inst.Source1, inst.Source2, inst.Source3);
 						break;
 					case SpuInstructionFormat.RI7:
-						tw.Write("{0} ${1}, ${2}, ${3}", inst.OpCode.Name, inst.Destination, inst.Source1, inst.Constant);
+						tw.Write("{0} {1}, {2}, {3}", inst.OpCode.Name, inst.Destination, inst.Source1, inst.Constant);
 						break;
 					case SpuInstructionFormat.RI8:
-						tw.Write("{0} ${1}, ${2}, ${3}", inst.OpCode.Name, inst.Destination, inst.Source1, inst.Constant);
+						tw.Write("{0} {1}, {2}, {3}", inst.OpCode.Name, inst.Destination, inst.Source1, inst.Constant);
 						break;
 					case SpuInstructionFormat.RI10:
-						tw.Write("{0} ${1}, ${2}, ${3}", inst.OpCode.Name, inst.Destination, inst.Source1, inst.Constant);
+						tw.Write("{0} {1}, {3}({2})", inst.OpCode.Name, inst.Destination, inst.Source1, inst.Constant);
 						break;
 					case SpuInstructionFormat.RI16:
-						tw.Write("{0} ${1}, ${2}", inst.OpCode.Name, inst.Destination, inst.Constant);
+						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Destination, inst.Constant);
 						break;
 					case SpuInstructionFormat.RI16x:
-						tw.Write("{0} ${1}", inst.OpCode.Name, inst.Constant);
+						tw.Write("{0} {1}", inst.OpCode.Name, inst.Constant);
 						break;
 					case SpuInstructionFormat.RI18:
-						tw.Write("{0} ${1}, ${2}", inst.OpCode.Name, inst.Destination, inst.Constant);
+						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Destination, inst.Constant);
 						break;
 					default:
 						throw new Exception();

@@ -13,60 +13,6 @@ namespace CellDotNet
 		{
 //			TestBuildTree();
 			DoExtremelySimpleCodeGen();
-			return;
-
-			Action<int> a = null;
-			MethodDefinition method;
-
-			method = GetMethod(a);
-			method.Body.Simplify();
-			Console.WriteLine("Variables: " + method.Body.Variables.Count);
-			foreach (VariableDefinition var in method.Body.Variables)
-			{
-				Console.WriteLine(var.Name + ": " + var.VariableType.Name);
-			}
-			Console.WriteLine("Max stack: " + method.Body.MaxStack);
-			Console.WriteLine();
-			
-
-			foreach (Instruction inst in method.Body.Instructions)
-			{
-				Console.Write("Inst {0:x2}: {1}", inst.Offset, inst.OpCode.Code);
-				if (inst.Operand != null)
-				{
-					if (inst.Operand.GetType() == typeof (VariableDefinition))
-					{
-						VariableDefinition var = (VariableDefinition) inst.Operand;
-						Console.Write("; var type: {0} ({1})", var.VariableType.Name, var.Name);
-					}
-					else if (inst.OpCode.FlowControl == FlowControl.Branch || inst.OpCode.FlowControl == FlowControl.Cond_Branch)
-					{
-						if (inst.OpCode == OpCodes.Switch)
-						{
-							foreach (Instruction target in (IEnumerable) inst.Operand)
-							{
-								Console.Write("; target: {0:x2}", target.Offset);
-							}
-						}
-						else
-						{
-							Instruction target = (Instruction) inst.Operand;
-							Console.Write("; target: {0:x2}", target.Offset);
-						}
-					}
-					else if (inst.OpCode.FlowControl == FlowControl.Call)
-					{
-						MethodReference cmet = (MethodReference) inst.Operand;
-						Console.Write("; target: " + cmet);
-					}
-					else
-					{
-						Console.Write("; operand: {0} ({1})", inst.Operand, inst.Operand.GetType().Name);
-					}	
-				}
-
-				Console.WriteLine();
-			}
 		}
 
 		delegate void RefArgumentDelegate(ref int i);
@@ -74,13 +20,17 @@ namespace CellDotNet
 
 		private static void DoExtremelySimpleCodeGen()
 		{
-			RefArgumentDelegate del = delegate(ref int i) { int j = 3;
-			                                    	i = j*4;
-			};
+			RefArgumentDelegate del = delegate(ref int i) { i = 0x1ffff; };
 			MethodDefinition method = GetMethod(del);
 
 			CompileInfo ci = new CompileInfo(method);
 			new TreeDrawer().DrawMethod(ci, method);
+			ILTreeSpuWriter writer = new ILTreeSpuWriter();
+			SpuInstructionWriter ilist = new SpuInstructionWriter();
+			writer.GenerateCode(ci, ilist);
+			Console.WriteLine();
+			Console.WriteLine("Disassembly: ");
+			Console.WriteLine(ilist.Disassemble());
 		}
 
 		private static void DisplayMetadataTokens(int i)
