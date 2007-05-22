@@ -11,8 +11,9 @@ namespace CellDotNet
 	{
 		static public void Main(string[] args)
 		{
+			RunSpu();
 //			TestBuildTree();
-			DoExtremelySimpleCodeGen();
+//			DoExtremelySimpleCodeGen();
 		}
 
 		delegate void RefArgumentDelegate(ref int i);
@@ -31,6 +32,51 @@ namespace CellDotNet
 			Console.WriteLine();
 			Console.WriteLine("Disassembly: ");
 			Console.WriteLine(ilist.Disassemble());
+		}
+
+		private delegate void BasicTestDelegate();
+
+		private unsafe static void RunSpu()
+		{
+			BasicTestDelegate del = delegate()
+			                        	{
+			                        		int* i;
+			                        		i = (int*)30000;
+			                        		*i = 34;
+			                        	};
+			MethodDefinition method = GetMethod(del);
+			CompileInfo ci = new CompileInfo(method);
+			new TreeDrawer().DrawMethod(ci, method);
+			ILTreeSpuWriter writer = new ILTreeSpuWriter();
+			SpuInstructionWriter ilist = new SpuInstructionWriter();
+			writer.GenerateCode(ci, ilist);
+
+			Console.WriteLine();
+			Console.WriteLine("Disassembly: ");
+			Console.WriteLine(ilist.Disassemble());
+
+			return;
+
+			ilist.WriteStop();
+			RegAlloc regalloc = new RegAlloc();
+			List<SpuInstruction> asm = new List<SpuInstruction>(ilist.Instructions);
+			regalloc.alloc(asm, 16);
+			int[] bincode = SpuInstruction.emit(asm);
+
+			
+			SpeContext ctx = new SpeContext();
+			ctx.LoadProgram(bincode);
+//            Buffer.BlockCopy(myspucode, 0, ctx.LocalS myspycode.Length, );
+			// copy code to spu...
+			ctx.Run();
+
+			int* i2;
+			i2 = (int*) ctx.LocalStorage + 30000;
+			if (*i2 != 34)
+				Console.WriteLine("øv");
+			else
+				Console.WriteLine("Selvfølgelig :)");
+
 		}
 
 		private static void DisplayMetadataTokens(int i)
