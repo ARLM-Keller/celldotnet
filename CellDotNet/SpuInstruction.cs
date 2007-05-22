@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using Mono.Cecil.Cil;
 
@@ -8,6 +9,7 @@ namespace CellDotNet
     /// <summary>
     /// Represents an SPU instruction.
     /// </summary>
+	[DebuggerDisplay("{OpCode}")]
     internal class SpuInstruction
     {
         public SpuInstruction(SpuOpCode _opcode)
@@ -76,7 +78,7 @@ namespace CellDotNet
             set { _destination = value; }
         }
 
-        public UInt32 emit()
+        public int emit()
         {
             HardwareRegister reg3 = _source3.Location as HardwareRegister;
             HardwareRegister reg2 = _source2.Location as HardwareRegister;
@@ -104,35 +106,49 @@ namespace CellDotNet
                 case SpuInstructionFormat.RR2DE:
                 case SpuInstructionFormat.RI7:
                     if (reg1 != null && dest != null)
-                        return _opcode.OpCode | ((uint) _constant) & 0x7F << 14 | reg1.Register << 7 | dest.Register;
+                        return _opcode.OpCode | _constant & 0x7F << 14 | reg1.Register << 7 | dest.Register;
                     else
                         throw new Exception("Err.");
                 case SpuInstructionFormat.RI10: 
                     if (reg1 != null && dest != null)
-                        return _opcode.OpCode | (uint) _constant & 0x3ff << 14 | reg1.Register << 7 | dest.Register;
+                        return _opcode.OpCode | _constant & 0x3ff << 14 | reg1.Register << 7 | dest.Register;
                     else
                         throw new Exception("Err.");
                 case SpuInstructionFormat.RI16:
                 case SpuInstructionFormat.RI16x:
                     if (reg1 != null && dest != null)
-                        return _opcode.OpCode | (uint) _constant & 0xffff << 7 | dest.Register;
+                        return _opcode.OpCode | _constant & 0xffff << 7 | dest.Register;
                     else
                         throw new Exception("Err.");
                 case SpuInstructionFormat.RI18:
                     if (reg1 != null && dest != null)
-                        return _opcode.OpCode | (uint)_constant & 0x3ffff << 7 | dest.Register;
+                        return _opcode.OpCode | _constant & 0x3ffff << 7 | dest.Register;
                     else
                         throw new Exception("Err.");
                 case SpuInstructionFormat.RI8:
                     if (reg1 != null && dest != null)
-                        return _opcode.OpCode | (uint) _constant & 0xff << 14 | reg1.Register << 7 | dest.Register;
+                        return _opcode.OpCode | _constant & 0xff << 14 | reg1.Register << 7 | dest.Register;
                     else
                         throw new Exception("Err.");
+				case SpuInstructionFormat.WEIRD:
+            		return _opcode.OpCode | _constant;
             }
             return 0;
         }
 
-        public String toString()
+		public static int[] emit(List<SpuInstruction> code)
+		{
+			List<int> bincode = new List<int>(code.Count);
+
+			foreach (SpuInstruction inst in code)
+			{
+				bincode.Add(inst.emit());
+			}
+
+			return bincode.ToArray();
+		}
+
+        public String ToString()
         {
             return ""; //TODO
         }

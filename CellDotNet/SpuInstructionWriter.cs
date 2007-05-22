@@ -48,7 +48,7 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(opcode);
 			inst.Source1 = ra;
 			inst.Source2 = rb;
-			inst.Source2 = rt;
+			inst.Destination = rt;
 			AddInstruction(inst);
 		}
 
@@ -155,20 +155,15 @@ namespace CellDotNet
 
         private VirtualRegister WriteRI10(SpuOpCode opcode, VirtualRegister ra, int scale)
 		{
-            VirtualRegister rt = NextRegister();
-            WriteRI10(opcode, ra, rt, scale);
-            return rt;
-/*
 			SpuInstruction inst = new SpuInstruction(opcode);
 			inst.Source1 = ra;
             inst.Constant = scale & 0x000003ff; //NOTE muligivs undersøge om value passer i 10 bit.
 			inst.Destination = NextRegister();
 			AddInstruction(inst);
 			return inst.Destination;
- */
 		}
 
-		private void WriteRI10(SpuOpCode opcode, VirtualRegister ra, VirtualRegister rt, int scale)
+		private void WriteRI10Sourced(SpuOpCode opcode, VirtualRegister ra, VirtualRegister rt, int scale)
 		{
 			SpuInstruction inst = new SpuInstruction(opcode);
 			inst.Source1 = ra;
@@ -179,19 +174,14 @@ namespace CellDotNet
 
         private VirtualRegister WriteRI16(SpuOpCode opcode, int symbol)
 		{
-		    VirtualRegister rt = NextRegister();
-		    WriteRI16(opcode, rt, symbol);
-		    return rt;
-/*
 			SpuInstruction inst = new SpuInstruction(opcode);
 			inst.Constant = symbol;
 			inst.Destination = NextRegister();
 			AddInstruction(inst);
 			return inst.Destination;
- */
 		}
 
-		private void WriteRI16(SpuOpCode opcode, VirtualRegister rt, int symbol)
+		private void WriteRI16Sourced(SpuOpCode opcode, VirtualRegister rt, int symbol)
 		{
 			SpuInstruction inst = new SpuInstruction(opcode);
 			inst.Source1 = rt;
@@ -201,12 +191,9 @@ namespace CellDotNet
 
 		private void WriteRI16x(SpuOpCode opcode, int symbol)
 		{
-		    WriteRI16(opcode, NextRegister(), symbol);
-/*
 			SpuInstruction inst = new SpuInstruction(opcode);
 			inst.Constant = symbol;
 			AddInstruction(inst);
- */
 		}
 
 		private VirtualRegister WriteRI18(SpuOpCode opcode, int symbol)
@@ -218,6 +205,33 @@ namespace CellDotNet
 			return inst.Destination;
 		}
 
+		// custom instructions ===============================================
+
+		public void WriteStop()
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.stop);
+			inst.Constant = 0;
+			AddInstruction(inst);
+		}
+
+		/// <summary>
+		/// Pseudo instruction.
+		/// </summary>
+		/// <param name="src"></param>
+		/// <param name="dest"></param>
+		public void WriteMove(VirtualRegister src, VirtualRegister dest)
+		{
+			SpuInstruction iload = new SpuInstruction(SpuOpCode.ilh);
+			iload.Constant = 0;
+			iload.Destination = NextRegister();
+			AddInstruction(iload);
+
+			SpuInstruction ior = new SpuInstruction(SpuOpCode.or);
+			ior.Source1 = iload.Destination;
+			ior.Source2 = src;
+			ior.Destination = dest;
+			AddInstruction(ior);
+		}
 
 		/// <summary>
 		/// Returns the instructions that are currently in the writer as assembly code.
@@ -256,7 +270,7 @@ namespace CellDotNet
 						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Destination, inst.Source1);
 						break;
 					case SpuInstructionFormat.RRR:
-						tw.Write("{0} {1}, {2}, {3}", inst.OpCode.Name, inst.Destination, inst.Source1, inst.Source2, inst.Source3);
+						tw.Write("{0} {1}, {2}, {3}, {4}", inst.OpCode.Name, inst.Destination, inst.Source1, inst.Source2, inst.Source3);
 						break;
 					case SpuInstructionFormat.RI7:
 						tw.Write("{0} {1}, {2}, {3}", inst.OpCode.Name, inst.Destination, inst.Source1, inst.Constant);
@@ -265,7 +279,10 @@ namespace CellDotNet
 						tw.Write("{0} {1}, {2}, {3}", inst.OpCode.Name, inst.Destination, inst.Source1, inst.Constant);
 						break;
 					case SpuInstructionFormat.RI10:
-						tw.Write("{0} {1}, {3}({2})", inst.OpCode.Name, inst.Destination, inst.Source1, inst.Constant);
+						if (inst.OpCode.NoRegisterWrite)
+							tw.Write("{0} {1}, {3}({2})", inst.OpCode.Name, inst.Source2, inst.Source1, inst.Constant);
+						else
+							tw.Write("{0} {1}, {3}({2})", inst.OpCode.Name, inst.Destination, inst.Source1, inst.Constant);
 						break;
 					case SpuInstructionFormat.RI16:
 						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Destination, inst.Constant);

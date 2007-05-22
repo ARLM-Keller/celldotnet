@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace CellDotNet
@@ -99,13 +100,15 @@ namespace CellDotNet
         /// 7 bit instruction code.
         /// 18 bit immediate.
         /// </summary>
-        RI18
+        RI18,
+		WEIRD
     }
 
     /// <summary>
     /// SPU instruction definitions as taken from the 
     /// "Synergistic Processor Unit Instruction Set Architecture" version 1.2
     /// </summary>
+    [DebuggerDisplay("{Name}")]
     class SpuOpCode
     {
         private string _name;
@@ -133,8 +136,8 @@ namespace CellDotNet
             set { _opCodeWidth = value; }
         }
 
-        private UInt32 _opCode;
-        public UInt32 OpCode
+        private int _opCode;
+        public int OpCode
         {
             get { return _opCode; }
             set { _opCode = value; }
@@ -156,7 +159,7 @@ namespace CellDotNet
             this._title = _title;
             this._format = _format;
             this._opCodeWidth = opcode.Length;
-            this._opCode = Convert.ToUInt32(opcode, 2) << 32 - this.OpCodeWidth;
+            this._opCode = Convert.ToInt32(opcode, 2) << 32 - this.OpCodeWidth;
 			if (_name.StartsWith("st"))
 				_noRegisterWrite = true;
         }
@@ -555,6 +558,9 @@ namespace CellDotNet
         // 10. Control OpCodes
         // p238
         //			};
+		public static readonly SpuOpCode stop =
+				new SpuOpCode("stop", "Stop and Signal", SpuInstructionFormat.WEIRD, "00000000000");
+
 
 
     }

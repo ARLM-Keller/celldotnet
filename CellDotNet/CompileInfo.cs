@@ -488,9 +488,13 @@ namespace CellDotNet
 			string fullname;
 
 			// Is it a byref type?
-			ReferenceType reftype = tref as ReferenceType;
-			if (reftype != null)
-				fullname = reftype.ElementType.FullName;
+			if (tref is ReferenceType)
+				fullname = ((ReferenceType) tref).ElementType.FullName;
+			else if (tref is PointerType)
+			{
+				// HACK: pretend it's a managed pointer.
+				fullname = ((PointerType) tref).ElementType.FullName;
+			}
 			else
 				fullname = tref.FullName;
 
@@ -543,15 +547,10 @@ namespace CellDotNet
 					return StackTypeDescription.None;
 			}
 
-			if (reftype != null)
+			if (tref is ReferenceType || tref is PointerType)
 				std = std.GetByRef();
 
 			return std;
-//			CliType ct;
-//			if (s_metadataCilTypes.TryGetValue(token.ToUInt(), out ct))
-//				return ct;
-
-//			return CliType.None;
 		}
 
 		/// <summary>

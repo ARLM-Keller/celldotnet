@@ -10,7 +10,7 @@ namespace CellDotNet
         {
             List<HardwareRegister> regs = new List<HardwareRegister>();
 
-            for (uint i = 0; i <= 127; i++ )
+            for (int i = 0; i <= 127; i++ )
             {
                 HardwareRegister hr = new HardwareRegister();
                 hr.Register = i;
@@ -32,8 +32,8 @@ namespace CellDotNet
             return regsStack;
         }
 
-        private uint _register;
-        public uint Register
+        private int _register;
+        public int Register
         {
             get { return _register; }
             set { _register = value; }

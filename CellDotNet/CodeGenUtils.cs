@@ -211,7 +211,7 @@ namespace CellDotNet
 		/// </summary>
 		public void Write{0}(VirtualRegister ra, VirtualRegister rt, int value)
 		{{
-			WriteRI10({1}, ra, rt, value);
+			WriteRI10Sourced({1}, ra, rt, value);
 		}}
 ", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
 						}
@@ -238,7 +238,7 @@ namespace CellDotNet
 		/// </summary>
 		public void Write{0}(VirtualRegister rt, int symbol)
 		{{
-			WriteRI16({1}, rt, symbol);
+			WriteRI16Sourced({1}, rt, symbol);
 		}}
 ", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
 						}
@@ -277,6 +277,10 @@ namespace CellDotNet
 			return WriteRI18({1}, symbol);
 		}}
 ", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
+						break;
+					case SpuInstructionFormat.WEIRD:
+						// Needs custom methods.
+						noRegisterWriteIsHandled = true;
 						break;
 					default:
 						throw new Exception("Invalid instruction format: " + opcode.Format);

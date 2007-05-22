@@ -352,7 +352,7 @@ namespace CellDotNet
 				case Code.Conv_U1:
 					break;
 				case Code.Conv_I:
-					break;
+					return vrleft;
 				case Code.Conv_Ovf_I:
 					break;
 				case Code.Conv_Ovf_U:
@@ -405,11 +405,13 @@ namespace CellDotNet
 				case Code.Starg:
 					break;
 				case Code.Ldloc:
-					break;
+					return _variables[(VariableReference)inst.Operand];
 				case Code.Ldloca:
 					break;
 				case Code.Stloc:
-					break;
+					VirtualRegister dest = _variables[(VariableReference) inst.Operand];
+					_writer.WriteMove(vrleft, dest);
+					return null;
 				case Code.Localloc:
 				case Code.Endfilter:
 				case Code.Unaligned:
