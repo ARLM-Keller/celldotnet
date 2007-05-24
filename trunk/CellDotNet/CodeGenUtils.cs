@@ -87,207 +87,91 @@ namespace CellDotNet
 				// capitalized name.
 				string ocname = opcode.Name[0].ToString().ToUpper() + opcode.Name.Substring(1);
 
-				bool noRegisterWriteIsHandled = false;
-				switch (opcode.Format)
+				List<string> regnames = new List<string>();
+				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Rt) != SpuOpCodeRegisterUsage.None)
+					regnames.Add("rt");
+				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Ra) != SpuOpCodeRegisterUsage.None)
+					regnames.Add("ra");
+				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Rb) != SpuOpCodeRegisterUsage.None)
+					regnames.Add("rb");
+				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Rc) != SpuOpCodeRegisterUsage.None)
+					regnames.Add("rc");
+
+
+				StringBuilder declnewdest = new StringBuilder();
+				StringBuilder declolddest = new StringBuilder();
+				StringBuilder bodynewdest = new StringBuilder();
+				StringBuilder bodyolddest = new StringBuilder();
+
+
+				// Declaration.
+				foreach (string name in regnames)
 				{
-					case SpuInstructionFormat.None:
-						break;
-					case SpuInstructionFormat.RR:
-						noRegisterWriteIsHandled = true;
-						if (opcode.NoRegisterWrite)
-						{
-							tw.Write(@"
-		/// <summary>
-		/// {2}
-		/// </summary>
-		public void Write{0}(VirtualRegister ra, VirtualRegister rb, VirtualRegister rt)
-		{{
-			WriteRR({1}, ra, rb, rt);
-		}}
-", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
-							
-						}
-						else
-						{
-							tw.Write(@"
-		/// <summary>
-		/// {2}
-		/// </summary>
-		public VirtualRegister Write{0}(VirtualRegister ra, VirtualRegister rb)
-		{{
-			return WriteRR({1}, ra, rb);
-		}}
-", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
-
-						}
-
-						break;
-					case SpuInstructionFormat.RR2:
-						tw.Write(@"
-		/// <summary>
-		/// {2}
-		/// </summary>
-		public VirtualRegister Write{0}(VirtualRegister ra)
-		{{
-			return WriteRR2({1}, ra);
-		}}
-", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
-						break;
-					case SpuInstructionFormat.RR1:
-						tw.Write(@"
-		/// <summary>
-		/// {2}
-		/// </summary>
-		public VirtualRegister Write{0}()
-		{{
-			return WriteRR1({1});
-		}}
-", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
-						break;
-					case SpuInstructionFormat.RR1DE:
-						// Currently no D, E bit support.
-						tw.Write(@"
-		/// <summary>
-		/// {2}
-		/// </summary>
-		public void Write{0}(VirtualRegister ra)
-		{{
-			WriteRR1DE({1}, ra);
-		}}
-", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
-						break;
-					case SpuInstructionFormat.RR2DE:
-						// Currently no D, E bit support.
-						tw.Write(@"
-		/// <summary>
-		/// {2}
-		/// </summary>
-		public VirtualRegister Write{0}(VirtualRegister ra)
-		{{
-			return WriteRR2DE({1}, ra);
-		}}
-", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
-						break;
-					case SpuInstructionFormat.RRR:
-						tw.Write(@"
-		/// <summary>
-		/// {2}
-		/// </summary>
-		public VirtualRegister Write{0}(VirtualRegister ra, VirtualRegister rb, VirtualRegister rc)
-		{{
-			return WriteRRR({1}, ra, rb, rc);
-		}}
-", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
-						break;
-					case SpuInstructionFormat.RI7:
-						tw.Write(@"
-		/// <summary>
-		/// {2}
-		/// </summary>
-		public VirtualRegister Write{0}(VirtualRegister ra, int value)
-		{{
-			return WriteRI7({1}, ra, value);
-		}}
-", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
-						break;
-					case SpuInstructionFormat.RI8:
-						tw.Write(@"
-		/// <summary>
-		/// {2}
-		/// </summary>
-		public VirtualRegister Write{0}(VirtualRegister ra, int scale)
-		{{
-			return WriteRI8({1}, ra, scale);
-		}}
-", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
-						break;
-					case SpuInstructionFormat.RI10:
-						noRegisterWriteIsHandled = true;
-						if (opcode.NoRegisterWrite)
-						{
-							tw.Write(@"
-		/// <summary>
-		/// {2}
-		/// </summary>
-		public void Write{0}(VirtualRegister ra, VirtualRegister rt, int value)
-		{{
-			WriteRI10Sourced({1}, ra, rt, value);
-		}}
-", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
-						}
-						else
-						{
-							tw.Write(@"
-		/// <summary>
-		/// {2}
-		/// </summary>
-		public VirtualRegister Write{0}(VirtualRegister ra, int value)
-		{{
-			return WriteRI10({1}, ra, value);
-		}}
-", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
-						}
-						break;
-					case SpuInstructionFormat.RI16:
-						noRegisterWriteIsHandled = true;
-						if (opcode.NoRegisterWrite)
-						{
-							tw.Write(@"
-		/// <summary>
-		/// {2}
-		/// </summary>
-		public void Write{0}(VirtualRegister rt, int symbol)
-		{{
-			WriteRI16Sourced({1}, rt, symbol);
-		}}
-", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
-						}
-						else
-						{
-							tw.Write(@"
-		/// <summary>
-		/// {2}
-		/// </summary>
-		public VirtualRegister Write{0}(int symbol)
-		{{
-			return WriteRI16({1}, symbol);
-		}}
-", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
-						}
-
-						break;
-					case SpuInstructionFormat.RI16x:
-						tw.Write(@"
-		/// <summary>
-		/// {2}
-		/// </summary>
-		public void Write{0}(int symbol)
-		{{
-			WriteRI16x({1}, symbol);
-		}}
-", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
-						break;
-					case SpuInstructionFormat.RI18:
-						tw.Write(@"
-		/// <summary>
-		/// {2}
-		/// </summary>
-		public VirtualRegister Write{0}(int symbol)
-		{{
-			return WriteRI18({1}, symbol);
-		}}
-", ocname, GetQualifiedOpcodeFieldName(opcode), opcode.Title);
-						break;
-					case SpuInstructionFormat.WEIRD:
-						// Needs custom methods.
-						noRegisterWriteIsHandled = true;
-						break;
-					default:
-						throw new Exception("Invalid instruction format: " + opcode.Format);
+					declolddest.Append((declolddest.Length != 0 ? ", " : "") + "VirtualRegister " + name);
+					if (name != "rt" || opcode.NoRegisterWrite)
+						declnewdest.Append((declnewdest.Length != 0 ? ", " : "") + "VirtualRegister " + name);
 				}
 
-				if (opcode.NoRegisterWrite && !noRegisterWriteIsHandled)
-					throw new Exception("opcode.NoRegisterWrite not handled for opcode " + opcode.Name + ".");
+				if (opcode.HasImmediate)
+				{
+					declnewdest.Append((declnewdest.Length != 0 ? ", " : "") + "int immediate");
+					declolddest.Append((declolddest.Length != 0 ? ", " : "") + "int immediate");
+				}
+
+				// Body.
+				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Rt) != SpuOpCodeRegisterUsage.None)
+				{
+					if (opcode.NoRegisterWrite)
+					{
+						bodynewdest.Append("inst.Rt = rt;\r\n");
+						bodyolddest.Append("inst.Rt = rt;\r\n");
+					}
+					else
+					{
+						bodynewdest.Append("inst.Rt = NextRegister();\r\n");
+						bodyolddest.Append("inst.Rt = rt;\r\n");
+					}
+				}
+				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Ra) != SpuOpCodeRegisterUsage.None)
+				{
+					bodynewdest.Append("inst.Ra = ra;\r\n");
+					bodyolddest.Append("inst.Ra = ra;\r\n");
+				}
+				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Rb) != SpuOpCodeRegisterUsage.None)
+				{
+					bodynewdest.Append("inst.Rb = rb;\r\n");
+					bodyolddest.Append("inst.Rb = rb;\r\n");
+				}
+				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Rc) != SpuOpCodeRegisterUsage.None)
+				{
+					bodynewdest.Append("inst.Rc = rc;\r\n");
+					bodyolddest.Append("inst.Rc = rc;\r\n");
+				}
+				if (opcode.HasImmediate)
+				{
+					bodynewdest.Append("inst.Constant = immediate;\r\n");
+					bodyolddest.Append("inst.Constant = immediate;\r\n");
+				}
+				bodynewdest.Append("AddInstruction(inst);");
+				bodyolddest.Append("AddInstruction(inst);");
+				bodynewdest.Append("return inst.Rt;");
+
+				// Put it together.
+
+				string methodformat = @"
+		/// <summary>
+		/// {0}
+		/// </summary>
+		public {3} Write{1}({2})
+		{{
+			SpuInstruction inst = new SpuInstruction({4});
+			{5}
+		}}
+";
+				// GetQualifiedOpcodeFieldName(opcode)
+				tw.Write(methodformat, opcode.Title, ocname, declnewdest, "VirtualRegister", GetQualifiedOpcodeFieldName(opcode), bodynewdest);
+				if (declolddest.Length != declnewdest.Length)
+					tw.Write(methodformat, opcode.Title, ocname, declolddest, "void", GetQualifiedOpcodeFieldName(opcode), bodyolddest);
 			}
 
 			tw.Write(@"

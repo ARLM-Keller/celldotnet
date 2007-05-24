@@ -33,28 +33,28 @@ namespace CellDotNet
             set { _constant = value; }
         }
 
-        private VirtualRegister _source1;
+        private VirtualRegister _ra;
 
-        public VirtualRegister Source1
+        public VirtualRegister Ra
         {
-            get { return _source1; }
-            set { _source1 = value; }
+            get { return _ra; }
+            set { _ra = value; }
         }
 
-        private VirtualRegister _source2;
+        private VirtualRegister _rb;
 
-        public VirtualRegister Source2
+        public VirtualRegister Rb
         {
-            get { return _source2; }
-            set { _source2 = value; }
+            get { return _rb; }
+            set { _rb = value; }
         }
 
-        private VirtualRegister _source3;
+        private VirtualRegister _rc;
 
-        public VirtualRegister Source3
+        public VirtualRegister Rc
         {
-            get { return _source3; }
-            set { _source3 = value; }
+            get { return _rc; }
+            set { _rc = value; }
         }
 
         // Maby a little over kill, but result in more nice/better programming.
@@ -63,27 +63,28 @@ namespace CellDotNet
             get
             {
                 ICollection<VirtualRegister> s = new LinkedList<VirtualRegister>();
-                if (_source1 != null) s.Add(_source1);
-                if (_source2 != null) s.Add(_source2);
-                if (_source3 != null) s.Add(_source3);
+                if (_ra != null) s.Add(_ra);
+                if (_rb != null) s.Add(_rb);
+                if (_rc != null) s.Add(_rc);
+				if (_rt != null && OpCode.NoRegisterWrite) s.Add(_rt);
                 return s;
             }
         }
 
-        private VirtualRegister _destination;
+        private VirtualRegister _rt;
 
-        public VirtualRegister Destination
+        public VirtualRegister Rt
         {
-            get { return _destination; }
-            set { _destination = value; }
+            get { return _rt; }
+            set { _rt = value; }
         }
 
         public int emit()
         {
-            HardwareRegister reg3 = _source3.Location as HardwareRegister;
-            HardwareRegister reg2 = _source2.Location as HardwareRegister;
-            HardwareRegister reg1 = _source1.Location as HardwareRegister;
-            HardwareRegister dest = _destination.Location as HardwareRegister;
+            HardwareRegister reg3 = _rc.Location as HardwareRegister;
+            HardwareRegister reg2 = _rb.Location as HardwareRegister;
+            HardwareRegister reg1 = _ra.Location as HardwareRegister;
+            HardwareRegister dest = _rt.Location as HardwareRegister;
 
 
             switch (_opcode.Format)
@@ -115,7 +116,7 @@ namespace CellDotNet
                     else
                         throw new Exception("Err.");
                 case SpuInstructionFormat.RI16:
-                case SpuInstructionFormat.RI16x:
+                case SpuInstructionFormat.RI16NoRegs:
                     if (reg1 != null && dest != null)
                         return _opcode.OpCode | _constant & 0xffff << 7 | dest.Register;
                     else
@@ -147,10 +148,5 @@ namespace CellDotNet
 
 			return bincode.ToArray();
 		}
-
-        public String ToString()
-        {
-            return ""; //TODO
-        }
     }
 }

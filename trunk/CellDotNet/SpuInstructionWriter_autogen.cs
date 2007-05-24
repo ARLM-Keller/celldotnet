@@ -12,9 +12,25 @@ namespace CellDotNet
 		/// <summary>
 		/// Load Quadword (d-form)
 		/// </summary>
-		public VirtualRegister WriteLqd(VirtualRegister ra, int value)
+		public VirtualRegister WriteLqd(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.lqd, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.lqd);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Load Quadword (d-form)
+		/// </summary>
+		public void WriteLqd(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.lqd);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -22,63 +38,137 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteLqx(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.lqx, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.lqx);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Load Quadword (x-form)
+		/// </summary>
+		public void WriteLqx(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.lqx);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Load Quadword (a-form)
 		/// </summary>
-		public VirtualRegister WriteLqa(int symbol)
+		public VirtualRegister WriteLqa(int immediate)
 		{
-			return WriteRI16(SpuOpCode.lqa, symbol);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.lqa);
+			inst.Rt = NextRegister();
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Load Quadword (a-form)
+		/// </summary>
+		public void WriteLqa(VirtualRegister rt, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.lqa);
+			inst.Rt = rt;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Load Quadword Instruction Relative (a-form)
 		/// </summary>
-		public VirtualRegister WriteLqr(int symbol)
+		public VirtualRegister WriteLqr(int immediate)
 		{
-			return WriteRI16(SpuOpCode.lqr, symbol);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.lqr);
+			inst.Rt = NextRegister();
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Load Quadword Instruction Relative (a-form)
+		/// </summary>
+		public void WriteLqr(VirtualRegister rt, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.lqr);
+			inst.Rt = rt;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Store Quadword (d-form)
 		/// </summary>
-		public void WriteStqd(VirtualRegister ra, VirtualRegister rt, int value)
+		public VirtualRegister WriteStqd(VirtualRegister rt, VirtualRegister ra, int immediate)
 		{
-			WriteRI10Sourced(SpuOpCode.stqd, ra, rt, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.stqd);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
 		}
 
 		/// <summary>
 		/// Store Quadword (x-form)
 		/// </summary>
-		public void WriteStqx(VirtualRegister ra, VirtualRegister rb, VirtualRegister rt)
+		public VirtualRegister WriteStqx(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
 		{
-			WriteRR(SpuOpCode.stqx, ra, rb, rt);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.stqx);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
 		}
 
 		/// <summary>
 		/// Store Quadword (a-form)
 		/// </summary>
-		public void WriteStqa(VirtualRegister rt, int symbol)
+		public VirtualRegister WriteStqa(VirtualRegister rt, int immediate)
 		{
-			WriteRI16Sourced(SpuOpCode.stqa, rt, symbol);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.stqa);
+			inst.Rt = rt;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
 		}
 
 		/// <summary>
 		/// Store Quadword Instruction Relative (a-form)
 		/// </summary>
-		public void WriteStqr(VirtualRegister rt, int symbol)
+		public VirtualRegister WriteStqr(VirtualRegister rt, int immediate)
 		{
-			WriteRI16Sourced(SpuOpCode.stqr, rt, symbol);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.stqr);
+			inst.Rt = rt;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
 		}
 
 		/// <summary>
 		/// Generate Controls for Byte Insertion (d-form)
 		/// </summary>
-		public VirtualRegister WriteCbd(VirtualRegister ra, int value)
+		public VirtualRegister WriteCbd(VirtualRegister ra, int immediate)
 		{
-			return WriteRI7(SpuOpCode.cbd, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cbd);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Generate Controls for Byte Insertion (d-form)
+		/// </summary>
+		public void WriteCbd(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cbd);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -86,15 +176,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteCbx(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.cbx, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cbx);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Generate Controls for Byte Insertion (x-form)
+		/// </summary>
+		public void WriteCbx(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cbx);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Generate Controls for Halfword Insertion (d-form)
 		/// </summary>
-		public VirtualRegister WriteChd(VirtualRegister ra, int value)
+		public VirtualRegister WriteChd(VirtualRegister ra, int immediate)
 		{
-			return WriteRI7(SpuOpCode.chd, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.chd);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Generate Controls for Halfword Insertion (d-form)
+		/// </summary>
+		public void WriteChd(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.chd);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -102,15 +224,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteChx(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.chx, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.chx);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Generate Controls for Halfword Insertion (x-form)
+		/// </summary>
+		public void WriteChx(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.chx);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Generate Controls for Word Insertion (d-form)
 		/// </summary>
-		public VirtualRegister WriteCwd(VirtualRegister ra, int value)
+		public VirtualRegister WriteCwd(VirtualRegister ra, int immediate)
 		{
-			return WriteRI7(SpuOpCode.cwd, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cwd);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Generate Controls for Word Insertion (d-form)
+		/// </summary>
+		public void WriteCwd(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cwd);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -118,15 +272,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteCwx(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.cwx, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cwx);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Generate Controls for Word Insertion (x-form)
+		/// </summary>
+		public void WriteCwx(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cwx);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Generate Controls for Doubleword Insertion (d-form)
 		/// </summary>
-		public VirtualRegister WriteCdd(VirtualRegister ra, int value)
+		public VirtualRegister WriteCdd(VirtualRegister ra, int immediate)
 		{
-			return WriteRI7(SpuOpCode.cdd, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cdd);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Generate Controls for Doubleword Insertion (d-form)
+		/// </summary>
+		public void WriteCdd(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cdd);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -134,55 +320,155 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteCdx(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.cdx, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cdx);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Generate Controls for Doubleword Insertion (x-form)
+		/// </summary>
+		public void WriteCdx(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cdx);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Immediate Load Halfword
 		/// </summary>
-		public VirtualRegister WriteIlh(int symbol)
+		public VirtualRegister WriteIlh(int immediate)
 		{
-			return WriteRI16(SpuOpCode.ilh, symbol);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ilh);
+			inst.Rt = NextRegister();
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Immediate Load Halfword
+		/// </summary>
+		public void WriteIlh(VirtualRegister rt, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ilh);
+			inst.Rt = rt;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Immediate Load Halfword Upper
 		/// </summary>
-		public VirtualRegister WriteIlhu(int symbol)
+		public VirtualRegister WriteIlhu(int immediate)
 		{
-			return WriteRI16(SpuOpCode.ilhu, symbol);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ilhu);
+			inst.Rt = NextRegister();
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Immediate Load Halfword Upper
+		/// </summary>
+		public void WriteIlhu(VirtualRegister rt, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ilhu);
+			inst.Rt = rt;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Immediate Load Word
 		/// </summary>
-		public VirtualRegister WriteIl(int symbol)
+		public VirtualRegister WriteIl(int immediate)
 		{
-			return WriteRI16(SpuOpCode.il, symbol);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.il);
+			inst.Rt = NextRegister();
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Immediate Load Word
+		/// </summary>
+		public void WriteIl(VirtualRegister rt, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.il);
+			inst.Rt = rt;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Immediate Load Address
 		/// </summary>
-		public VirtualRegister WriteIla(int symbol)
+		public VirtualRegister WriteIla(int immediate)
 		{
-			return WriteRI18(SpuOpCode.ila, symbol);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ila);
+			inst.Rt = NextRegister();
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Immediate Load Address
+		/// </summary>
+		public void WriteIla(VirtualRegister rt, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ila);
+			inst.Rt = rt;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Immediate Or Halfword Lower
 		/// </summary>
-		public VirtualRegister WriteIohl(int symbol)
+		public VirtualRegister WriteIohl(int immediate)
 		{
-			return WriteRI16(SpuOpCode.iohl, symbol);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.iohl);
+			inst.Rt = NextRegister();
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Immediate Or Halfword Lower
+		/// </summary>
+		public void WriteIohl(VirtualRegister rt, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.iohl);
+			inst.Rt = rt;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Form Select Mask for Bytes Immediate
 		/// </summary>
-		public VirtualRegister WriteFsmbi(int symbol)
+		public VirtualRegister WriteFsmbi(int immediate)
 		{
-			return WriteRI16(SpuOpCode.fsmbi, symbol);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fsmbi);
+			inst.Rt = NextRegister();
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Form Select Mask for Bytes Immediate
+		/// </summary>
+		public void WriteFsmbi(VirtualRegister rt, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fsmbi);
+			inst.Rt = rt;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -190,15 +476,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteAh(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.ah, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ah);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Add Halfword
+		/// </summary>
+		public void WriteAh(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ah);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Add Halfword Immediate
 		/// </summary>
-		public VirtualRegister WriteAhi(VirtualRegister ra, int value)
+		public VirtualRegister WriteAhi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.ahi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ahi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Add Halfword Immediate
+		/// </summary>
+		public void WriteAhi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ahi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -206,15 +524,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteA(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.a, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.a);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Add Word
+		/// </summary>
+		public void WriteA(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.a);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Add Word Immediate
 		/// </summary>
-		public VirtualRegister WriteAi(VirtualRegister ra, int value)
+		public VirtualRegister WriteAi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.ai, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ai);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Add Word Immediate
+		/// </summary>
+		public void WriteAi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ai);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -222,15 +572,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteSfh(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.sfh, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.sfh);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Subtract from Halfword
+		/// </summary>
+		public void WriteSfh(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.sfh);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Subtract from Halfword Immediate
 		/// </summary>
-		public VirtualRegister WriteSfhi(VirtualRegister ra, int value)
+		public VirtualRegister WriteSfhi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.sfhi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.sfhi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Subtract from Halfword Immediate
+		/// </summary>
+		public void WriteSfhi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.sfhi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -238,15 +620,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteSf(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.sf, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.sf);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Subtract from Word
+		/// </summary>
+		public void WriteSf(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.sf);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Subtract from Word Immediate
 		/// </summary>
-		public VirtualRegister WriteSfi(VirtualRegister ra, int value)
+		public VirtualRegister WriteSfi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.sfi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.sfi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Subtract from Word Immediate
+		/// </summary>
+		public void WriteSfi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.sfi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -254,7 +668,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteAddx(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.addx, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.addx);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Add Extended
+		/// </summary>
+		public void WriteAddx(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.addx);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -262,7 +692,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteCg(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.cg, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cg);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Carry Generate
+		/// </summary>
+		public void WriteCg(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cg);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -270,7 +716,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteCgx(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.cgx, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cgx);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Carry Generate Extended
+		/// </summary>
+		public void WriteCgx(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cgx);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -278,7 +740,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteSfx(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.sfx, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.sfx);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Subtract from Extended
+		/// </summary>
+		public void WriteSfx(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.sfx);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -286,7 +764,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteBg(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.bg, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.bg);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Borrow Generate
+		/// </summary>
+		public void WriteBg(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.bg);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -294,7 +788,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteBgx(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.bgx, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.bgx);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Borrow Generate Extended
+		/// </summary>
+		public void WriteBgx(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.bgx);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -302,7 +812,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteMpy(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.mpy, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpy);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Multiply
+		/// </summary>
+		public void WriteMpy(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpy);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -310,23 +836,71 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteMpyu(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.mpyu, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpyu);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Multiply Unsigned
+		/// </summary>
+		public void WriteMpyu(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpyu);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Multiply Immediate
 		/// </summary>
-		public VirtualRegister WriteMpyi(VirtualRegister ra, int value)
+		public VirtualRegister WriteMpyi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.mpyi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpyi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Multiply Immediate
+		/// </summary>
+		public void WriteMpyi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpyi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Multiply Unsigned Immediate
 		/// </summary>
-		public VirtualRegister WriteMpyui(VirtualRegister ra, int value)
+		public VirtualRegister WriteMpyui(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.mpyui, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpyui);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Multiply Unsigned Immediate
+		/// </summary>
+		public void WriteMpyui(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpyui);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -334,7 +908,25 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteMpya(VirtualRegister ra, VirtualRegister rb, VirtualRegister rc)
 		{
-			return WriteRRR(SpuOpCode.mpya, ra, rb, rc);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpya);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			inst.Rc = rc;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Multiply and Add
+		/// </summary>
+		public void WriteMpya(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb, VirtualRegister rc)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpya);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			inst.Rc = rc;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -342,7 +934,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteMpyh(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.mpyh, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpyh);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Multiply High
+		/// </summary>
+		public void WriteMpyh(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpyh);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -350,7 +958,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteMpys(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.mpys, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpys);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Multiply and Shift Right
+		/// </summary>
+		public void WriteMpys(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpys);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -358,7 +982,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteMpyhh(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.mpyhh, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpyhh);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Multiply High High
+		/// </summary>
+		public void WriteMpyhh(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpyhh);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -366,7 +1006,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteMpyhha(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.mpyhha, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpyhha);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Multiply High High and Add
+		/// </summary>
+		public void WriteMpyhha(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpyhha);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -374,7 +1030,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteMpyhhu(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.mpyhhu, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpyhhu);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Multiply High High Unsigned
+		/// </summary>
+		public void WriteMpyhhu(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpyhhu);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -382,7 +1054,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteMpyhhau(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.mpyhhau, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpyhhau);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Multiply High High Unsigned and Add
+		/// </summary>
+		public void WriteMpyhhau(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.mpyhhau);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -390,7 +1078,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteClz(VirtualRegister ra)
 		{
-			return WriteRR2(SpuOpCode.clz, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.clz);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Count Leading Zeros
+		/// </summary>
+		public void WriteClz(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.clz);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -398,7 +1100,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteCntb(VirtualRegister ra)
 		{
-			return WriteRR2(SpuOpCode.cntb, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cntb);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Count Ones in Bytes
+		/// </summary>
+		public void WriteCntb(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cntb);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -406,7 +1122,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteFsmb(VirtualRegister ra)
 		{
-			return WriteRR2(SpuOpCode.fsmb, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fsmb);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Form Select Mask for Bytes
+		/// </summary>
+		public void WriteFsmb(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fsmb);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -414,7 +1144,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteFsmh(VirtualRegister ra)
 		{
-			return WriteRR2(SpuOpCode.fsmh, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fsmh);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Form Select Mask for Halfwords
+		/// </summary>
+		public void WriteFsmh(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fsmh);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -422,7 +1166,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteFsm(VirtualRegister ra)
 		{
-			return WriteRR2(SpuOpCode.fsm, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fsm);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Form Select Mask for Words
+		/// </summary>
+		public void WriteFsm(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fsm);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -430,7 +1188,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteGbb(VirtualRegister ra)
 		{
-			return WriteRR2(SpuOpCode.gbb, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.gbb);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Gather Bits from Bytes
+		/// </summary>
+		public void WriteGbb(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.gbb);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -438,7 +1210,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteGbh(VirtualRegister ra)
 		{
-			return WriteRR2(SpuOpCode.gbh, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.gbh);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Gather Bits from Halfwords
+		/// </summary>
+		public void WriteGbh(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.gbh);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -446,7 +1232,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteGb(VirtualRegister ra)
 		{
-			return WriteRR2(SpuOpCode.gb, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.gb);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Gather Bits from Words
+		/// </summary>
+		public void WriteGb(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.gb);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -454,7 +1254,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteAvgb(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.avgb, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.avgb);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Average Bytes
+		/// </summary>
+		public void WriteAvgb(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.avgb);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -462,7 +1278,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteAbsdb(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.absdb, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.absdb);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Absolute Differences of Bytes
+		/// </summary>
+		public void WriteAbsdb(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.absdb);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -470,7 +1302,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteSumb(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.sumb, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.sumb);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Sum Bytes into Halfwords
+		/// </summary>
+		public void WriteSumb(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.sumb);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -478,7 +1326,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteXsbh(VirtualRegister ra)
 		{
-			return WriteRR2(SpuOpCode.xsbh, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.xsbh);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Extend Sign Byte to Halfword
+		/// </summary>
+		public void WriteXsbh(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.xsbh);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -486,7 +1348,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteXshw(VirtualRegister ra)
 		{
-			return WriteRR2(SpuOpCode.xshw, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.xshw);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Extend Sign Halfword to Word
+		/// </summary>
+		public void WriteXshw(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.xshw);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -494,7 +1370,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteXswd(VirtualRegister ra)
 		{
-			return WriteRR2(SpuOpCode.xswd, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.xswd);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Extend Sign Word to Doubleword
+		/// </summary>
+		public void WriteXswd(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.xswd);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -502,7 +1392,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteAnd(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.and, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.and);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// And
+		/// </summary>
+		public void WriteAnd(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.and);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -510,31 +1416,95 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteAndc(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.andc, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.andc);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// And with Complement
+		/// </summary>
+		public void WriteAndc(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.andc);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// And Byte Immediate
 		/// </summary>
-		public VirtualRegister WriteAndbi(VirtualRegister ra, int value)
+		public VirtualRegister WriteAndbi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.andbi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.andbi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// And Byte Immediate
+		/// </summary>
+		public void WriteAndbi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.andbi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// And Halfword Immediate
 		/// </summary>
-		public VirtualRegister WriteAndhi(VirtualRegister ra, int value)
+		public VirtualRegister WriteAndhi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.andhi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.andhi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// And Halfword Immediate
+		/// </summary>
+		public void WriteAndhi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.andhi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// And Word Immediate
 		/// </summary>
-		public VirtualRegister WriteAndi(VirtualRegister ra, int value)
+		public VirtualRegister WriteAndi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.andi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.andi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// And Word Immediate
+		/// </summary>
+		public void WriteAndi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.andi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -542,7 +1512,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteOr(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.or, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.or);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Or
+		/// </summary>
+		public void WriteOr(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.or);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -550,31 +1536,95 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteOrc(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.orc, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.orc);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Or with Complement
+		/// </summary>
+		public void WriteOrc(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.orc);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Or Byte Immediate
 		/// </summary>
-		public VirtualRegister WriteOrbi(VirtualRegister ra, int value)
+		public VirtualRegister WriteOrbi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.orbi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.orbi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Or Byte Immediate
+		/// </summary>
+		public void WriteOrbi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.orbi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Or Halfword Immediate
 		/// </summary>
-		public VirtualRegister WriteOrhi(VirtualRegister ra, int value)
+		public VirtualRegister WriteOrhi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.orhi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.orhi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Or Halfword Immediate
+		/// </summary>
+		public void WriteOrhi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.orhi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Or Word Immediate
 		/// </summary>
-		public VirtualRegister WriteOri(VirtualRegister ra, int value)
+		public VirtualRegister WriteOri(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.ori, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ori);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Or Word Immediate
+		/// </summary>
+		public void WriteOri(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ori);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -582,7 +1632,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteOrx(VirtualRegister ra)
 		{
-			return WriteRR2(SpuOpCode.orx, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.orx);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Or Across
+		/// </summary>
+		public void WriteOrx(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.orx);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -590,31 +1654,95 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteXor(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.xor, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.xor);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Exclusive Or
+		/// </summary>
+		public void WriteXor(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.xor);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Exclusive Or Byte Immediate
 		/// </summary>
-		public VirtualRegister WriteXorbi(VirtualRegister ra, int value)
+		public VirtualRegister WriteXorbi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.xorbi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.xorbi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Exclusive Or Byte Immediate
+		/// </summary>
+		public void WriteXorbi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.xorbi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Exclusive Or Halfword Immediate
 		/// </summary>
-		public VirtualRegister WriteXorhi(VirtualRegister ra, int value)
+		public VirtualRegister WriteXorhi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.xorhi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.xorhi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Exclusive Or Halfword Immediate
+		/// </summary>
+		public void WriteXorhi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.xorhi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Exclusive Or Word Immediate
 		/// </summary>
-		public VirtualRegister WriteXori(VirtualRegister ra, int value)
+		public VirtualRegister WriteXori(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.xori, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.xori);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Exclusive Or Word Immediate
+		/// </summary>
+		public void WriteXori(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.xori);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -622,7 +1750,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteNand(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.nand, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.nand);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Nand
+		/// </summary>
+		public void WriteNand(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.nand);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -630,7 +1774,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteNor(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.nor, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.nor);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Nor
+		/// </summary>
+		public void WriteNor(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.nor);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -638,7 +1798,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteEqv(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.eqv, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.eqv);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Equivalent
+		/// </summary>
+		public void WriteEqv(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.eqv);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -646,7 +1822,25 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteSelb(VirtualRegister ra, VirtualRegister rb, VirtualRegister rc)
 		{
-			return WriteRRR(SpuOpCode.selb, ra, rb, rc);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.selb);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			inst.Rc = rc;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Select Bits
+		/// </summary>
+		public void WriteSelb(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb, VirtualRegister rc)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.selb);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			inst.Rc = rc;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -654,7 +1848,25 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteShufb(VirtualRegister ra, VirtualRegister rb, VirtualRegister rc)
 		{
-			return WriteRRR(SpuOpCode.shufb, ra, rb, rc);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.shufb);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			inst.Rc = rc;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Shuffle Bytes
+		/// </summary>
+		public void WriteShufb(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb, VirtualRegister rc)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.shufb);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			inst.Rc = rc;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -662,15 +1874,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteShlh(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.shlh, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.shlh);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Shift Left Halfword
+		/// </summary>
+		public void WriteShlh(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.shlh);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Shift Left Halfword Immediate
 		/// </summary>
-		public VirtualRegister WriteShlhi(VirtualRegister ra, int value)
+		public VirtualRegister WriteShlhi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI7(SpuOpCode.shlhi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.shlhi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Shift Left Halfword Immediate
+		/// </summary>
+		public void WriteShlhi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.shlhi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -678,15 +1922,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteShl(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.shl, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.shl);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Shift Left Word
+		/// </summary>
+		public void WriteShl(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.shl);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Shift Left Word Immediate
 		/// </summary>
-		public VirtualRegister WriteShli(VirtualRegister ra, int value)
+		public VirtualRegister WriteShli(VirtualRegister ra, int immediate)
 		{
-			return WriteRI7(SpuOpCode.shli, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.shli);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Shift Left Word Immediate
+		/// </summary>
+		public void WriteShli(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.shli);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -694,15 +1970,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteShlqbi(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.shlqbi, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.shlqbi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Shift Left Quadword by Bits
+		/// </summary>
+		public void WriteShlqbi(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.shlqbi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Shift Left Quadword by Bits Immediate
 		/// </summary>
-		public VirtualRegister WriteShlqbii(VirtualRegister ra, int value)
+		public VirtualRegister WriteShlqbii(VirtualRegister ra, int immediate)
 		{
-			return WriteRI7(SpuOpCode.shlqbii, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.shlqbii);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Shift Left Quadword by Bits Immediate
+		/// </summary>
+		public void WriteShlqbii(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.shlqbii);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -710,15 +2018,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteShlqby(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.shlqby, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.shlqby);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Shift Left Quadword by Bytes
+		/// </summary>
+		public void WriteShlqby(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.shlqby);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Shift Left Quadword by Bytes Immediate
 		/// </summary>
-		public VirtualRegister WriteSqlqbyi(VirtualRegister ra, int value)
+		public VirtualRegister WriteSqlqbyi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI7(SpuOpCode.sqlqbyi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.sqlqbyi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Shift Left Quadword by Bytes Immediate
+		/// </summary>
+		public void WriteSqlqbyi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.sqlqbyi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -726,7 +2066,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteShlqbybi(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.shlqbybi, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.shlqbybi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Shift Left Quadword by Bytes from Bit Shift Count
+		/// </summary>
+		public void WriteShlqbybi(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.shlqbybi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -734,15 +2090,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteRoth(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.roth, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.roth);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate Halfword
+		/// </summary>
+		public void WriteRoth(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.roth);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Rotate Halfword Immediate
 		/// </summary>
-		public VirtualRegister WriteRothi(VirtualRegister ra, int value)
+		public VirtualRegister WriteRothi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI7(SpuOpCode.rothi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rothi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate Halfword Immediate
+		/// </summary>
+		public void WriteRothi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rothi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -750,15 +2138,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteRot(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.rot, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rot);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate Word
+		/// </summary>
+		public void WriteRot(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rot);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Rotate Word Immediate
 		/// </summary>
-		public VirtualRegister WriteRoti(VirtualRegister ra, int value)
+		public VirtualRegister WriteRoti(VirtualRegister ra, int immediate)
 		{
-			return WriteRI7(SpuOpCode.roti, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.roti);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate Word Immediate
+		/// </summary>
+		public void WriteRoti(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.roti);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -766,15 +2186,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteRotqby(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.rotqby, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotqby);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate Quadword by Bytes
+		/// </summary>
+		public void WriteRotqby(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotqby);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Rotate Quadword by Bytes Immediate
 		/// </summary>
-		public VirtualRegister WriteRotqbyi(VirtualRegister ra, int value)
+		public VirtualRegister WriteRotqbyi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI7(SpuOpCode.rotqbyi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotqbyi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate Quadword by Bytes Immediate
+		/// </summary>
+		public void WriteRotqbyi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotqbyi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -782,7 +2234,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteRotqbybi(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.rotqbybi, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotqbybi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate Quadword by Bytes from Bit Shift Count
+		/// </summary>
+		public void WriteRotqbybi(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotqbybi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -790,15 +2258,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteRotqbi(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.rotqbi, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotqbi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate Quadword by Bits
+		/// </summary>
+		public void WriteRotqbi(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotqbi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Rotate Quadword by Bits Immediate
 		/// </summary>
-		public VirtualRegister WriteRotqbii(VirtualRegister ra, int value)
+		public VirtualRegister WriteRotqbii(VirtualRegister ra, int immediate)
 		{
-			return WriteRI7(SpuOpCode.rotqbii, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotqbii);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate Quadword by Bits Immediate
+		/// </summary>
+		public void WriteRotqbii(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotqbii);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -806,15 +2306,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteRothm(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.rothm, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rothm);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate and Mask Halfword
+		/// </summary>
+		public void WriteRothm(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rothm);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Rotate and Mask Halfword Immediate
 		/// </summary>
-		public VirtualRegister WriteRothmi(VirtualRegister ra, int value)
+		public VirtualRegister WriteRothmi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI7(SpuOpCode.rothmi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rothmi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate and Mask Halfword Immediate
+		/// </summary>
+		public void WriteRothmi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rothmi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -822,15 +2354,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteRotm(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.rotm, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotm);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate and Mask Word
+		/// </summary>
+		public void WriteRotm(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotm);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Rotate and Mask Word Immediate
 		/// </summary>
-		public VirtualRegister WriteRotmi(VirtualRegister ra, int value)
+		public VirtualRegister WriteRotmi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI7(SpuOpCode.rotmi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotmi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate and Mask Word Immediate
+		/// </summary>
+		public void WriteRotmi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotmi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -838,15 +2402,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteRotqmby(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.rotqmby, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotqmby);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate and Mask Quadword by Bytes
+		/// </summary>
+		public void WriteRotqmby(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotqmby);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Rotate and Mask Quadword by Bytes Immediate
 		/// </summary>
-		public VirtualRegister WriteRotqmbyi(VirtualRegister ra, int value)
+		public VirtualRegister WriteRotqmbyi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI7(SpuOpCode.rotqmbyi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotqmbyi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate and Mask Quadword by Bytes Immediate
+		/// </summary>
+		public void WriteRotqmbyi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotqmbyi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -854,7 +2450,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteRotqmbybi(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.rotqmbybi, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotqmbybi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate and Mask Quadword Bytes from Bit Shift Count
+		/// </summary>
+		public void WriteRotqmbybi(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotqmbybi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -862,15 +2474,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteRotqmbi(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.rotqmbi, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotqmbi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate and Mask Quadword by Bits
+		/// </summary>
+		public void WriteRotqmbi(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotqmbi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Rotate and Mask Quadword by Bits Immediate
 		/// </summary>
-		public VirtualRegister WriteRotqmbii(VirtualRegister ra, int value)
+		public VirtualRegister WriteRotqmbii(VirtualRegister ra, int immediate)
 		{
-			return WriteRI7(SpuOpCode.rotqmbii, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotqmbii);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate and Mask Quadword by Bits Immediate
+		/// </summary>
+		public void WriteRotqmbii(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotqmbii);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -878,15 +2522,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteRotmah(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.rotmah, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotmah);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate and Mask Algebraic Halfword
+		/// </summary>
+		public void WriteRotmah(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotmah);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Rotate and Mask Algebraic Halfword Immediate
 		/// </summary>
-		public VirtualRegister WriteRotmahi(VirtualRegister ra, int value)
+		public VirtualRegister WriteRotmahi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI7(SpuOpCode.rotmahi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotmahi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate and Mask Algebraic Halfword Immediate
+		/// </summary>
+		public void WriteRotmahi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotmahi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -894,15 +2570,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteRotma(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.rotma, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotma);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate and Mask Algebraic Word
+		/// </summary>
+		public void WriteRotma(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotma);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Rotate and Mask Algebraic Word Immediate
 		/// </summary>
-		public VirtualRegister WriteRotmai(VirtualRegister ra, int value)
+		public VirtualRegister WriteRotmai(VirtualRegister ra, int immediate)
 		{
-			return WriteRI7(SpuOpCode.rotmai, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotmai);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Rotate and Mask Algebraic Word Immediate
+		/// </summary>
+		public void WriteRotmai(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rotmai);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -910,15 +2618,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteHeq(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.heq, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.heq);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Halt If Equal
+		/// </summary>
+		public void WriteHeq(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.heq);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Halt If Equal Immediate
 		/// </summary>
-		public VirtualRegister WriteHeqi(VirtualRegister ra, int value)
+		public VirtualRegister WriteHeqi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.heqi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.heqi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Halt If Equal Immediate
+		/// </summary>
+		public void WriteHeqi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.heqi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -926,15 +2666,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteHgt(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.hgt, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.hgt);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Halt If Greater Than
+		/// </summary>
+		public void WriteHgt(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.hgt);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Halt If Greater Than Immediate
 		/// </summary>
-		public VirtualRegister WriteHgti(VirtualRegister ra, int value)
+		public VirtualRegister WriteHgti(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.hgti, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.hgti);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Halt If Greater Than Immediate
+		/// </summary>
+		public void WriteHgti(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.hgti);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -942,15 +2714,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteHlgt(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.hlgt, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.hlgt);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Halt If Logically Greater Than
+		/// </summary>
+		public void WriteHlgt(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.hlgt);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Halt If Logically Greater Than Immediate
 		/// </summary>
-		public VirtualRegister WriteHlgti(VirtualRegister ra, int value)
+		public VirtualRegister WriteHlgti(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.hlgti, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.hlgti);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Halt If Logically Greater Than Immediate
+		/// </summary>
+		public void WriteHlgti(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.hlgti);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -958,15 +2762,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteCeqb(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.ceqb, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ceqb);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Compare Equal Byte
+		/// </summary>
+		public void WriteCeqb(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ceqb);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Compare Equal Byte Immediate
 		/// </summary>
-		public VirtualRegister WriteCeqbi(VirtualRegister ra, int value)
+		public VirtualRegister WriteCeqbi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.ceqbi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ceqbi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Compare Equal Byte Immediate
+		/// </summary>
+		public void WriteCeqbi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ceqbi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -974,15 +2810,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteCeqh(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.ceqh, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ceqh);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Compare Equal Halfword
+		/// </summary>
+		public void WriteCeqh(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ceqh);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Compare Equal Halfword Immediate
 		/// </summary>
-		public VirtualRegister WriteCeqhi(VirtualRegister ra, int value)
+		public VirtualRegister WriteCeqhi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.ceqhi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ceqhi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Compare Equal Halfword Immediate
+		/// </summary>
+		public void WriteCeqhi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ceqhi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -990,15 +2858,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteCeq(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.ceq, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ceq);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Compare Equal Word
+		/// </summary>
+		public void WriteCeq(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ceq);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Compare Equal Word Immediate
 		/// </summary>
-		public VirtualRegister WriteCeqi(VirtualRegister ra, int value)
+		public VirtualRegister WriteCeqi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.ceqi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ceqi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Compare Equal Word Immediate
+		/// </summary>
+		public void WriteCeqi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ceqi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1006,15 +2906,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteCgtb(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.cgtb, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cgtb);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Compare Greater Than Byte
+		/// </summary>
+		public void WriteCgtb(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cgtb);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Compare Greater Than Byte Immediate
 		/// </summary>
-		public VirtualRegister WriteCgtbi(VirtualRegister ra, int value)
+		public VirtualRegister WriteCgtbi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.cgtbi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cgtbi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Compare Greater Than Byte Immediate
+		/// </summary>
+		public void WriteCgtbi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cgtbi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1022,15 +2954,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteCgth(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.cgth, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cgth);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Compare Greater Than Halfword
+		/// </summary>
+		public void WriteCgth(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cgth);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Compare Greater Than Halfword Immediate
 		/// </summary>
-		public VirtualRegister WriteCgthi(VirtualRegister ra, int value)
+		public VirtualRegister WriteCgthi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.cgthi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cgthi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Compare Greater Than Halfword Immediate
+		/// </summary>
+		public void WriteCgthi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cgthi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1038,15 +3002,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteCgt(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.cgt, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cgt);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Compare Greater Than Word
+		/// </summary>
+		public void WriteCgt(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cgt);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Compare Greater Than Word Immediate
 		/// </summary>
-		public VirtualRegister WriteCgti(VirtualRegister ra, int value)
+		public VirtualRegister WriteCgti(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.cgti, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cgti);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Compare Greater Than Word Immediate
+		/// </summary>
+		public void WriteCgti(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cgti);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1054,15 +3050,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteClgtb(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.clgtb, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.clgtb);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Compare Logical Greater Than Byte
+		/// </summary>
+		public void WriteClgtb(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.clgtb);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Compare Logical Greater Than Byte Immediate
 		/// </summary>
-		public VirtualRegister WriteClgtbi(VirtualRegister ra, int value)
+		public VirtualRegister WriteClgtbi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.clgtbi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.clgtbi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Compare Logical Greater Than Byte Immediate
+		/// </summary>
+		public void WriteClgtbi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.clgtbi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1070,15 +3098,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteClgth(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.clgth, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.clgth);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Compare Logical Greater Than Halfword
+		/// </summary>
+		public void WriteClgth(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.clgth);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Compare Logical Greater Than Halfword Immediate
 		/// </summary>
-		public VirtualRegister WriteClgthi(VirtualRegister ra, int value)
+		public VirtualRegister WriteClgthi(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.clgthi, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.clgthi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Compare Logical Greater Than Halfword Immediate
+		/// </summary>
+		public void WriteClgthi(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.clgthi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1086,63 +3146,151 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteClgt(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.clgt, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.clgt);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Compare Logical Greater Than Word
+		/// </summary>
+		public void WriteClgt(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.clgt);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Compare Logical Greater Than Word Immediate
 		/// </summary>
-		public VirtualRegister WriteClgti(VirtualRegister ra, int value)
+		public VirtualRegister WriteClgti(VirtualRegister ra, int immediate)
 		{
-			return WriteRI10(SpuOpCode.clgti, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.clgti);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Compare Logical Greater Than Word Immediate
+		/// </summary>
+		public void WriteClgti(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.clgti);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Branch Relative
 		/// </summary>
-		public void WriteBr(int symbol)
+		public VirtualRegister WriteBr(int immediate)
 		{
-			WriteRI16x(SpuOpCode.br, symbol);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.br);
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
 		}
 
 		/// <summary>
 		/// Branch Absolute
 		/// </summary>
-		public void WriteBra(int symbol)
+		public VirtualRegister WriteBra(int immediate)
 		{
-			WriteRI16x(SpuOpCode.bra, symbol);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.bra);
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
 		}
 
 		/// <summary>
 		/// Branch Relative and Set Link
 		/// </summary>
-		public VirtualRegister WriteBrsl(int symbol)
+		public VirtualRegister WriteBrsl(int immediate)
 		{
-			return WriteRI16(SpuOpCode.brsl, symbol);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.brsl);
+			inst.Rt = NextRegister();
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Branch Relative and Set Link
+		/// </summary>
+		public void WriteBrsl(VirtualRegister rt, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.brsl);
+			inst.Rt = rt;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Branch Absolute and Set Link
 		/// </summary>
-		public VirtualRegister WriteBrasl(int symbol)
+		public VirtualRegister WriteBrasl(int immediate)
 		{
-			return WriteRI16(SpuOpCode.brasl, symbol);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.brasl);
+			inst.Rt = NextRegister();
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Branch Absolute and Set Link
+		/// </summary>
+		public void WriteBrasl(VirtualRegister rt, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.brasl);
+			inst.Rt = rt;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Branch Indirect
 		/// </summary>
-		public void WriteBi(VirtualRegister ra)
+		public VirtualRegister WriteBi()
 		{
-			WriteRR1DE(SpuOpCode.bi, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.bi);
+			inst.Rt = NextRegister();
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Branch Indirect
+		/// </summary>
+		public void WriteBi(VirtualRegister rt)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.bi);
+			inst.Rt = rt;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Interrupt Return
 		/// </summary>
-		public void WriteIret(VirtualRegister ra)
+		public VirtualRegister WriteIret()
 		{
-			WriteRR1DE(SpuOpCode.iret, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.iret);
+			inst.Rt = NextRegister();
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Interrupt Return
+		/// </summary>
+		public void WriteIret(VirtualRegister rt)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.iret);
+			inst.Rt = rt;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1150,7 +3298,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteBisled(VirtualRegister ra)
 		{
-			return WriteRR2DE(SpuOpCode.bisled, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.bisled);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Branch Indirect and Set Link if External Data
+		/// </summary>
+		public void WriteBisled(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.bisled);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1158,39 +3320,109 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteBisl(VirtualRegister ra)
 		{
-			return WriteRR2DE(SpuOpCode.bisl, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.bisl);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Branch Indirect and Set Link
+		/// </summary>
+		public void WriteBisl(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.bisl);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Branch If Not Zero Word
 		/// </summary>
-		public VirtualRegister WriteBrnz(int symbol)
+		public VirtualRegister WriteBrnz(int immediate)
 		{
-			return WriteRI16(SpuOpCode.brnz, symbol);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.brnz);
+			inst.Rt = NextRegister();
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Branch If Not Zero Word
+		/// </summary>
+		public void WriteBrnz(VirtualRegister rt, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.brnz);
+			inst.Rt = rt;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Branch If Zero Word
 		/// </summary>
-		public VirtualRegister WriteBrz(int symbol)
+		public VirtualRegister WriteBrz(int immediate)
 		{
-			return WriteRI16(SpuOpCode.brz, symbol);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.brz);
+			inst.Rt = NextRegister();
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Branch If Zero Word
+		/// </summary>
+		public void WriteBrz(VirtualRegister rt, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.brz);
+			inst.Rt = rt;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Branch If Not Zero Halfword
 		/// </summary>
-		public VirtualRegister WriteBrhnz(int symbol)
+		public VirtualRegister WriteBrhnz(int immediate)
 		{
-			return WriteRI16(SpuOpCode.brhnz, symbol);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.brhnz);
+			inst.Rt = NextRegister();
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Branch If Not Zero Halfword
+		/// </summary>
+		public void WriteBrhnz(VirtualRegister rt, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.brhnz);
+			inst.Rt = rt;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Branch If Zero Halfword
 		/// </summary>
-		public VirtualRegister WriteBrhz(int symbol)
+		public VirtualRegister WriteBrhz(int immediate)
 		{
-			return WriteRI16(SpuOpCode.brhz, symbol);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.brhz);
+			inst.Rt = NextRegister();
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Branch If Zero Halfword
+		/// </summary>
+		public void WriteBrhz(VirtualRegister rt, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.brhz);
+			inst.Rt = rt;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1198,7 +3430,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteBiz(VirtualRegister ra)
 		{
-			return WriteRR2DE(SpuOpCode.biz, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.biz);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Branch Indirect If Zero
+		/// </summary>
+		public void WriteBiz(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.biz);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1206,7 +3452,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteBinz(VirtualRegister ra)
 		{
-			return WriteRR2DE(SpuOpCode.binz, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.binz);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Branch Indirect If Not Zero
+		/// </summary>
+		public void WriteBinz(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.binz);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1214,7 +3474,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteBihz(VirtualRegister ra)
 		{
-			return WriteRR2DE(SpuOpCode.bihz, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.bihz);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Branch Indirect If Zero Halfword
+		/// </summary>
+		public void WriteBihz(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.bihz);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1222,7 +3496,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteBihnz(VirtualRegister ra)
 		{
-			return WriteRR2DE(SpuOpCode.bihnz, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.bihnz);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Branch Indirect If Not Zero Halfword
+		/// </summary>
+		public void WriteBihnz(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.bihnz);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1230,7 +3518,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteFa(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.fa, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fa);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Floating Add
+		/// </summary>
+		public void WriteFa(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fa);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1238,7 +3542,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteDfa(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.dfa, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfa);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Double Floating Add
+		/// </summary>
+		public void WriteDfa(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfa);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1246,7 +3566,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteFs(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.fs, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fs);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Floating Subtract
+		/// </summary>
+		public void WriteFs(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fs);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1254,7 +3590,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteDfs(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.dfs, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfs);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Double Floating Subtract
+		/// </summary>
+		public void WriteDfs(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfs);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1262,7 +3614,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteFm(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.fm, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fm);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Floating Multiply
+		/// </summary>
+		public void WriteFm(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fm);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1270,7 +3638,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteDfm(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.dfm, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfm);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Double Floating Multiply
+		/// </summary>
+		public void WriteDfm(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfm);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1278,7 +3662,25 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteFma(VirtualRegister ra, VirtualRegister rb, VirtualRegister rc)
 		{
-			return WriteRRR(SpuOpCode.fma, ra, rb, rc);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fma);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			inst.Rc = rc;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Floating Multiply and Add
+		/// </summary>
+		public void WriteFma(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb, VirtualRegister rc)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fma);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			inst.Rc = rc;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1286,7 +3688,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteDfma(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.dfma, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfma);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Double Floating Multiply and Add
+		/// </summary>
+		public void WriteDfma(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfma);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1294,7 +3712,25 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteFnms(VirtualRegister ra, VirtualRegister rb, VirtualRegister rc)
 		{
-			return WriteRRR(SpuOpCode.fnms, ra, rb, rc);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fnms);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			inst.Rc = rc;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Floating Negative Multiply and Subtract
+		/// </summary>
+		public void WriteFnms(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb, VirtualRegister rc)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fnms);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			inst.Rc = rc;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1302,7 +3738,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteDfnms(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.dfnms, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfnms);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Double Floating Negative Multiply and Subtract
+		/// </summary>
+		public void WriteDfnms(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfnms);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1310,7 +3762,25 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteFms(VirtualRegister ra, VirtualRegister rb, VirtualRegister rc)
 		{
-			return WriteRRR(SpuOpCode.fms, ra, rb, rc);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fms);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			inst.Rc = rc;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Floating Multiply and Subtract
+		/// </summary>
+		public void WriteFms(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb, VirtualRegister rc)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fms);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			inst.Rc = rc;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1318,7 +3788,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteDfms(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.dfms, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfms);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Double Floating Multiply and Subtract
+		/// </summary>
+		public void WriteDfms(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfms);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1326,7 +3812,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteDfnma(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.dfnma, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfnma);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Double Floating Negative Multiply and Add
+		/// </summary>
+		public void WriteDfnma(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfnma);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1334,7 +3836,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteFrest(VirtualRegister ra)
 		{
-			return WriteRR2(SpuOpCode.frest, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.frest);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Floating Reciprocal Estimate
+		/// </summary>
+		public void WriteFrest(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.frest);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1342,7 +3858,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteFrsqest(VirtualRegister ra)
 		{
-			return WriteRR2(SpuOpCode.frsqest, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.frsqest);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Floating Reciprocal Absolute Square Root Estimate
+		/// </summary>
+		public void WriteFrsqest(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.frsqest);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1350,39 +3880,119 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteFi(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.fi, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fi);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Floating Interpolate
+		/// </summary>
+		public void WriteFi(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fi);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Convert Signed Integer to Floating
 		/// </summary>
-		public VirtualRegister WriteCsflt(VirtualRegister ra, int scale)
+		public VirtualRegister WriteCsflt(VirtualRegister ra, int immediate)
 		{
-			return WriteRI8(SpuOpCode.csflt, ra, scale);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.csflt);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Convert Signed Integer to Floating
+		/// </summary>
+		public void WriteCsflt(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.csflt);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Convert Floating to Signed Integer
 		/// </summary>
-		public VirtualRegister WriteCflts(VirtualRegister ra, int scale)
+		public VirtualRegister WriteCflts(VirtualRegister ra, int immediate)
 		{
-			return WriteRI8(SpuOpCode.cflts, ra, scale);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cflts);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Convert Floating to Signed Integer
+		/// </summary>
+		public void WriteCflts(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cflts);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Convert Unsigned Integer to Floating
 		/// </summary>
-		public VirtualRegister WriteCuflt(VirtualRegister ra, int scale)
+		public VirtualRegister WriteCuflt(VirtualRegister ra, int immediate)
 		{
-			return WriteRI8(SpuOpCode.cuflt, ra, scale);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cuflt);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Convert Unsigned Integer to Floating
+		/// </summary>
+		public void WriteCuflt(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cuflt);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Convert Floating to Unsigned Integer
 		/// </summary>
-		public VirtualRegister WriteCfltu(VirtualRegister ra, int scale)
+		public VirtualRegister WriteCfltu(VirtualRegister ra, int immediate)
 		{
-			return WriteRI8(SpuOpCode.cfltu, ra, scale);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cfltu);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Convert Floating to Unsigned Integer
+		/// </summary>
+		public void WriteCfltu(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.cfltu);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1390,7 +4000,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteFrds(VirtualRegister ra)
 		{
-			return WriteRR2(SpuOpCode.frds, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.frds);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Floating Round Double to Single
+		/// </summary>
+		public void WriteFrds(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.frds);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1398,7 +4022,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteFesd(VirtualRegister ra)
 		{
-			return WriteRR2(SpuOpCode.fesd, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fesd);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Floating Extend Single to Double
+		/// </summary>
+		public void WriteFesd(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fesd);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1406,7 +4044,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteDfceq(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.dfceq, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfceq);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Double Floating Compare Equal
+		/// </summary>
+		public void WriteDfceq(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfceq);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1414,7 +4068,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteDfcmeq(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.dfcmeq, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfcmeq);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Double Floating Compare Magnitude Equal
+		/// </summary>
+		public void WriteDfcmeq(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfcmeq);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1422,7 +4092,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteDfcgt(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.dfcgt, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfcgt);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Double Floating Compare Greater Than
+		/// </summary>
+		public void WriteDfcgt(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfcgt);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1430,15 +4116,47 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteDfcmgt(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.dfcmgt, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfcmgt);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Double Floating Compare Magnitude Greater Than
+		/// </summary>
+		public void WriteDfcmgt(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dfcmgt);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
 		/// Double Floating Test Special Value
 		/// </summary>
-		public VirtualRegister WriteDftsv(VirtualRegister ra, int value)
+		public VirtualRegister WriteDftsv(VirtualRegister ra, int immediate)
 		{
-			return WriteRI7(SpuOpCode.dftsv, ra, value);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dftsv);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Double Floating Test Special Value
+		/// </summary>
+		public void WriteDftsv(VirtualRegister rt, VirtualRegister ra, int immediate)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.dftsv);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Constant = immediate;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1446,7 +4164,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteFceq(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.fceq, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fceq);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Floating Compare Equal
+		/// </summary>
+		public void WriteFceq(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fceq);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1454,7 +4188,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteFcmeq(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.fcmeq, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fcmeq);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Floating Compare Magnitude Equal
+		/// </summary>
+		public void WriteFcmeq(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fcmeq);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1462,7 +4212,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteFcgt(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.fcgt, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fcgt);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Floating Compare Greater Than
+		/// </summary>
+		public void WriteFcgt(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fcgt);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1470,7 +4236,23 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteFcmgt(VirtualRegister ra, VirtualRegister rb)
 		{
-			return WriteRR(SpuOpCode.fcmgt, ra, rb);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fcmgt);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Floating Compare Magnitude Greater Than
+		/// </summary>
+		public void WriteFcmgt(VirtualRegister rt, VirtualRegister ra, VirtualRegister rb)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fcmgt);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1478,7 +4260,21 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteFscrwr(VirtualRegister ra)
 		{
-			return WriteRR2(SpuOpCode.fscrwr, ra);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fscrwr);
+			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Floating-Point Status and Control Register Write
+		/// </summary>
+		public void WriteFscrwr(VirtualRegister rt, VirtualRegister ra)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fscrwr);
+			inst.Rt = rt;
+			inst.Ra = ra;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -1486,7 +4282,28 @@ namespace CellDotNet
 		/// </summary>
 		public VirtualRegister WriteFscrrd()
 		{
-			return WriteRR1(SpuOpCode.fscrrd);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fscrrd);
+			inst.Rt = NextRegister();
+			AddInstruction(inst); return inst.Rt;
+		}
+
+		/// <summary>
+		/// Floating-Point Status and Control Register Read
+		/// </summary>
+		public void WriteFscrrd(VirtualRegister rt)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.fscrrd);
+			inst.Rt = rt;
+			AddInstruction(inst);
+		}
+
+		/// <summary>
+		/// Stop and Signal
+		/// </summary>
+		public VirtualRegister WriteStop()
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.stop);
+			AddInstruction(inst); return inst.Rt;
 		}
 
 	}
