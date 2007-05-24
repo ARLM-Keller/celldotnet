@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -51,7 +50,6 @@ namespace CellDotNet
 			}
 
 			Code ilcode = inst.Opcode.Code;
-			int oldInstCount = _writer.Instructions.Count;
 			switch (ilcode)
 			{
 				case Code.Nop:
@@ -64,6 +62,8 @@ namespace CellDotNet
 					{
 						int i = (int) inst.Operand;
 						VirtualRegister l = _writer.WriteIlh(i);
+						if (i >> 16 == 0)
+							return l;
 						VirtualRegister u = _writer.WriteIlhu(i >> 16);
 						return _writer.WriteOr(l, u);
 					}
@@ -164,7 +164,6 @@ namespace CellDotNet
 						_writer.WriteStqd(ptr, combined, 0);
 						return null;
 					}
-					break;
 				case Code.Stind_I8:
 					break;
 				case Code.Stind_R4:
@@ -448,7 +447,7 @@ namespace CellDotNet
 	#region ILNotImplementedException
 
 
-	[global::System.Serializable]
+	[Serializable]
 	public class InvalidILTreeException : Exception
 	{
 		//
