@@ -12,7 +12,7 @@ namespace CellDotNet
 
             for (int i = 0; i < code.Count; i++)
             {
-                VirtualRegister def = code[i].Destination;
+                VirtualRegister def = code[i].Rt;
                 ICollection<VirtualRegister> uses = code[i].Sources;
 
                 LiveInterval li = null;

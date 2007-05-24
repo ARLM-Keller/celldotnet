@@ -23,7 +23,7 @@ namespace CellDotNet
 			return new VirtualRegister(_regnum++);
 		}
 
-		private void AddInstruction(SpuInstruction inst)
+		protected void AddInstruction(SpuInstruction inst)
 		{
 			_instructions.Add(inst);
 		}
@@ -35,20 +35,20 @@ namespace CellDotNet
 		    return rt;
 /*
 			SpuInstruction inst = new SpuInstruction(opcode);
-			inst.Source1 = ra;
-			inst.Source2 = rb;
-			inst.Destination = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			inst.Rt = NextRegister();
 			AddInstruction(inst);
-			return inst.Destination;
+			return inst.Rt;
  */
 		}
 
         private void WriteRR(SpuOpCode opcode, VirtualRegister ra, VirtualRegister rb, VirtualRegister rt)
 		{
 			SpuInstruction inst = new SpuInstruction(opcode);
-			inst.Source1 = ra;
-			inst.Source2 = rb;
-			inst.Destination = rt;
+			inst.Ra = ra;
+			inst.Rb = rb;
+			inst.Rt = rt;
 			AddInstruction(inst);
 		}
 
@@ -57,10 +57,10 @@ namespace CellDotNet
 		    return WriteRR(opcode, ra, NextRegister());
 /*
 			SpuInstruction inst = new SpuInstruction(opcode);
-			inst.Source1 = ra;
-            inst.Destination = NextRegister();
+			inst.Ra = ra;
+            inst.Rt = NextRegister();
 			AddInstruction(inst);
-			return inst.Destination;
+			return inst.Rt;
  */
 		}
 
@@ -69,9 +69,9 @@ namespace CellDotNet
 		    return WriteRR(opcode, NextRegister(), NextRegister());
 /*
 			SpuInstruction inst = new SpuInstruction(opcode);
-            inst.Destination = NextRegister();
+            inst.Rt = NextRegister();
 			AddInstruction(inst);
-			return inst.Destination;
+			return inst.Rt;
  */
 		}
 
@@ -81,7 +81,7 @@ namespace CellDotNet
 		    WriteRR2DE(opcode, ra);
 /*
 			SpuInstruction inst = new SpuInstruction(opcode);
-			inst.Source1 = ra;
+			inst.Ra = ra;
 			AddInstruction(inst);
  */
 		}
@@ -91,7 +91,7 @@ namespace CellDotNet
             WriteRR2DE(opcode, ra, D, E);
 /*
             SpuInstruction inst = new SpuInstruction(opcode);
-            inst.Source1 = ra;
+            inst.Ra = ra;
             inst.Constant  = (D) ? 0x20 : 0x00; // 0x20 = 0100000b
             inst.Constant |= (E) ? 0x10 : 0x00; // 0x10 = 0010000b
             AddInstruction(inst);
@@ -104,70 +104,70 @@ namespace CellDotNet
 		    return WriteRR2DE(opcode, ra, false, false);
 /*
 			SpuInstruction inst = new SpuInstruction(opcode);
-			inst.Source1 = ra;
-			inst.Destination = NextRegister();
+			inst.Ra = ra;
+			inst.Rt = NextRegister();
 			AddInstruction(inst);
-			return inst.Destination;
+			return inst.Rt;
  */
 		}
 
         private VirtualRegister WriteRR2DE(SpuOpCode opcode, VirtualRegister ra, bool D, bool E)
         {
             SpuInstruction inst = new SpuInstruction(opcode);
-            inst.Source1 = ra;
-            inst.Destination = NextRegister();
+            inst.Ra = ra;
+            inst.Rt = NextRegister();
             inst.Constant  = (D) ? 0x20 : 0x00; // 0x20 = 0100000b
             inst.Constant |= (E) ? 0x10 : 0x00; // 0x10 = 0010000b
             AddInstruction(inst);
-            return inst.Destination;
+            return inst.Rt;
         }
 
 		private VirtualRegister WriteRRR(SpuOpCode opcode, VirtualRegister ra, VirtualRegister rb, VirtualRegister rc)
 		{
 			SpuInstruction inst = new SpuInstruction(opcode);
-			inst.Source1 = ra;
-			inst.Source2 = rb;
-			inst.Source3 = rc;
-			inst.Destination = NextRegister();
+			inst.Ra = ra;
+			inst.Rb = rb;
+			inst.Rc = rc;
+			inst.Rt = NextRegister();
 			AddInstruction(inst);
-			return inst.Destination;
+			return inst.Rt;
 		}
 
         private VirtualRegister WriteRI7(SpuOpCode opcode, VirtualRegister ra, int value)
 		{
 			SpuInstruction inst = new SpuInstruction(opcode);
-			inst.Source1 = ra;
+			inst.Ra = ra;
 			inst.Constant = value & 0x0000007F; //NOTE muligivs undersøge om value passer i 7 bit.
-			inst.Destination = NextRegister();
+			inst.Rt = NextRegister();
 			AddInstruction(inst);
-			return inst.Destination;
+			return inst.Rt;
 		}
 
 		private VirtualRegister WriteRI8(SpuOpCode opcode, VirtualRegister ra, int scale)
 		{
 			SpuInstruction inst = new SpuInstruction(opcode);
-			inst.Source1 = ra;
+			inst.Ra = ra;
 			inst.Constant = scale & 0x000000ff;
-			inst.Destination = NextRegister();
+			inst.Rt = NextRegister();
 			AddInstruction(inst);
-			return inst.Destination;
+			return inst.Rt;
 		}
 
         private VirtualRegister WriteRI10(SpuOpCode opcode, VirtualRegister ra, int scale)
 		{
 			SpuInstruction inst = new SpuInstruction(opcode);
-			inst.Source1 = ra;
+			inst.Ra = ra;
             inst.Constant = scale & 0x000003ff; //NOTE muligivs undersøge om value passer i 10 bit.
-			inst.Destination = NextRegister();
+			inst.Rt = NextRegister();
 			AddInstruction(inst);
-			return inst.Destination;
+			return inst.Rt;
 		}
 
 		private void WriteRI10Sourced(SpuOpCode opcode, VirtualRegister ra, VirtualRegister rt, int scale)
 		{
 			SpuInstruction inst = new SpuInstruction(opcode);
-			inst.Source1 = ra;
-			inst.Source2 = rt;
+			inst.Ra = ra;
+			inst.Rb = rt;
             inst.Constant = scale & 0x000003ff; //NOTE muligivs undersøge om value passer i 10 bit.
 			AddInstruction(inst);
 		}
@@ -176,15 +176,15 @@ namespace CellDotNet
 		{
 			SpuInstruction inst = new SpuInstruction(opcode);
 			inst.Constant = symbol;
-			inst.Destination = NextRegister();
+			inst.Rt = NextRegister();
 			AddInstruction(inst);
-			return inst.Destination;
+			return inst.Rt;
 		}
 
 		private void WriteRI16Sourced(SpuOpCode opcode, VirtualRegister rt, int symbol)
 		{
 			SpuInstruction inst = new SpuInstruction(opcode);
-			inst.Source1 = rt;
+			inst.Ra = rt;
 			inst.Constant = symbol & 0x0000ffff;
 			AddInstruction(inst);
 		}
@@ -200,19 +200,19 @@ namespace CellDotNet
 		{
 			SpuInstruction inst = new SpuInstruction(opcode);
 			inst.Constant = symbol;
-			inst.Destination = NextRegister();
+			inst.Rt = NextRegister();
 			AddInstruction(inst);
-			return inst.Destination;
+			return inst.Rt;
 		}
 
 		// custom instructions ===============================================
 
-		public void WriteStop()
-		{
-			SpuInstruction inst = new SpuInstruction(SpuOpCode.stop);
-			inst.Constant = 0;
-			AddInstruction(inst);
-		}
+//		public void WriteStop()
+//		{
+//			SpuInstruction inst = new SpuInstruction(SpuOpCode.stop);
+//			inst.Constant = 0;
+//			AddInstruction(inst);
+//		}
 
 		/// <summary>
 		/// Pseudo instruction.
@@ -223,13 +223,13 @@ namespace CellDotNet
 		{
 			SpuInstruction iload = new SpuInstruction(SpuOpCode.ilh);
 			iload.Constant = 0;
-			iload.Destination = NextRegister();
+			iload.Rt = NextRegister();
 			AddInstruction(iload);
 
 			SpuInstruction ior = new SpuInstruction(SpuOpCode.or);
-			ior.Source1 = iload.Destination;
-			ior.Source2 = src;
-			ior.Destination = dest;
+			ior.Ra = iload.Rt;
+			ior.Rb = src;
+			ior.Rt = dest;
 			AddInstruction(ior);
 		}
 
@@ -255,43 +255,34 @@ namespace CellDotNet
 					case SpuInstructionFormat.None:
 						throw new Exception();
 					case SpuInstructionFormat.RR:
-						tw.Write("{0} {1}, {2}, {3}", inst.OpCode.Name, inst.Destination, inst.Source1, inst.Source2);
+						tw.Write("{0} {1}, {2}, {3}", inst.OpCode.Name, inst.Rt, inst.Ra, inst.Rb);
 						break;
 					case SpuInstructionFormat.RR2:
-						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Destination, inst.Source1);
+					case SpuInstructionFormat.RR2DE:
+						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Ra);
 						break;
 					case SpuInstructionFormat.RR1:
-						tw.Write("{0} {1}", inst.OpCode.Name, inst.Destination);
-						break;
 					case SpuInstructionFormat.RR1DE:
-						tw.Write("{0} {1}", inst.OpCode.Name, inst.Source1);
-						break;
-					case SpuInstructionFormat.RR2DE:
-						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Destination, inst.Source1);
+						tw.Write("{0} {1}", inst.OpCode.Name, inst.Ra);
 						break;
 					case SpuInstructionFormat.RRR:
-						tw.Write("{0} {1}, {2}, {3}, {4}", inst.OpCode.Name, inst.Destination, inst.Source1, inst.Source2, inst.Source3);
+						tw.Write("{0} {1}, {2}, {3}, {4}", inst.OpCode.Name, inst.Rt, inst.Ra, inst.Rb, inst.Rc);
 						break;
 					case SpuInstructionFormat.RI7:
-						tw.Write("{0} {1}, {2}, {3}", inst.OpCode.Name, inst.Destination, inst.Source1, inst.Constant);
-						break;
 					case SpuInstructionFormat.RI8:
-						tw.Write("{0} {1}, {2}, {3}", inst.OpCode.Name, inst.Destination, inst.Source1, inst.Constant);
+						tw.Write("{0} {1}, {2}, {3}", inst.OpCode.Name, inst.Rt, inst.Ra, inst.Constant);
 						break;
 					case SpuInstructionFormat.RI10:
-						if (inst.OpCode.NoRegisterWrite)
-							tw.Write("{0} {1}, {3}({2})", inst.OpCode.Name, inst.Source2, inst.Source1, inst.Constant);
-						else
-							tw.Write("{0} {1}, {3}({2})", inst.OpCode.Name, inst.Destination, inst.Source1, inst.Constant);
+						tw.Write("{0} {1}, {3}({2})", inst.OpCode.Name, inst.Rt, inst.Ra, inst.Constant);
 						break;
 					case SpuInstructionFormat.RI16:
-						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Destination, inst.Constant);
+						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Constant);
 						break;
-					case SpuInstructionFormat.RI16x:
+					case SpuInstructionFormat.RI16NoRegs:
 						tw.Write("{0} {1}", inst.OpCode.Name, inst.Constant);
 						break;
 					case SpuInstructionFormat.RI18:
-						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Destination, inst.Constant);
+						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Constant);
 						break;
 					default:
 						throw new Exception();
