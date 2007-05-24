@@ -30,28 +30,6 @@ namespace CellDotNet
 		/// </summary>
 		RR1,
 		/// <summary>
-		/// Register ra.
-		/// D at bit 12.
-		/// E at bit 13.
-		/// Assembler format: "ra" (no assembler support for the D and E bits).
-		/// 11 bit instruction code.
-		/// KMH Reminder, jeg tolker den som en RI7 variant.
-		/// An RR variant used for branching where only register ra is used and the D and E 
-		/// branch bits are part of the instruction.
-		/// </summary>
-		RR1DE,
-		/// <summary>
-		/// Register ra, rt.
-		/// 11 bit instruction code.
-		/// D at bit 12.
-		/// E at bit 13.
-		/// Assembler format: "rt,ra" (no assembler support for the D and E bits).
-		/// KMH Reminder, jeg tolker den som en RI7 variant.
-		/// An RR variant used for branching where only register ra and rt are used and the D and E 
-		/// branch bits are part of the instruction.
-		/// </summary>
-		RR2DE,
-		/// <summary>
 		/// Register rt, rb, ra, rc.
 		/// Assembler format: "rt,ra,rb,rc".
 		/// 4 bit instruction code.
@@ -111,8 +89,34 @@ namespace CellDotNet
 		Ra = 1 << 1,
 		Rb = 1 << 2,
 		Rc = 1 << 3,
+		/// <summary>
+		/// A Special purpose register.
+		/// </summary>
 		Sa = 1 << 4,
+		/// <summary>
+		/// A channel register.
+		/// </summary>
 		Ca = 1 << 5,
+	}
+
+	/// <summary>
+	/// Special features that an opcode can have, like D and E bits or branch hint offset.
+	/// </summary>
+	enum SpuOpCodeSpecialFeatures
+	{
+		None = 0,
+		BitC = 1 << 0,
+		BitD = 1 << 1,
+		BitE = 1 << 2,
+		/// <summary>
+		/// Combination of BitD and BitE.
+		/// </summary>
+		BitDE = (1 << 1) | (1 << 2),
+		BitP = 1 << 3,
+		/// <summary>
+		/// ROH and ROL.
+		/// </summary>
+		BranchHintOffset = 1 << 4,
 	}
 
 	/// <summary>
@@ -178,7 +182,16 @@ namespace CellDotNet
 			get { return _registerUsage; }
 		}
 
-		public SpuOpCode(string name, string title, SpuInstructionFormat format, String opcode)
+		private SpuOpCodeSpecialFeatures _specialFeatures;
+		public SpuOpCodeSpecialFeatures SpecialFeatures
+		{
+			get { return _specialFeatures; }
+		}
+
+		private SpuOpCode(string name, string title, SpuInstructionFormat format, String opcode)
+			: this(name, title, format, opcode, SpuOpCodeSpecialFeatures.None) { }
+
+		private SpuOpCode(string name, string title, SpuInstructionFormat format, String opcode, SpuOpCodeSpecialFeatures features)
 		{
 			_name = name;
 			_title = title;
@@ -187,6 +200,7 @@ namespace CellDotNet
 			_opCode = Convert.ToInt32(opcode, 2) << 32 - OpCodeWidth;
 			if (name.StartsWith("st"))
 				_noRegisterWrite = true;
+			_specialFeatures = features;
 
 			switch (format)
 			{
@@ -196,10 +210,8 @@ namespace CellDotNet
 					_registerUsage = SpuOpCodeRegisterUsage.Rt | SpuOpCodeRegisterUsage.Ra | SpuOpCodeRegisterUsage.Rb;
 					break;
 				case SpuInstructionFormat.RR2:
-				case SpuInstructionFormat.RR2DE:
 					_registerUsage = SpuOpCodeRegisterUsage.Rt | SpuOpCodeRegisterUsage.Ra;
 					break;
-				case SpuInstructionFormat.RR1DE:
 				case SpuInstructionFormat.RR1:
 					_registerUsage = SpuOpCodeRegisterUsage.Rt;
 					break;
@@ -535,13 +547,13 @@ namespace CellDotNet
 				new SpuOpCode("brasl", "Branch Absolute and Set Link", SpuInstructionFormat.RI16, "001100010");
 		// p175
 		public static readonly SpuOpCode bi =
-				new SpuOpCode("bi", "Branch Indirect", SpuInstructionFormat.RR1DE, "00110101000");
+				new SpuOpCode("bi", "Branch Indirect", SpuInstructionFormat.RR1, "00110101000", SpuOpCodeSpecialFeatures.BitDE);
 		public static readonly SpuOpCode iret =
-				new SpuOpCode("iret", "Interrupt Return", SpuInstructionFormat.RR1DE, "00110101010");
+				new SpuOpCode("iret", "Interrupt Return", SpuInstructionFormat.RR1, "00110101010", SpuOpCodeSpecialFeatures.BitDE);
 		public static readonly SpuOpCode bisled =
-				new SpuOpCode("bisled", "Branch Indirect and Set Link if External Data", SpuInstructionFormat.RR2DE, "00110101011");
+				new SpuOpCode("bisled", "Branch Indirect and Set Link if External Data", SpuInstructionFormat.RR2, "00110101011", SpuOpCodeSpecialFeatures.BitDE);
 		public static readonly SpuOpCode bisl =
-				new SpuOpCode("bisl", "Branch Indirect and Set Link", SpuInstructionFormat.RR2DE, "00110101001");
+				new SpuOpCode("bisl", "Branch Indirect and Set Link", SpuInstructionFormat.RR2, "00110101001", SpuOpCodeSpecialFeatures.BitDE);
 		public static readonly SpuOpCode brnz =
 				new SpuOpCode("brnz", "Branch If Not Zero Word", SpuInstructionFormat.RI16, "001000010");
 		public static readonly SpuOpCode brz =
@@ -551,13 +563,13 @@ namespace CellDotNet
 		public static readonly SpuOpCode brhz =
 				new SpuOpCode("brhz", "Branch If Zero Halfword", SpuInstructionFormat.RI16, "001000100");
 		public static readonly SpuOpCode biz =
-				new SpuOpCode("biz", "Branch Indirect If Zero", SpuInstructionFormat.RR2DE, "00100101000");
+				new SpuOpCode("biz", "Branch Indirect If Zero", SpuInstructionFormat.RR2, "00100101000", SpuOpCodeSpecialFeatures.BitDE);
 		public static readonly SpuOpCode binz =
-				new SpuOpCode("binz", "Branch Indirect If Not Zero", SpuInstructionFormat.RR2DE, "00100101001");
+				new SpuOpCode("binz", "Branch Indirect If Not Zero", SpuInstructionFormat.RR2, "00100101001", SpuOpCodeSpecialFeatures.BitDE);
 		public static readonly SpuOpCode bihz =
-				new SpuOpCode("bihz", "Branch Indirect If Zero Halfword", SpuInstructionFormat.RR2DE, "0100101010");
+				new SpuOpCode("bihz", "Branch Indirect If Zero Halfword", SpuInstructionFormat.RR2, "0100101010", SpuOpCodeSpecialFeatures.BitDE);
 		public static readonly SpuOpCode bihnz =
-				new SpuOpCode("bihnz", "Branch Indirect If Not Zero Halfword", SpuInstructionFormat.RR2DE, "00100101011");
+				new SpuOpCode("bihnz", "Branch Indirect If Not Zero Halfword", SpuInstructionFormat.RR2, "00100101011", SpuOpCodeSpecialFeatures.BitDE);
 		// 8. Hint-for-Branch OpCodes: Unusual instruction format, so currently omitted.
 
 		// 9. Floating point.

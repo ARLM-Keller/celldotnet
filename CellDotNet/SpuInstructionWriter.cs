@@ -258,11 +258,9 @@ namespace CellDotNet
 						tw.Write("{0} {1}, {2}, {3}", inst.OpCode.Name, inst.Rt, inst.Ra, inst.Rb);
 						break;
 					case SpuInstructionFormat.RR2:
-					case SpuInstructionFormat.RR2DE:
 						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Ra);
 						break;
 					case SpuInstructionFormat.RR1:
-					case SpuInstructionFormat.RR1DE:
 						tw.Write("{0} {1}", inst.OpCode.Name, inst.Ra);
 						break;
 					case SpuInstructionFormat.RRR:
@@ -284,6 +282,14 @@ namespace CellDotNet
 					case SpuInstructionFormat.RI18:
 						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Constant);
 						break;
+					case SpuInstructionFormat.WEIRD:
+						if (inst.OpCode == SpuOpCode.stop)
+						{
+							tw.Write(inst.OpCode.Name);
+							break;
+						}
+
+						throw new NotImplementedException();
 					default:
 						throw new Exception();
 				}

@@ -50,14 +50,14 @@ namespace CellDotNet
 			ILTreeSpuWriter writer = new ILTreeSpuWriter();
 			SpuInstructionWriter ilist = new SpuInstructionWriter();
 			writer.GenerateCode(ci, ilist);
+			ilist.WriteStop();
 
 			Console.WriteLine();
 			Console.WriteLine("Disassembly: ");
 			Console.WriteLine(ilist.Disassemble());
 
-			return;
 
-			ilist.WriteStop();
+			return;
 			RegAlloc regalloc = new RegAlloc();
 			List<SpuInstruction> asm = new List<SpuInstruction>(ilist.Instructions);
 			regalloc.alloc(asm, 16);

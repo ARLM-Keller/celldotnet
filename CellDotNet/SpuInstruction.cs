@@ -103,8 +103,6 @@ namespace CellDotNet
                         return _opcode.OpCode | dest.Register << 21 | reg2.Register << 14 | reg1.Register << 7 | reg3.Register;
                     else
                         throw new Exception("Err.");
-                case SpuInstructionFormat.RR1DE:
-                case SpuInstructionFormat.RR2DE:
                 case SpuInstructionFormat.RI7:
                     if (reg1 != null && dest != null)
                         return _opcode.OpCode | _constant & 0x7F << 14 | reg1.Register << 7 | dest.Register;
