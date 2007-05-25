@@ -250,7 +250,6 @@ namespace CellDotNet
 		}
 
 		/// <summary>
-		/// TODO: Add instruction numbers to SpuOpCode and this list.
 		/// TODO: Add the rest of the instructions: hint-for-branch, control instructions, channel instructions.
 		/// </summary>
 		//		public static SpuOpCode[] OpCodes = new SpuOpCode[]

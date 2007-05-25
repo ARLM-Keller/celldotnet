@@ -52,7 +52,6 @@ namespace CellDotNet
 			{
 				string msg = string.Format("Invalid tree instruction count of {0}. Should have been {1}.", sum, correctCount);
 				throw new Exception(msg);
-//				Console.Error.WriteLine(msg);
 			}
 		}
 
@@ -61,7 +60,6 @@ namespace CellDotNet
 		/// </summary>
 		private void DeriveTypes()
 		{
-//			throw new NotImplementedException();
 			foreach (BasicBlock block in Blocks)
 			{
 				foreach (TreeInstruction root in block.Roots)
@@ -98,13 +96,11 @@ namespace CellDotNet
 					if (level != 0)
 						throw new NotImplementedException("Only root branches are implemented.");
 					t = StackTypeDescription.None;
-//					throw new NotImplementedException();
 					break;
 				case FlowControl.Meta:
 				case FlowControl.Phi:
 					throw new ILException("Meta or Phi.");
 				case FlowControl.Next:
-//					t = CliType.None;
 					try
 					{
 						t = DeriveFlowNextType(inst, level);
@@ -128,7 +124,6 @@ namespace CellDotNet
 			}
 
 
-			// TODO: 
 			inst.StackType = t;
 		}
 
@@ -143,8 +138,7 @@ namespace CellDotNet
 			// The cases are generated and all opcodes with flow==next are present 
 			// (except macro codes such as ldc.i4.3).
 			StackTypeDescription t;
-//			Type typeToken = (Type) inst.Operand;
-//			Type customType = null;
+
 			TypeReference optype;
 			if (inst.Operand is TypeReference)
 				optype = ((TypeReference) inst.Operand);
@@ -338,21 +332,13 @@ namespace CellDotNet
 					break;
 				case Code.Box: // box
 					throw new NotImplementedException();
-//					t = CliType.ObjectType;
-//					customType = typeof (object);
-//					break;
 				case Code.Newarr: // newarr
-//					t = StackTypeDescription.ObjectType;
-
 					throw new NotImplementedException();
-//					customType = Array.;
 				case Code.Ldlen: // ldlen
 					t = StackTypeDescription.NativeUInt;
 					break;
 				case Code.Ldelema: // ldelema
 					throw new NotImplementedException();
-//					t = StackTypeDescription.ManagedPointer;
-//					customty
 				case Code.Ldelem_I1: // ldelem.i1
 					t = StackTypeDescription.Int8;
 					break;
@@ -584,45 +570,6 @@ namespace CellDotNet
 			throw new ArgumentException(
 				string.Format("Argument types are not valid cil binary numeric opcodes: Left: {0}; right: {1}.", tleft.CliType, tright.CliType));
 		}
-
-/*
-		private static CliStackType GetCliStackType(CliType type)
-		{
-			switch (type)
-			{
-				case CliType.None:
-					throw new ArgumentOutOfRangeException("type");
-				case CliType.Int8:
-				case CliType.UInt8:
-//				case CliType.Bool:
-				case CliType.Int16:
-				case CliType.UInt16:
-//				case CliType.Char:
-				case CliType.Int32:
-				case CliType.UInt32:
-					return CliStackType.Int32;
-				case CliType.Int64:
-				case CliType.UInt64:
-					return CliStackType.Int64;
-				case CliType.NativeInt:
-				case CliType.NativeUInt:
-					return CliStackType.NativeInt;
-				case CliType.Float32:
-				case CliType.Float64:
-					return CliStackType.F;
-				case CliType.ValueType:
-					// Is this correct?
-					return CliStackType.ManagedPointer;
-				case CliType.ObjectType:
-					return CliStackType.O;
-//				case CliType.MethodPointer:
-//					throw new NotSupportedException("Can't handle method pointers.");
-				default:
-					throw new ArgumentOutOfRangeException("type");
-			}
-		}
-*/
-
 
 		private void BuildBasicBlocks(MethodDefinition method)
 		{
