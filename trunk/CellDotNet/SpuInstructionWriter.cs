@@ -33,14 +33,6 @@ namespace CellDotNet
 		    VirtualRegister rt = NextRegister();
 		    WriteRR(opcode, ra, rb, rt);
 		    return rt;
-/*
-			SpuInstruction inst = new SpuInstruction(opcode);
-			inst.Ra = ra;
-			inst.Rb = rb;
-			inst.Rt = NextRegister();
-			AddInstruction(inst);
-			return inst.Rt;
- */
 		}
 
         private void WriteRR(SpuOpCode opcode, VirtualRegister ra, VirtualRegister rb, VirtualRegister rt)
@@ -55,60 +47,11 @@ namespace CellDotNet
 		private VirtualRegister WriteRR2(SpuOpCode opcode, VirtualRegister ra)
 		{
 		    return WriteRR(opcode, ra, NextRegister());
-/*
-			SpuInstruction inst = new SpuInstruction(opcode);
-			inst.Ra = ra;
-            inst.Rt = NextRegister();
-			AddInstruction(inst);
-			return inst.Rt;
- */
 		}
 
 		private VirtualRegister WriteRR1(SpuOpCode opcode)
 		{
 		    return WriteRR(opcode, NextRegister(), NextRegister());
-/*
-			SpuInstruction inst = new SpuInstruction(opcode);
-            inst.Rt = NextRegister();
-			AddInstruction(inst);
-			return inst.Rt;
- */
-		}
-
-        // TODO brugen af denne funktion bør astattes af den neden for.
-		private void WriteRR1DE(SpuOpCode opcode, VirtualRegister ra)
-		{
-		    WriteRR2DE(opcode, ra);
-/*
-			SpuInstruction inst = new SpuInstruction(opcode);
-			inst.Ra = ra;
-			AddInstruction(inst);
- */
-		}
-
-        private void WriteRR1DE(SpuOpCode opcode, VirtualRegister ra, bool D, bool E)
-        {
-            WriteRR2DE(opcode, ra, D, E);
-/*
-            SpuInstruction inst = new SpuInstruction(opcode);
-            inst.Ra = ra;
-            inst.Constant  = (D) ? 0x20 : 0x00; // 0x20 = 0100000b
-            inst.Constant |= (E) ? 0x10 : 0x00; // 0x10 = 0010000b
-            AddInstruction(inst);
- */
-        }
-
-        // TODO brugen af denne funktion bør astattes af den neden for.
-        private VirtualRegister WriteRR2DE(SpuOpCode opcode, VirtualRegister ra)
-		{
-		    return WriteRR2DE(opcode, ra, false, false);
-/*
-			SpuInstruction inst = new SpuInstruction(opcode);
-			inst.Ra = ra;
-			inst.Rt = NextRegister();
-			AddInstruction(inst);
-			return inst.Rt;
- */
 		}
 
         private VirtualRegister WriteRR2DE(SpuOpCode opcode, VirtualRegister ra, bool D, bool E)
@@ -206,13 +149,6 @@ namespace CellDotNet
 		}
 
 		// custom instructions ===============================================
-
-//		public void WriteStop()
-//		{
-//			SpuInstruction inst = new SpuInstruction(SpuOpCode.stop);
-//			inst.Constant = 0;
-//			AddInstruction(inst);
-//		}
 
 		/// <summary>
 		/// Pseudo instruction.
