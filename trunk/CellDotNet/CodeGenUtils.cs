@@ -12,18 +12,34 @@ namespace CellDotNet
 	[TestFixture, Ignore("Only for generating code.")]
 	public class CodeGenUtils
 	{
-		[Test]
-		public void GenerateILFlowNextOpCodeSwitchCases()
+		/// <summary>
+		/// Returns all IL opcodes.
+		/// </summary>
+		/// <returns></returns>
+		private List<OpCode> GetILOpcodes()
 		{
-			TextWriter sw = Console.Out;
-			FieldInfo[] fields = typeof (OpCodes).GetFields();
+			List<OpCode> list=  new List<OpCode>();
+			FieldInfo[] fields = typeof(OpCodes).GetFields();
 
 			foreach (FieldInfo fi in fields)
 			{
 				if (fi.FieldType != typeof(OpCode))
 					continue;
 
-				OpCode oc = (OpCode) fi.GetValue(null);
+				OpCode oc = (OpCode)fi.GetValue(null);
+				list.Add(oc);
+			}
+
+			return list;
+		}
+
+		[Test]
+		public void GenerateILFlowNextOpCodeSwitchCases()
+		{
+			TextWriter sw = Console.Out;
+
+			foreach (OpCode oc in GetILOpcodes())
+			{
 				if (oc.FlowControl != FlowControl.Next)
 					continue;
 
@@ -32,6 +48,25 @@ namespace CellDotNet
 
 				sw.Write("\t\t\tcase Code.{0}: // {1}\r\n", oc.Code, oc.Name);
 			}
+		}
+
+		/// <summary>
+		/// Generates enumeration values 
+		/// </summary>
+		[Test]
+		public void GenerateILEnumValues()
+		{
+			StringWriter sw = new StringWriter();
+
+			foreach (OpCode oc in GetILOpcodes())
+			{
+				if (oc.OpCodeType == OpCodeType.Macro)
+					sw.Write("\t\t// {0} = {1}, // {2} \r\n", oc.Code, (int) oc.Code, oc.OpCodeType);
+				else
+					sw.Write("\t\t{0} = {1}, // {2} \r\n", oc.Code, (int) oc.Code, oc.OpCodeType);
+			}
+
+			Console.Write(sw.GetStringBuilder().ToString());
 		}
 
 

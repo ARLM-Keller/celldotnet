@@ -91,7 +91,16 @@ namespace CellDotNet
 					t = StackTypeDescription.None;
 					break;
 				case FlowControl.Call:
-					throw new NotImplementedException("Message call not implemented.");
+					MethodCallInstruction mci = (MethodCallInstruction) inst;
+
+					// TODO: Handle void type.
+					t = GetCilNumericType(mci.Method.ReturnType.ReturnType);
+					foreach (TreeInstruction param in mci.Parameters)
+					{
+						DeriveType(param, level + 1);
+					}
+//					throw new NotImplementedException("Message call not implemented.");
+					break;
 				case FlowControl.Cond_Branch:
 					if (level != 0)
 						throw new NotImplementedException("Only root branches are implemented.");
@@ -170,8 +179,12 @@ namespace CellDotNet
 					t = StackTypeDescription.Float64;
 					break;
 				case Code.Dup: // dup
-				case Code.Pop: // pop
 					throw new NotImplementedException("dup, pop");
+				case Code.Pop: // pop
+					if (level != 0)
+						throw new NotImplementedException("Pop only supported at root level.");
+					t = StackTypeDescription.None;
+					break;
 				case Code.Ldind_I1: // ldind.i1
 					t = StackTypeDescription.Int8;
 					break;
@@ -604,16 +617,40 @@ namespace CellDotNet
 					case PopBehavior.PopAll: // "leave"
 						throw new NotImplementedException("PopAll");
 					case PopBehavior.VarPop: // "ret"
-						if (inst.OpCode != OpCodes.Ret)
-							throw new Exception("Method calls are not supported.");
-						// CLI: "The 10 evaluation stack for the current method must be empty except for the value to be returned."
-						if (stack.Count > 0)
+						if (inst.OpCode == OpCodes.Ret)
 						{
-							treeinst.Left = stack[0];
-							if (stack.Count > 1)
-								throw new ILException("Stack.Count > 1 ??");
-							stack.Clear();
+							// CLI: "The 10 evaluation stack for the current method must be empty except for the value to be returned."
+							if (stack.Count > 0)
+							{
+								treeinst.Left = stack[0];
+								if (stack.Count > 1)
+									throw new ILException("Stack.Count > 1 ??");
+								stack.Clear();
+							}							
 						}
+						else if (inst.OpCode.FlowControl == FlowControl.Call)
+						{
+							// Build a method call from the stack.
+							MethodReference mr = (MethodReference) inst.Operand;
+							if (stack.Count < mr.Parameters.Count)
+								throw new ILException("Too few parameters on stack.");
+
+							MethodCallInstruction mci = new MethodCallInstruction(mr, inst.OpCode);
+							mci.Offset = inst.Offset;
+							for (int i = 0; i < mr.Parameters.Count; i++)
+							{
+								mci.Parameters.Add(stack[stack.Count - mr.Parameters.Count + i]);
+							}
+							stack.RemoveRange(stack.Count - mr.Parameters.Count, mr.Parameters.Count);
+
+							// HACK: Only works for non-void methods.
+							pushcount = 1;
+
+							treeinst = mci;
+						}
+						else 
+							throw new Exception("Unknown VarPop.");
+//							throw new Exception("Method calls are not supported.");
 						break;
 					default:
 						if (popbehavior != PopBehavior.Pop0)
@@ -692,6 +729,11 @@ namespace CellDotNet
 			}
 		}
 
+		/// <summary>
+		/// Returns the number of values pushed by the opcode. -1 is returned for function calls.
+		/// </summary>
+		/// <param name="code"></param>
+		/// <returns></returns>
 		static int GetPushCount(OpCode code)
 		{
 			int pushCount;
@@ -707,12 +749,12 @@ namespace CellDotNet
 				case StackBehaviour.Pushr4:
 				case StackBehaviour.Pushr8:
 				case StackBehaviour.Pushref:
-				case StackBehaviour.Varpush:
 					pushCount = 1;
 					break;
 				case StackBehaviour.Push1_push1:
 					pushCount = 2;
 					break;
+				case StackBehaviour.Varpush:
 				default:
 					pushCount = -1;
 					break;

@@ -45,6 +45,7 @@
     <Compile Include="BasicBlock.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="CodeGenUtils.cs" />
+    <Compile Include="CompileInfoTest.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="HardwareRegister.cs" />
     <Compile Include="ILTreeSpuWriter.cs" />
@@ -53,6 +54,7 @@
     <Compile Include="CompileInfo.cs" />
     <Compile Include="InstructionTreeLinearizer.cs" />
     <Compile Include="LiveInterval.cs" />
+    <Compile Include="MethodCallInstruction.cs" />
     <Compile Include="RegAlloc.cs" />
     <Compile Include="SimpleLiveAnalyzer.cs" />
     <Compile Include="SortedLinkedList.cs" />
@@ -65,12 +67,13 @@
     <Compile Include="SpuInstructionWriter_autogen.cs" />
     <Compile Include="StackLocation.cs" />
     <Compile Include="StorLocation.cs" />
+    <Compile Include="TreeDrawer.cs" />
     <Compile Include="VirtualRegister.cs" />
     <Compile Include="Set.cs" />
     <Compile Include="TreeInstruction.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Cecil\Mono.Cecil.csproj">
+    <ProjectReference Include="..\..\Cecil\lib\Mono.Cecil.csproj">
       <Project>{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}</Project>
       <Name>Mono.Cecil</Name>
     </ProjectReference>

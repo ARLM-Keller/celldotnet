@@ -81,6 +81,12 @@ namespace CellDotNet
 			set { _stackTyp = value; }
 		}
 
+		#region Tree iteration / checking.
+
+		/// <summary>
+		/// For checking tree construction.
+		/// </summary>
+		/// <returns></returns>
 		public IEnumerable<TreeInstruction> IterateInorder()
 		{
 			List<TreeInstruction> list = new List<TreeInstruction>();
@@ -88,7 +94,11 @@ namespace CellDotNet
 			return list;
 		}
 
-		private void BuildPreorder(List<TreeInstruction> list)
+		/// <summary>
+		/// For checking tree construction.
+		/// </summary>
+		/// <param name="list"></param>
+		public virtual void BuildPreorder(List<TreeInstruction> list)
 		{
 			list.Add(this);
 			if (Left != null)
@@ -97,6 +107,9 @@ namespace CellDotNet
 				Right.BuildPreorder(list);
 		}
 
+		/// <summary>
+		/// For checking tree construction.
+		/// </summary>
 		public int TreeSize
 		{
 			get
@@ -109,5 +122,7 @@ namespace CellDotNet
 				return i;
 			}
 		}
+
+		#endregion
 	}
 }
