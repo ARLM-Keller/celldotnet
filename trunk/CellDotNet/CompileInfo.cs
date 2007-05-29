@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Mono.Cecil;
+using cecil = Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace CellDotNet
@@ -30,6 +32,79 @@ namespace CellDotNet
 			BuildBasicBlocks(method);
 			CheckTreeInstructionCount(method.Body.Instructions.Count);
 			DeriveTypes();
+		}
+
+		private TypeCache _typecache = new TypeCache();
+
+		/// <summary>
+		/// Translates the type reference to a <see cref="TypeDescription"/>.
+		/// </summary>
+		/// <param name="reference"></param>
+		/// <returns></returns>
+		private TypeDescription GetTypeDescription(TypeReference reference)
+		{
+			return _typecache.GetTypeDescription(reference);
+		}
+
+		/// <summary>
+		/// Creates and caches <see cref="TypeDescription"/> objects.
+		/// </summary>
+		public class TypeCache
+		{
+			/// <summary>
+			/// Key is assembly name and full type name.
+			/// </summary>
+			private Dictionary<KeyValuePair<string, string>, TypeDescription> _history;
+
+			public TypeCache()
+			{
+				_history = new Dictionary<KeyValuePair<string, string>, TypeDescription>();
+			}
+
+			public TypeDescription GetTypeDescription(TypeReference type)
+			{
+				AssemblyNameReference anref = (AssemblyNameReference)type.Scope;
+
+				KeyValuePair<string, string> key = new KeyValuePair<string, string>(anref.Name, type.FullName);
+				TypeDescription desc;
+				if (_history.TryGetValue(key, out desc))
+					return desc;
+
+				desc = CreateTypeDescription(type);
+				_history.Add(key, desc);
+
+				return desc;
+			}
+
+			private TypeDescription CreateTypeDescription(TypeReference type)
+			{
+				AssemblyNameReference anref = (AssemblyNameReference)type.Scope;
+
+				Assembly assembly = Array.Find(AppDomain.CurrentDomain.GetAssemblies(),
+				                                delegate(Assembly ass) { return ass.FullName == anref.FullName; });
+
+				// "ref" types: type will be a ReferenceType.
+				// "*" types: type will be a PointerType.
+				string typename;
+				if (type is cecil.ReferenceType)
+					typename = ((cecil.ReferenceType) type).ElementType.FullName;
+				else if (type is PointerType)
+					typename = ((PointerType) type).ElementType.FullName;
+				else
+					typename = type.FullName;
+
+				Type reflectiontype = assembly.GetType(typename);
+				if (reflectiontype == null)
+					throw new Exception("Huh ??");
+
+				// TODO: This reference stuff is wrong.
+				if (type is cecil.ReferenceType)
+					return new TypeDescription(reflectiontype.MakeByRefType());
+				else if (type is PointerType)
+					return new TypeDescription(reflectiontype.MakePointerType());
+				else
+					return new TypeDescription(reflectiontype);
+			}
 		}
 
 
@@ -418,16 +493,13 @@ namespace CellDotNet
 					throw new NotImplementedException();
 				case Code.Ldarg: // ldarg
 				case Code.Ldloca: // ldloca
-					t = GetCilNumericType(optype);
-					if (t == StackTypeDescription.None)
-						throw new NotImplementedException("Only numeric CIL types are implemented.");
-
-					break;
 				case Code.Ldloc: // ldloc
 				case Code.Ldarga: // ldarga
 					t = GetCilNumericType(optype);
 					if (t == StackTypeDescription.None)
 						throw new NotImplementedException("Only numeric CIL types are implemented.");
+					if (inst.Opcode.Code == Code.Ldloca || inst.Opcode.Code == Code.Ldarga)
+						t = t.GetManagedPointer();
 
 					break;
 				case Code.Starg: // starg
@@ -488,7 +560,7 @@ namespace CellDotNet
 
 			// Is it a byref type?
 			if (tref is ReferenceType)
-				fullname = ((ReferenceType) tref).ElementType.FullName;
+				fullname = ((cecil.ReferenceType) tref).ElementType.FullName;
 			else if (tref is PointerType)
 			{
 				// HACK: pretend it's a managed pointer.
@@ -546,8 +618,10 @@ namespace CellDotNet
 					return StackTypeDescription.None;
 			}
 
-			if (tref is ReferenceType || tref is PointerType)
-				std = std.GetByRef();
+			if (tref is ReferenceType)
+				std = std.GetManagedPointer();
+			if (tref is PointerType)
+				std = std.GetPointer();
 
 			return std;
 		}
@@ -593,7 +667,7 @@ namespace CellDotNet
 			foreach (Instruction inst in method.Body.Instructions)
 			{
 				TreeInstruction treeinst;
-				PopBehavior popbehavior = GetPopCount(inst.OpCode);
+				PopBehavior popbehavior = GetPopBehavior(inst.OpCode);
 				int pushcount = GetPushCount(inst.OpCode);
 
 				treeinst = new TreeInstruction();
@@ -651,6 +725,11 @@ namespace CellDotNet
 						else 
 							throw new Exception("Unknown VarPop.");
 //							throw new Exception("Method calls are not supported.");
+						break;
+					case PopBehavior.Pop3:
+						if (inst.OpCode.StackBehaviourPush != StackBehaviour.Push0)
+							throw new ILException("Pop3 with a push != 0?");
+						throw new NotImplementedException();
 						break;
 					default:
 						if (popbehavior != PopBehavior.Pop0)
@@ -774,7 +853,7 @@ namespace CellDotNet
 
 		}
 
-		static PopBehavior GetPopCount(OpCode code)
+		static PopBehavior GetPopBehavior(OpCode code)
 		{
 			PopBehavior pb;
 

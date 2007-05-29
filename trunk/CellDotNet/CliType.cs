@@ -4,32 +4,28 @@ using System.Diagnostics;
 
 namespace CellDotNet
 {
-	/// <summary>
-	/// The basic CLI types.
-	/// </summary>
-	/// <remarks>
-	/// </remarks>
-	enum CliStackType : byte
-	{
-		None = 0,
-		Int32 = 1,
-		Int64 = 2,
-		NativeInt = 3,
-		F = 4,
-		/// <summary>
-		/// Object reference
-		/// </summary>
-		O = 5,
-		/// <summary>
-		/// The "&amp;" type.
-		/// </summary>
-		ManagedPointer = 6
-	}
+//	/// <summary>
+//	/// The basic CLI types.
+//	/// </summary>
+//	/// <remarks>
+//	/// </remarks>
+//	enum CliStackType : byte
+//	{
+//		None = 0,
+//		Int32 = 1,
+//		Int64 = 2,
+//		NativeInt = 3,
+//		F = 4,
+//		/// <summary>
+//		/// Object reference
+//		/// </summary>
+//		O = 5,
+//		/// <summary>
+//		/// The "&amp;" type.
+//		/// </summary>
+//		ManagedPointer = 6
+//	}
 
-	/// <summary>
-	/// Note that this enum does not contain a ManagedPointer value: 
-	/// Managed pointers are expressed with <see cref="StackTypeDescription"/>.
-	/// </summary>
 	enum CliBasicType : byte 
 	{
 		None,
@@ -78,21 +74,54 @@ namespace CellDotNet
 		public static readonly StackTypeDescription NativeInt = new StackTypeDescription(CliBasicType.NativeInt, CliNumericSize.None, true);
 		public static readonly StackTypeDescription NativeUInt = new StackTypeDescription(CliBasicType.NativeInt, CliNumericSize.None, false);
 
+		private CliBasicType _cliBasicType;
+		private bool _isSigned;
+		private CliNumericSize _numericSize;
+		private int _indirectionLevel;
+		private bool _isManaged;
+		private TypeDescription _complexType;
+
+		/// <summary>
+		/// For simple types.
+		/// </summary>
+		/// <param name="_cliBasicType"></param>
+		/// <param name="_numericSize"></param>
+		/// <param name="_isSigned"></param>
 		public StackTypeDescription(CliBasicType _cliBasicType, CliNumericSize _numericSize, bool _isSigned)
 		{
 			this._cliBasicType = _cliBasicType;
 			this._isSigned = _isSigned;
 			this._numericSize = _numericSize;
-			_isByRef = false;
+			_indirectionLevel = 0;
+			_isManaged = false;
+			_complexType = null;
 		}
 
-		private CliBasicType _cliBasicType;
+		/// <summary>
+		/// For complex types.
+		/// </summary>
+		/// <param name="complexType"></param>
+		public StackTypeDescription(TypeDescription complexType)
+		{
+			_cliBasicType = complexType.Type.IsValueType ? CliBasicType.Valuetype : CliBasicType.ObjectType;
+			_isSigned = false;
+			_numericSize = CliNumericSize.None;
+			_indirectionLevel = 0;
+			_isManaged = false;
+			_complexType = complexType;
+		}
+
 		public CliBasicType CliBasicType
 		{
 			get { return _cliBasicType; }
 		}
 
-		private bool _isSigned;
+		public TypeDescription ComplexType
+		{
+			get { return _complexType; }
+		}
+
+
 		public bool IsSigned
 		{
 			get { return _isSigned; }
@@ -145,10 +174,9 @@ namespace CellDotNet
 
 		private string DebuggerDisplay
 		{
-			get { return "" + CliType + (IsByRef ? "&" : ""); }
+			get { return "" + CliType + (IndirectionLevel > 0 ? "&" : ""); }
 		}
 
-		private CliNumericSize _numericSize;
 		/// <summary>
 		/// Size of a numeric value in bytes.
 		/// </summary>
@@ -157,43 +185,78 @@ namespace CellDotNet
 			get { return _numericSize; }
 		}
 
-		private bool _isByRef;
 		/// <summary>
-		/// Indicates whether the type is a managed pointer (&amp; type).
+		/// Both managed and unmanaged pointers.
 		/// </summary>
+		public int IndirectionLevel
+		{
+			get { return _indirectionLevel; }
+		}
+
 		public bool IsByRef
 		{
-			get { return _isByRef; }
+			get { return IndirectionLevel > 0; }
 		}
 
-		public StackTypeDescription GetByRef()
+		public StackTypeDescription GetManagedPointer()
 		{
-			if (_isByRef)
-				throw new InvalidOperationException("Already byref.");
+			if (_isManaged)
+				throw new InvalidOperationException();
 
-			StackTypeDescription e = this;
-			e._isByRef = true;
-			return e;
+			StackTypeDescription rv = this;
+			rv._isManaged = true;
+			rv._indirectionLevel++;
+			return rv;
 		}
 
-		public StackTypeDescription GetByValue()
+		/// <summary>
+		/// Only relevant for pointer type: Says whether the pointer is managed or unmanaged.
+		/// </summary>
+		public bool IsManaged
 		{
-			if (!_isByRef)
+			get { return _isManaged; }
+		}
+
+		public StackTypeDescription GetPointer()
+		{
+			if (_isManaged)
+				throw new InvalidOperationException();
+
+			StackTypeDescription rv = this;
+			rv._indirectionLevel++;
+			return rv;
+		}
+
+		public StackTypeDescription Dereference()
+		{
+			if (IndirectionLevel == 0)
 				throw new InvalidOperationException("Type is not byref.");
 
 			StackTypeDescription e = this;
-			e._isByRef = false;
+			e._indirectionLevel--;
+			e._isManaged = false;
 			return e;
 		}
 
-		#region Standard equality stuff.
-
-		public static bool operator ==(StackTypeDescription x, StackTypeDescription y)
+		public StackTypeDescription DereferenceFully()
 		{
-			return x._cliBasicType == y._cliBasicType &&
-			       x._isByRef == y._isByRef &&
-			       x._isSigned == y._isSigned &&
-			       x._numericSize == y._numericSize;
+			if (IndirectionLevel == 0)
+				throw new InvalidOperationException("Type is not byref.");
+
+			StackTypeDescription e = this;
+			e._indirectionLevel = 0;
+			e._isManaged = false;
+			return e;
+		}
+
+		static public bool operator==(StackTypeDescription x, StackTypeDescription y)
+		{
+			return (x._cliBasicType == y._cliBasicType) &&
+			       (x._complexType == y._complexType) &&
+			       (x._indirectionLevel == y._indirectionLevel) &&
+			       (x._isManaged == y._isManaged) &&
+			       (x._isSigned == y._isSigned) &&
+			       (x._numericSize == y._numericSize);
 		}
 
 		public static bool operator !=(StackTypeDescription x, StackTypeDescription y)
@@ -203,11 +266,9 @@ namespace CellDotNet
 
 		public override bool Equals(object obj)
 		{
-			StackTypeDescription? o = obj as StackTypeDescription?;
-			if (o != null)
-				return this == o;
-			else
-				return false;
+			if (!(obj is StackTypeDescription)) return false;
+			StackTypeDescription stackTypeDescription = (StackTypeDescription) obj;
+			return this == stackTypeDescription;
 		}
 
 		public override int GetHashCode()
@@ -215,10 +276,11 @@ namespace CellDotNet
 			int result = _cliBasicType.GetHashCode();
 			result = 29*result + _isSigned.GetHashCode();
 			result = 29*result + _numericSize.GetHashCode();
-			result = 29*result + _isByRef.GetHashCode();
+			result = 29*result + _indirectionLevel;
+			result = 29*result + _isManaged.GetHashCode();
+			result = 29*result + (_complexType != null ? _complexType.GetHashCode() : 0);
 			return result;
 		}
-		#endregion // Standard equality stuff.
 	}
 
 
