@@ -16,7 +16,9 @@ namespace CellDotNet
 		{
 			BasicTestDelegate del = delegate
 										{
-											Math.Max(Math.Min(3, 1), 5);
+											int rem;
+											Math.DivRem(9, 13, out rem);
+											Math.Max(Math.Min(3, 1), 5L);
 										};
 			MethodDefinition method = Class1.GetMethod(del);
 			CompileInfo ci = new CompileInfo(method);

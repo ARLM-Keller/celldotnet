@@ -48,7 +48,7 @@ namespace CellDotNet
 					Console.Write(" " + inst.Operand);
 			}
 			if (inst.StackType != StackTypeDescription.None)
-				Console.Write("   " + inst.StackType.CliType + (inst.StackType.IsByRef ? "&" : ""));
+				Console.Write("   " + inst.StackType.CliType + (inst.StackType.IsByRef ? "&" : "")); // Fix &
 			else
 				Console.Write("   -");
 			Console.WriteLine();

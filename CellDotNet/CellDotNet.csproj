@@ -68,6 +68,7 @@
     <Compile Include="StackLocation.cs" />
     <Compile Include="StorLocation.cs" />
     <Compile Include="TreeDrawer.cs" />
+    <Compile Include="TypeDescription.cs" />
     <Compile Include="VirtualRegister.cs" />
     <Compile Include="Set.cs" />
     <Compile Include="TreeInstruction.cs" />

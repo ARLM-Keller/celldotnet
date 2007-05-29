@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Metadata;
@@ -9,18 +11,17 @@ namespace CellDotNet
 {
 	internal class Class1
 	{
-		static public void Main(string[] args)
+		unsafe static public void Main(string[] args)
 		{
-			RunSpu();
-//			TestBuildTree();
-//			TestParseFunctionCall();
-//			DoExtremelySimpleCodeGen();
+//			RunSpu();
+//			TypeExperimenalStuff(3);
+			TestBuildTree();
+//			DoExtremelySimpleParameterCodeGen();
 		}
 
 		delegate void RefArgumentDelegate(ref int i);
-		delegate void NoArgumentDelegate();
 
-		private static void DoExtremelySimpleCodeGen()
+		private static void DoExtremelySimpleParameterCodeGen()
 		{
 			RefArgumentDelegate del = delegate(ref int i) { i = 0x1ffff; };
 			MethodDefinition method = GetMethod(del);
@@ -34,7 +35,6 @@ namespace CellDotNet
 			Console.WriteLine("Disassembly: ");
 			Console.WriteLine(ilist.Disassemble());
 		}
-
 
 		/// <summary>
 		/// A delegate that takes no arguments and has void return type.
@@ -85,14 +85,25 @@ namespace CellDotNet
 
 		}
 
-		private static void DisplayMetadataTokens(int i)
-		{
-			Action<int> del = DisplayMetadataTokens;
-			MethodDefinition method = GetMethod(del);
-			TypeReference tref = method.Parameters[0].ParameterType;
+		unsafe private static void RefIntMethod(int *i) {}
 
-			AssemblyNameReference anref = (AssemblyNameReference) tref.Scope;
-			AssemblyDefinition def = tref.Module.Assembly.Resolver.Resolve(anref);
+		private static void TypeExperimenalStuff(int i)
+		{
+			MethodInfo refintmethod = Array.Find(typeof(Class1).GetMethods(BindingFlags.NonPublic | BindingFlags.Static), delegate(MethodInfo mi2) { return mi2.Name == "RefIntMethod"; });
+			MethodDefinition methodrefint = GetMethod(refintmethod);
+			TypeReference trefint = methodrefint.Parameters[0].ParameterType;
+
+			Action<int> delint = delegate { };
+			MethodInfo intmethod = delint.Method;
+			MethodDefinition methodint = GetMethod(intmethod);
+			TypeReference tint = methodint.Parameters[0].ParameterType;
+
+			CompileInfo.TypeCache tc = new CompileInfo.TypeCache();
+			TypeDescription td = tc.GetTypeDescription(tint);
+			TypeDescription td2 = tc.GetTypeDescription(trefint);
+
+			AssemblyNameReference anref = (AssemblyNameReference) tint.Scope;
+			AssemblyDefinition def = tint.Module.Assembly.Resolver.Resolve(anref);
 
 //			Console.WriteLine("cecil method token: " + method.MetadataToken.ToUInt());
 //			Console.WriteLine("reflection method token: " + del.Method.MetadataToken);
@@ -119,6 +130,8 @@ namespace CellDotNet
 						{
 							j--;
 						}
+//						int[] arr = new int[4];
+//						arr[1] = 9;
 
 						return j * 2;
 					};
@@ -132,20 +145,14 @@ namespace CellDotNet
 
 		public static MethodDefinition GetMethod(Delegate a)
 		{
-			AssemblyDefinition ass = AssemblyFactory.GetAssembly(a.Method.DeclaringType.Assembly.Location);
-			MetadataToken token = new MetadataToken(a.Method.DeclaringType.MetadataToken);
-			foreach (TypeDefinition type in ass.MainModule.Types)
-			{
-				if (type.MetadataToken != token)
-					continue;
-				foreach (MethodDefinition meth in type.Methods)
-				{
-					if (meth.MetadataToken == new MetadataToken(a.Method.MetadataToken))
-						return meth;
-				}
-			}
+			MethodInfo m = a.Method;
+			return GetMethod(m);
+		}
 
-			throw new ArgumentException("Can't find the type or method");
+		private static MethodDefinition GetMethod(MethodInfo m)
+		{
+			AssemblyDefinition ass = AssemblyFactory.GetAssembly(m.DeclaringType.Assembly.Location);
+			return (MethodDefinition) ass.MainModule.LookupByToken(new MetadataToken(m.MetadataToken));
 		}
 	}
 }

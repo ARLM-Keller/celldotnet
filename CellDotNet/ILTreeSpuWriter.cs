@@ -155,7 +155,7 @@ namespace CellDotNet
 					break;
 				case Code.Stind_I4:
 					{
-						if (!inst.Left.StackType.IsByRef) throw new InvalidILTreeException();
+						if (inst.Left.StackType.IndirectionLevel != 1) throw new InvalidILTreeException();
 						VirtualRegister ptr = GetRegisterForReference(inst.Left);
 
 						VirtualRegister loadedvalue = _writer.WriteLqd(ptr, 0);
