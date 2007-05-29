@@ -75,7 +75,6 @@ namespace CellDotNet
 
         public VirtualRegister Rt
         {
-//            get { return _rt; }
 			get { return (OpCode.NoRegisterWrite)? null : _rt; }
             set { _rt = value; }
         }
