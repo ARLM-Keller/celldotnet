@@ -74,12 +74,12 @@ namespace CellDotNet
 		public static readonly StackTypeDescription NativeInt = new StackTypeDescription(CliBasicType.NativeInt, CliNumericSize.None, true);
 		public static readonly StackTypeDescription NativeUInt = new StackTypeDescription(CliBasicType.NativeInt, CliNumericSize.None, false);
 
-		private CliBasicType _cliBasicType;
+		public CliBasicType _cliBasicType;
 		private bool _isSigned;
 		private CliNumericSize _numericSize;
-		private int _indirectionLevel;
+		private short _indirectionLevel;
 		private bool _isManaged;
-		private TypeDescription _complexType;
+		public TypeDescription _complexType;
 
 		/// <summary>
 		/// For simple types.
@@ -249,6 +249,55 @@ namespace CellDotNet
 			return e;
 		}
 
+		/// <summary>
+		/// Returns the <see cref="System.Type"/> representation of the type, also if it is a simle type.
+		/// Throws an <see cref="InvalidOperationException"/> if this type is a pointer type - that is, if <see cref="IndirectionLevel"/> > 0.
+		/// </summary>
+		/// <returns></returns>
+		public Type GetNonPointerType()
+		{
+			if (IndirectionLevel > 0)
+				throw new InvalidOperationException("Only valid for non-pointer types.");
+
+			switch (this.CliType)
+			{
+				case CliType.None:
+					return null;
+				case CliType.Int8:
+					return typeof (sbyte);
+				case CliType.UInt8:
+					return typeof(byte);
+				case CliType.Int16:
+					return typeof(short);
+				case CliType.UInt16:
+					return typeof(ushort);
+				case CliType.Int32:
+					return typeof(int);
+				case CliType.UInt32:
+					return typeof(uint);
+				case CliType.Int64:
+					return typeof(long);
+				case CliType.UInt64:
+					return typeof(ulong);
+				case CliType.NativeInt:
+					return typeof(IntPtr);
+				case CliType.NativeUInt:
+					return typeof(UIntPtr);
+				case CliType.Float32:
+					return typeof(sbyte);
+				case CliType.Float64:
+					return typeof(float);
+				case CliType.ValueType:
+				case CliType.ObjectType:
+					return ComplexType.Type;
+				case CliType.ManagedPointer:
+				default:
+					throw new InvalidOperationException();
+			}
+		}
+
+		#region Equality stuff
+
 		static public bool operator==(StackTypeDescription x, StackTypeDescription y)
 		{
 			return (x._cliBasicType == y._cliBasicType) &&
@@ -281,6 +330,8 @@ namespace CellDotNet
 			result = 29*result + (_complexType != null ? _complexType.GetHashCode() : 0);
 			return result;
 		}
+
+		#endregion
 	}
 
 
