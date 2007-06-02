@@ -24,7 +24,7 @@ namespace CellDotNet
 			get { return _methodDefinition; }
 		}
 
-		public CompileInfo(MethodDefinition	method)
+		public CompileInfo(MethodDefinition method)
 		{
 			method.Body.Simplify();
 			_methodDefinition = method;
@@ -65,6 +65,21 @@ namespace CellDotNet
 			{
 				AssemblyNameReference anref = (AssemblyNameReference)type.Scope;
 
+				// Is it a byref type?
+				string fullname;
+				if (type is ReferenceType)
+					//					fullname = ((ReferenceType)type).ElementType.FullName;
+					throw new ArgumentException();
+				else if (type is PointerType)
+				{
+					throw new ArgumentException();
+					// HACK: pretend it's a managed pointer.
+					fullname = ((PointerType)type).ElementType.FullName;
+				}
+				//				else
+				//					fullname = type.FullName;
+
+
 				KeyValuePair<string, string> key = new KeyValuePair<string, string>(anref.Name, type.FullName);
 				TypeDescription desc;
 				if (_history.TryGetValue(key, out desc))
@@ -81,15 +96,15 @@ namespace CellDotNet
 				AssemblyNameReference anref = (AssemblyNameReference)type.Scope;
 
 				Assembly assembly = Array.Find(AppDomain.CurrentDomain.GetAssemblies(),
-				                                delegate(Assembly ass) { return ass.FullName == anref.FullName; });
+												delegate(Assembly ass) { return ass.FullName == anref.FullName; });
 
 				// "ref" types: type will be a ReferenceType.
 				// "*" types: type will be a PointerType.
 				string typename;
 				if (type is cecil.ReferenceType)
-					typename = ((cecil.ReferenceType) type).ElementType.FullName;
+					typename = ((cecil.ReferenceType)type).ElementType.FullName;
 				else if (type is PointerType)
-					typename = ((PointerType) type).ElementType.FullName;
+					typename = ((PointerType)type).ElementType.FullName;
 				else
 					typename = type.FullName;
 
@@ -149,7 +164,7 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="inst"></param>
 		/// <param name="level"></param>
-		private static void DeriveType(TreeInstruction inst, int level)
+		private void DeriveType(TreeInstruction inst, int level)
 		{
 			if (inst.Left != null)
 				DeriveType(inst.Left, level + 1);
@@ -166,15 +181,15 @@ namespace CellDotNet
 					t = StackTypeDescription.None;
 					break;
 				case FlowControl.Call:
-					MethodCallInstruction mci = (MethodCallInstruction) inst;
+					MethodCallInstruction mci = (MethodCallInstruction)inst;
 
 					// TODO: Handle void type.
-					t = GetCilNumericType(mci.Method.ReturnType.ReturnType);
+					t = GetStackTypeDescription(mci.Method.ReturnType.ReturnType);
 					foreach (TreeInstruction param in mci.Parameters)
 					{
 						DeriveType(param, level + 1);
 					}
-//					throw new NotImplementedException("Message call not implemented.");
+					//					throw new NotImplementedException("Message call not implemented.");
 					break;
 				case FlowControl.Cond_Branch:
 					if (level != 0)
@@ -217,7 +232,7 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="inst"></param>
 		/// <param name="level"></param>
-		private static StackTypeDescription DeriveFlowNextType(TreeInstruction inst, int level)
+		private StackTypeDescription DeriveFlowNextType(TreeInstruction inst, int level)
 		{
 			// The cases are generated and all opcodes with flow==next are present 
 			// (except macro codes such as ldc.i4.3).
@@ -225,12 +240,12 @@ namespace CellDotNet
 
 			TypeReference optype;
 			if (inst.Operand is TypeReference)
-				optype = ((TypeReference) inst.Operand);
+				optype = ((TypeReference)inst.Operand);
 			else if (inst.Operand is VariableReference)
 				optype = ((VariableReference)inst.Operand).VariableType;
 			else if (inst.Operand is ParameterReference)
 				optype = ((ParameterReference)inst.Operand).ParameterType;
-			else 
+			else
 				optype = null;
 
 			switch (inst.Opcode.Code)
@@ -332,7 +347,7 @@ namespace CellDotNet
 						// Must be native (u)int.
 						if (inst.Left.StackType.IsSigned)
 							t = StackTypeDescription.NativeInt;
-						else 
+						else
 							t = StackTypeDescription.NativeUInt;
 					}
 					break;
@@ -495,7 +510,7 @@ namespace CellDotNet
 				case Code.Ldloca: // ldloca
 				case Code.Ldloc: // ldloc
 				case Code.Ldarga: // ldarga
-					t = GetCilNumericType(optype);
+					t = GetStackTypeDescription(optype);
 					if (t == StackTypeDescription.None)
 						throw new NotImplementedException("Only numeric CIL types are implemented.");
 					if (inst.Opcode.Code == Code.Ldloca || inst.Opcode.Code == Code.Ldarga)
@@ -524,27 +539,27 @@ namespace CellDotNet
 			return t;
 		}
 
-//		private static Dictionary<uint, CliType> s_metadataCilTypes = BuildBasicMetadataCilDictionary();
-//		private static Dictionary<uint, CliType> BuildBasicMetadataCilDictionary()
-//		{
-//			Dictionary<uint, CliType> dict = new Dictionary<uint, CliType>();
-//
-//			// TODO: the typeof() token values are not what cecil returns...
-//			dict.Add((uint) typeof(sbyte).MetadataToken, CliType.Int8);
-//			dict.Add((uint) typeof(byte).MetadataToken, CliType.UInt8);
-//			dict.Add((uint) typeof(short).MetadataToken, CliType.Int16);
-//			dict.Add((uint) typeof(ushort).MetadataToken, CliType.UInt16);
-//			dict.Add((uint) typeof(int).MetadataToken, CliType.Int32);
-//			dict.Add((uint) typeof(uint).MetadataToken, CliType.UInt32);
-//			dict.Add((uint) typeof(long).MetadataToken, CliType.Int64);
-//			dict.Add((uint) typeof(ulong).MetadataToken, CliType.UInt64);
-//			dict.Add((uint) typeof(IntPtr).MetadataToken, CliType.NativeInt);
-//			dict.Add((uint) typeof(UIntPtr).MetadataToken, CliType.NativeUInt);
-//			dict.Add((uint) typeof(float).MetadataToken, CliType.Float32);
-//			dict.Add((uint) typeof(double).MetadataToken, CliType.Float64);
-//
-//			return dict;
-//		}
+		//		private static Dictionary<uint, CliType> s_metadataCilTypes = BuildBasicMetadataCilDictionary();
+		//		private static Dictionary<uint, CliType> BuildBasicMetadataCilDictionary()
+		//		{
+		//			Dictionary<uint, CliType> dict = new Dictionary<uint, CliType>();
+		//
+		//			// TODO: the typeof() token values are not what cecil returns...
+		//			dict.Add((uint) typeof(sbyte).MetadataToken, CliType.Int8);
+		//			dict.Add((uint) typeof(byte).MetadataToken, CliType.UInt8);
+		//			dict.Add((uint) typeof(short).MetadataToken, CliType.Int16);
+		//			dict.Add((uint) typeof(ushort).MetadataToken, CliType.UInt16);
+		//			dict.Add((uint) typeof(int).MetadataToken, CliType.Int32);
+		//			dict.Add((uint) typeof(uint).MetadataToken, CliType.UInt32);
+		//			dict.Add((uint) typeof(long).MetadataToken, CliType.Int64);
+		//			dict.Add((uint) typeof(ulong).MetadataToken, CliType.UInt64);
+		//			dict.Add((uint) typeof(IntPtr).MetadataToken, CliType.NativeInt);
+		//			dict.Add((uint) typeof(UIntPtr).MetadataToken, CliType.NativeUInt);
+		//			dict.Add((uint) typeof(float).MetadataToken, CliType.Float32);
+		//			dict.Add((uint) typeof(double).MetadataToken, CliType.Float64);
+		//
+		//			return dict;
+		//		}
 
 
 		/// <summary>
@@ -553,69 +568,81 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="tref"></param>
 		/// <returns></returns>
-		private static StackTypeDescription GetCilNumericType(TypeReference tref)
+		private StackTypeDescription GetStackTypeDescription(TypeReference tref)
 		{
 			// Should be a faster way to do the lookup than by name...
 			string fullname;
 
+			TypeDescription td;
+
 			// Is it a byref type?
 			if (tref is ReferenceType)
-				fullname = ((cecil.ReferenceType) tref).ElementType.FullName;
+			{
+				td = GetTypeDescription(((ReferenceType)tref).ElementType);
+			}
 			else if (tref is PointerType)
 			{
-				// HACK: pretend it's a managed pointer.
-				fullname = ((PointerType) tref).ElementType.FullName;
+				td = GetTypeDescription(((PointerType)tref).ElementType);
 			}
 			else
-				fullname = tref.FullName;
+			{
+				td = GetTypeDescription(tref);
+			}
 
 			StackTypeDescription std;
-			switch (fullname)
+			if (td.Type.IsPrimitive)
 			{
-				case "System.Boolean":
-					std = StackTypeDescription.Int8;
-					break;
-				case "System.Char":
-					std = StackTypeDescription.UInt16;
-					break;
-				case "System.Byte":
-					std = StackTypeDescription.UInt8;
-					break;
-				case "System.SByte":
-					std = StackTypeDescription.Int8;
-					break;
-				case "System.Short":
-					std = StackTypeDescription.Int16;
-					break;
-				case "System.UShort":
-					std = StackTypeDescription.UInt16;
-					break;
-				case "System.Int32":
-					std = StackTypeDescription.Int32;
-					break;
-				case "System.UInt32":
-					std = StackTypeDescription.UInt32;
-					break;
-				case "System.Int64":
-					std = StackTypeDescription.Int64;
-					break;
-				case "System.UInt64":
-					std = StackTypeDescription.UInt64;
-					break;
-				case "System.Single":
-					std = StackTypeDescription.Float32;
-					break;
-				case "System.Double":
-					std = StackTypeDescription.Float64;
-					break;
-				case "System.IntPtr":
-					std = StackTypeDescription.NativeInt;
-					break;
-				case "System.UIntPtr":
-					std = StackTypeDescription.NativeUInt;
-					break;
-				default:
-					return StackTypeDescription.None;
+				switch (td.Type.FullName)
+				{
+					case "System.Boolean":
+						std = StackTypeDescription.Int8;
+						break;
+					case "System.Char":
+						std = StackTypeDescription.UInt16;
+						break;
+					case "System.Byte":
+						std = StackTypeDescription.UInt8;
+						break;
+					case "System.SByte":
+						std = StackTypeDescription.Int8;
+						break;
+					case "System.Short":
+						std = StackTypeDescription.Int16;
+						break;
+					case "System.UShort":
+						std = StackTypeDescription.UInt16;
+						break;
+					case "System.Int32":
+						std = StackTypeDescription.Int32;
+						break;
+					case "System.UInt32":
+						std = StackTypeDescription.UInt32;
+						break;
+					case "System.Int64":
+						std = StackTypeDescription.Int64;
+						break;
+					case "System.UInt64":
+						std = StackTypeDescription.UInt64;
+						break;
+					case "System.Single":
+						std = StackTypeDescription.Float32;
+						break;
+					case "System.Double":
+						std = StackTypeDescription.Float64;
+						break;
+					case "System.IntPtr":
+						std = StackTypeDescription.NativeInt;
+						break;
+					case "System.UIntPtr":
+						std = StackTypeDescription.NativeUInt;
+						break;
+					default:
+						return StackTypeDescription.None;
+				}
+			}
+			else
+			{
+				std = new StackTypeDescription(td);
 			}
 
 			if (tref is ReferenceType)
@@ -637,8 +664,8 @@ namespace CellDotNet
 			if (tleft.CliBasicType == tright.CliBasicType)
 			{
 				if (!tleft.IsByRef)
-					return new StackTypeDescription(tleft.CliBasicType,  
-						(CliNumericSize) Math.Max((int)tleft.NumericSize, (int)tright.NumericSize), tleft.IsSigned);
+					return new StackTypeDescription(tleft.CliBasicType,
+						(CliNumericSize)Math.Max((int)tleft.NumericSize, (int)tright.NumericSize), tleft.IsSigned);
 				else
 					return StackTypeDescription.NativeInt;
 			}
@@ -700,31 +727,38 @@ namespace CellDotNet
 								if (stack.Count > 1)
 									throw new ILException("Stack.Count > 1 ??");
 								stack.Clear();
-							}							
+							}
 						}
 						else if (inst.OpCode.FlowControl == FlowControl.Call)
 						{
 							// Build a method call from the stack.
-							MethodReference mr = (MethodReference) inst.Operand;
+							MethodReference mr = (MethodReference)inst.Operand;
 							if (stack.Count < mr.Parameters.Count)
 								throw new ILException("Too few parameters on stack.");
 
+							int hasThisExtraParam = (mr.HasThis && inst.OpCode != OpCodes.Newobj) ? 1 : 0;
+							int paramcount = mr.Parameters.Count + hasThisExtraParam;
+
 							MethodCallInstruction mci = new MethodCallInstruction(mr, inst.OpCode);
 							mci.Offset = inst.Offset;
-							for (int i = 0; i < mr.Parameters.Count; i++)
+							for (int i = 0; i < paramcount; i++)
 							{
-								mci.Parameters.Add(stack[stack.Count - mr.Parameters.Count + i]);
+								mci.Parameters.Add(stack[stack.Count - paramcount + i]);
 							}
-							stack.RemoveRange(stack.Count - mr.Parameters.Count, mr.Parameters.Count);
+							stack.RemoveRange(stack.Count - paramcount, paramcount);
 
 							// HACK: Only works for non-void methods.
-							pushcount = 1;
+							if (inst.OpCode == OpCodes.Newobj ||
+								mr.ReturnType.ReturnType.FullName != "System.Void")
+								pushcount = 1;
+							else
+								pushcount = 0;
 
 							treeinst = mci;
 						}
-						else 
+						else
 							throw new Exception("Unknown VarPop.");
-//							throw new Exception("Method calls are not supported.");
+						//							throw new Exception("Method calls are not supported.");
 						break;
 					case PopBehavior.Pop3:
 						if (inst.OpCode.StackBehaviourPush != StackBehaviour.Push0)
@@ -756,7 +790,7 @@ namespace CellDotNet
 							inst.OpCode.FlowControl == FlowControl.Cond_Branch)
 						{
 							// For now, just store the target offset; this is fixed below.
-							treeinst.Operand = ((Instruction) inst.Operand).Offset;
+							treeinst.Operand = ((Instruction)inst.Operand).Offset;
 							branches.Add(treeinst);
 						}
 						break;
@@ -783,7 +817,7 @@ namespace CellDotNet
 				}
 				else
 				{
-				
+
 				}
 			}
 
@@ -793,7 +827,7 @@ namespace CellDotNet
 			// Fix branches.
 			foreach (TreeInstruction branchinst in branches)
 			{
-				int targetOffset = (int) branchinst.Operand;
+				int targetOffset = (int)branchinst.Operand;
 				foreach (BasicBlock block in Blocks)
 				{
 					foreach (TreeInstruction root in block.Roots)
