@@ -1,21 +1,18 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 using Mono.Cecil.Metadata;
 
 namespace CellDotNet
 {
 	internal class Class1
 	{
-		unsafe static public void Main(string[] args)
+		static public void Main(string[] args)
 		{
 //			RunSpu();
 //			TypeExperimenalStuff(3);
-			TestBuildTree();
+			new CompileInfoTest().TestBuildTree();
 //			DoExtremelySimpleParameterCodeGen();
 		}
 
@@ -107,40 +104,6 @@ namespace CellDotNet
 
 //			Console.WriteLine("cecil method token: " + method.MetadataToken.ToUInt());
 //			Console.WriteLine("reflection method token: " + del.Method.MetadataToken);
-		}
-
-		private static void TestBuildTree()
-		{
-			Converter<int, long> del =
-				delegate(int i)
-					{
-						int j;
-
-						char c1;
-						char c2;
-
-						j = 8 + (i * 5);
-							c1 = (char)j;
-							c2 = (char)(j + 1);
-						j += c1 + c2;
-//						DateTime[] arr= new DateTime[0];
-						if (i > 5)
-							j++;
-						while (j < 0)
-						{
-							j--;
-						}
-//						int[] arr = new int[4];
-//						arr[1] = 9;
-
-						return j * 2;
-					};
-			MethodDefinition method = GetMethod(del);
-			CompileInfo ci = new CompileInfo(method);
-
-
-			TreeDrawer td=  new TreeDrawer();
-			td.DrawMethod(ci, method);
 		}
 
 		public static MethodDefinition GetMethod(Delegate a)
