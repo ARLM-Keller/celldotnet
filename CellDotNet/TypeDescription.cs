@@ -50,9 +50,11 @@ namespace CellDotNet
 			if (genericParameters == null || genericParameters.Length == 0)
 				throw new ArgumentException("genericParameters");
 
-//			// Create the type to verify that the combination is okay.
-//			_type = genericType.Type.MakeGenericType(
-//				Array.ConvertAll<StackTypeDescription, Type>(genericParameters, delegate(TypeDescription desc) { return desc.Type; }));
+			// Create the type with the runtime to verify that the combination is okay.
+			List<Type> genTypes = new List<Type>();
+			foreach (StackTypeDescription t in genericParameters)
+				genTypes.Add(t.GetNonPointerType());
+			_type = genericType.Type.MakeGenericType(genTypes.ToArray());
 
 			_genericType = genericType;
 			_genericParameters = genericParameters;
