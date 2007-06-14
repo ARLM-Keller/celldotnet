@@ -101,5 +101,13 @@ namespace CellDotNet
 			CompileInfo ci = new CompileInfo(method);
 			new TreeDrawer().DrawMethod(ci, method);
 		}
+
+		[Test]
+		public void Test()
+		{
+#if !DEBUG 
+			Assert.Fail("No debug mode.");
+#endif
+		}
 	}
 }
