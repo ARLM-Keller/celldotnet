@@ -44,8 +44,10 @@
     <Compile Include="BaseTypes.cs" />
     <Compile Include="BasicBlock.cs" />
     <Compile Include="Class1.cs" />
+    <Compile Include="CompileContextTest.cs" />
     <Compile Include="RegAllocTest.cs" />
     <Compile Include="CodeGenUtils.cs" />
+    <Compile Include="CompileContext.cs" />
     <Compile Include="CompileInfoTest.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="HardwareRegister.cs" />
@@ -75,7 +77,7 @@
     <Compile Include="TreeInstruction.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Cecil\Mono.Cecil.csproj">
+    <ProjectReference Include="..\..\Cecil\lib\Mono.Cecil.csproj">
       <Project>{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}</Project>
       <Name>Mono.Cecil</Name>
     </ProjectReference>
