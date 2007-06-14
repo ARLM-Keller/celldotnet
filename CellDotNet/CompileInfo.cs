@@ -10,15 +10,17 @@ namespace CellDotNet
 	/// <summary>
 	/// Data used during compilation of a method.
 	/// </summary>
-	class CompileInfo
+	internal class CompileInfo
 	{
 		private List<BasicBlock> _blocks = new List<BasicBlock>();
+
 		public List<BasicBlock> Blocks
 		{
 			get { return _blocks; }
 		}
 
 		private MethodDefinition _methodDefinition;
+
 		public MethodDefinition MethodDefinition
 		{
 			get { return _methodDefinition; }
@@ -63,7 +65,7 @@ namespace CellDotNet
 
 			public TypeDescription GetTypeDescription(TypeReference type)
 			{
-				AssemblyNameReference anref = (AssemblyNameReference)type.Scope;
+				AssemblyNameReference anref = (AssemblyNameReference) type.Scope;
 
 				// Is it a byref type?
 				string fullname;
@@ -74,7 +76,7 @@ namespace CellDotNet
 				{
 					throw new ArgumentException();
 					// HACK: pretend it's a managed pointer.
-					fullname = ((PointerType)type).ElementType.FullName;
+					fullname = ((PointerType) type).ElementType.FullName;
 				}
 				//				else
 				//					fullname = type.FullName;
@@ -93,18 +95,18 @@ namespace CellDotNet
 
 			private TypeDescription CreateTypeDescription(TypeReference type)
 			{
-				AssemblyNameReference anref = (AssemblyNameReference)type.Scope;
+				AssemblyNameReference anref = (AssemblyNameReference) type.Scope;
 
 				Assembly assembly = Array.Find(AppDomain.CurrentDomain.GetAssemblies(),
-												delegate(Assembly ass) { return ass.FullName == anref.FullName; });
+				                               delegate(Assembly ass) { return ass.FullName == anref.FullName; });
 
 				// "ref" types: type will be a ReferenceType.
 				// "*" types: type will be a PointerType.
 				string typename;
 				if (type is cecil.ReferenceType)
-					typename = ((cecil.ReferenceType)type).ElementType.FullName;
+					typename = ((cecil.ReferenceType) type).ElementType.FullName;
 				else if (type is PointerType)
-					typename = ((PointerType)type).ElementType.FullName;
+					typename = ((PointerType) type).ElementType.FullName;
 				else
 					typename = type.FullName;
 
@@ -181,7 +183,7 @@ namespace CellDotNet
 					t = StackTypeDescription.None;
 					break;
 				case FlowControl.Call:
-					MethodCallInstruction mci = (MethodCallInstruction)inst;
+					MethodCallInstruction mci = (MethodCallInstruction) inst;
 
 					// TODO: Handle void type.
 					t = GetStackTypeDescription(mci.Method.ReturnType.ReturnType);
@@ -240,11 +242,11 @@ namespace CellDotNet
 
 			TypeReference optype;
 			if (inst.Operand is TypeReference)
-				optype = ((TypeReference)inst.Operand);
+				optype = ((TypeReference) inst.Operand);
 			else if (inst.Operand is VariableReference)
-				optype = ((VariableReference)inst.Operand).VariableType;
+				optype = ((VariableReference) inst.Operand).VariableType;
 			else if (inst.Operand is ParameterReference)
-				optype = ((ParameterReference)inst.Operand).ParameterType;
+				optype = ((ParameterReference) inst.Operand).ParameterType;
 			else
 				optype = null;
 
@@ -575,11 +577,11 @@ namespace CellDotNet
 			// Is it a byref type?
 			if (tref is ReferenceType)
 			{
-				td = GetTypeDescription(((ReferenceType)tref).ElementType);
+				td = GetTypeDescription(((ReferenceType) tref).ElementType);
 			}
 			else if (tref is PointerType)
 			{
-				td = GetTypeDescription(((PointerType)tref).ElementType);
+				td = GetTypeDescription(((PointerType) tref).ElementType);
 			}
 			else
 			{
@@ -662,7 +664,8 @@ namespace CellDotNet
 			{
 				if (!tleft.IsByRef)
 					return new StackTypeDescription(tleft.CliBasicType,
-						(CliNumericSize)Math.Max((int)tleft.NumericSize, (int)tright.NumericSize), tleft.IsSigned);
+					                                (CliNumericSize) Math.Max((int) tleft.NumericSize, (int) tright.NumericSize),
+					                                tleft.IsSigned);
 				else
 					return StackTypeDescription.NativeInt;
 			}
@@ -679,7 +682,8 @@ namespace CellDotNet
 				return tleft;
 
 			throw new ArgumentException(
-				string.Format("Argument types are not valid cil binary numeric opcodes: Left: {0}; right: {1}.", tleft.CliType, tright.CliType));
+				string.Format("Argument types are not valid cil binary numeric opcodes: Left: {0}; right: {1}.", tleft.CliType,
+				              tright.CliType));
 		}
 
 		private void BuildBasicBlocks(MethodDefinition method)
@@ -688,9 +692,53 @@ namespace CellDotNet
 			List<TreeInstruction> stack = new List<TreeInstruction>();
 			List<TreeInstruction> branches = new List<TreeInstruction>();
 
+			//KMH
+			Dictionary<int, int?> branchtargetmap = new Dictionary<int, int?>();
+			int prevtarget = -1;
+
 			foreach (Instruction inst in method.Body.Instructions)
 			{
-				TreeInstruction treeinst;
+				switch (inst.OpCode.FlowControl)
+				{
+					case FlowControl.Branch:
+					case FlowControl.Cond_Branch:
+						branchtargetmap.Add(((Instruction) inst.Operand).Offset, ++prevtarget);
+						break;
+					case FlowControl.Return:
+					case FlowControl.Throw:
+					case FlowControl.Call:
+					case FlowControl.Meta:
+					case FlowControl.Next:
+					case FlowControl.Phi:
+					case FlowControl.Break:
+						break;
+					default:
+						throw new ILException();
+				}
+			}
+
+			TreeInstruction treeinst = null;
+
+			foreach (Instruction inst in method.Body.Instructions)
+			{
+				if (treeinst != null)
+				{
+					if (branchtargetmap.ContainsKey(inst.Offset))
+					{
+						currblock.Roots.Add(treeinst);
+						Blocks.Add(currblock);
+						currblock = new BasicBlock();
+					}
+					else if (stack.Count == 0)
+					{
+						// It is a root exactly when the stack is empty.
+						currblock.Roots.Add(treeinst);
+					}
+					else
+					{
+					}
+				}
+
 				PopBehavior popbehavior = GetPopBehavior(inst.OpCode);
 				int pushcount = GetPushCount(inst.OpCode);
 
@@ -698,7 +746,6 @@ namespace CellDotNet
 				treeinst.Opcode = inst.OpCode;
 				treeinst.Operand = inst.Operand;
 				treeinst.Offset = inst.Offset;
-
 
 				// Pop
 				switch (popbehavior)
@@ -729,7 +776,7 @@ namespace CellDotNet
 						else if (inst.OpCode.FlowControl == FlowControl.Call)
 						{
 							// Build a method call from the stack.
-							MethodReference mr = (MethodReference)inst.Operand;
+							MethodReference mr = (MethodReference) inst.Operand;
 							if (stack.Count < mr.Parameters.Count)
 								throw new ILException("Too few parameters on stack.");
 
@@ -746,7 +793,7 @@ namespace CellDotNet
 
 							// HACK: Only works for non-void methods.
 							if (inst.OpCode == OpCodes.Newobj ||
-								mr.ReturnType.ReturnType.FullName != "System.Void")
+							    mr.ReturnType.ReturnType.FullName != "System.Void")
 								pushcount = 1;
 							else
 								pushcount = 0;
@@ -774,20 +821,18 @@ namespace CellDotNet
 				else if (pushcount != 0)
 					throw new Exception("Only 1-push is supported.");
 
-				bool endsblock = false;
 				switch (inst.OpCode.FlowControl)
 				{
 					case FlowControl.Branch:
 					case FlowControl.Cond_Branch:
 					case FlowControl.Return:
 					case FlowControl.Throw:
-						endsblock = true;
-
 						if (inst.OpCode.FlowControl == FlowControl.Branch ||
-							inst.OpCode.FlowControl == FlowControl.Cond_Branch)
+						    inst.OpCode.FlowControl == FlowControl.Cond_Branch)
 						{
 							// For now, just store the target offset; this is fixed below.
-							treeinst.Operand = ((Instruction)inst.Operand).Offset;
+
+							treeinst.Operand = ((Instruction) inst.Operand).Offset;
 							branches.Add(treeinst);
 						}
 						break;
@@ -800,31 +845,19 @@ namespace CellDotNet
 					default:
 						throw new ILException();
 				}
-
-				if (endsblock)
-				{
-					currblock.Roots.Add(treeinst);
-					Blocks.Add(currblock);
-					currblock = new BasicBlock();
-				}
-				else if (stack.Count == 0)
-				{
-					// It is a root exactly when the stack is empty.
-					currblock.Roots.Add(treeinst);
-				}
-				else
-				{
-
-				}
 			}
 
-			if (currblock.Roots.Count > 0)
+			//Adds the last instruction tree and basic Block
+			if (treeinst != null)
+			{
+				currblock.Roots.Add(treeinst);
 				Blocks.Add(currblock);
+			}
 
 			// Fix branches.
 			foreach (TreeInstruction branchinst in branches)
 			{
-				int targetOffset = (int)branchinst.Operand;
+				int targetOffset = (int) branchinst.Operand;
 				foreach (BasicBlock block in Blocks)
 				{
 					foreach (TreeInstruction root in block.Roots)
@@ -844,7 +877,7 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="code"></param>
 		/// <returns></returns>
-		static int GetPushCount(OpCode code)
+		private static int GetPushCount(OpCode code)
 		{
 			int pushCount;
 
@@ -873,7 +906,7 @@ namespace CellDotNet
 			return pushCount;
 		}
 
-		enum PopBehavior
+		private enum PopBehavior
 		{
 			Pop0 = 0,
 			Pop1 = 1,
@@ -881,10 +914,9 @@ namespace CellDotNet
 			Pop3 = 3,
 			PopAll = 1000,
 			VarPop = 1001
-
 		}
 
-		static PopBehavior GetPopBehavior(OpCode code)
+		private static PopBehavior GetPopBehavior(OpCode code)
 		{
 			PopBehavior pb;
 

@@ -20,7 +20,7 @@ namespace CellDotNet
 
         public T Head
         {
-            get { return _head.Data; }
+			get { return (_head != null)? _head.Data : default(T); }
         }
 
         public T Tail
@@ -42,7 +42,7 @@ namespace CellDotNet
             return data;
         }
 
-        private Node<T> getNodeAt(int index)
+        public Node<T> getNodeAt(int index)
         {
             if (index >= count) return null;
 
@@ -201,7 +201,7 @@ namespace CellDotNet
 
         #endregion
 
-        private class Node<S>
+        public class Node<S>
         {
             private S data;
             private Node<S> next;

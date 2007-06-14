@@ -14,7 +14,7 @@ namespace CellDotNet
             SortedLinkedList<LiveInterval> activeIntervals =
                 new SortedLinkedList<LiveInterval>(new LiveInterval.ComparByEnd());
             Stack<StorLocation> freeRegisters = HardwareRegister.getCellRegistersAsStack();
-            for (int i = 1; 1 <= regnum; i++) 
+            for (int i = 1; i <= regnum; i++) 
                 freeRegisters.Pop();
 
         bool isSpill = false;
@@ -24,7 +24,7 @@ namespace CellDotNet
             foreach (LiveInterval interval in liveIntervals)
             {
                 // ExpireOldIntervals
-                while (activeIntervals.Head.end < interval.start)
+				while (activeIntervals.Count > 0 && activeIntervals.Head.end < interval.start)
                 {
                     LiveInterval li = activeIntervals.RemoveHead();
                     freeRegisters.Push(li.r.Location);
@@ -58,8 +58,7 @@ namespace CellDotNet
                     activeIntervals.Add(interval);
                 }
             }
-            return isSpill;
-
+			return isSpill;
         }
     }
 }

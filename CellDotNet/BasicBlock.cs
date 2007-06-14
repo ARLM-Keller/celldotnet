@@ -17,9 +17,10 @@ namespace CellDotNet
 	/// at the beginning of the block, never in the middle.
 	/// </para>
 	/// </remarks>
-	class BasicBlock
+	internal class BasicBlock
 	{
 		private BasicBlock _next;
+
 		public BasicBlock Next
 		{
 			get { return _next; }
@@ -27,6 +28,7 @@ namespace CellDotNet
 		}
 
 		private List<TreeInstruction> _roots = new List<TreeInstruction>();
+
 		/// <summary>
 		/// Roots of the tree representation.
 		/// </summary>
@@ -37,6 +39,7 @@ namespace CellDotNet
 
 
 		private Set<BasicBlock> _ingoing = new Set<BasicBlock>();
+
 		/// <summary>
 		/// Ingoing basic blocks.
 		/// </summary>
@@ -47,12 +50,21 @@ namespace CellDotNet
 
 
 		private Set<BasicBlock> _outgoing = new Set<BasicBlock>();
+
 		/// <summary>
 		/// Outgoing basic blocks.
 		/// </summary>
 		public Set<BasicBlock> Outgoing
 		{
 			get { return _outgoing; }
+		}
+
+		public int Offset
+		{
+			get 
+			{
+				return _roots[0].FirstOffset;
+			}
 		}
 	}
 }

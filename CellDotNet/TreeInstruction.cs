@@ -81,6 +81,18 @@ namespace CellDotNet
 			set { _stackTyp = value; }
 		}
 
+		public int FirstOffset
+		{
+			get
+			{
+				if (_left != null)
+					return _left.FirstOffset;
+				else if (_right != null)
+					return _right.FirstOffset;
+				return Offset;
+			}
+		}
+
 		#region Tree iteration / checking.
 
 		/// <summary>

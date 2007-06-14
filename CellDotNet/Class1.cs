@@ -47,6 +47,18 @@ namespace CellDotNet
 			                        		i = (int*)30000;
 			                        		*i = 34;
 			                        	};
+
+
+/*			BasicTestDelegate del = delegate()
+										{
+											int a;
+											int i = 42;
+											if (i >= 9)
+												a = 1;
+											else
+												a = 2;
+										};
+*/
 			MethodDefinition method = GetMethod(del);
 			CompileInfo ci = new CompileInfo(method);
 			new TreeDrawer().DrawMethod(ci, method);
@@ -60,11 +72,11 @@ namespace CellDotNet
 			Console.WriteLine(ilist.Disassemble());
 
 
-			return;
 			RegAlloc regalloc = new RegAlloc();
 			List<SpuInstruction> asm = new List<SpuInstruction>(ilist.Instructions);
 			regalloc.alloc(asm, 16);
 			int[] bincode = SpuInstruction.emit(asm);
+			return;
 
 			
 			SpeContext ctx = new SpeContext();

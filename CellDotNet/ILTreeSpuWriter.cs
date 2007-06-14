@@ -14,6 +14,9 @@ namespace CellDotNet
 		private Dictionary<ParameterReference, VirtualRegister> _parameters;
 		private Dictionary<VariableReference, VirtualRegister> _variables;
 
+
+		private Dictionary<int, int> _jumptargets;
+
 		public void GenerateCode(CompileInfo ci, SpuInstructionWriter writer)
 		{
 			_writer = writer;

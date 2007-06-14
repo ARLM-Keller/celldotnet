@@ -81,10 +81,10 @@ namespace CellDotNet
 
         public int emit()
         {
-            HardwareRegister reg3 = _rc.Location as HardwareRegister;
-            HardwareRegister reg2 = _rb.Location as HardwareRegister;
-            HardwareRegister reg1 = _ra.Location as HardwareRegister;
-            HardwareRegister dest = _rt.Location as HardwareRegister;
+			HardwareRegister reg3 = (_rc != null) ? _rc.Location as HardwareRegister : null;
+			HardwareRegister reg2 = (_rb != null) ? _rb.Location as HardwareRegister : null;
+			HardwareRegister reg1 = (_ra != null) ? _ra.Location as HardwareRegister : null;
+			HardwareRegister dest = (_rt != null) ? _rt.Location as HardwareRegister : null;
 
 
             switch (_opcode.Format)
@@ -114,11 +114,12 @@ namespace CellDotNet
                     else
                         throw new Exception("Err.");
                 case SpuInstructionFormat.RI16:
-                case SpuInstructionFormat.RI16NoRegs:
-                    if (reg1 != null && dest != null)
-                        return _opcode.OpCode | _constant & 0xffff << 7 | dest.Register;
-                    else
-                        throw new Exception("Err.");
+					if (dest != null)
+						return _opcode.OpCode | _constant & 0xffff << 7 | dest.Register;
+					else
+						throw new Exception("Err.");
+				case SpuInstructionFormat.RI16NoRegs:
+                        return _opcode.OpCode | _constant & 0xffff << 7 | 0;
                 case SpuInstructionFormat.RI18:
                     if (reg1 != null && dest != null)
                         return _opcode.OpCode | _constant & 0x3ffff << 7 | dest.Register;
