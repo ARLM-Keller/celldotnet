@@ -62,6 +62,29 @@ namespace CellDotNet
 			Initialize();
 		}
 
+//		/// <summary>
+//		/// Creates a description of an array.
+//		/// </summary>
+//		/// <param name="type"></param>
+//		/// <param name="arrayDimension"></param>
+//		public TypeDescription(StackTypeDescription type, int arrayDimension)
+//		{
+//			if (type == null)
+//				throw new ArgumentNullException("type");
+//			if (arrayDimension < 1)
+//				throw new ArgumentOutOfRangeException("arrayDimension");
+//
+//			_type = type;
+//			_arrayDimension = arrayDimension;
+//		}
+
+		private int _arrayDimension;
+		public int ArrayDimension
+		{
+			get { return _arrayDimension; }
+		}
+
+
 		private void Initialize()
 		{
 		}
