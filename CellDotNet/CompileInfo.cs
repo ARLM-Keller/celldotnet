@@ -436,6 +436,8 @@ namespace CellDotNet
 				case Code.Box: // box
 					throw new NotImplementedException();
 				case Code.Newarr: // newarr
+//					t = GetStackTypeDescription(optype);
+//					t = new StackTypeDescription(new TypeDescription());
 					throw new NotImplementedException();
 				case Code.Ldlen: // ldlen
 					t = StackTypeDescription.NativeUInt;
@@ -563,16 +565,11 @@ namespace CellDotNet
 
 
 		/// <summary>
-		/// If the token is recognized as a CIL numeric type (or bool or char), that type is returned;
-		/// otherwise, None is returned.
 		/// </summary>
 		/// <param name="tref"></param>
 		/// <returns></returns>
 		private StackTypeDescription GetStackTypeDescription(TypeReference tref)
 		{
-			// Should be a faster way to do the lookup than by name...
-			string fullname;
-
 			TypeDescription td;
 
 			// Is it a byref type?

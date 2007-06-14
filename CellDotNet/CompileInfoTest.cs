@@ -71,23 +71,35 @@ namespace CellDotNet
 											Math.DivRem(9, 13, out rem);
 											Math.Max(Math.Min(3, 1), 5L);
 										};
-			MethodDefinition method = Class1.GetMethod(del);
+			MethodDefinition method = GetMethod(del);
 			CompileInfo ci = new CompileInfo(method);
 			new TreeDrawer().DrawMethod(ci, method);
 		}
 
 		[Test]
-		public void TestParseObjectInstantiation()
+		public void TestParseObjectInstantiationAndInstanceMethodCall()
 		{
 			BasicTestDelegate del = delegate
 										{
 											ArrayList list = new ArrayList(34);
 											list.Clear();
 										};
-			MethodDefinition method = Class1.GetMethod(del);
+			MethodDefinition method = GetMethod(del);
 			CompileInfo ci = new CompileInfo(method);
 			new TreeDrawer().DrawMethod(ci, method);
 		}
 
+		[Test]
+		public void TestParseArrayInstantiation()
+		{
+			BasicTestDelegate del = delegate
+										{
+											int[] arr = new int[5];
+											int j = arr.Length;
+										};
+			MethodDefinition method = GetMethod(del);
+			CompileInfo ci = new CompileInfo(method);
+			new TreeDrawer().DrawMethod(ci, method);
+		}
 	}
 }
