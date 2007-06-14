@@ -65,24 +65,33 @@ namespace CellDotNet
 
 			public TypeDescription GetTypeDescription(TypeReference type)
 			{
-				AssemblyNameReference anref = (AssemblyNameReference) type.Scope;
-
-				// Is it a byref type?
-				string fullname;
-				if (type is ReferenceType)
-					//					fullname = ((ReferenceType)type).ElementType.FullName;
-					throw new ArgumentException();
-				else if (type is PointerType)
+				KeyValuePair<string, string> key;
+				if (type is TypeDefinition)
 				{
-					throw new ArgumentException();
-					// HACK: pretend it's a managed pointer.
-					fullname = ((PointerType) type).ElementType.FullName;
+					TypeDefinition typedef = (TypeDefinition) type;
+					key = new KeyValuePair<string, string>(typedef.Module.Assembly.Name.Name, typedef.FullName);
 				}
-				//				else
-				//					fullname = type.FullName;
+				else
+				{
+					AssemblyNameReference anref = (AssemblyNameReference) type.Scope;
+
+					// Is it a byref type?
+//					string fullname;
+					if (type is ReferenceType)
+						//					fullname = ((ReferenceType)type).ElementType.FullName;
+						throw new ArgumentException();
+					else if (type is PointerType)
+					{
+						throw new ArgumentException();
+						// HACK: pretend it's a managed pointer.
+//						fullname = ((PointerType) type).ElementType.FullName;
+					}
+					//				else
+					//					fullname = type.FullName;
 
 
-				KeyValuePair<string, string> key = new KeyValuePair<string, string>(anref.Name, type.FullName);
+					key = new KeyValuePair<string, string>(anref.Name, type.FullName);
+				}
 				TypeDescription desc;
 				if (_history.TryGetValue(key, out desc))
 					return desc;
@@ -95,6 +104,20 @@ namespace CellDotNet
 
 			private TypeDescription CreateTypeDescription(TypeReference type)
 			{
+				Type reflectiontype;
+
+				if (type is TypeDefinition)
+				{
+					TypeDefinition typedef = (TypeDefinition) type;
+					Assembly ass = Array.Find(AppDomain.CurrentDomain.GetAssemblies(),
+					                          delegate(Assembly a)
+					                          	{
+					                          		return a.FullName == typedef.Module.Assembly.Name.FullName;
+					                          	});
+					reflectiontype = ass.ManifestModule.ResolveType((int) typedef.MetadataToken.ToUInt());
+					return new TypeDescription(reflectiontype);
+				}
+
 				AssemblyNameReference anref = (AssemblyNameReference) type.Scope;
 
 				Assembly assembly = Array.Find(AppDomain.CurrentDomain.GetAssemblies(),
@@ -110,7 +133,7 @@ namespace CellDotNet
 				else
 					typename = type.FullName;
 
-				Type reflectiontype = assembly.GetType(typename);
+				reflectiontype = assembly.GetType(typename);
 				if (reflectiontype == null)
 					throw new Exception("Huh ??");
 
