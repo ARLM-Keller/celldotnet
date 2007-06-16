@@ -75,8 +75,10 @@ namespace CellDotNet
 
         public VirtualRegister Rt
         {
-			get { return (OpCode.NoRegisterWrite)? null : _rt; }
-            set { _rt = value; }
+			//Selvom rt ikke bruges til at returnere værdier, så bruges det stadig af f.eks. stqd
+//			get { return (OpCode.NoRegisterWrite)? null : _rt; }
+			get { return _rt; }
+			set { _rt = value; }
         }
 
         public int emit()
@@ -95,39 +97,39 @@ namespace CellDotNet
                 case SpuInstructionFormat.RR1:
                 case SpuInstructionFormat.RR:
                     if (reg1 != null && reg2 != null && dest != null)
-                        return _opcode.OpCode | reg2.Register << 14 | reg1.Register << 7 | dest.Register;
+                        return _opcode.OpCode | (reg2.Register << 14) | (reg1.Register << 7) | dest.Register;
                     else
                         throw new Exception("Err.");
                 case SpuInstructionFormat.RRR:
                     if (reg1 != null && reg2 != null && reg3 != null && dest != null)
-                        return _opcode.OpCode | dest.Register << 21 | reg2.Register << 14 | reg1.Register << 7 | reg3.Register;
+                        return _opcode.OpCode | (dest.Register << 21) | (reg2.Register << 14) | (reg1.Register << 7) | reg3.Register;
                     else
                         throw new Exception("Err.");
                 case SpuInstructionFormat.RI7:
                     if (reg1 != null && dest != null)
-                        return _opcode.OpCode | _constant & 0x7F << 14 | reg1.Register << 7 | dest.Register;
+                        return _opcode.OpCode | ((_constant & 0x7F) << 14) | (reg1.Register << 7) | dest.Register;
                     else
                         throw new Exception("Err.");
                 case SpuInstructionFormat.RI10: 
                     if (reg1 != null && dest != null)
-                        return _opcode.OpCode | _constant & 0x3ff << 14 | reg1.Register << 7 | dest.Register;
+                        return _opcode.OpCode | ((_constant & 0x3ff) << 14) | (reg1.Register << 7) | dest.Register;
                     else
                         throw new Exception("Err.");
                 case SpuInstructionFormat.RI16:
 					if (dest != null)
-						return _opcode.OpCode | _constant & 0xffff << 7 | dest.Register;
+						return _opcode.OpCode | ((_constant & 0xffff) << 7) | dest.Register;
 					else
 						throw new Exception("Err.");
 				case SpuInstructionFormat.RI16NoRegs:
-                        return _opcode.OpCode | _constant & 0xffff << 7 | 0;
+                        return _opcode.OpCode | ((_constant & 0xffff) << 7) | 0;
                 case SpuInstructionFormat.RI18:
                     if (reg1 != null && dest != null)
-                        return _opcode.OpCode | _constant & 0x3ffff << 7 | dest.Register;
+                        return _opcode.OpCode | ((_constant & 0x3ffff) << 7) | dest.Register;
                     else
                         throw new Exception("Err.");
                 case SpuInstructionFormat.RI8:
                     if (reg1 != null && dest != null)
-                        return _opcode.OpCode | _constant & 0xff << 14 | reg1.Register << 7 | dest.Register;
+                        return _opcode.OpCode | ((_constant & 0xff) << 14) | (reg1.Register << 7) | dest.Register;
                     else
                         throw new Exception("Err.");
 				case SpuInstructionFormat.WEIRD:
