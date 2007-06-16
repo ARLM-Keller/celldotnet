@@ -163,8 +163,8 @@ namespace CellDotNet
 
 						VirtualRegister loadedvalue = _writer.WriteLqd(ptr, 0);
 						VirtualRegister mask = _writer.WriteCwd(ptr, 0);
-						VirtualRegister combined = _writer.WriteShufb(loadedvalue, vrleft, mask);
-						_writer.WriteStqd(ptr, combined, 0);
+						VirtualRegister combined = _writer.WriteShufb(loadedvalue, vrright, mask);
+						_writer.WriteStqd(combined, ptr, 0);
 						return null;
 					}
 				case Code.Stind_I8:

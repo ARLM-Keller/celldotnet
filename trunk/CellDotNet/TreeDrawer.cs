@@ -24,14 +24,14 @@ namespace CellDotNet
 				isBranch = true;
 			if (_branchTargets.Contains(inst.Offset))
 				isTarget = true;
-
+/*
 			if (isBranch && isTarget)
 				Console.ForegroundColor = ConsoleColor.Cyan;
 			else if (isBranch)
 				Console.ForegroundColor = ConsoleColor.DarkCyan;
 			else if (isTarget)
 				Console.ForegroundColor = ConsoleColor.Green;
-
+*/
 			Console.Write(inst.Offset.ToString("x4") + " " + inst.Opcode.Name);
 
 			if (inst.Operand != null)
@@ -51,16 +51,17 @@ namespace CellDotNet
 				Console.Write("   " + inst.StackType.CliType + (inst.StackType.IsByRef ? "&" : "")); // Fix &
 			else
 				Console.Write("   -");
+
 			Console.WriteLine();
 
-			Console.ResetColor();
+//			Console.ResetColor(); //Denne metode fejler på PS3
 
 			if (inst.GetType() == typeof(TreeInstruction))
 			{
 				if (inst.Left != null)
-					DrawTree(method, inst.Left, level + 1);
+				DrawTree(method, inst.Left, level + 1);
 				if (inst.Right != null)
-					DrawTree(method, inst.Right, level + 1);
+				DrawTree(method, inst.Right, level + 1);
 			}
 			else if (inst is MethodCallInstruction)
 			{
