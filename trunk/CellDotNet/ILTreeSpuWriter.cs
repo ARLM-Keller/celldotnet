@@ -83,6 +83,7 @@ namespace CellDotNet
 				case Code.Jmp:
 					break;
 				case Code.Call:
+				case Code.Callvirt:
 					break;
 				case Code.Calli:
 					break;
@@ -218,8 +219,6 @@ namespace CellDotNet
 				case Code.Conv_U4:
 					break;
 				case Code.Conv_U8:
-					break;
-				case Code.Callvirt:
 					break;
 				case Code.Cpobj:
 					break;

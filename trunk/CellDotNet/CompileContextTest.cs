@@ -44,5 +44,19 @@ namespace CellDotNet
 			CompileContext cc = new CompileContext(method);
 			Assert.AreEqual(3, cc.Methods.Count);
 		}
+
+		[Test]
+		unsafe public void TestRunStaticMethodCall()
+		{
+			SimpleDelegate del = delegate
+							{
+								int* i;
+								i = (int*)30000;
+								*i = Math.Max(100, 200);
+							};
+			MethodDefinition method = CompileInfoTest.GetMethod(del);
+			CompileContext cc = new CompileContext(method);
+//			ILTreeSpuWriter 
+		}
 	}
 }
