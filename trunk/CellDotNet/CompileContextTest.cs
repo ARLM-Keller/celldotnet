@@ -26,22 +26,24 @@ namespace CellDotNet
 		delegate void SimpleDelegate();
 
 		[Test]
-		public void TestCompileTwoMethodsInternal()
+		public void TestAcquireTwoMethodsInternal()
 		{
 			SimpleDelegate del = MethodCallerInternal;
 			MethodDefinition method = MethodCompilerTest.GetMethod(del);
 
 			CompileContext cc = new CompileContext(method);
+			cc.PerformProcessing(CompileContextState.InstructionSelectionDone);
 			Assert.AreEqual(2, cc.Methods.Count);
 		}
 
 		[Test]
-		public void TestCompileThreeMethodsExternal()
+		public void TestAcquireThreeMethodsExternal()
 		{
 			SimpleDelegate del = MethodCallerExternal;
 			MethodDefinition method = MethodCompilerTest.GetMethod(del);
 
 			CompileContext cc = new CompileContext(method);
+			cc.PerformProcessing(CompileContextState.InstructionSelectionDone);
 			Assert.AreEqual(3, cc.Methods.Count);
 		}
 
@@ -56,7 +58,7 @@ namespace CellDotNet
 							};
 			MethodDefinition method = MethodCompilerTest.GetMethod(del);
 			CompileContext cc = new CompileContext(method);
-//			ILTreeSpuWriter 
+			cc.PerformProcessing(CompileContextState.Complete);
 		}
 	}
 }

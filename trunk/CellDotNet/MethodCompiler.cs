@@ -4,14 +4,41 @@ using System.Reflection;
 using Mono.Cecil;
 using cecil = Mono.Cecil;
 using Mono.Cecil.Cil;
+using PropertyAttributes=Mono.Cecil.PropertyAttributes;
 
 namespace CellDotNet
 {
+	/// <summary>
+	/// The progressive states that <see cref="MethodCompiler"/> goes through.
+	/// </summary>
+	internal enum MethodCompileState
+	{
+		None,
+		/// <summary>
+		/// Before any real processing has been performed.
+		/// </summary>
+		Initial,
+		TreeConstructionDone,
+		InstructionSelectionDone,
+		RegisterAllocationDone,
+		BranchesFixed,
+		AdressSubstitutionDone,
+		Complete
+	}
+
 	/// <summary>
 	/// Data used during compilation of a method.
 	/// </summary>
 	internal class MethodCompiler
 	{
+		private MethodCompileState _state;
+
+		public MethodCompileState State
+		{
+			get { return _state; }
+			private set { _state = value; }
+		}
+
 		private List<BasicBlock> _blocks = new List<BasicBlock>();
 
 		public List<BasicBlock> Blocks
@@ -30,11 +57,70 @@ namespace CellDotNet
 		{
 			method.Body.Simplify();
 			_methodDefinition = method;
+			State = MethodCompileState.Initial;
 
-			BuildBasicBlocks(method);
-			CheckTreeInstructionCount(method.Body.Instructions.Count);
+			PerformIRTreeConstruction();
 			DeriveTypes();
 		}
+
+		private void AssertState(MethodCompileState requiredState)
+		{
+			if (State != requiredState)
+				throw new InvalidOperationException(string.Format("Operation is invalid for the current state. " +
+					"Current state: {0}; required state: {1}.", State, requiredState));
+		}
+
+		private void PerformIRTreeConstruction()
+		{
+			AssertState(MethodCompileState.Initial);
+
+			BuildBasicBlocks(MethodDefinition);
+			CheckTreeInstructionCount(MethodDefinition.Body.Instructions.Count);
+			State = MethodCompileState.TreeConstructionDone;
+		}
+
+		private void PerformInstructionSelection()
+		{
+			AssertState(MethodCompileState.TreeConstructionDone);
+
+			ILTreeSpuWriter writer = new ILTreeSpuWriter();
+			SpuInstructionWriter ilist = new SpuInstructionWriter();
+			writer.GenerateCode(this, ilist);
+
+			State = MethodCompileState.InstructionSelectionDone;
+		}
+
+		/// <summary>
+		/// Brings the compiler process up to the specified state, if possible.
+		/// </summary>
+		/// <param name="targetState"></param>
+		public void PerformProcessing(MethodCompileState targetState)
+		{
+			if (State == targetState)
+				return; // Already there...
+
+			switch (targetState)
+			{
+				case MethodCompileState.None:
+				case MethodCompileState.Initial:
+					throw new InvalidOperationException(
+						string.Format("Target state: {0}; current state: {1}.", targetState, State));
+				case MethodCompileState.TreeConstructionDone:
+					PerformIRTreeConstruction();
+					break;
+				case MethodCompileState.InstructionSelectionDone:
+					PerformInstructionSelection();
+					break;
+				case MethodCompileState.RegisterAllocationDone:
+				case MethodCompileState.BranchesFixed:
+				case MethodCompileState.AdressSubstitutionDone:
+				case MethodCompileState.Complete:
+					throw new NotImplementedException("Target state: " + targetState);
+				default:
+					throw new ArgumentException("Invalid state: " + targetState, "targetState");
+			}
+		}
+
 
 		private TypeCache _typecache = new TypeCache();
 
@@ -831,7 +917,6 @@ namespace CellDotNet
 						if (inst.OpCode.StackBehaviourPush != StackBehaviour.Push0)
 							throw new ILException("Pop3 with a push != 0?");
 						throw new NotImplementedException();
-						break;
 					default:
 						if (popbehavior != PopBehavior.Pop0)
 							throw new Exception("Invalid PopBehavior: " + popbehavior + ". Only two-argument method calls are supported.");
@@ -984,4 +1069,5 @@ namespace CellDotNet
 			return pb;
 		}
 	}
+
 }

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Runtime.InteropServices;
 
 namespace CellDotNet
 {
@@ -51,7 +50,7 @@ namespace CellDotNet
 			if (_handle == IntPtr.Zero || _handle == null)
 				throw new Exception();
 			_localStorage = spe_ls_area_get(_handle);
-			if (_localStorage == null)
+			if (_localStorage == IntPtr.Zero)
 				throw new Exception();
 			_localStorageSize = spe_ls_size_get(_handle);
 
