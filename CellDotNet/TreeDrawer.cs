@@ -93,7 +93,7 @@ namespace CellDotNet
 				AddBranchTargets(inst.Right);
 		}
 
-		private void FindBranchTargets(CompileInfo ci, MethodDefinition method)
+		private void FindBranchTargets(MethodCompiler ci, MethodDefinition method)
 		{
 			foreach (BasicBlock block in ci.Blocks)
 			{
@@ -104,7 +104,7 @@ namespace CellDotNet
 			}
 		}
 
-		public void DrawMethod(CompileInfo ci, MethodDefinition method)
+		public void DrawMethod(MethodCompiler ci, MethodDefinition method)
 		{
 			_branchTargets = new Set<int>();
 			FindBranchTargets(ci, method);

@@ -10,7 +10,7 @@ using NUnit.Framework;
 namespace CellDotNet
 {
 	[TestFixture]
-	public class CompileInfoTest
+	public class MethodCompilerTest
 	{
 		private delegate void BasicTestDelegate();
 
@@ -54,7 +54,7 @@ namespace CellDotNet
 					return j * 2;
 				};
 			MethodDefinition method = GetMethod(del);
-			CompileInfo ci = new CompileInfo(method);
+			MethodCompiler ci = new MethodCompiler(method);
 
 
 			TreeDrawer td = new TreeDrawer();
@@ -72,7 +72,7 @@ namespace CellDotNet
 											Math.Max(Math.Min(3, 1), 5L);
 										};
 			MethodDefinition method = GetMethod(del);
-			CompileInfo ci = new CompileInfo(method);
+			MethodCompiler ci = new MethodCompiler(method);
 			new TreeDrawer().DrawMethod(ci, method);
 		}
 
@@ -85,7 +85,7 @@ namespace CellDotNet
 											list.Clear();
 										};
 			MethodDefinition method = GetMethod(del);
-			CompileInfo ci = new CompileInfo(method);
+			MethodCompiler ci = new MethodCompiler(method);
 			new TreeDrawer().DrawMethod(ci, method);
 		}
 
@@ -98,7 +98,7 @@ namespace CellDotNet
 											int j = arr.Length;
 										};
 			MethodDefinition method = GetMethod(del);
-			CompileInfo ci = new CompileInfo(method);
+			MethodCompiler ci = new MethodCompiler(method);
 			new TreeDrawer().DrawMethod(ci, method);
 		}
 
