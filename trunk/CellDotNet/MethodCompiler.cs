@@ -70,6 +70,8 @@ namespace CellDotNet
 					"Current state: {0}; required state: {1}.", State, requiredState));
 		}
 
+		#region IR tree construction
+
 		private void PerformIRTreeConstruction()
 		{
 			AssertState(MethodCompileState.Initial);
@@ -78,6 +80,304 @@ namespace CellDotNet
 			CheckTreeInstructionCount(MethodDefinition.Body.Instructions.Count);
 			State = MethodCompileState.TreeConstructionDone;
 		}
+
+		private void BuildBasicBlocks(MethodDefinition method)
+		{
+			BasicBlock currblock = new BasicBlock();
+			List<TreeInstruction> stack = new List<TreeInstruction>();
+			List<TreeInstruction> branches = new List<TreeInstruction>();
+
+			//KMH
+			Dictionary<int, int?> branchtargetmap = new Dictionary<int, int?>();
+			int prevtarget = -1;
+
+			foreach (Instruction inst in method.Body.Instructions)
+			{
+				switch (inst.OpCode.FlowControl)
+				{
+					case FlowControl.Branch:
+					case FlowControl.Cond_Branch:
+						branchtargetmap.Add(((Instruction) inst.Operand).Offset, ++prevtarget);
+						break;
+					case FlowControl.Return:
+					case FlowControl.Throw:
+					case FlowControl.Call:
+					case FlowControl.Meta:
+					case FlowControl.Next:
+					case FlowControl.Phi:
+					case FlowControl.Break:
+						break;
+					default:
+						throw new ILException();
+				}
+			}
+
+			TreeInstruction treeinst = null;
+
+			foreach (Instruction inst in method.Body.Instructions)
+			{
+				if (treeinst != null)
+				{
+					if (branchtargetmap.ContainsKey(inst.Offset))
+					{
+						currblock.Roots.Add(treeinst);
+						Blocks.Add(currblock);
+						currblock = new BasicBlock();
+					}
+					else if (stack.Count == 0)
+					{
+						// It is a root exactly when the stack is empty.
+						currblock.Roots.Add(treeinst);
+					}
+					else
+					{
+					}
+				}
+
+				PopBehavior popbehavior = GetPopBehavior(inst.OpCode);
+				int pushcount = GetPushCount(inst.OpCode);
+
+				treeinst = new TreeInstruction();
+				treeinst.Opcode = inst.OpCode;
+				treeinst.Operand = inst.Operand;
+				treeinst.Offset = inst.Offset;
+
+				// Pop
+				switch (popbehavior)
+				{
+					case PopBehavior.Pop1:
+						treeinst.Left = stack[stack.Count - 1];
+						stack.RemoveRange(stack.Count - 1, 1);
+						break;
+					case PopBehavior.Pop2:
+						treeinst.Left = stack[stack.Count - 2];
+						treeinst.Right = stack[stack.Count - 1];
+						stack.RemoveRange(stack.Count - 2, 2);
+						break;
+					case PopBehavior.PopAll: // "leave"
+						throw new NotImplementedException("PopAll");
+					case PopBehavior.VarPop: // "ret"
+						if (inst.OpCode == OpCodes.Ret)
+						{
+							// CLI: "The 10 evaluation stack for the current method must be empty except for the value to be returned."
+							if (stack.Count > 0)
+							{
+								treeinst.Left = stack[0];
+								if (stack.Count > 1)
+									throw new ILException("Stack.Count > 1 ??");
+								stack.Clear();
+							}
+						}
+						else if (inst.OpCode.FlowControl == FlowControl.Call)
+						{
+							// Build a method call from the stack.
+							MethodReference mr = (MethodReference) inst.Operand;
+							if (stack.Count < mr.Parameters.Count)
+								throw new ILException("Too few parameters on stack.");
+
+							int hasThisExtraParam = (mr.HasThis && inst.OpCode != OpCodes.Newobj) ? 1 : 0;
+							int paramcount = mr.Parameters.Count + hasThisExtraParam;
+
+							MethodCallInstruction mci = new MethodCallInstruction(mr, inst.OpCode);
+							mci.Offset = inst.Offset;
+							for (int i = 0; i < paramcount; i++)
+							{
+								mci.Parameters.Add(stack[stack.Count - paramcount + i]);
+							}
+							stack.RemoveRange(stack.Count - paramcount, paramcount);
+
+							// HACK: Only works for non-void methods.
+							if (inst.OpCode == OpCodes.Newobj ||
+							    mr.ReturnType.ReturnType.FullName != "System.Void")
+								pushcount = 1;
+							else
+								pushcount = 0;
+
+							treeinst = mci;
+						}
+						else
+							throw new Exception("Unknown VarPop.");
+						//							throw new Exception("Method calls are not supported.");
+						break;
+					case PopBehavior.Pop3:
+						if (inst.OpCode.StackBehaviourPush != StackBehaviour.Push0)
+							throw new ILException("Pop3 with a push != 0?");
+						throw new NotImplementedException();
+					default:
+						if (popbehavior != PopBehavior.Pop0)
+							throw new Exception("Invalid PopBehavior: " + popbehavior + ". Only two-argument method calls are supported.");
+						break;
+				}
+
+				// Push
+				if (pushcount == 1)
+					stack.Add(treeinst);
+				else if (pushcount != 0)
+					throw new Exception("Only 1-push is supported.");
+
+				switch (inst.OpCode.FlowControl)
+				{
+					case FlowControl.Branch:
+					case FlowControl.Cond_Branch:
+					case FlowControl.Return:
+					case FlowControl.Throw:
+						if (inst.OpCode.FlowControl == FlowControl.Branch ||
+						    inst.OpCode.FlowControl == FlowControl.Cond_Branch)
+						{
+							// For now, just store the target offset; this is fixed below.
+
+							treeinst.Operand = ((Instruction) inst.Operand).Offset;
+							branches.Add(treeinst);
+						}
+						break;
+					case FlowControl.Call:
+					case FlowControl.Meta:
+					case FlowControl.Next:
+					case FlowControl.Phi:
+					case FlowControl.Break:
+						break;
+					default:
+						throw new ILException();
+				}
+			}
+
+			//Adds the last instruction tree and basic Block
+			if (treeinst != null)
+			{
+				currblock.Roots.Add(treeinst);
+				Blocks.Add(currblock);
+			}
+
+			// Fix branches.
+			foreach (TreeInstruction branchinst in branches)
+			{
+				int targetOffset = (int) branchinst.Operand;
+				foreach (BasicBlock block in Blocks)
+				{
+					foreach (TreeInstruction root in block.Roots)
+					{
+						foreach (TreeInstruction inst in root.IterateInorder())
+						{
+							if (inst.Offset == targetOffset)
+								branchinst.Operand = inst;
+						}
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Returns the number of values pushed by the opcode. -1 is returned for function calls.
+		/// </summary>
+		/// <param name="code"></param>
+		/// <returns></returns>
+		private static int GetPushCount(OpCode code)
+		{
+			int pushCount;
+
+			switch (code.StackBehaviourPush)
+			{
+				case StackBehaviour.Push0:
+					pushCount = 0;
+					break;
+				case StackBehaviour.Push1:
+				case StackBehaviour.Pushi:
+				case StackBehaviour.Pushi8:
+				case StackBehaviour.Pushr4:
+				case StackBehaviour.Pushr8:
+				case StackBehaviour.Pushref:
+					pushCount = 1;
+					break;
+				case StackBehaviour.Push1_push1:
+					pushCount = 2;
+					break;
+				case StackBehaviour.Varpush:
+				default:
+					pushCount = -1;
+					break;
+			}
+
+			return pushCount;
+		}
+
+		private enum PopBehavior
+		{
+			Pop0 = 0,
+			Pop1 = 1,
+			Pop2 = 2,
+			Pop3 = 3,
+			PopAll = 1000,
+			VarPop = 1001
+		}
+
+		private static PopBehavior GetPopBehavior(OpCode code)
+		{
+			PopBehavior pb;
+
+			switch (code.StackBehaviourPop)
+			{
+				case StackBehaviour.Pop0:
+					pb = PopBehavior.Pop0;
+					break;
+				case StackBehaviour.Varpop:
+					pb = PopBehavior.VarPop;
+					break;
+				case StackBehaviour.Pop1:
+				case StackBehaviour.Popi:
+				case StackBehaviour.Popref:
+					pb = PopBehavior.Pop1;
+					break;
+				case StackBehaviour.Pop1_pop1:
+				case StackBehaviour.Popi_pop1:
+				case StackBehaviour.Popi_popi:
+				case StackBehaviour.Popi_popi8:
+				case StackBehaviour.Popi_popr4:
+				case StackBehaviour.Popi_popr8:
+				case StackBehaviour.Popref_pop1:
+				case StackBehaviour.Popref_popi:
+					pb = PopBehavior.Pop2;
+					break;
+				case StackBehaviour.Popi_popi_popi:
+				case StackBehaviour.Popref_popi_popi:
+				case StackBehaviour.Popref_popi_popi8:
+				case StackBehaviour.Popref_popi_popr4:
+				case StackBehaviour.Popref_popi_popr8:
+				case StackBehaviour.Popref_popi_popref:
+					pb = PopBehavior.Pop3;
+					break;
+				case StackBehaviour.PopAll:
+					pb = PopBehavior.PopAll; // Special...
+					break;
+				default:
+					throw new ArgumentOutOfRangeException("code");
+			}
+
+			return pb;
+		}
+
+		/// <summary>
+		/// Checks that the number of instructions in the constructed tree is equal to the number of IL instructions in the cecil model.
+		/// </summary>
+		/// <param name="correctCount"></param>
+		private void CheckTreeInstructionCount(int correctCount)
+		{
+			int sum = 0;
+			foreach (BasicBlock block in _blocks)
+			{
+				foreach (TreeInstruction root in block.Roots)
+				{
+					sum += root.TreeSize;
+				}
+			}
+
+			if (sum != correctCount)
+			{
+				string msg = string.Format("Invalid tree instruction count of {0}. Should have been {1}.", sum, correctCount);
+				throw new Exception(msg);
+			}
+		}
+
+		#endregion
 
 		private void PerformInstructionSelection()
 		{
@@ -233,28 +533,7 @@ namespace CellDotNet
 			}
 		}
 
-
-		/// <summary>
-		/// Checks that the number of instructions in the constructed tree is equal to the number of IL instructions in the cecil model.
-		/// </summary>
-		/// <param name="correctCount"></param>
-		private void CheckTreeInstructionCount(int correctCount)
-		{
-			int sum = 0;
-			foreach (BasicBlock block in _blocks)
-			{
-				foreach (TreeInstruction root in block.Roots)
-				{
-					sum += root.TreeSize;
-				}
-			}
-
-			if (sum != correctCount)
-			{
-				string msg = string.Format("Invalid tree instruction count of {0}. Should have been {1}.", sum, correctCount);
-				throw new Exception(msg);
-			}
-		}
+		#region Type deriving
 
 		/// <summary>
 		/// Derives the types of each tree node using a bottom-up analysis.
@@ -795,279 +1074,7 @@ namespace CellDotNet
 				              tright.CliType));
 		}
 
-		private void BuildBasicBlocks(MethodDefinition method)
-		{
-			BasicBlock currblock = new BasicBlock();
-			List<TreeInstruction> stack = new List<TreeInstruction>();
-			List<TreeInstruction> branches = new List<TreeInstruction>();
-
-			//KMH
-			Dictionary<int, int?> branchtargetmap = new Dictionary<int, int?>();
-			int prevtarget = -1;
-
-			foreach (Instruction inst in method.Body.Instructions)
-			{
-				switch (inst.OpCode.FlowControl)
-				{
-					case FlowControl.Branch:
-					case FlowControl.Cond_Branch:
-						branchtargetmap.Add(((Instruction) inst.Operand).Offset, ++prevtarget);
-						break;
-					case FlowControl.Return:
-					case FlowControl.Throw:
-					case FlowControl.Call:
-					case FlowControl.Meta:
-					case FlowControl.Next:
-					case FlowControl.Phi:
-					case FlowControl.Break:
-						break;
-					default:
-						throw new ILException();
-				}
-			}
-
-			TreeInstruction treeinst = null;
-
-			foreach (Instruction inst in method.Body.Instructions)
-			{
-				if (treeinst != null)
-				{
-					if (branchtargetmap.ContainsKey(inst.Offset))
-					{
-						currblock.Roots.Add(treeinst);
-						Blocks.Add(currblock);
-						currblock = new BasicBlock();
-					}
-					else if (stack.Count == 0)
-					{
-						// It is a root exactly when the stack is empty.
-						currblock.Roots.Add(treeinst);
-					}
-					else
-					{
-					}
-				}
-
-				PopBehavior popbehavior = GetPopBehavior(inst.OpCode);
-				int pushcount = GetPushCount(inst.OpCode);
-
-				treeinst = new TreeInstruction();
-				treeinst.Opcode = inst.OpCode;
-				treeinst.Operand = inst.Operand;
-				treeinst.Offset = inst.Offset;
-
-				// Pop
-				switch (popbehavior)
-				{
-					case PopBehavior.Pop1:
-						treeinst.Left = stack[stack.Count - 1];
-						stack.RemoveRange(stack.Count - 1, 1);
-						break;
-					case PopBehavior.Pop2:
-						treeinst.Left = stack[stack.Count - 2];
-						treeinst.Right = stack[stack.Count - 1];
-						stack.RemoveRange(stack.Count - 2, 2);
-						break;
-					case PopBehavior.PopAll: // "leave"
-						throw new NotImplementedException("PopAll");
-					case PopBehavior.VarPop: // "ret"
-						if (inst.OpCode == OpCodes.Ret)
-						{
-							// CLI: "The 10 evaluation stack for the current method must be empty except for the value to be returned."
-							if (stack.Count > 0)
-							{
-								treeinst.Left = stack[0];
-								if (stack.Count > 1)
-									throw new ILException("Stack.Count > 1 ??");
-								stack.Clear();
-							}
-						}
-						else if (inst.OpCode.FlowControl == FlowControl.Call)
-						{
-							// Build a method call from the stack.
-							MethodReference mr = (MethodReference) inst.Operand;
-							if (stack.Count < mr.Parameters.Count)
-								throw new ILException("Too few parameters on stack.");
-
-							int hasThisExtraParam = (mr.HasThis && inst.OpCode != OpCodes.Newobj) ? 1 : 0;
-							int paramcount = mr.Parameters.Count + hasThisExtraParam;
-
-							MethodCallInstruction mci = new MethodCallInstruction(mr, inst.OpCode);
-							mci.Offset = inst.Offset;
-							for (int i = 0; i < paramcount; i++)
-							{
-								mci.Parameters.Add(stack[stack.Count - paramcount + i]);
-							}
-							stack.RemoveRange(stack.Count - paramcount, paramcount);
-
-							// HACK: Only works for non-void methods.
-							if (inst.OpCode == OpCodes.Newobj ||
-							    mr.ReturnType.ReturnType.FullName != "System.Void")
-								pushcount = 1;
-							else
-								pushcount = 0;
-
-							treeinst = mci;
-						}
-						else
-							throw new Exception("Unknown VarPop.");
-						//							throw new Exception("Method calls are not supported.");
-						break;
-					case PopBehavior.Pop3:
-						if (inst.OpCode.StackBehaviourPush != StackBehaviour.Push0)
-							throw new ILException("Pop3 with a push != 0?");
-						throw new NotImplementedException();
-					default:
-						if (popbehavior != PopBehavior.Pop0)
-							throw new Exception("Invalid PopBehavior: " + popbehavior + ". Only two-argument method calls are supported.");
-						break;
-				}
-
-				// Push
-				if (pushcount == 1)
-					stack.Add(treeinst);
-				else if (pushcount != 0)
-					throw new Exception("Only 1-push is supported.");
-
-				switch (inst.OpCode.FlowControl)
-				{
-					case FlowControl.Branch:
-					case FlowControl.Cond_Branch:
-					case FlowControl.Return:
-					case FlowControl.Throw:
-						if (inst.OpCode.FlowControl == FlowControl.Branch ||
-						    inst.OpCode.FlowControl == FlowControl.Cond_Branch)
-						{
-							// For now, just store the target offset; this is fixed below.
-
-							treeinst.Operand = ((Instruction) inst.Operand).Offset;
-							branches.Add(treeinst);
-						}
-						break;
-					case FlowControl.Call:
-					case FlowControl.Meta:
-					case FlowControl.Next:
-					case FlowControl.Phi:
-					case FlowControl.Break:
-						break;
-					default:
-						throw new ILException();
-				}
-			}
-
-			//Adds the last instruction tree and basic Block
-			if (treeinst != null)
-			{
-				currblock.Roots.Add(treeinst);
-				Blocks.Add(currblock);
-			}
-
-			// Fix branches.
-			foreach (TreeInstruction branchinst in branches)
-			{
-				int targetOffset = (int) branchinst.Operand;
-				foreach (BasicBlock block in Blocks)
-				{
-					foreach (TreeInstruction root in block.Roots)
-					{
-						foreach (TreeInstruction inst in root.IterateInorder())
-						{
-							if (inst.Offset == targetOffset)
-								branchinst.Operand = inst;
-						}
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Returns the number of values pushed by the opcode. -1 is returned for function calls.
-		/// </summary>
-		/// <param name="code"></param>
-		/// <returns></returns>
-		private static int GetPushCount(OpCode code)
-		{
-			int pushCount;
-
-			switch (code.StackBehaviourPush)
-			{
-				case StackBehaviour.Push0:
-					pushCount = 0;
-					break;
-				case StackBehaviour.Push1:
-				case StackBehaviour.Pushi:
-				case StackBehaviour.Pushi8:
-				case StackBehaviour.Pushr4:
-				case StackBehaviour.Pushr8:
-				case StackBehaviour.Pushref:
-					pushCount = 1;
-					break;
-				case StackBehaviour.Push1_push1:
-					pushCount = 2;
-					break;
-				case StackBehaviour.Varpush:
-				default:
-					pushCount = -1;
-					break;
-			}
-
-			return pushCount;
-		}
-
-		private enum PopBehavior
-		{
-			Pop0 = 0,
-			Pop1 = 1,
-			Pop2 = 2,
-			Pop3 = 3,
-			PopAll = 1000,
-			VarPop = 1001
-		}
-
-		private static PopBehavior GetPopBehavior(OpCode code)
-		{
-			PopBehavior pb;
-
-			switch (code.StackBehaviourPop)
-			{
-				case StackBehaviour.Pop0:
-					pb = PopBehavior.Pop0;
-					break;
-				case StackBehaviour.Varpop:
-					pb = PopBehavior.VarPop;
-					break;
-				case StackBehaviour.Pop1:
-				case StackBehaviour.Popi:
-				case StackBehaviour.Popref:
-					pb = PopBehavior.Pop1;
-					break;
-				case StackBehaviour.Pop1_pop1:
-				case StackBehaviour.Popi_pop1:
-				case StackBehaviour.Popi_popi:
-				case StackBehaviour.Popi_popi8:
-				case StackBehaviour.Popi_popr4:
-				case StackBehaviour.Popi_popr8:
-				case StackBehaviour.Popref_pop1:
-				case StackBehaviour.Popref_popi:
-					pb = PopBehavior.Pop2;
-					break;
-				case StackBehaviour.Popi_popi_popi:
-				case StackBehaviour.Popref_popi_popi:
-				case StackBehaviour.Popref_popi_popi8:
-				case StackBehaviour.Popref_popi_popr4:
-				case StackBehaviour.Popref_popi_popr8:
-				case StackBehaviour.Popref_popi_popref:
-					pb = PopBehavior.Pop3;
-					break;
-				case StackBehaviour.PopAll:
-					pb = PopBehavior.PopAll; // Special...
-					break;
-				default:
-					throw new ArgumentOutOfRangeException("code");
-			}
-
-			return pb;
-		}
+		#endregion
 	}
 
 }
