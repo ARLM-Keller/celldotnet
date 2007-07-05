@@ -11,18 +11,18 @@ namespace CellDotNet
 	/// </summary>
 	class CompileContext
 	{
-		private CompileInfo _entryPoint;
-		private Dictionary<string, CompileInfo> _methods = new Dictionary<string, CompileInfo>();
+		private MethodCompiler _entryPoint;
+		private Dictionary<string, MethodCompiler> _methods = new Dictionary<string, MethodCompiler>();
 
 		/// <summary>
 		/// The first method that is run.
 		/// </summary>
-		public CompileInfo EntryPoint
+		public MethodCompiler EntryPoint
 		{
 			get { return _entryPoint; }
 		}
 
-		public Dictionary<string, CompileInfo> Methods
+		public Dictionary<string, MethodCompiler> Methods
 		{
 			get { return _methods; }
 		}
@@ -104,7 +104,7 @@ namespace CellDotNet
 					mdef = typedef.Methods.GetMethod(mref.Name, mref.Parameters);
 				}
 
-				CompileInfo ci = new CompileInfo(mdef);
+				MethodCompiler ci = new MethodCompiler(mdef);
 				Methods.Add(nextmethodkey, ci);
 
 				// Find references methods.
@@ -121,7 +121,7 @@ namespace CellDotNet
 					methodsToCompile[methodkey] = mr;
 				}
 			}
-			_entryPoint = new CompileInfo(entryPoint);
+			_entryPoint = new MethodCompiler(entryPoint);
 
 		}
 	}

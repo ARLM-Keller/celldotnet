@@ -17,7 +17,7 @@ namespace CellDotNet
 
 		private Dictionary<int, int> _jumptargets;
 
-		public void GenerateCode(CompileInfo ci, SpuInstructionWriter writer)
+		public void GenerateCode(MethodCompiler ci, SpuInstructionWriter writer)
 		{
 			_writer = writer;
 

@@ -10,7 +10,7 @@ namespace CellDotNet
 	/// <summary>
 	/// Data used during compilation of a method.
 	/// </summary>
-	internal class CompileInfo
+	internal class MethodCompiler
 	{
 		private List<BasicBlock> _blocks = new List<BasicBlock>();
 
@@ -26,7 +26,7 @@ namespace CellDotNet
 			get { return _methodDefinition; }
 		}
 
-		public CompileInfo(MethodDefinition method)
+		public MethodCompiler(MethodDefinition method)
 		{
 			method.Body.Simplify();
 			_methodDefinition = method;

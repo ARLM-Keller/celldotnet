@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using Mono.Cecil.Metadata;
 
 namespace CellDotNet
@@ -10,10 +11,24 @@ namespace CellDotNet
 	{
 		static public void Main(string[] args)
 		{
-//			RunSpu();
+//			GenericExperiment();
+//			return;
+			RunSpu();
 //			TypeExperimenalStuff(3);
-			new CompileInfoTest().TestBuildTree();
+//			new MethodCompilerTest().TestBuildTree();
 //			DoExtremelySimpleParameterCodeGen();
+		}
+
+		private static void GenericExperiment()
+		{
+			BasicTestDelegate del  = delegate()
+			                         	{
+			                         		List<int> list = new List<int>();
+											Array.ForEach((int[]) null, null);
+			                         	};
+			MethodDefinition method = GetMethod(del);
+
+//			Instruction inst = method.Body.Instructions
 		}
 
 		delegate void RefArgumentDelegate(ref int i);
@@ -23,7 +38,7 @@ namespace CellDotNet
 			RefArgumentDelegate del = delegate(ref int i) { i = 0x1ffff; };
 			MethodDefinition method = GetMethod(del);
 
-			CompileInfo ci = new CompileInfo(method);
+			MethodCompiler ci = new MethodCompiler(method);
 			new TreeDrawer().DrawMethod(ci, method);
 			ILTreeSpuWriter writer = new ILTreeSpuWriter();
 			SpuInstructionWriter ilist = new SpuInstructionWriter();
@@ -60,7 +75,7 @@ namespace CellDotNet
 										};
 */
 			MethodDefinition method = GetMethod(del);
-			CompileInfo ci = new CompileInfo(method);
+			MethodCompiler ci = new MethodCompiler(method);
 			new TreeDrawer().DrawMethod(ci, method);
 			ILTreeSpuWriter writer = new ILTreeSpuWriter();
 			SpuInstructionWriter ilist = new SpuInstructionWriter();
@@ -107,7 +122,7 @@ namespace CellDotNet
 			MethodDefinition methodint = GetMethod(intmethod);
 			TypeReference tint = methodint.Parameters[0].ParameterType;
 
-			CompileInfo.TypeCache tc = new CompileInfo.TypeCache();
+			MethodCompiler.TypeCache tc = new MethodCompiler.TypeCache();
 			TypeDescription td = tc.GetTypeDescription(tint);
 			TypeDescription td2 = tc.GetTypeDescription(trefint);
 

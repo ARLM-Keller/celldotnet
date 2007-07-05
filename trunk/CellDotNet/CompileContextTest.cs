@@ -29,7 +29,7 @@ namespace CellDotNet
 		public void TestCompileTwoMethodsInternal()
 		{
 			SimpleDelegate del = MethodCallerInternal;
-			MethodDefinition method = CompileInfoTest.GetMethod(del);
+			MethodDefinition method = MethodCompilerTest.GetMethod(del);
 
 			CompileContext cc = new CompileContext(method);
 			Assert.AreEqual(2, cc.Methods.Count);
@@ -39,7 +39,7 @@ namespace CellDotNet
 		public void TestCompileThreeMethodsExternal()
 		{
 			SimpleDelegate del = MethodCallerExternal;
-			MethodDefinition method = CompileInfoTest.GetMethod(del);
+			MethodDefinition method = MethodCompilerTest.GetMethod(del);
 
 			CompileContext cc = new CompileContext(method);
 			Assert.AreEqual(3, cc.Methods.Count);
@@ -54,7 +54,7 @@ namespace CellDotNet
 								i = (int*)30000;
 								*i = Math.Max(100, 200);
 							};
-			MethodDefinition method = CompileInfoTest.GetMethod(del);
+			MethodDefinition method = MethodCompilerTest.GetMethod(del);
 			CompileContext cc = new CompileContext(method);
 //			ILTreeSpuWriter 
 		}
