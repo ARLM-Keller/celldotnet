@@ -55,6 +55,7 @@ namespace CellDotNet
 				};
 			MethodDefinition method = GetMethod(del);
 			MethodCompiler ci = new MethodCompiler(method);
+			ci.PerformProcessing(MethodCompileState.TreeConstructionDone);
 
 
 			TreeDrawer td = new TreeDrawer();
@@ -73,6 +74,7 @@ namespace CellDotNet
 										};
 			MethodDefinition method = GetMethod(del);
 			MethodCompiler ci = new MethodCompiler(method);
+			ci.PerformProcessing(MethodCompileState.TreeConstructionDone);
 			new TreeDrawer().DrawMethod(ci, method);
 		}
 
@@ -86,6 +88,7 @@ namespace CellDotNet
 										};
 			MethodDefinition method = GetMethod(del);
 			MethodCompiler ci = new MethodCompiler(method);
+			ci.PerformProcessing(MethodCompileState.TreeConstructionDone);
 			new TreeDrawer().DrawMethod(ci, method);
 		}
 
@@ -99,6 +102,7 @@ namespace CellDotNet
 										};
 			MethodDefinition method = GetMethod(del);
 			MethodCompiler ci = new MethodCompiler(method);
+			ci.PerformProcessing(MethodCompileState.TreeConstructionDone);
 			new TreeDrawer().DrawMethod(ci, method);
 		}
 

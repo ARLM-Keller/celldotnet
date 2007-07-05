@@ -6,6 +6,17 @@ using Mono.Cecil.Cil;
 
 namespace CellDotNet
 {
+	enum CompileContextState
+	{
+		None,
+		Initial,
+		TreeConstructionDone,
+		InstructionSelectionDone,
+		RegisterAllocationDone,
+		MethodAddressesDetermined,
+		Complete
+	}
+
 	/// <summary>
 	/// This class acts as a driver and store for the compilation process.
 	/// </summary>
@@ -22,17 +33,61 @@ namespace CellDotNet
 			get { return _entryPoint; }
 		}
 
+		private MethodDefinition _entryMethod;
+
 		public Dictionary<string, MethodCompiler> Methods
 		{
 			get { return _methods; }
 		}
 
-
 		public CompileContext(MethodDefinition entryPoint)
 		{
-			CompileAll(entryPoint);
+			State = CompileContextState.Initial;
+
+			_entryMethod = entryPoint;
 		}
 
+		private CompileContextState _state;
+
+		/// <summary>
+		/// The least common state for all referenced methods.
+		/// </summary>
+		public CompileContextState State
+		{
+			get { return _state; }
+			private set { _state = value; }
+		}
+
+		public void PerformProcessing(CompileContextState targetState)
+		{
+			if (targetState == State)
+				return;
+
+			switch (targetState)
+			{
+				case CompileContextState.InstructionSelectionDone:
+					PerformRecursiveMethodTreesConstruction();
+					break;
+				case CompileContextState.TreeConstructionDone:
+					PerformInstructionSelection();
+					break;
+				case CompileContextState.RegisterAllocationDone:
+				case CompileContextState.MethodAddressesDetermined:
+				case CompileContextState.Complete:
+					throw new NotImplementedException("State: " + targetState);
+				case CompileContextState.None:
+				case CompileContextState.Initial:
+				default:
+					throw new ArgumentException("Invalid target state: " + targetState, "targetState");
+			}
+		}
+
+		private void AssertState(CompileContextState requiredState)
+		{
+			if (State != requiredState)
+				throw new InvalidOperationException(string.Format("Operation is invalid for the current state. " +
+					"Current state: {0}; required state: {1}.", State, requiredState));
+		}
 
 		/// <summary>
 		/// Creates a key that can be used to identify the type.
@@ -69,11 +124,16 @@ namespace CellDotNet
 			return enumerator.Current;
 		}
 
-		private void CompileAll(MethodDefinition entryPoint)
+		/// <summary>
+		/// Finds and build MethodCompilers for the methods that are transitively referenced from the entry method.
+		/// </summary>
+		private void PerformRecursiveMethodTreesConstruction()
 		{
+			AssertState(CompileContextState.Initial);
+
 			// Compile entry point and all any called methods.
 			Dictionary<string, MethodReference> methodsToCompile = new Dictionary<string, MethodReference>();
-			methodsToCompile.Add(CreateMethodRefKey(entryPoint), entryPoint);
+			methodsToCompile.Add(CreateMethodRefKey(_entryMethod), _entryMethod);
 
 			while (methodsToCompile.Count > 0)
 			{
@@ -105,9 +165,10 @@ namespace CellDotNet
 				}
 
 				MethodCompiler ci = new MethodCompiler(mdef);
+				ci.PerformProcessing(MethodCompileState.TreeConstructionDone);
 				Methods.Add(nextmethodkey, ci);
 
-				// Find references methods.
+				// Find referenced methods.
 				foreach (Instruction inst in mdef.Body.Instructions)
 				{
 					MethodReference mr = inst.Operand as MethodReference;
@@ -121,8 +182,27 @@ namespace CellDotNet
 					methodsToCompile[methodkey] = mr;
 				}
 			}
-			_entryPoint = new MethodCompiler(entryPoint);
+			_entryPoint = new MethodCompiler(_entryMethod);
+			_entryPoint.PerformProcessing(MethodCompileState.TreeConstructionDone);
 
+
+			State = CompileContextState.TreeConstructionDone;
+		}
+
+		/// <summary>
+		/// Performs instruction selected on all the methods.
+		/// </summary>
+		private void PerformInstructionSelection()
+		{
+			AssertState(CompileContextState.TreeConstructionDone);
+
+			foreach (MethodCompiler mc in Methods.Values)
+			{
+				mc.PerformProcessing(MethodCompileState.InstructionSelectionDone);
+			}
+
+
+			State = CompileContextState.InstructionSelectionDone;
 		}
 	}
 }
