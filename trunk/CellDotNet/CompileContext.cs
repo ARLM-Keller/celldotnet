@@ -8,13 +8,14 @@ namespace CellDotNet
 {
 	enum CompileContextState
 	{
-		None,
-		Initial,
-		TreeConstructionDone,
-		InstructionSelectionDone,
-		RegisterAllocationDone,
-		MethodAddressesDetermined,
-		Complete
+		S0None,
+		S1Initial,
+		S2TreeConstructionDone,
+		S3InstructionSelectionDone,
+		S4RegisterAllocationDone,
+		S5MethodAddressesDetermined,
+		S6AddressSubstitutionDone,
+		S7Complete
 	}
 
 	/// <summary>
@@ -42,7 +43,7 @@ namespace CellDotNet
 
 		public CompileContext(MethodDefinition entryPoint)
 		{
-			State = CompileContextState.Initial;
+			State = CompileContextState.S1Initial;
 
 			_entryMethod = entryPoint;
 		}
@@ -60,26 +61,76 @@ namespace CellDotNet
 
 		public void PerformProcessing(CompileContextState targetState)
 		{
-			if (targetState == State)
+			if (State >= targetState)
 				return;
 
-			switch (targetState)
+			if (targetState <= CompileContextState.S1Initial)
+				throw new ArgumentException("Invalid target state: " + targetState, "targetState");
+
+			if (targetState >= CompileContextState.S2TreeConstructionDone && State < CompileContextState.S2TreeConstructionDone)
+				PerformRecursiveMethodTreesConstruction();
+
+			if (targetState >= CompileContextState.S3InstructionSelectionDone && State < CompileContextState.S3InstructionSelectionDone)
+				PerformInstructionSelection();
+
+			if (targetState >= CompileContextState.S4RegisterAllocationDone && State < CompileContextState.S4RegisterAllocationDone)
+				PerformRegisterAllocation();
+
+			if (targetState >= CompileContextState.S5MethodAddressesDetermined && State < CompileContextState.S5MethodAddressesDetermined)
+				PerformMethodAddressDetermination();
+
+			if (targetState >= CompileContextState.S6AddressSubstitutionDone && State < CompileContextState.S6AddressSubstitutionDone)
+				PerformAddressSubstitution();
+
+			if (targetState >= CompileContextState.S7Complete && State < CompileContextState.S7Complete)
+				throw new NotImplementedException("State: " + targetState);
+
+			if (targetState > CompileContextState.S7Complete)
+				throw new ArgumentException("Invalid target state: " + targetState, "targetState");
+		}
+
+		/// <summary>
+		/// Substitute label and method addresses for calls.
+		/// </summary>
+		private void PerformAddressSubstitution()
+		{
+			AssertState(CompileContextState.S5MethodAddressesDetermined);
+
+			foreach (MethodCompiler mc in Methods.Values)
+				mc.PerformProcessing(MethodCompileState.S6AdressSubstitutionDone);
+
+			State = CompileContextState.S7Complete;
+		}
+
+		/// <summary>
+		/// Determines local storage addresses for the methods.
+		/// </summary>
+		private void PerformMethodAddressDetermination()
+		{
+			AssertState(CompileContextState.S4RegisterAllocationDone);
+
+			// Start from the beginning and lay them out sequentially.
+			const int lsMethodStart = 0;
+
+			int lsAddress = lsMethodStart;
+			Dictionary<MethodCompiler, int> methodAddresses = new Dictionary<MethodCompiler, int>();
+			foreach (MethodCompiler mc in Methods.Values)
 			{
-				case CompileContextState.InstructionSelectionDone:
-					PerformRecursiveMethodTreesConstruction();
-					break;
-				case CompileContextState.TreeConstructionDone:
-					PerformInstructionSelection();
-					break;
-				case CompileContextState.RegisterAllocationDone:
-				case CompileContextState.MethodAddressesDetermined:
-				case CompileContextState.Complete:
-					throw new NotImplementedException("State: " + targetState);
-				case CompileContextState.None:
-				case CompileContextState.Initial:
-				default:
-					throw new ArgumentException("Invalid target state: " + targetState, "targetState");
+				methodAddresses.Add(mc, lsAddress);
+				lsAddress += mc.GetSpuInstructionCount();
 			}
+
+			State = CompileContextState.S5MethodAddressesDetermined;
+		}
+
+		private void PerformRegisterAllocation()
+		{
+			AssertState(CompileContextState.S2TreeConstructionDone);
+
+			foreach (MethodCompiler mc in Methods.Values)
+				mc.PerformProcessing(MethodCompileState.S4RegisterAllocationDone);
+
+			State = CompileContextState.S4RegisterAllocationDone;
 		}
 
 		private void AssertState(CompileContextState requiredState)
@@ -129,7 +180,7 @@ namespace CellDotNet
 		/// </summary>
 		private void PerformRecursiveMethodTreesConstruction()
 		{
-			AssertState(CompileContextState.Initial);
+			AssertState(CompileContextState.S1Initial);
 
 			// Compile entry point and all any called methods.
 			Dictionary<string, MethodReference> methodsToCompile = new Dictionary<string, MethodReference>();
@@ -165,7 +216,7 @@ namespace CellDotNet
 				}
 
 				MethodCompiler ci = new MethodCompiler(mdef);
-				ci.PerformProcessing(MethodCompileState.TreeConstructionDone);
+				ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 				Methods.Add(nextmethodkey, ci);
 
 				// Find referenced methods.
@@ -183,10 +234,10 @@ namespace CellDotNet
 				}
 			}
 			_entryPoint = new MethodCompiler(_entryMethod);
-			_entryPoint.PerformProcessing(MethodCompileState.TreeConstructionDone);
+			_entryPoint.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 
 
-			State = CompileContextState.TreeConstructionDone;
+			State = CompileContextState.S2TreeConstructionDone;
 		}
 
 		/// <summary>
@@ -194,15 +245,13 @@ namespace CellDotNet
 		/// </summary>
 		private void PerformInstructionSelection()
 		{
-			AssertState(CompileContextState.TreeConstructionDone);
+			AssertState(CompileContextState.S2TreeConstructionDone);
 
 			foreach (MethodCompiler mc in Methods.Values)
-			{
-				mc.PerformProcessing(MethodCompileState.InstructionSelectionDone);
-			}
+				mc.PerformProcessing(MethodCompileState.S3InstructionSelectionDone);
 
-
-			State = CompileContextState.InstructionSelectionDone;
+			State = CompileContextState.S3InstructionSelectionDone;
 		}
+
 	}
 }
