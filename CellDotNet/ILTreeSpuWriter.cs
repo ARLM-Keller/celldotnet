@@ -83,6 +83,7 @@ namespace CellDotNet
 				case Code.Jmp:
 					break;
 				case Code.Call:
+					break;
 				case Code.Callvirt:
 					break;
 				case Code.Calli:

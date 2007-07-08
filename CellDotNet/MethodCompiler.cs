@@ -13,17 +13,17 @@ namespace CellDotNet
 	/// </summary>
 	internal enum MethodCompileState
 	{
-		None,
+		S0None,
 		/// <summary>
 		/// Before any real processing has been performed.
 		/// </summary>
-		Initial,
-		TreeConstructionDone,
-		InstructionSelectionDone,
-		RegisterAllocationDone,
-		BranchesFixed,
-		AdressSubstitutionDone,
-		Complete
+		S1Initial,
+		S2TreeConstructionDone,
+		S3InstructionSelectionDone,
+		S4RegisterAllocationDone,
+		S5BranchesFixed,
+		S6AdressSubstitutionDone,
+		S7Complete
 	}
 
 	/// <summary>
@@ -57,7 +57,7 @@ namespace CellDotNet
 		{
 			method.Body.Simplify();
 			_methodDefinition = method;
-			State = MethodCompileState.Initial;
+			State = MethodCompileState.S1Initial;
 
 			PerformIRTreeConstruction();
 			DeriveTypes();
@@ -74,11 +74,11 @@ namespace CellDotNet
 
 		private void PerformIRTreeConstruction()
 		{
-			AssertState(MethodCompileState.Initial);
+			AssertState(MethodCompileState.S1Initial);
 
 			BuildBasicBlocks(MethodDefinition);
 			CheckTreeInstructionCount(MethodDefinition.Body.Instructions.Count);
-			State = MethodCompileState.TreeConstructionDone;
+			State = MethodCompileState.S2TreeConstructionDone;
 		}
 
 		private void BuildBasicBlocks(MethodDefinition method)
@@ -381,13 +381,21 @@ namespace CellDotNet
 
 		private void PerformInstructionSelection()
 		{
-			AssertState(MethodCompileState.TreeConstructionDone);
+			AssertState(MethodCompileState.S2TreeConstructionDone);
 
 			ILTreeSpuWriter writer = new ILTreeSpuWriter();
-			SpuInstructionWriter ilist = new SpuInstructionWriter();
-			writer.GenerateCode(this, ilist);
+			_instructions = new SpuInstructionWriter();
+			writer.GenerateCode(this, _instructions);
 
-			State = MethodCompileState.InstructionSelectionDone;
+			State = MethodCompileState.S3InstructionSelectionDone;
+		}
+
+		public int GetSpuInstructionCount()
+		{
+			if ((int)State < (int)MethodCompileState.S3InstructionSelectionDone)
+				throw new InvalidOperationException("Too early. State: " + State);
+
+			return _instructions.Instructions.Count;
 		}
 
 		/// <summary>
@@ -396,33 +404,41 @@ namespace CellDotNet
 		/// <param name="targetState"></param>
 		public void PerformProcessing(MethodCompileState targetState)
 		{
-			if (State == targetState)
+			if (State >= targetState)
 				return; // Already there...
 
-			switch (targetState)
+			if (State < MethodCompileState.S2TreeConstructionDone && targetState >= MethodCompileState.S2TreeConstructionDone)
+				PerformIRTreeConstruction();
+
+			if (State < MethodCompileState.S3InstructionSelectionDone && targetState >= MethodCompileState.S3InstructionSelectionDone)
+				PerformInstructionSelection();
+
+			if (State < MethodCompileState.S4RegisterAllocationDone && targetState >= MethodCompileState.S4RegisterAllocationDone)
+				PerformRegisterAllocation();
+
+			if (targetState >= MethodCompileState.S5BranchesFixed)
 			{
-				case MethodCompileState.None:
-				case MethodCompileState.Initial:
-					throw new InvalidOperationException(
-						string.Format("Target state: {0}; current state: {1}.", targetState, State));
-				case MethodCompileState.TreeConstructionDone:
-					PerformIRTreeConstruction();
-					break;
-				case MethodCompileState.InstructionSelectionDone:
-					PerformInstructionSelection();
-					break;
-				case MethodCompileState.RegisterAllocationDone:
-				case MethodCompileState.BranchesFixed:
-				case MethodCompileState.AdressSubstitutionDone:
-				case MethodCompileState.Complete:
+				if (targetState <= MethodCompileState.S7Complete) 
 					throw new NotImplementedException("Target state: " + targetState);
-				default:
+				else 
 					throw new ArgumentException("Invalid state: " + targetState, "targetState");
 			}
 		}
 
+		private void PerformRegisterAllocation()
+		{
+			AssertState(MethodCompileState.S3InstructionSelectionDone);
+
+			RegAlloc regalloc = new RegAlloc();
+			List<SpuInstruction> asm = new List<SpuInstruction>(_instructions.Instructions);
+			regalloc.alloc(asm, 16);
+
+			State = MethodCompileState.S4RegisterAllocationDone;
+		}
+
 
 		private TypeCache _typecache = new TypeCache();
+		private SpuInstructionWriter _instructions;
 
 		/// <summary>
 		/// Translates the type reference to a <see cref="TypeDescription"/>.
