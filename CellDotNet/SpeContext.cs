@@ -7,6 +7,10 @@ namespace CellDotNet
 {
 	internal unsafe class SpeContext : IDisposable
 	{
+		private const uint SPE_TAG_ALL = 1;
+		private const uint SPE_TAG_ANY = 2;
+		private const uint SPE_TAG_IMMEDIATE = 3;
+
 		/*
 		class SpeHandle : CriticalHandle
 		{
@@ -28,7 +32,7 @@ namespace CellDotNet
 //		private SpeHandle _handle;
 		private IntPtr _handle;
 
-		private int _localStorageSize = 256;
+		private int _localStorageSize = 16*1024;
 
 		public int LocalStorageSize
 		{
@@ -42,115 +46,110 @@ namespace CellDotNet
 			_handle = spe_context_create(0, IntPtr.Zero);
 			if (_handle == IntPtr.Zero || _handle == null)
 				throw new Exception();
-//			_localStorage = spe_ls_area_get(_handle);
-//			if (_localStorage == IntPtr.Zero)
-//				throw new Exception();
+
 //			_localStorageSize = spe_ls_size_get(_handle);
 
+			Console.WriteLine("localStorageSize: {0}", _localStorageSize);
+			
 //			Console.WriteLine("SpeContext created, handler addr={0}", _handle);
 		}
 
 		public bool LoadProgram(int[] code)
 		{
-//			Marshal.Copy(code, 0, _localStorage, code.Length);
+			IntPtr dataBufMain = IntPtr.Zero;
 
-			uint SPE_TAG_ALL = 1;
-			uint SPE_TAG_ANY = 2;
-			uint SPE_TAG_IMMEDIATE = 3;
-
-			IntPtr dataBufMain = Marshal.AllocHGlobal(code.Length*4 + 32);
-
-			IntPtr dataBuf = (IntPtr) (((uint) dataBufMain/16 + 1)*16);
-
-			Marshal.Copy(code, 0, dataBuf, code.Length);
-
-			uint codeBufSize = (((uint) code.Length*4)/16 + 1)*16;
-
-			uint DMA_tag = 1;
-			Console.WriteLine("Starting DAM.");
-
-			int loadresult = spe_mfcio_get(_handle, 0, dataBuf, codeBufSize, DMA_tag, 0, 0);
-
-			if (loadresult != 0)
+			try
 			{
-				Marshal.FreeHGlobal(dataBufMain);
-				throw new Exception("spe_mfcio_get failed.");
-			}
+				dataBufMain = Marshal.AllocHGlobal(code.Length*4 + 32);
 
-			Console.WriteLine("Waiting for DMA to finish.");
+				IntPtr dataBuf = (IntPtr)(((int)dataBufMain + 15) & ~0xf);
 
-			// TODO mask skal sættes til noget fornuftigt
-			uint tag_status = 0;
-//				System.Threading.Thread.Sleep(2000);				
-			int waitresult = spe_mfcio_tag_status_read(_handle, 0, SPE_TAG_ALL, ref tag_status);
+				Marshal.Copy(code, 0, dataBuf, code.Length);
 
-			Console.WriteLine("DMA don.");
+				uint codeBufSize = (((uint) code.Length*4)/16 + 1)*16;
 
-			if (waitresult == 0)
-			{
-				Marshal.FreeHGlobal(dataBufMain);
+				uint DMA_tag = 1;
+				Console.WriteLine("Starting DMA.");
+
+				int loadresult = spe_mfcio_get(_handle, 0, dataBuf, codeBufSize, DMA_tag, 0, 0);
+
+				if (loadresult != 0)
+				{
+					throw new Exception("spe_mfcio_get failed.");
+				}
+
+				Console.WriteLine("Waiting for DMA to finish.");
+
+				// TODO mask skal sættes til noget fornuftigt
+				uint tag_status = 0;
+				int waitresult = spe_mfcio_tag_status_read(_handle, 0, SPE_TAG_ALL, ref tag_status);
+
+				Console.WriteLine("DMA don.");
+
+				if (waitresult != 0)
+					throw new Exception("spe_mfcio_status_tag_read failed.");
+
 				return true;
-			}
-			else
+
+			} finally
 			{
-				Marshal.FreeHGlobal(dataBufMain);
-				throw new Exception("spe_mfcio_status_tag_read failed.");
+				if(dataBufMain != IntPtr.Zero)
+					Marshal.FreeHGlobal(dataBufMain);
 			}
 		}
 
 		public int[] GetCopyOffLocalStorage()
 		{
-//			int[] data = new int[20];
-//			Marshal.Copy(_localStorage, data, 0, LocalStorageSize);
-//			return data;
+			IntPtr dataBufMain = IntPtr.Zero;
 
-			uint SPE_TAG_ALL = 1;
-			uint SPE_TAG_ANY = 2;
-			uint SPE_TAG_IMMEDIATE = 3;
-
-			IntPtr dataBufMain = Marshal.AllocHGlobal(LocalStorageSize + 16);
-
-			IntPtr dataBuf = (IntPtr) (((uint) dataBufMain/16 + 1)*16);
-
-			uint DMA_tag = 2;
-			Console.WriteLine("Starting DMA.");
-
-			int loadresult = spe_mfcio_put(_handle, 0, dataBuf, (uint) LocalStorageSize, DMA_tag, 0, 0);
-
-			if (loadresult != 0)
+			try
 			{
-				Marshal.FreeHGlobal(dataBufMain);
-				throw new Exception("spe_mfcio_put failed.");
-			}
+				dataBufMain = Marshal.AllocHGlobal(LocalStorageSize + 16);
 
-			Console.WriteLine("Waiting for DMA to finish.");
+				IntPtr dataBuf = (IntPtr) (((int) dataBufMain + 15) & ~0xf);
 
-			// TODO mask skal sættes til noget fornuftigt
-			uint tag_status = 0;
-			int waitresult = spe_mfcio_tag_status_read(_handle, 0, SPE_TAG_ANY, ref tag_status);
+				uint DMA_tag = 2;
+				Console.WriteLine("Starting DMA.");
 
-			Console.WriteLine("DMA don.");
+				int loadresult = spe_mfcio_put(_handle, 0, dataBuf, (uint) LocalStorageSize, DMA_tag, 0, 0);
 
-			if (waitresult == 0)
+				if (loadresult != 0)
+				{
+					throw new Exception("spe_mfcio_put failed.");
+				}
+
+				Console.WriteLine("Waiting for DMA to finish.");
+
+				// TODO mask skal sættes til noget fornuftigt
+				uint tag_status = 0;
+				int waitresult = spe_mfcio_tag_status_read(_handle, 0, SPE_TAG_ANY, ref tag_status);
+
+				Console.WriteLine("DMA don.");
+
+				if (waitresult == 0)
+				{
+					int[] data = new int[LocalStorageSize/4];
+					Marshal.Copy(dataBuf, data, 0, LocalStorageSize/4);
+					return data;
+				}
+				else
+				{
+					throw new Exception("spe_mfcio_tag_status_read failed.");
+				}
+			} finally
 			{
-				int[] data = new int[LocalStorageSize/4];
-				Marshal.Copy(dataBuf, data, 0, LocalStorageSize/4);
-				Marshal.FreeHGlobal(dataBufMain);
-				return data;
-			}
-			else
-			{
-				Marshal.FreeHGlobal(dataBufMain);
-				throw new Exception("spe_mfcio_tag_status_read failed.");
+				if(dataBufMain != IntPtr.Zero)
+					Marshal.FreeHGlobal(dataBufMain);
 			}
 		}
 
-		public void Run()
+		public int Run()
 		{
-			uint entry;
+			uint entry = 0;
 			int rc = spe_context_run(_handle, &entry, 0, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 			if (rc < 0)
 				throw new Exception();
+			return rc;
 		}
 
 		[DllImport("libspe2.so")]

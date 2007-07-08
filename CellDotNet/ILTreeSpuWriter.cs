@@ -63,12 +63,25 @@ namespace CellDotNet
 					break;
 				case Code.Ldc_I4:
 					{
-						int i = (int) inst.Operand;
-						VirtualRegister l = _writer.WriteIlh(i);
-						if (i >> 16 == 0)
-							return l;
-						VirtualRegister u = _writer.WriteIlhu(i >> 16);
-						return _writer.WriteOr(l, u);
+//						int i = (int) inst.Operand;
+//						VirtualRegister l = _writer.WriteIlh(i);
+//						if (i >> 16 == 0)
+//							return l;
+//						VirtualRegister u = _writer.WriteIlhu(i >> 16);
+//						return _writer.WriteOr(l, u);
+
+
+						int i = (int)inst.Operand;
+						VirtualRegister r;
+						if(i >> 16 == 0)
+						{
+							r = _writer.WriteIl(i);
+						} else
+						{
+							r = _writer.WriteIlhu(i >> 16);
+							_writer.WriteIohl(r, i);
+						}
+						return r;
 					}
 				case Code.Ldc_I8:
 					break;
@@ -165,7 +178,8 @@ namespace CellDotNet
 
 						VirtualRegister loadedvalue = _writer.WriteLqd(ptr, 0);
 						VirtualRegister mask = _writer.WriteCwd(ptr, 0);
-						VirtualRegister combined = _writer.WriteShufb(loadedvalue, vrright, mask);
+//						VirtualRegister combined = _writer.WriteShufb(loadedvalue, vrright, mask);
+						VirtualRegister combined = _writer.WriteShufb(vrright, loadedvalue, mask);
 						_writer.WriteStqd(combined, ptr, 0);
 						return null;
 					}

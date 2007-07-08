@@ -157,7 +157,7 @@ namespace CellDotNet
 		/// <param name="dest"></param>
 		public void WriteMove(VirtualRegister src, VirtualRegister dest)
 		{
-			SpuInstruction iload = new SpuInstruction(SpuOpCode.ilh);
+			SpuInstruction iload = new SpuInstruction(SpuOpCode.il);
 			iload.Constant = 0;
 			iload.Rt = NextRegister();
 			AddInstruction(iload);
