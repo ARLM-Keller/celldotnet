@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Reflection.Emit;
 using System.Text;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace CellDotNet
 {
@@ -13,18 +14,21 @@ namespace CellDotNet
 	{
 		Set<int> _branchTargets;
 
-		void DrawTree(MethodDefinition method, TreeInstruction inst, int level)
+		private TextWriter _output;
+
+		void DrawTree(MethodBase method, TreeInstruction inst, int level)
 		{
-			Console.Write(new string(' ', level * 2));
+			_output.Write(new string(' ', level * 2));
 
 			// Branch coloring.
+/*
 			bool isBranch = false;
 			bool isTarget = false;
 			if (inst.Opcode.FlowControl == FlowControl.Branch || inst.Opcode.FlowControl == FlowControl.Cond_Branch)
 				isBranch = true;
 			if (_branchTargets.Contains(inst.Offset))
 				isTarget = true;
-/*
+
 			if (isBranch && isTarget)
 				Console.ForegroundColor = ConsoleColor.Cyan;
 			else if (isBranch)
@@ -32,27 +36,27 @@ namespace CellDotNet
 			else if (isTarget)
 				Console.ForegroundColor = ConsoleColor.Green;
 */
-			Console.Write(inst.Offset.ToString("x4") + " " + inst.Opcode.Name);
+			_output.Write(inst.Offset.ToString("x4") + " " + inst.Opcode.Name);
 
 			if (inst.Operand != null)
 			{
 				if (inst.Operand is TreeInstruction)
-					Console.Write(" " + ((TreeInstruction)inst.Operand).Offset.ToString("x4"));
-				else if (inst.Operand is ParameterReference)
-					Console.Write(" {0} ({1})", ((ParameterReference)inst.Operand).Name, ((ParameterReference)inst.Operand).ParameterType.Name);
-				else if (inst.Operand is VariableReference)
-					Console.Write(" {0} ({1})", ((VariableReference)inst.Operand).Name, ((VariableReference)inst.Operand).VariableType.Name);
-				else if (inst.Operand is FieldReference)
-					Console.Write(" {0} ({1})", ((FieldReference)inst.Operand).Name, ((FieldReference)inst.Operand).FieldType.Name);
+					_output.Write(" " + ((TreeInstruction)inst.Operand).Offset.ToString("x4"));
+				else if (inst.Operand is ParameterInfo)
+					_output.Write(" {0} ({1})", ((ParameterInfo)inst.Operand).Name, ((ParameterInfo)inst.Operand).ParameterType.Name);
+				else if (inst.Operand is LocalVariableInfo)
+					_output.Write(" {0} ({1})", ((LocalVariableInfo)inst.Operand), ((LocalVariableInfo)inst.Operand).LocalType.Name);
+				else if (inst.Operand is FieldInfo)
+					_output.Write(" {0} ({1})", ((FieldInfo)inst.Operand).Name, ((FieldInfo)inst.Operand).FieldType.Name);
 				else
-					Console.Write(" " + inst.Operand);
+					_output.Write(" " + inst.Operand);
 			}
 			if (inst.StackType != StackTypeDescription.None)
-				Console.Write("   " + inst.StackType.CliType + (inst.StackType.IsByRef ? "&" : "")); // Fix &
+				_output.Write("   " + inst.StackType.CliType + (inst.StackType.IsByRef ? "&" : "")); // Fix &
 			else
-				Console.Write("   -");
+				_output.Write("   -");
 
-			Console.WriteLine();
+			_output.WriteLine();
 
 //			Console.ResetColor(); //Denne metode fejler på PS3
 
@@ -73,7 +77,7 @@ namespace CellDotNet
 			}
 		}
 
-		public void DrawTree(MethodDefinition method, BasicBlock block)
+		public void DrawTree(MethodBase method, BasicBlock block)
 		{
 			foreach (TreeInstruction root in block.Roots)
 			{
@@ -93,7 +97,7 @@ namespace CellDotNet
 				AddBranchTargets(inst.Right);
 		}
 
-		private void FindBranchTargets(MethodCompiler ci, MethodDefinition method)
+		private void FindBranchTargets(MethodCompiler ci, MethodBase method)
 		{
 			foreach (BasicBlock block in ci.Blocks)
 			{
@@ -104,16 +108,21 @@ namespace CellDotNet
 			}
 		}
 
-		public void DrawMethod(MethodCompiler ci, MethodDefinition method)
+
+		public void DrawMethod(MethodCompiler ci, MethodBase method)
 		{
+			_output = Console.Out;
+
 			_branchTargets = new Set<int>();
 			FindBranchTargets(ci, method);
 
 			foreach (BasicBlock block in ci.Blocks)
 			{
-				Console.WriteLine(" - Basic Block:");
+				_output.WriteLine(" - Basic Block:");
 				DrawTree(method, block);
 			}
+
+			_output.Flush();
 		}
 	}
 }

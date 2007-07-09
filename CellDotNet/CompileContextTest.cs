@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Mono.Cecil;
+using System.Reflection;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -29,7 +29,7 @@ namespace CellDotNet
 		public void TestAcquireTwoMethodsInternal()
 		{
 			SimpleDelegate del = MethodCallerInternal;
-			MethodDefinition method = MethodCompilerTest.GetMethod(del);
+			MethodBase method = del.Method;
 
 			CompileContext cc = new CompileContext(method);
 			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
@@ -40,7 +40,7 @@ namespace CellDotNet
 		public void TestAcquireThreeMethodsExternal()
 		{
 			SimpleDelegate del = MethodCallerExternal;
-			MethodDefinition method = MethodCompilerTest.GetMethod(del);
+			MethodBase method = del.Method;
 
 			CompileContext cc = new CompileContext(method);
 			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
@@ -58,7 +58,7 @@ namespace CellDotNet
 								i = (int*)30000;
 								*i = Math.Max(100, 200);
 							};
-			MethodDefinition method = MethodCompilerTest.GetMethod(del);
+			MethodBase method = del.Method;
 			CompileContext cc = new CompileContext(method);
 			cc.PerformProcessing(CompileContextState.S7Complete);
 		}

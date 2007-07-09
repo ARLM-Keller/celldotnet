@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace CellDotNet
 {
@@ -34,14 +32,14 @@ namespace CellDotNet
 			get { return _entryPoint; }
 		}
 
-		private MethodDefinition _entryMethod;
+		private MethodBase _entryMethod;
 
 		public Dictionary<string, MethodCompiler> Methods
 		{
 			get { return _methods; }
 		}
 
-		public CompileContext(MethodDefinition entryPoint)
+		public CompileContext(MethodBase entryPoint)
 		{
 			State = CompileContextState.S1Initial;
 
@@ -145,9 +143,9 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="typeref"></param>
 		/// <returns></returns>
-		private string CreateTypeRefKey(TypeReference typeref)
+		private string CreateTypeRefKey(Type typeref)
 		{
-			return typeref.Scope + "," + typeref.FullName;
+			return typeref.AssemblyQualifiedName;
 		}
 
 		/// <summary>
@@ -155,11 +153,11 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="methodRef"></param>
 		/// <returns></returns>
-		private string CreateMethodRefKey(MethodReference methodRef)
+		private string CreateMethodRefKey(MethodBase methodRef)
 		{
 			string key = CreateTypeRefKey(methodRef.DeclaringType) + "::";
 			key += methodRef.Name;
-			foreach (ParameterDefinition param in methodRef.Parameters)
+			foreach (ParameterInfo param in methodRef.GetParameters())
 			{
 				key += "," + CreateTypeRefKey(param.ParameterType);
 			}
@@ -183,46 +181,27 @@ namespace CellDotNet
 			AssertState(CompileContextState.S1Initial);
 
 			// Compile entry point and all any called methods.
-			Dictionary<string, MethodReference> methodsToCompile = new Dictionary<string, MethodReference>();
+			Dictionary<string, MethodBase> methodsToCompile = new Dictionary<string, MethodBase>();
 			methodsToCompile.Add(CreateMethodRefKey(_entryMethod), _entryMethod);
 
 			while (methodsToCompile.Count > 0)
 			{
 				// Find next method.
 				string nextmethodkey = GetFirstElement(methodsToCompile.Keys);
-				MethodReference mref = methodsToCompile[nextmethodkey];
+				MethodBase method = methodsToCompile[nextmethodkey];
 				methodsToCompile.Remove(nextmethodkey);
 
 				// Compile.
-				MethodDefinition mdef;
-				if (mref is MethodDefinition)
-				{
-					mdef = (MethodDefinition)mref;
-				}
-				else
-				{
-					AssemblyNameReference scope = (AssemblyNameReference) mref.DeclaringType.Scope;
-					AssemblyDefinition assdef = null;
-					foreach (Assembly ass in AppDomain.CurrentDomain.GetAssemblies())
-					{
-						if (ass.FullName == scope.FullName)
-							assdef = AssemblyFactory.GetAssembly(ass.Location);
-					}
-					if (assdef == null)
-						throw new Exception("Can't find assembly.");
-
-					TypeDefinition typedef = assdef.MainModule.Types[mref.DeclaringType.FullName];
-					mdef = typedef.Methods.GetMethod(mref.Name, mref.Parameters);
-				}
-
-				MethodCompiler ci = new MethodCompiler(mdef);
+				MethodCompiler ci = new MethodCompiler(method);
 				ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 				Methods.Add(nextmethodkey, ci);
+				throw new NotImplementedException();
 
+/*
 				// Find referenced methods.
-				foreach (Instruction inst in mdef.Body.Instructions)
+				foreach (Instruction inst in method.Body.Instructions)
 				{
-					MethodReference mr = inst.Operand as MethodReference;
+					MethodBase mr = inst.Operand as MethodBase;
 					if (mr == null)
 						continue;
 
@@ -232,6 +211,7 @@ namespace CellDotNet
 
 					methodsToCompile[methodkey] = mr;
 				}
+*/
 			}
 			_entryPoint = new MethodCompiler(_entryMethod);
 			_entryPoint.PerformProcessing(MethodCompileState.S2TreeConstructionDone);

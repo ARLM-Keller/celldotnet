@@ -2,9 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
-using Mono.Cecil.Metadata;
 
 namespace CellDotNet
 {
@@ -28,23 +25,18 @@ namespace CellDotNet
 			                         		List<int> list = new List<int>();
 											Array.ForEach((int[]) null, null);
 			                         	};
-			MethodDefinition method = GetMethod(del);
-
-//			Instruction inst = method.Body.Instructions
+			MethodBase method = del.Method;
 		}
 
 		delegate void RefArgumentDelegate(ref int i);
 
 		private static void DoExtremelySimpleParameterCodeGen()
 		{
-
-
-
 			RefArgumentDelegate del = delegate(ref int i) { i = 0x1ffff; };
-			MethodDefinition method = GetMethod(del);
+			MethodBase method = del.Method;
 
 			MethodCompiler ci = new MethodCompiler(method);
-			ci.PerformProcessing(MethodCompileState.TreeConstructionDone);
+			ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 			new TreeDrawer().DrawMethod(ci, method);
 			ILTreeSpuWriter writer = new ILTreeSpuWriter();
 			SpuInstructionWriter ilist = new SpuInstructionWriter();
@@ -94,9 +86,9 @@ namespace CellDotNet
 															a = 2;
 													};
 			*/
-			MethodDefinition method = GetMethod(del);
+			MethodBase method = del.Method;
 			MethodCompiler ci = new MethodCompiler(method);
-			ci.PerformProcessing(MethodCompileState.TreeConstructionDone);
+			ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 
 			new TreeDrawer().DrawMethod(ci, method);
 
@@ -154,7 +146,7 @@ namespace CellDotNet
 			if (!ctx.LoadProgram(bincode))
 //			if (!ctx.LoadProgram(testbincode))
 			{
-				System.Console.WriteLine("Programe load failed!");
+				Console.WriteLine("Programe load failed!");
 				return;
 			}
 				
@@ -301,39 +293,5 @@ namespace CellDotNet
 		}
 
 		unsafe private static void RefIntMethod(int* i) { }
-
-		private static void TypeExperimenalStuff(int i)
-		{
-			MethodInfo refintmethod = Array.Find(typeof(Class1).GetMethods(BindingFlags.NonPublic | BindingFlags.Static), delegate(MethodInfo mi2) { return mi2.Name == "RefIntMethod"; });
-			MethodDefinition methodrefint = GetMethod(refintmethod);
-			TypeReference trefint = methodrefint.Parameters[0].ParameterType;
-
-			Action<int> delint = delegate { };
-			MethodInfo intmethod = delint.Method;
-			MethodDefinition methodint = GetMethod(intmethod);
-			TypeReference tint = methodint.Parameters[0].ParameterType;
-
-			MethodCompiler.TypeCache tc = new MethodCompiler.TypeCache();
-			TypeDescription td = tc.GetTypeDescription(tint);
-			TypeDescription td2 = tc.GetTypeDescription(trefint);
-
-			AssemblyNameReference anref = (AssemblyNameReference)tint.Scope;
-			AssemblyDefinition def = tint.Module.Assembly.Resolver.Resolve(anref);
-
-			//			Console.WriteLine("cecil method token: " + method.MetadataToken.ToUInt());
-			//			Console.WriteLine("reflection method token: " + del.Method.MetadataToken);
-		}
-
-		public static MethodDefinition GetMethod(Delegate a)
-		{
-			MethodInfo m = a.Method;
-			return GetMethod(m);
-		}
-
-		private static MethodDefinition GetMethod(MethodInfo m)
-		{
-			AssemblyDefinition ass = AssemblyFactory.GetAssembly(m.DeclaringType.Assembly.Location);
-			return (MethodDefinition)ass.MainModule.LookupByToken(new MetadataToken(m.MetadataToken));
-		}
 	}
 }

@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Mono.Cecil;
-using Mono.Cecil.Metadata;
 
 namespace CellDotNet
 {
@@ -11,43 +8,26 @@ namespace CellDotNet
 	/// </summary>
 	class BaseTypes
 	{
-		static BaseTypes()
-		{
-			AssemblyDefinition corlib = AssemblyFactory.GetAssembly(typeof (int).Assembly.Location);
-			foreach (TypeDefinition type in corlib.MainModule.Types)
-			{
-//				uint ttok = type.MetadataToken.ToUInt();
-				if (type.MetadataToken == new MetadataToken(typeof(int).MetadataToken))
-					_int32 = type;
-				else if (type.MetadataToken == new MetadataToken(typeof(long).MetadataToken))
-					_int64 = type;
-				else if (type.MetadataToken == new MetadataToken(typeof(bool).MetadataToken))
-					_bool = type;
-				else if (type.MetadataToken == new MetadataToken(typeof(string).MetadataToken))
-					_string = type;
-			}
-		}
-
-		static private TypeDefinition _int32;
-		static public TypeDefinition Int32
+		static private Type _int32 = typeof(int);
+		static public Type Int32
 		{
 			get { return _int32; }
 		}
 
-		static private TypeDefinition _string;
-		static public TypeDefinition String
+		static private Type _string = typeof(string);
+		static public Type String
 		{
 			get { return _string; }
 		}
 
-		static private TypeDefinition _int64;
-		static public TypeDefinition Int64
+		static private Type _int64 = typeof(long);
+		static public Type Int64
 		{
 			get { return _int64; }
 		}
 
-		static private TypeDefinition _bool;
-		static public TypeDefinition Bool
+		static private Type _bool = typeof(bool);
+		static public Type Bool
 		{
 			get { return _bool; }
 		}

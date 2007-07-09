@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
+using System.Reflection;
 
 namespace CellDotNet
 {
@@ -26,20 +24,20 @@ namespace CellDotNet
 			{
 				if (Operand is string || Operand is int)
 				{
-					return "" + Opcode.Code + " " + Operand;
+					return "" + Opcode.IRCode + " " + Operand;
 				}
-				else if (Operand is VariableReference)
+				else if (Operand is LocalVariableInfo)
 				{
-					VariableReference r = (VariableReference)Operand;
-					return string.Format("{0} {1} ({2})", Opcode, r.Name, r.VariableType.Name);
+					LocalVariableInfo r = (LocalVariableInfo)Operand;
+					return string.Format("{0} V_{1} ({2})", Opcode, r.LocalIndex, r.LocalType.Name);
 				}
-				else if (Operand is FieldReference)
+				else if (Operand is FieldInfo)
 				{
-					FieldReference f = (FieldReference) Operand;
+					FieldInfo f = (FieldInfo) Operand;
 					return string.Format("{0} {1} ({2})", Opcode, f.Name, f.FieldType.Name);
 				}
 				else
-					return Opcode.Code.ToString();
+					return Opcode.IRCode.ToString();
 			}
 		}
 
@@ -50,8 +48,8 @@ namespace CellDotNet
 			set { _right = value; }
 		}
 
-		private OpCode _opcode;
-		public OpCode Opcode
+		private IROpCode _opcode;
+		public IROpCode Opcode
 		{
 			get { return _opcode; }
 			set { _opcode = value; }

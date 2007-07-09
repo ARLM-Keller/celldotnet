@@ -45,6 +45,9 @@
     <Compile Include="BasicBlock.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="CompileContextTest.cs" />
+    <Compile Include="ILReader.cs" />
+    <Compile Include="IRCode.cs" />
+    <Compile Include="IROpCodes.cs" />
     <Compile Include="MethodCompiler.cs" />
     <Compile Include="MethodCompilerTest.cs" />
     <Compile Include="RegAllocTest.cs" />
@@ -75,12 +78,6 @@
     <Compile Include="VirtualRegister.cs" />
     <Compile Include="Set.cs" />
     <Compile Include="TreeInstruction.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Cecil\lib\Mono.Cecil.csproj">
-      <Project>{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}</Project>
-      <Name>Mono.Cecil</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

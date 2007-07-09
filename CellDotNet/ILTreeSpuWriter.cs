@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
+using System.Reflection;
 
 namespace CellDotNet
 {
@@ -11,8 +10,8 @@ namespace CellDotNet
 	class ILTreeSpuWriter
 	{
 		private SpuInstructionWriter _writer;
-		private Dictionary<ParameterReference, VirtualRegister> _parameters;
-		private Dictionary<VariableReference, VirtualRegister> _variables;
+		private Dictionary<ParameterInfo, VirtualRegister> _parameters;
+		private Dictionary<LocalVariableInfo, VirtualRegister> _variables;
 
 
 		private Dictionary<int, int> _jumptargets;
@@ -24,12 +23,12 @@ namespace CellDotNet
 			// Create registers for parameters and variables so that they're 
 			// accessible during code generation.
 			// TODO: The parameter registers must end up matching the calling convention.
-			_parameters = new Dictionary<ParameterReference, VirtualRegister>();
-			foreach (ParameterDefinition parameter in ci.MethodDefinition.Parameters)
+			_parameters = new Dictionary<ParameterInfo, VirtualRegister>();
+			foreach (ParameterInfo parameter in ci.MethodBase.GetParameters())
 				_parameters.Add(parameter, _writer.NextRegister());
 
-			_variables = new Dictionary<VariableReference, VirtualRegister>();
-			foreach (VariableDefinition variable in ci.MethodDefinition.Body.Variables)
+			_variables = new Dictionary<LocalVariableInfo, VirtualRegister>();
+			foreach (LocalVariableInfo variable in ci.MethodBase.GetMethodBody().LocalVariables)
 				_variables.Add(variable, _writer.NextRegister());
 
 			foreach (BasicBlock bb in ci.Blocks)
@@ -51,17 +50,19 @@ namespace CellDotNet
 				if (inst.Right != null)
 					vrright = GenerateCode(inst.Right);
 			}
+			else if (inst.Right != null)
+				throw new InvalidILTreeException("Right but no left??");
 
-			Code ilcode = inst.Opcode.Code;
+			IRCode ilcode = inst.Opcode.IRCode;
 			switch (ilcode)
 			{
-				case Code.Nop:
+				case IRCode.Nop:
 					return null;
-				case Code.Break:
+				case IRCode.Break:
 					break;
-				case Code.Ldnull:
+				case IRCode.Ldnull:
 					break;
-				case Code.Ldc_I4:
+				case IRCode.Ldc_I4:
 					{
 //						int i = (int) inst.Operand;
 //						VirtualRegister l = _writer.WriteIlh(i);
@@ -83,95 +84,85 @@ namespace CellDotNet
 						}
 						return r;
 					}
-				case Code.Ldc_I8:
+				case IRCode.Ldc_I8:
 					break;
-				case Code.Ldc_R4:
+				case IRCode.Ldc_R4:
 					break;
-				case Code.Ldc_R8:
+				case IRCode.Ldc_R8:
 					break;
-				case Code.Dup:
+				case IRCode.Dup:
 					break;
-				case Code.Pop:
+				case IRCode.Pop:
 					break;
-				case Code.Jmp:
+				case IRCode.Jmp:
 					break;
-				case Code.Call:
+				case IRCode.Call:
 					break;
-				case Code.Callvirt:
+				case IRCode.Callvirt:
 					break;
-				case Code.Calli:
+				case IRCode.Calli:
 					break;
-				case Code.Ret:
+				case IRCode.Ret:
 					if (inst.StackType != StackTypeDescription.None)
 						throw new NotImplementedException("Cannot return values.");
 					return null;
-				case Code.Bne_Un_S:
+				case IRCode.Br:
 					break;
-				case Code.Bge_Un_S:
+				case IRCode.Brfalse:
 					break;
-				case Code.Bgt_Un_S:
+				case IRCode.Brtrue:
 					break;
-				case Code.Ble_Un_S:
+				case IRCode.Beq:
 					break;
-				case Code.Blt_Un_S:
+				case IRCode.Bge:
 					break;
-				case Code.Br:
+				case IRCode.Bgt:
 					break;
-				case Code.Brfalse:
+				case IRCode.Ble:
 					break;
-				case Code.Brtrue:
+				case IRCode.Blt:
 					break;
-				case Code.Beq:
+				case IRCode.Bne_Un:
 					break;
-				case Code.Bge:
+				case IRCode.Bge_Un:
 					break;
-				case Code.Bgt:
+				case IRCode.Bgt_Un:
 					break;
-				case Code.Ble:
+				case IRCode.Ble_Un:
 					break;
-				case Code.Blt:
+				case IRCode.Blt_Un:
 					break;
-				case Code.Bne_Un:
+				case IRCode.Switch:
 					break;
-				case Code.Bge_Un:
+				case IRCode.Ldind_I1:
 					break;
-				case Code.Bgt_Un:
+				case IRCode.Ldind_U1:
 					break;
-				case Code.Ble_Un:
+				case IRCode.Ldind_I2:
 					break;
-				case Code.Blt_Un:
+				case IRCode.Ldind_U2:
 					break;
-				case Code.Switch:
+				case IRCode.Ldind_I4:
 					break;
-				case Code.Ldind_I1:
+				case IRCode.Ldind_U4:
 					break;
-				case Code.Ldind_U1:
+				case IRCode.Ldind_I8:
 					break;
-				case Code.Ldind_I2:
+				case IRCode.Ldind_I:
 					break;
-				case Code.Ldind_U2:
+				case IRCode.Ldind_R4:
 					break;
-				case Code.Ldind_I4:
+				case IRCode.Ldind_R8:
 					break;
-				case Code.Ldind_U4:
+				case IRCode.Ldind_Ref:
 					break;
-				case Code.Ldind_I8:
+				case IRCode.Stind_Ref:
 					break;
-				case Code.Ldind_I:
+				case IRCode.Stind_I1:
 					break;
-				case Code.Ldind_R4:
+				case IRCode.Stind_I2:
 					break;
-				case Code.Ldind_R8:
-					break;
-				case Code.Ldind_Ref:
-					break;
-				case Code.Stind_Ref:
-					break;
-				case Code.Stind_I1:
-					break;
-				case Code.Stind_I2:
-					break;
-				case Code.Stind_I4:
+				case IRCode.Stind_I4:
 					{
 						if (inst.Left.StackType.IndirectionLevel != 1) throw new InvalidILTreeException();
 						VirtualRegister ptr = GetRegisterForReference(inst.Left);
@@ -183,265 +174,265 @@ namespace CellDotNet
 						_writer.WriteStqd(combined, ptr, 0);
 						return null;
 					}
-				case Code.Stind_I8:
+				case IRCode.Stind_I8:
 					break;
-				case Code.Stind_R4:
+				case IRCode.Stind_R4:
 					break;
-				case Code.Stind_R8:
+				case IRCode.Stind_R8:
 					break;
-				case Code.Add:
+				case IRCode.Add:
 					break;
-				case Code.Sub:
+				case IRCode.Sub:
 					break;
-				case Code.Mul:
+				case IRCode.Mul:
 					break;
-				case Code.Div:
+				case IRCode.Div:
 					break;
-				case Code.Div_Un:
+				case IRCode.Div_Un:
 					break;
-				case Code.Rem:
+				case IRCode.Rem:
 					break;
-				case Code.Rem_Un:
+				case IRCode.Rem_Un:
 					break;
-				case Code.And:
+				case IRCode.And:
 					break;
-				case Code.Or:
+				case IRCode.Or:
 					break;
-				case Code.Xor:
+				case IRCode.Xor:
 					break;
-				case Code.Shl:
+				case IRCode.Shl:
 					break;
-				case Code.Shr:
+				case IRCode.Shr:
 					break;
-				case Code.Shr_Un:
+				case IRCode.Shr_Un:
 					break;
-				case Code.Neg:
+				case IRCode.Neg:
 					break;
-				case Code.Not:
+				case IRCode.Not:
 					break;
-				case Code.Conv_I1:
+				case IRCode.Conv_I1:
 					break;
-				case Code.Conv_I2:
+				case IRCode.Conv_I2:
 					break;
-				case Code.Conv_I4:
+				case IRCode.Conv_I4:
 					break;
-				case Code.Conv_I8:
+				case IRCode.Conv_I8:
 					break;
-				case Code.Conv_R4:
+				case IRCode.Conv_R4:
 					break;
-				case Code.Conv_R8:
+				case IRCode.Conv_R8:
 					break;
-				case Code.Conv_U4:
+				case IRCode.Conv_U4:
 					break;
-				case Code.Conv_U8:
+				case IRCode.Conv_U8:
 					break;
-				case Code.Cpobj:
+				case IRCode.Cpobj:
 					break;
-				case Code.Ldobj:
+				case IRCode.Ldobj:
 					break;
-				case Code.Ldstr:
+				case IRCode.Ldstr:
 					break;
-				case Code.Newobj:
+				case IRCode.Newobj:
 					break;
-				case Code.Castclass:
+				case IRCode.Castclass:
 					break;
-				case Code.Isinst:
+				case IRCode.Isinst:
 					break;
-				case Code.Conv_R_Un:
+				case IRCode.Conv_R_Un:
 					break;
-				case Code.Unbox:
+				case IRCode.Unbox:
 					break;
-				case Code.Throw:
+				case IRCode.Throw:
 					break;
-				case Code.Ldfld:
+				case IRCode.Ldfld:
 					break;
-				case Code.Ldflda:
+				case IRCode.Ldflda:
 					break;
-				case Code.Stfld:
+				case IRCode.Stfld:
 					break;
-				case Code.Ldsfld:
+				case IRCode.Ldsfld:
 					break;
-				case Code.Ldsflda:
+				case IRCode.Ldsflda:
 					break;
-				case Code.Stsfld:
+				case IRCode.Stsfld:
 					break;
-				case Code.Stobj:
+				case IRCode.Stobj:
 					break;
-				case Code.Conv_Ovf_I1_Un:
+				case IRCode.Conv_Ovf_I1_Un:
 					break;
-				case Code.Conv_Ovf_I2_Un:
+				case IRCode.Conv_Ovf_I2_Un:
 					break;
-				case Code.Conv_Ovf_I4_Un:
+				case IRCode.Conv_Ovf_I4_Un:
 					break;
-				case Code.Conv_Ovf_I8_Un:
+				case IRCode.Conv_Ovf_I8_Un:
 					break;
-				case Code.Conv_Ovf_U1_Un:
+				case IRCode.Conv_Ovf_U1_Un:
 					break;
-				case Code.Conv_Ovf_U2_Un:
+				case IRCode.Conv_Ovf_U2_Un:
 					break;
-				case Code.Conv_Ovf_U4_Un:
+				case IRCode.Conv_Ovf_U4_Un:
 					break;
-				case Code.Conv_Ovf_U8_Un:
+				case IRCode.Conv_Ovf_U8_Un:
 					break;
-				case Code.Conv_Ovf_I_Un:
+				case IRCode.Conv_Ovf_I_Un:
 					break;
-				case Code.Conv_Ovf_U_Un:
+				case IRCode.Conv_Ovf_U_Un:
 					break;
-				case Code.Box:
+				case IRCode.Box:
 					break;
-				case Code.Newarr:
+				case IRCode.Newarr:
 					break;
-				case Code.Ldlen:
+				case IRCode.Ldlen:
 					break;
-				case Code.Ldelema:
+				case IRCode.Ldelema:
 					break;
-				case Code.Ldelem_I1:
+				case IRCode.Ldelem_I1:
 					break;
-				case Code.Ldelem_U1:
+				case IRCode.Ldelem_U1:
 					break;
-				case Code.Ldelem_I2:
+				case IRCode.Ldelem_I2:
 					break;
-				case Code.Ldelem_U2:
+				case IRCode.Ldelem_U2:
 					break;
-				case Code.Ldelem_I4:
+				case IRCode.Ldelem_I4:
 					break;
-				case Code.Ldelem_U4:
+				case IRCode.Ldelem_U4:
 					break;
-				case Code.Ldelem_I8:
+				case IRCode.Ldelem_I8:
 					break;
-				case Code.Ldelem_I:
+				case IRCode.Ldelem_I:
 					break;
-				case Code.Ldelem_R4:
+				case IRCode.Ldelem_R4:
 					break;
-				case Code.Ldelem_R8:
+				case IRCode.Ldelem_R8:
 					break;
-				case Code.Ldelem_Ref:
+				case IRCode.Ldelem_Ref:
 					break;
-				case Code.Stelem_I:
+				case IRCode.Stelem_I:
 					break;
-				case Code.Stelem_I1:
+				case IRCode.Stelem_I1:
 					break;
-				case Code.Stelem_I2:
+				case IRCode.Stelem_I2:
 					break;
-				case Code.Stelem_I4:
+				case IRCode.Stelem_I4:
 					break;
-				case Code.Stelem_I8:
+				case IRCode.Stelem_I8:
 					break;
-				case Code.Stelem_R4:
+				case IRCode.Stelem_R4:
 					break;
-				case Code.Stelem_R8:
+				case IRCode.Stelem_R8:
 					break;
-				case Code.Stelem_Ref:
+				case IRCode.Stelem_Ref:
 					break;
-				case Code.Ldelem_Any:
+//				case IRCode.Ldelem_Any:
+//					break;
+//				case IRCode.Stelem_Any:
+//					break;
+				case IRCode.Unbox_Any:
 					break;
-				case Code.Stelem_Any:
+				case IRCode.Conv_Ovf_I1:
 					break;
-				case Code.Unbox_Any:
+				case IRCode.Conv_Ovf_U1:
 					break;
-				case Code.Conv_Ovf_I1:
+				case IRCode.Conv_Ovf_I2:
 					break;
-				case Code.Conv_Ovf_U1:
+				case IRCode.Conv_Ovf_U2:
 					break;
-				case Code.Conv_Ovf_I2:
+				case IRCode.Conv_Ovf_I4:
 					break;
-				case Code.Conv_Ovf_U2:
+				case IRCode.Conv_Ovf_U4:
 					break;
-				case Code.Conv_Ovf_I4:
+				case IRCode.Conv_Ovf_I8:
 					break;
-				case Code.Conv_Ovf_U4:
+				case IRCode.Conv_Ovf_U8:
 					break;
-				case Code.Conv_Ovf_I8:
+				case IRCode.Refanyval:
 					break;
-				case Code.Conv_Ovf_U8:
+				case IRCode.Ckfinite:
 					break;
-				case Code.Refanyval:
+				case IRCode.Mkrefany:
 					break;
-				case Code.Ckfinite:
+				case IRCode.Ldtoken:
 					break;
-				case Code.Mkrefany:
+				case IRCode.Conv_U2:
 					break;
-				case Code.Ldtoken:
+				case IRCode.Conv_U1:
 					break;
-				case Code.Conv_U2:
-					break;
-				case Code.Conv_U1:
-					break;
-				case Code.Conv_I:
+				case IRCode.Conv_I:
 					return vrleft;
-				case Code.Conv_Ovf_I:
+				case IRCode.Conv_Ovf_I:
 					break;
-				case Code.Conv_Ovf_U:
+				case IRCode.Conv_Ovf_U:
 					break;
-				case Code.Add_Ovf:
+				case IRCode.Add_Ovf:
 					break;
-				case Code.Add_Ovf_Un:
+				case IRCode.Add_Ovf_Un:
 					break;
-				case Code.Mul_Ovf:
+				case IRCode.Mul_Ovf:
 					break;
-				case Code.Mul_Ovf_Un:
+				case IRCode.Mul_Ovf_Un:
 					break;
-				case Code.Sub_Ovf:
+				case IRCode.Sub_Ovf:
 					break;
-				case Code.Sub_Ovf_Un:
+				case IRCode.Sub_Ovf_Un:
 					break;
-				case Code.Endfinally:
+				case IRCode.Endfinally:
 					break;
-				case Code.Leave:
+				case IRCode.Leave:
 					break;
-				case Code.Leave_S:
+				case IRCode.Leave_S:
 					break;
-				case Code.Stind_I:
+				case IRCode.Stind_I:
 					break;
-				case Code.Conv_U:
+				case IRCode.Conv_U:
 					break;
-				case Code.Arglist:
+				case IRCode.Arglist:
 					break;
-				case Code.Ceq:
+				case IRCode.Ceq:
 					break;
-				case Code.Cgt:
+				case IRCode.Cgt:
 					break;
-				case Code.Cgt_Un:
+				case IRCode.Cgt_Un:
 					break;
-				case Code.Clt:
+				case IRCode.Clt:
 					break;
-				case Code.Clt_Un:
+				case IRCode.Clt_Un:
 					break;
-				case Code.Ldftn:
+				case IRCode.Ldftn:
 					break;
-				case Code.Ldvirtftn:
+				case IRCode.Ldvirtftn:
 					break;
-				case Code.Ldarg:
+				case IRCode.Ldarg:
 					{
 						// Do nothing.
 						return null;
 					}
-				case Code.Ldarga:
+				case IRCode.Ldarga:
 					break;
-				case Code.Starg:
+				case IRCode.Starg:
 					break;
-				case Code.Ldloc:
-					return _variables[(VariableReference)inst.Operand];
-				case Code.Ldloca:
+				case IRCode.Ldloc:
+					return _variables[(LocalVariableInfo)inst.Operand];
+				case IRCode.Ldloca:
 					break;
-				case Code.Stloc:
-					VirtualRegister dest = _variables[(VariableReference) inst.Operand];
+				case IRCode.Stloc:
+					VirtualRegister dest = _variables[(LocalVariableInfo) inst.Operand];
 					_writer.WriteMove(vrleft, dest);
 					return null;
-				case Code.Localloc:
-				case Code.Endfilter:
-				case Code.Unaligned:
-				case Code.Volatile:
-				case Code.Tail:
-				case Code.Initobj:
-				case Code.Constrained:
-				case Code.Cpblk:
-				case Code.Initblk:
-				case Code.No:
-				case Code.Rethrow:
-				case Code.Sizeof:
-				case Code.Refanytype:
-				case Code.Readonly:
+				case IRCode.Localloc:
+				case IRCode.Endfilter:
+				case IRCode.Unaligned:
+				case IRCode.Volatile:
+//				case IRCode.Tail:
+				case IRCode.Initobj:
+				case IRCode.Constrained:
+				case IRCode.Cpblk:
+				case IRCode.Initblk:
+//				case IRCode.No:
+				case IRCode.Rethrow:
+				case IRCode.Sizeof:
+				case IRCode.Refanytype:
+				case IRCode.Readonly:
 					break;
 				default:
 					throw new InvalidILTreeException("Invalid opcode: " + ilcode);
@@ -452,10 +443,10 @@ namespace CellDotNet
 
 		private VirtualRegister GetRegisterForReference(TreeInstruction inst)
 		{
-			if (inst.Operand is ParameterReference)
-				return _parameters[(ParameterReference)inst.Operand];
-			else if (inst.Operand is VariableReference)
-				return _variables[(VariableReference)inst.Operand];
+			if (inst.Operand is ParameterInfo)
+				return _parameters[(ParameterInfo)inst.Operand];
+			else if (inst.Operand is LocalVariableInfo)
+				return _variables[(LocalVariableInfo)inst.Operand];
 			else
 				throw new NotImplementedException();
 		}
@@ -498,9 +489,9 @@ namespace CellDotNet
 		public ILNotImplementedException(string message) : base(message) { }
 		public ILNotImplementedException(string message, Exception inner) : base(message, inner) { }
 
-		public ILNotImplementedException(TreeInstruction inst) : this(inst.Opcode.Code.ToString()) {  }
+		public ILNotImplementedException(TreeInstruction inst) : this(inst.Opcode.IRCode.ToString()) {  }
 
-		public ILNotImplementedException(Code ilcode) : this(ilcode.ToString()) { }
+		public ILNotImplementedException(IRCode ilcode) : this(ilcode.ToString()) { }
 
 		protected ILNotImplementedException(
 		  System.Runtime.Serialization.SerializationInfo info,

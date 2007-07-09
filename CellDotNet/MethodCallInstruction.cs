@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
+using System.Reflection;
 
 namespace CellDotNet
 {
@@ -11,12 +9,12 @@ namespace CellDotNet
 		/// <summary>
 		/// The Operand casted as a method.
 		/// </summary>
-		public MethodReference Method
+		public MethodBase Method
 		{
-			get { return (MethodReference) Operand; }
+			get { return (MethodBase) Operand; }
 		}
 
-		public MethodCallInstruction(MethodReference _method, OpCode _opcode)
+		public MethodCallInstruction(MethodBase _method, IROpCode _opcode)
 		{
 			Operand = _method;
 			Opcode = _opcode;
