@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Text;
 
 namespace CellDotNet
 {
@@ -45,7 +44,7 @@ namespace CellDotNet
 				else if (inst.Operand is ParameterInfo)
 					_output.Write(" {0} ({1})", ((ParameterInfo)inst.Operand).Name, ((ParameterInfo)inst.Operand).ParameterType.Name);
 				else if (inst.Operand is LocalVariableInfo)
-					_output.Write(" {0} ({1})", ((LocalVariableInfo)inst.Operand), ((LocalVariableInfo)inst.Operand).LocalType.Name);
+					_output.Write(" {0} ({1})", inst.Operand, ((LocalVariableInfo)inst.Operand).LocalType.Name);
 				else if (inst.Operand is FieldInfo)
 					_output.Write(" {0} ({1})", ((FieldInfo)inst.Operand).Name, ((FieldInfo)inst.Operand).FieldType.Name);
 				else
@@ -108,10 +107,9 @@ namespace CellDotNet
 			}
 		}
 
-
 		public void DrawMethod(MethodCompiler ci, MethodBase method)
 		{
-			_output = Console.Out;
+			_output = new StringWriter();
 
 			_branchTargets = new Set<int>();
 			FindBranchTargets(ci, method);
@@ -122,7 +120,7 @@ namespace CellDotNet
 				DrawTree(method, block);
 			}
 
-			_output.Flush();
+			Console.Write(((StringWriter)_output).GetStringBuilder().ToString());
 		}
 	}
 }
