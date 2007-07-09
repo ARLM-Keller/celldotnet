@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Text;
-using Mono.Cecil.Cil;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -16,17 +15,17 @@ namespace CellDotNet
 		/// Returns all IL opcodes.
 		/// </summary>
 		/// <returns></returns>
-		private List<OpCode> GetILOpcodes()
+		private List<IROpCode> GetILOpcodes()
 		{
-			List<OpCode> list=  new List<OpCode>();
-			FieldInfo[] fields = typeof(OpCodes).GetFields();
+			List<IROpCode> list=  new List<IROpCode>();
+			FieldInfo[] fields = typeof(IROpCodes).GetFields();
 
 			foreach (FieldInfo fi in fields)
 			{
-				if (fi.FieldType != typeof(OpCode))
+				if (fi.FieldType != typeof(IROpCode))
 					continue;
 
-				OpCode oc = (OpCode)fi.GetValue(null);
+				IROpCode oc = (IROpCode)fi.GetValue(null);
 				list.Add(oc);
 			}
 
@@ -38,15 +37,15 @@ namespace CellDotNet
 		{
 			TextWriter sw = Console.Out;
 
-			foreach (OpCode oc in GetILOpcodes())
+			foreach (IROpCode oc in GetILOpcodes())
 			{
 				if (oc.FlowControl != FlowControl.Next)
 					continue;
 
-				if (oc.OpCodeType == OpCodeType.Macro)
-					continue;
+//				if (oc.OpCodeType == OpCodeType.Macro)
+//					continue;
 
-				sw.Write("\t\t\tcase Code.{0}: // {1}\r\n", oc.Code, oc.Name);
+				sw.Write("\t\t\tcase IRCode.{0}: // {1}\r\n", oc.IRCode, oc.Name);
 			}
 		}
 
@@ -58,12 +57,12 @@ namespace CellDotNet
 		{
 			StringWriter sw = new StringWriter();
 
-			foreach (OpCode oc in GetILOpcodes())
+			foreach (IROpCode oc in GetILOpcodes())
 			{
-				if (oc.OpCodeType == OpCodeType.Macro)
-					sw.Write("\t\t// {0} = {1}, // {2} \r\n", oc.Code, (int) oc.Code, oc.OpCodeType);
-				else
-					sw.Write("\t\t{0} = {1}, // {2} \r\n", oc.Code, (int) oc.Code, oc.OpCodeType);
+//				if (oc.OpCodeType == OpCodeType.Macro)
+//					sw.Write("\t\t// {0} = {1}, // {2} \r\n", oc.Code, (int) oc.Code, oc.OpCodeType);
+//				else
+					sw.Write("\t\t{0} = {1},\r\n", oc.IRCode, (int) oc.IRCode);
 			}
 
 			Console.Write(sw.GetStringBuilder().ToString());

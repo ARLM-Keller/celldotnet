@@ -2,9 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
-using Mono.Cecil;
-using Mono.Cecil.Metadata;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -13,18 +10,6 @@ namespace CellDotNet
 	public class MethodCompilerTest
 	{
 		private delegate void BasicTestDelegate();
-
-		public static MethodDefinition GetMethod(Delegate a)
-		{
-			MethodInfo m = a.Method;
-			return GetMethod(m);
-		}
-
-		private static MethodDefinition GetMethod(MethodInfo m)
-		{
-			AssemblyDefinition ass = AssemblyFactory.GetAssembly(m.DeclaringType.Assembly.Location);
-			return (MethodDefinition)ass.MainModule.LookupByToken(new MetadataToken(m.MetadataToken));
-		}
 
 		[Test]
 		public void TestBuildTree()
@@ -53,7 +38,7 @@ namespace CellDotNet
 
 					return j * 2;
 				};
-			MethodDefinition method = GetMethod(del);
+			MethodBase method = del.Method;
 			MethodCompiler ci = new MethodCompiler(method);
 			ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 
@@ -72,7 +57,7 @@ namespace CellDotNet
 											Math.DivRem(9, 13, out rem);
 											Math.Max(Math.Min(3, 1), 5L);
 										};
-			MethodDefinition method = GetMethod(del);
+			MethodBase method = del.Method;
 			MethodCompiler ci = new MethodCompiler(method);
 			ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 			new TreeDrawer().DrawMethod(ci, method);
@@ -86,13 +71,13 @@ namespace CellDotNet
 											ArrayList list = new ArrayList(34);
 											list.Clear();
 										};
-			MethodDefinition method = GetMethod(del);
+			MethodBase method = del.Method;
 			MethodCompiler ci = new MethodCompiler(method);
 			ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 			new TreeDrawer().DrawMethod(ci, method);
 		}
 
-		[Test]
+		[Test, Ignore("Enable when arrays are supported.")]
 		public void TestParseArrayInstantiation()
 		{
 			BasicTestDelegate del = delegate
@@ -100,7 +85,7 @@ namespace CellDotNet
 											int[] arr = new int[5];
 											int j = arr.Length;
 										};
-			MethodDefinition method = GetMethod(del);
+			MethodBase method = del.Method;
 			MethodCompiler ci = new MethodCompiler(method);
 			ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 			new TreeDrawer().DrawMethod(ci, method);
