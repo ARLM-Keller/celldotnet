@@ -97,6 +97,7 @@ namespace CellDotNet
 
 			_offset = _readoffset;
 			_instructionsRead++;
+			_operand = null;
 
 			byte b = _il[_readoffset];
 			_readoffset++;

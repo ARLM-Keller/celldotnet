@@ -48,5 +48,10 @@ namespace CellDotNet
 			Utilities.AssertArgumentNotNull(parameterInfo, "parameterInfo");
 			_parameterInfo = parameterInfo;
 		}
+
+		public override string ToString()
+		{
+			return Name;
+		}
 	}
 }
