@@ -49,6 +49,35 @@ namespace CellDotNet
 
 
 		[Test]
+		public void TestParsePopOperandIsNull()
+		{
+			BasicTestDelegate del =
+				delegate
+					{
+						// will have a pop instruktion before the ret.
+						Math.Max(1, 2);
+					};
+
+			MethodCompiler mc = new MethodCompiler(del.Method);
+			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
+
+			TreeDrawer td = new TreeDrawer();
+			td.DrawMethod(mc, del.Method);
+
+			IsTrue(mc.Blocks.Count == 1);
+			AreEqual(3, mc.Blocks[0].Roots.Count);
+			TreeInstruction popInst = mc.Blocks[0].Roots[1];
+			AreEqual(IRCode.Pop, popInst.Opcode.IRCode);
+
+			// Pop should not have an operand.
+			IsNull(popInst.Operand);
+			AreEqual(StackTypeDescription.None, popInst.StackType);
+
+			// The max call.
+			AreEqual(StackTypeDescription.Int32, popInst.Left.StackType);
+		}
+
+		[Test]
 		public void TestParseFunctionCall()
 		{
 			BasicTestDelegate del = delegate
@@ -57,10 +86,9 @@ namespace CellDotNet
 											Math.DivRem(9, 13, out rem);
 											Math.Max(Math.Min(3, 1), 5L);
 										};
-			MethodBase method = del.Method;
-			MethodCompiler ci = new MethodCompiler(method);
+			MethodCompiler ci = new MethodCompiler(del.Method);
 			ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
-			new TreeDrawer().DrawMethod(ci, method);
+			new TreeDrawer().DrawMethod(ci, del.Method);
 		}
 
 		[Test]

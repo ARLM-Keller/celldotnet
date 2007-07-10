@@ -10,24 +10,24 @@ namespace CellDotNet
 	/// </summary>
 	public abstract class UnitTest
 	{
-		protected static void AreEqual<T>(T x, T y, string message)
+		protected static void AreEqual<T>(T expected, T actual, string message)
 		{
-			Assert.AreEqual(x, y, message);
+			Assert.AreEqual(expected, actual, message);
 		}
 
-		protected static void AreEqual<T>(T x, T y)
+		protected static void AreEqual<T>(T expected, T actual)
 		{
-			Assert.AreEqual(x, y);
+			Assert.AreEqual(expected, actual);
 		}
 
-		protected static void AreNotEqual<T>(T x, T y, string message)
+		protected static void AreNotEqual<T>(T expected, T actual, string message)
 		{
-			Assert.AreNotEqual(x, y, message);
+			Assert.AreNotEqual(expected, actual, message);
 		}
 
-		protected static void AreNotEqual<T>(T x, T y)
+		protected static void AreNotEqual<T>(T expected, T actual)
 		{
-			Assert.AreNotEqual(x, y);
+			Assert.AreNotEqual(expected, actual);
 		}
 
 		protected static void IsTrue(bool condition, string message)
@@ -48,6 +48,26 @@ namespace CellDotNet
 		protected static void IsFalse(bool condition)
 		{
 			Assert.IsFalse(condition);
+		}
+
+		protected static void IsNull(object value)
+		{
+			Assert.IsNull(value);
+		}
+
+		protected static void IsNull(object value, string message)
+		{
+			Assert.IsNull(value, message);
+		}
+
+		protected static void IsNotNull(object value)
+		{
+			Assert.IsNotNull(value);
+		}
+
+		protected static void IsNotNull(object value, string message)
+		{
+			Assert.IsNotNull(value, message);
 		}
 
 		protected static void Fail()
