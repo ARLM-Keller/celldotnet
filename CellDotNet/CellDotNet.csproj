@@ -62,7 +62,6 @@
     <Compile Include="ILTreeSpuWriter.cs" />
     <Compile Include="IrOpCode.cs" />
     <Compile Include="CliType.cs" />
-    <Compile Include="InstructionTreeLinearizer.cs" />
     <Compile Include="LiveInterval.cs" />
     <Compile Include="MethodCallInstruction.cs" />
     <Compile Include="RegAlloc.cs" />
