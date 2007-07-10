@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -16,11 +17,19 @@ namespace CellDotNet
 		/// </summary>
 		S1Initial,
 		S2TreeConstructionDone,
-		S3InstructionSelectionDone,
-		S4RegisterAllocationDone,
-		S5BranchesFixed,
-		S6AdressSubstitutionDone,
-		S7Complete
+		/// <summary>
+		/// Determine escaping arguments and variables.
+		/// </summary>
+		S3InstructionSelectionPreparationsDone,
+		S4InstructionSelectionDone,
+		S5RegisterAllocationDone,
+		/// <summary>
+		/// At this point the only changes that must be done to the code
+		/// is address changes.
+		/// </summary>
+		S6BranchesFixed,
+		S7AdressSubstitutionDone,
+		S8Complete
 	}
 
 	/// <summary>
@@ -50,6 +59,21 @@ namespace CellDotNet
 			get { return _methodBase; }
 		}
 
+		private ReadOnlyCollection<MethodParameter> _parameters;
+		public ReadOnlyCollection<MethodParameter> Parameters
+		{
+			get { return _parameters; }
+		}
+
+		private ReadOnlyCollection<MethodVariable> _variables;
+		/// <summary>
+		/// Local variables.
+		/// </summary>
+		public ReadOnlyCollection<MethodVariable> Variables
+		{
+			get { return _variables; }
+		}
+
 		public MethodCompiler(MethodBase method)
 		{
 			_methodBase = method;
@@ -57,6 +81,20 @@ namespace CellDotNet
 
 			PerformIRTreeConstruction();
 			DeriveTypes();
+		}
+
+		private void VisitTreeInstructions(Action<TreeInstruction> action)
+		{
+			foreach (BasicBlock block in _blocks)
+			{
+				foreach (TreeInstruction root in block.Roots)
+				{
+					foreach (TreeInstruction inst in root.IterateSubtree())
+					{
+						action(inst);
+					}
+				}
+			}
 		}
 
 		private void AssertState(MethodCompileState requiredState)
@@ -72,14 +110,42 @@ namespace CellDotNet
 		{
 			AssertState(MethodCompileState.S1Initial);
 
+			// Build Variables and Parameters.
+			List<MethodParameter> parlist = new List<MethodParameter>();
+			int i = 0;
+			foreach (ParameterInfo pi in _methodBase.GetParameters())
+			{
+				Utilities.Assert(pi.Position == i, "pi.Position == i");
+				i++;
+					
+				parlist.Add(new MethodParameter(pi));
+			}
+			_parameters = new ReadOnlyCollection<MethodParameter>(parlist);
+
+			List<MethodVariable> varlist = new List<MethodVariable>();
+			i = 0;
+			foreach (LocalVariableInfo lv in _methodBase.GetMethodBody().LocalVariables)
+			{
+				Utilities.Assert(lv.LocalIndex == i, "lv.LocalIndex == i");
+				i++;
+
+				varlist.Add(new MethodVariable(lv));
+			}
+			_variables = new ReadOnlyCollection<MethodVariable>(varlist);
+
+
 			ILReader reader;
 			BuildBasicBlocks(MethodBase, out reader);
 			CheckTreeInstructionCount(reader.InstructionsRead);
+
 			State = MethodCompileState.S2TreeConstructionDone;
 		}
 
 		private void BuildBasicBlocks(MethodBase method, out ILReader reader)
 		{
+			Utilities.Assert(_variables != null, "_variables != null");
+			Utilities.Assert(_parameters != null, "_parameters != null");
+
 			BasicBlock currblock = new BasicBlock();
 			List<TreeInstruction> stack = new List<TreeInstruction>();
 			List<TreeInstruction> branches = new List<TreeInstruction>();
@@ -122,8 +188,24 @@ namespace CellDotNet
 
 				treeinst = new TreeInstruction();
 				treeinst.Opcode = reader.OpCode;
-				treeinst.Operand = reader.Operand;
 				treeinst.Offset = reader.Offset;
+
+				// Replace variable and parametere references with our own types.
+				// Do not determine escapes here, since it may change later.
+				if (treeinst.Opcode.IRCode == IRCode.Ldloc || treeinst.Opcode.IRCode == IRCode.Stloc ||
+					treeinst.Opcode.IRCode == IRCode.Ldloca)
+				{
+					LocalVariableInfo lvi = (LocalVariableInfo) reader.Operand;
+					treeinst.Operand = _variables[lvi.LocalIndex];
+				}
+				else if (treeinst.Opcode.IRCode == IRCode.Ldarg || treeinst.Opcode.IRCode == IRCode.Starg ||
+					treeinst.Opcode.IRCode == IRCode.Ldarga)
+				{
+					ParameterInfo pi = (ParameterInfo)reader.Operand;
+					treeinst.Operand = _parameters[pi.Position];
+				}
+				else
+					treeinst.Operand = reader.Operand;
 
 				// Pop
 				switch (popbehavior)
@@ -240,7 +322,7 @@ namespace CellDotNet
 				{
 					foreach (TreeInstruction root in block.Roots)
 					{
-						foreach (TreeInstruction inst in root.IterateInorder())
+						foreach (TreeInstruction inst in root.IterateSubtree())
 						{
 							if (inst.Offset == targetOffset)
 							{
@@ -370,6 +452,37 @@ namespace CellDotNet
 
 		#endregion
 
+		private void PerformInstructionSelectionPreparations()
+		{
+			if (State != MethodCompileState.S2TreeConstructionDone)
+				throw new InvalidOperationException("State != MethodCompileState.S2TreeConstructionDone");
+
+			DetermineEscapes();
+
+			State = MethodCompileState.S3InstructionSelectionPreparationsDone;
+		}
+
+		/// <summary>
+		/// Determines escapes in the tree.
+		/// </summary>
+		private void DetermineEscapes()
+		{
+			foreach (MethodVariable var in Variables)
+				var.Escapes = false;
+			foreach (MethodParameter p in Parameters)
+				p.Escapes = false;
+
+			Action<TreeInstruction> action =
+				delegate(TreeInstruction obj)
+					{
+						if (obj.Opcode.IRCode == IRCode.Ldarga)
+							((MethodParameter)obj.Operand).Escapes = true;
+						else if (obj.Opcode.IRCode == IRCode.Ldloca)
+							((MethodVariable) obj.Operand).Escapes = true;
+					};
+			VisitTreeInstructions(action);
+		}
+
 		private void PerformInstructionSelection()
 		{
 			AssertState(MethodCompileState.S2TreeConstructionDone);
@@ -378,19 +491,19 @@ namespace CellDotNet
 			_instructions = new SpuInstructionWriter();
 			writer.GenerateCode(this, _instructions);
 
-			State = MethodCompileState.S3InstructionSelectionDone;
+			State = MethodCompileState.S4InstructionSelectionDone;
 		}
 
 		public int GetSpuInstructionCount()
 		{
-			if ((int)State < (int)MethodCompileState.S3InstructionSelectionDone)
+			if (State < MethodCompileState.S4InstructionSelectionDone)
 				throw new InvalidOperationException("Too early. State: " + State);
 
 			return _instructions.Instructions.Count;
 		}
 
 		/// <summary>
-		/// Brings the compiler process up to the specified state, if possible.
+		/// Brings the compiler process up to the specified state.
 		/// </summary>
 		/// <param name="targetState"></param>
 		public void PerformProcessing(MethodCompileState targetState)
@@ -401,15 +514,18 @@ namespace CellDotNet
 			if (State < MethodCompileState.S2TreeConstructionDone && targetState >= MethodCompileState.S2TreeConstructionDone)
 				PerformIRTreeConstruction();
 
-			if (State < MethodCompileState.S3InstructionSelectionDone && targetState >= MethodCompileState.S3InstructionSelectionDone)
+			if (State < MethodCompileState.S3InstructionSelectionPreparationsDone && targetState >= MethodCompileState.S3InstructionSelectionPreparationsDone)
+				PerformInstructionSelectionPreparations();
+
+			if (State < MethodCompileState.S4InstructionSelectionDone && targetState >= MethodCompileState.S4InstructionSelectionDone)
 				PerformInstructionSelection();
 
-			if (State < MethodCompileState.S4RegisterAllocationDone && targetState >= MethodCompileState.S4RegisterAllocationDone)
+			if (State < MethodCompileState.S5RegisterAllocationDone && targetState >= MethodCompileState.S5RegisterAllocationDone)
 				PerformRegisterAllocation();
 
-			if (targetState >= MethodCompileState.S5BranchesFixed)
+			if (targetState >= MethodCompileState.S6BranchesFixed)
 			{
-				if (targetState <= MethodCompileState.S7Complete) 
+				if (targetState <= MethodCompileState.S8Complete) 
 					throw new NotImplementedException("Target state: " + targetState);
 				else 
 					throw new ArgumentException("Invalid state: " + targetState, "targetState");
@@ -418,13 +534,13 @@ namespace CellDotNet
 
 		private void PerformRegisterAllocation()
 		{
-			AssertState(MethodCompileState.S3InstructionSelectionDone);
+			AssertState(MethodCompileState.S4InstructionSelectionDone);
 
 			RegAlloc regalloc = new RegAlloc();
 			List<SpuInstruction> asm = new List<SpuInstruction>(_instructions.Instructions);
 			regalloc.alloc(asm, 16);
 
-			State = MethodCompileState.S4RegisterAllocationDone;
+			State = MethodCompileState.S5RegisterAllocationDone;
 		}
 
 
@@ -592,10 +708,10 @@ namespace CellDotNet
 			Type optype;
 			if (inst.Operand is Type)
 				optype = (Type) inst.Operand;
-			else if (inst.Operand is LocalVariableInfo)
-				optype = ((LocalVariableInfo) inst.Operand).LocalType;
-			else if (inst.Operand is ParameterInfo)
-				optype = ((ParameterInfo) inst.Operand).ParameterType;
+			else if (inst.Operand is MethodVariable)
+				optype = ((MethodVariable)inst.Operand).Type;
+			else if (inst.Operand is MethodParameter)
+				optype = ((MethodParameter) inst.Operand).Type;
 			else
 				optype = null;
 

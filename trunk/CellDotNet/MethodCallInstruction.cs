@@ -27,7 +27,7 @@ namespace CellDotNet
 		}
 
 
-		public override void BuildPreorder(List<TreeInstruction> list)
+		internal override void BuildPreorder(List<TreeInstruction> list)
 		{
 			list.Add(this);
 			foreach (TreeInstruction param in Parameters)

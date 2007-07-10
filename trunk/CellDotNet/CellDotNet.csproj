@@ -41,15 +41,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Algorithms.cs" />
     <Compile Include="BaseTypes.cs" />
     <Compile Include="BasicBlock.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="CompileContextTest.cs" />
     <Compile Include="ILReader.cs" />
+    <Compile Include="ILReaderTest.cs" />
     <Compile Include="IRCode.cs" />
     <Compile Include="IROpCodes.cs" />
     <Compile Include="MethodCompiler.cs" />
     <Compile Include="MethodCompilerTest.cs" />
+    <Compile Include="MethodParameter.cs" />
+    <Compile Include="MethodVariable.cs" />
     <Compile Include="RegAllocTest.cs" />
     <Compile Include="CodeGenUtils.cs" />
     <Compile Include="CompileContext.cs" />
@@ -75,6 +79,8 @@
     <Compile Include="StorLocation.cs" />
     <Compile Include="TreeDrawer.cs" />
     <Compile Include="TypeDescription.cs" />
+    <Compile Include="UnitTest.cs" />
+    <Compile Include="Utilities.cs" />
     <Compile Include="VirtualRegister.cs" />
     <Compile Include="Set.cs" />
     <Compile Include="TreeInstruction.cs" />

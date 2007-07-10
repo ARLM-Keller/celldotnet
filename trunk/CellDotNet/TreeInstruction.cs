@@ -97,7 +97,7 @@ namespace CellDotNet
 		/// For checking tree construction.
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<TreeInstruction> IterateInorder()
+		public IEnumerable<TreeInstruction> IterateSubtree()
 		{
 			List<TreeInstruction> list = new List<TreeInstruction>();
 			BuildPreorder(list);
@@ -108,7 +108,7 @@ namespace CellDotNet
 		/// For checking tree construction.
 		/// </summary>
 		/// <param name="list"></param>
-		public virtual void BuildPreorder(List<TreeInstruction> list)
+		internal virtual void BuildPreorder(List<TreeInstruction> list)
 		{
 			list.Add(this);
 			if (Left != null)
@@ -125,7 +125,7 @@ namespace CellDotNet
 			get
 			{
 				int i = 0;
-				foreach (TreeInstruction instruction in IterateInorder())
+				foreach (TreeInstruction instruction in IterateSubtree())
 				{
 					i++;
 				}
