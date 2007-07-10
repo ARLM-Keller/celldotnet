@@ -95,7 +95,7 @@ namespace CellDotNet
 			AssertState(CompileContextState.S5MethodAddressesDetermined);
 
 			foreach (MethodCompiler mc in Methods.Values)
-				mc.PerformProcessing(MethodCompileState.S6AdressSubstitutionDone);
+				mc.PerformProcessing(MethodCompileState.S7AdressSubstitutionDone);
 
 			State = CompileContextState.S7Complete;
 		}
@@ -126,7 +126,7 @@ namespace CellDotNet
 			AssertState(CompileContextState.S2TreeConstructionDone);
 
 			foreach (MethodCompiler mc in Methods.Values)
-				mc.PerformProcessing(MethodCompileState.S4RegisterAllocationDone);
+				mc.PerformProcessing(MethodCompileState.S5RegisterAllocationDone);
 
 			State = CompileContextState.S4RegisterAllocationDone;
 		}
@@ -191,6 +191,8 @@ namespace CellDotNet
 				MethodBase method = methodsToCompile[nextmethodkey];
 				methodsToCompile.Remove(nextmethodkey);
 
+				// rh new branch
+
 				// Compile.
 				MethodCompiler ci = new MethodCompiler(method);
 				ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
@@ -228,7 +230,7 @@ namespace CellDotNet
 			AssertState(CompileContextState.S2TreeConstructionDone);
 
 			foreach (MethodCompiler mc in Methods.Values)
-				mc.PerformProcessing(MethodCompileState.S3InstructionSelectionDone);
+				mc.PerformProcessing(MethodCompileState.S4InstructionSelectionDone);
 
 			State = CompileContextState.S3InstructionSelectionDone;
 		}

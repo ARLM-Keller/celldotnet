@@ -111,16 +111,21 @@ namespace CellDotNet
 		{
 			_output = new StringWriter();
 
-			_branchTargets = new Set<int>();
-			FindBranchTargets(ci, method);
-
-			foreach (BasicBlock block in ci.Blocks)
+			try
 			{
-				_output.WriteLine(" - Basic Block:");
-				DrawTree(method, block);
-			}
+				_branchTargets = new Set<int>();
+				FindBranchTargets(ci, method);
 
-			Console.Write(((StringWriter)_output).GetStringBuilder().ToString());
+				foreach (BasicBlock block in ci.Blocks)
+				{
+					_output.WriteLine(" - Basic Block:");
+					DrawTree(method, block);
+				}
+			}
+			finally
+			{
+				Console.Write(((StringWriter)_output).GetStringBuilder().ToString());				
+			}
 		}
 	}
 }
