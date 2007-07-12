@@ -23,13 +23,14 @@ namespace CellDotNet
 		S3InstructionSelectionPreparationsDone,
 		S4InstructionSelectionDone,
 		S5RegisterAllocationDone,
+		S6PrologAndEpilogDone,
 		/// <summary>
 		/// At this point the only changes that must be done to the code
 		/// is address changes.
 		/// </summary>
-		S6BranchesFixed,
-		S7AdressSubstitutionDone,
-		S8Complete
+		S7BranchesFixed,
+		S8AdressSubstitutionDone,
+		S9Complete
 	}
 
 	/// <summary>
@@ -115,7 +116,7 @@ namespace CellDotNet
 			int i = 0;
 			foreach (ParameterInfo pi in _methodBase.GetParameters())
 			{
-				Utilities.Assert(pi.Position == i, "pi.Position == i");
+				Utilities.Assert(pi.Position == i, "pi.Index == i");
 				i++;
 					
 				parlist.Add(new MethodParameter(pi));
@@ -463,14 +464,23 @@ namespace CellDotNet
 		}
 
 		/// <summary>
-		/// Determines escapes in the tree.
+		/// Determines escapes in the tree and allocates virtual registers to them if they haven't
+		/// already got them.
 		/// </summary>
 		private void DetermineEscapes()
 		{
 			foreach (MethodVariable var in Variables)
+			{
 				var.Escapes = false;
+				if (var.VirtualRegister == null)
+					var.VirtualRegister = new VirtualRegister();
+			}
 			foreach (MethodParameter p in Parameters)
+			{
 				p.Escapes = false;
+				if (p.VirtualRegister == null)
+					p.VirtualRegister = new VirtualRegister();
+			}
 
 			Action<TreeInstruction> action =
 				delegate(TreeInstruction obj)
@@ -523,13 +533,24 @@ namespace CellDotNet
 			if (State < MethodCompileState.S5RegisterAllocationDone && targetState >= MethodCompileState.S5RegisterAllocationDone)
 				PerformRegisterAllocation();
 
-			if (targetState >= MethodCompileState.S6BranchesFixed)
+			if (State < MethodCompileState.S6PrologAndEpilogDone && targetState >= MethodCompileState.S6PrologAndEpilogDone)
+				PerformPrologAndEpilogGeneration();
+
+			if (targetState >= MethodCompileState.S7BranchesFixed)
 			{
-				if (targetState <= MethodCompileState.S8Complete) 
+				if (targetState <= MethodCompileState.S9Complete) 
 					throw new NotImplementedException("Target state: " + targetState);
 				else 
 					throw new ArgumentException("Invalid state: " + targetState, "targetState");
 			}
+		}
+
+		private void PerformPrologAndEpilogGeneration()
+		{
+			Utilities.Assert(State == MethodCompileState.S5RegisterAllocationDone, "Invalid state: " + State);
+
+
+			_state = MethodCompileState.S6PrologAndEpilogDone;
 		}
 
 		private void PerformRegisterAllocation()
@@ -1008,26 +1029,26 @@ namespace CellDotNet
 			return t;
 		}
 
-		private static Dictionary<uint, StackTypeDescription> s_metadataCilTypes = BuildBasicMetadataCilDictionary();
-		private static Dictionary<uint, StackTypeDescription> BuildBasicMetadataCilDictionary()
+		private static Dictionary<Type, StackTypeDescription> s_metadataCilTypes = BuildBasicMetadataCilDictionary();
+		private static Dictionary<Type, StackTypeDescription> BuildBasicMetadataCilDictionary()
 		{
-			Dictionary<uint, StackTypeDescription> dict = new Dictionary<uint, StackTypeDescription>();
+			Dictionary<Type, StackTypeDescription> dict = new Dictionary<Type, StackTypeDescription>();
 
 			// TODO: the typeof() token values are not what cecil returns...
-			dict.Add((uint)typeof(bool).MetadataToken, StackTypeDescription.Int8); // Correct?
-			dict.Add((uint)typeof(sbyte).MetadataToken, StackTypeDescription.Int8);
-			dict.Add((uint)typeof(byte).MetadataToken, StackTypeDescription.UInt8);
-			dict.Add((uint)typeof(short).MetadataToken, StackTypeDescription.Int16);
-			dict.Add((uint)typeof(ushort).MetadataToken, StackTypeDescription.UInt16);
-			dict.Add((uint)typeof(char).MetadataToken, StackTypeDescription.UInt16); // Correct?
-			dict.Add((uint)typeof(int).MetadataToken, StackTypeDescription.Int32);
-			dict.Add((uint)typeof(uint).MetadataToken, StackTypeDescription.UInt32);
-			dict.Add((uint)typeof(long).MetadataToken, StackTypeDescription.Int64);
-			dict.Add((uint)typeof(ulong).MetadataToken, StackTypeDescription.UInt64);
-			dict.Add((uint)typeof(IntPtr).MetadataToken, StackTypeDescription.NativeInt);
-			dict.Add((uint)typeof(UIntPtr).MetadataToken, StackTypeDescription.NativeUInt);
-			dict.Add((uint)typeof(float).MetadataToken, StackTypeDescription.Float32);
-			dict.Add((uint)typeof(double).MetadataToken, StackTypeDescription.Float64);
+			dict.Add(typeof(bool), StackTypeDescription.Int8); // Correct?
+			dict.Add(typeof(sbyte), StackTypeDescription.Int8);
+			dict.Add(typeof(byte), StackTypeDescription.UInt8);
+			dict.Add(typeof(short), StackTypeDescription.Int16);
+			dict.Add(typeof(ushort), StackTypeDescription.UInt16);
+			dict.Add(typeof(char), StackTypeDescription.UInt16); // Correct?
+			dict.Add(typeof(int), StackTypeDescription.Int32);
+			dict.Add(typeof(uint), StackTypeDescription.UInt32);
+			dict.Add(typeof(long), StackTypeDescription.Int64);
+			dict.Add(typeof(ulong), StackTypeDescription.UInt64);
+			dict.Add(typeof(IntPtr), StackTypeDescription.NativeInt);
+			dict.Add(typeof(UIntPtr), StackTypeDescription.NativeUInt);
+			dict.Add(typeof(float), StackTypeDescription.Float32);
+			dict.Add(typeof(double), StackTypeDescription.Float64);
 
 			return dict;
 		}
@@ -1039,26 +1060,46 @@ namespace CellDotNet
 		/// <returns></returns>
 		private StackTypeDescription GetStackTypeDescription(Type type)
 		{
-			TypeDescription td;
+			Type elementtype;
 
 			if (type.IsByRef || type.IsPointer)
 			{
-				td = GetTypeDescription(type.GetElementType());
+				elementtype = type.GetElementType();
 			}
 			else
-			{
-				td = GetTypeDescription(type);
-			}
+				elementtype = type;
+
 
 			StackTypeDescription std;
-			if (td.Type.IsPrimitive)
+			if (elementtype.IsPrimitive)
 			{
-				return s_metadataCilTypes[(uint) td.Type.MetadataToken];
+				std = s_metadataCilTypes[elementtype];
 			}
 			else
 			{
+				TypeDescription td = GetTypeDescription(elementtype);
 				std = new StackTypeDescription(td);
 			}
+
+
+//			if (type.IsByRef || type.IsPointer)
+//			{
+//				td = GetTypeDescription(type.GetElementType());
+//			}
+//			else
+//			{
+//				td = GetTypeDescription(type);
+//			}
+//
+//			StackTypeDescription std;
+//			if (td.Type.IsPrimitive)
+//			{
+//				return s_metadataCilTypes[(uint) td.Type.MetadataToken];
+//			}
+//			else
+//			{
+//				std = new StackTypeDescription(td);
+//			}
 
 			if (type.IsByRef)
 				std = std.GetManagedPointer();

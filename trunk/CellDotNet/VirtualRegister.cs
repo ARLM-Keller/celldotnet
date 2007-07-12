@@ -9,6 +9,15 @@ namespace CellDotNet
     /// </summary>
     public class VirtualRegister
     {
+		public VirtualRegister()
+		{
+		}
+
+		/// <summary>
+		/// Both this and the parameter-less ctor are ok - the register allocator doesn't use
+		/// the number.
+		/// </summary>
+		/// <param name="_number"></param>
         public VirtualRegister(int _number)
         {
             this._number = _number;

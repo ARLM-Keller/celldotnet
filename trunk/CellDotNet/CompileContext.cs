@@ -95,7 +95,7 @@ namespace CellDotNet
 			AssertState(CompileContextState.S5MethodAddressesDetermined);
 
 			foreach (MethodCompiler mc in Methods.Values)
-				mc.PerformProcessing(MethodCompileState.S7AdressSubstitutionDone);
+				mc.PerformProcessing(MethodCompileState.S8AdressSubstitutionDone);
 
 			State = CompileContextState.S7Complete;
 		}

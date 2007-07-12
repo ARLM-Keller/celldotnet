@@ -18,6 +18,12 @@ namespace CellDotNet
 				throw new ArgumentException(message);
 		}
 
+		static public void AssertNotNull(object arg, string expressionOrMessage)
+		{
+			if (arg == null)
+				throw new Exception("An expression is null: " + expressionOrMessage);
+		}
+
 		static public void Assert(bool condition, string message)
 		{
 			if (!condition)
