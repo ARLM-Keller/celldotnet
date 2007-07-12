@@ -102,7 +102,7 @@ namespace CellDotNet
 			Console.WriteLine(ilist.Disassemble());
 			
 
-			RegAlloc regalloc = new RegAlloc();
+			SimpleRegAlloc regalloc = new SimpleRegAlloc();
 			List<SpuInstruction> asm = new List<SpuInstruction>(ilist.Instructions);
 			regalloc.alloc(asm, 16);
 
