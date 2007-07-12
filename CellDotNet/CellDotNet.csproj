@@ -84,12 +84,6 @@
     <Compile Include="Set.cs" />
     <Compile Include="TreeInstruction.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Cecil\Mono.Cecil.csproj">
-      <Project>{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}</Project>
-      <Name>Mono.Cecil</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
