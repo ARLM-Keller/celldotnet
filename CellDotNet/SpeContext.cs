@@ -146,7 +146,7 @@ namespace CellDotNet
 		public int Run()
 		{
 			uint entry = 0;
-			int rc = spe_context_run(_handle, &entry, 0, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+			int rc = spe_context_run(_handle, ref entry, 0, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 			if (rc < 0)
 				throw new Exception();
 			return rc;
@@ -170,7 +170,7 @@ namespace CellDotNet
 		[DllImport("libspe2.so")]
 //		private static extern int spe_context_run(SpeHandle spe, uint* entry, uint runflags, IntPtr argp, IntPtr envp,
 //		                                          IntPtr stopinfo);
-		private static extern int spe_context_run(IntPtr spe, uint* entry, uint runflags, IntPtr argp, IntPtr envp,
+		private static extern int spe_context_run(IntPtr spe, ref uint entry, uint runflags, IntPtr argp, IntPtr envp,
 		                                          IntPtr stopinfo);
 
 		[DllImport("libspe2.so")]

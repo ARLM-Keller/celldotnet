@@ -10,26 +10,10 @@ namespace CellDotNet
 	class ILTreeSpuWriter
 	{
 		private SpuInstructionWriter _writer;
-		private Dictionary<ParameterInfo, VirtualRegister> _parameters;
-		private Dictionary<LocalVariableInfo, VirtualRegister> _variables;
-
-
-		private Dictionary<int, int> _jumptargets;
 
 		public void GenerateCode(MethodCompiler ci, SpuInstructionWriter writer)
 		{
 			_writer = writer;
-
-			// Create registers for parameters and variables so that they're 
-			// accessible during code generation.
-			// TODO: The parameter registers must end up matching the calling convention.
-			_parameters = new Dictionary<ParameterInfo, VirtualRegister>();
-			foreach (ParameterInfo parameter in ci.MethodBase.GetParameters())
-				_parameters.Add(parameter, _writer.NextRegister());
-
-			_variables = new Dictionary<LocalVariableInfo, VirtualRegister>();
-			foreach (LocalVariableInfo variable in ci.MethodBase.GetMethodBody().LocalVariables)
-				_variables.Add(variable, _writer.NextRegister());
 
 			foreach (BasicBlock bb in ci.Blocks)
 			{
@@ -164,8 +148,9 @@ namespace CellDotNet
 					break;
 				case IRCode.Stind_I4:
 					{
-						if (inst.Left.StackType.IndirectionLevel != 1) throw new InvalidILTreeException();
-						VirtualRegister ptr = GetRegisterForReference(inst.Left);
+						if (inst.Left.StackType.IndirectionLevel != 1) 
+							throw new InvalidILTreeException("Invalid level of indirection for stind. Stack type: " + inst.Left.StackType);
+						VirtualRegister ptr = GetVirtualRegister(inst.Left);
 
 						VirtualRegister loadedvalue = _writer.WriteLqd(ptr, 0);
 						VirtualRegister mask = _writer.WriteCwd(ptr, 0);
@@ -412,11 +397,11 @@ namespace CellDotNet
 				case IRCode.Starg:
 					break;
 				case IRCode.Ldloc:
-					return _variables[(LocalVariableInfo)inst.Operand];
+					return ((MethodVariable)inst.Operand).VirtualRegister;
 				case IRCode.Ldloca:
 					break;
 				case IRCode.Stloc:
-					VirtualRegister dest = _variables[(LocalVariableInfo) inst.Operand];
+					VirtualRegister dest = ((MethodVariable)inst.Operand).VirtualRegister;
 					_writer.WriteMove(vrleft, dest);
 					return null;
 				case IRCode.Localloc:
@@ -441,12 +426,14 @@ namespace CellDotNet
 			throw new ILNotImplementedException(inst);
 		}
 
-		private VirtualRegister GetRegisterForReference(TreeInstruction inst)
+		private VirtualRegister GetVirtualRegister(TreeInstruction inst)
 		{
-			if (inst.Operand is ParameterInfo)
-				return _parameters[(ParameterInfo)inst.Operand];
-			else if (inst.Operand is LocalVariableInfo)
-				return _variables[(LocalVariableInfo)inst.Operand];
+			if (inst.Operand is MethodVariable)
+			{
+				MethodVariable var = (MethodVariable)inst.Operand;
+				Utilities.AssertNotNull(var.VirtualRegister, "var.VirtualRegister");
+				return var.VirtualRegister;
+			}
 			else
 				throw new NotImplementedException();
 		}

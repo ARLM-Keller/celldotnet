@@ -296,6 +296,11 @@ namespace CellDotNet
 			}
 		}
 
+		public override string ToString()
+		{
+			return "" + _cliBasicType + "-" + _indirectionLevel;
+		}
+
 		#region Equality stuff
 
 		static public bool operator==(StackTypeDescription x, StackTypeDescription y)

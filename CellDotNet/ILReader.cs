@@ -102,25 +102,22 @@ namespace CellDotNet
 			byte b = _il[_readoffset];
 			_readoffset++;
 			short ocval;
+			OpCode srOpcode;
 			if (b == 0xFE)
 			{
 				ocval = (short)((b << 8) | _il[_readoffset]);
+				srOpcode = _ocmap[ocval];
+				if (srOpcode.OpCodeType == OpCodeType.Prefix)
+					throw new NotImplementedException("Prefix opcodes are not implemented. Used prefix is: " + srOpcode.Name + ".");
+
 				_readoffset++;
-
-				unchecked
-				{
-					const short tail = (short)0xFE14;
-					const short unaligned = (short)0xFE12;
-					const short @volatile = (short)0xFE13;
-
-					if (ocval == tail || ocval == unaligned || ocval == @volatile)
-						throw new NotImplementedException("tail, unaligned and volatile prefixes are not implemented.");
-				}
 			}
 			else
+			{
 				ocval = b;
+				srOpcode = _ocmap[ocval];
+			}
 
-			OpCode srOpcode = _ocmap[ocval];
 			ReadInstructionArguments(ref srOpcode);
 			IROpCode ircode;
 			if (!_irmap.TryGetValue(srOpcode.Value, out ircode))
@@ -517,7 +514,7 @@ namespace CellDotNet
 				{
 					int num3 = (((_il[_readoffset + 0] << 0x18) | (_il[_readoffset + 1] << 0x10)) | (_il[_readoffset + 2] << 8)) | _il[_readoffset + 3];
 					int num4 = (((_il[_readoffset + 4] << 0x18) | (_il[_readoffset + 5] << 0x10)) | (_il[_readoffset + 6] << 8)) | _il[_readoffset + 7];
-					_operand = ((long)((ulong)num4)) | (num3 << 0x20);
+					_operand = num4 | ((long)num3 << 0x20);
 
 					_readoffset += 8;
 					return;
