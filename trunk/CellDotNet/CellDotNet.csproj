@@ -45,12 +45,14 @@
     <Compile Include="BasicBlock.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="CompileContextTest.cs" />
+    <Compile Include="FlowGraph.cs" />
     <Compile Include="Graph.cs" />
     <Compile Include="GraphTest.cs" />
     <Compile Include="ILReader.cs" />
     <Compile Include="ILReaderTest.cs" />
     <Compile Include="IRCode.cs" />
     <Compile Include="IROpCodes.cs" />
+    <Compile Include="LivenessAnalyzer.cs" />
     <Compile Include="MethodCompiler.cs" />
     <Compile Include="MethodCompilerTest.cs" />
     <Compile Include="MethodParameter.cs" />
@@ -70,6 +72,7 @@
     <Compile Include="SortedLinkedList.cs" />
     <Compile Include="SpeContext.cs" />
     <Compile Include="SpeContextTest.cs" />
+    <Compile Include="SPUBasicBlock.cs" />
     <Compile Include="SpuInstruction.cs" />
     <Compile Include="OpCodeGroup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -2,7 +2,7 @@ using System;
 
 namespace CellDotNet
 {
-	class Graph
+	public class Graph
 	{
 		private Set<Node> _nodes = new Set<Node>();
 		public Set<Node> Nodes
@@ -34,7 +34,7 @@ namespace CellDotNet
 		}
 	}
 
-	class Node
+	public class Node
 	{
 		private Set<Node> _succ = new Set<Node>();
 		// NOTE: Succ og Pred returneres en referense til den interne representation,

@@ -79,6 +79,53 @@ namespace CellDotNet
 			set { _rt = value; }
         }
 
+    	private SpuInstruction _next;
+    	public SpuInstruction Next
+    	{
+			get { return _next; }
+			set { _next = value; }
+    	}
+
+		private SpuInstruction _prev;
+		public SpuInstruction Prev
+		{
+			get { return _prev; }
+			set { _prev = value;}
+		}
+
+    	public VirtualRegister Def
+    	{
+    		get
+			{
+				if (!OpCode.NoRegisterWrite) return Rt;
+				return null;
+			}
+    	}
+
+    	public List<VirtualRegister> Use
+    	{
+    		get
+    		{
+    			List<VirtualRegister> use = new List<VirtualRegister>();
+				if (Ra != null) use.Add(_ra);
+				if (Rb != null) use.Add(_rb);
+				if (Rc != null) use.Add(_rc);
+				if (Rt != null && OpCode.NoRegisterWrite ) use.Add(_rt);
+				return use;
+    		}
+    	}
+
+    	private SpuBasicBlock _jumpTarget;
+		public SpuBasicBlock JumpTarget
+    	{
+			get
+			{
+				throw new Exception("Use of JumpTarget set is not implemented.");
+				return _jumpTarget;
+			}
+			set { _jumpTarget = value; }
+    	}
+
         public int emit()
         {
 			HardwareRegister reg3 = (_rc != null) ? _rc.Location as HardwareRegister : null;
