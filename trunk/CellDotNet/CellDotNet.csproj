@@ -75,7 +75,7 @@
     <Compile Include="SpuInstructionWriter.cs" />
     <Compile Include="SpuInstructionWriter_autogen.cs" />
     <Compile Include="StackLocation.cs" />
-    <Compile Include="StorLocation.cs" />
+    <Compile Include="StoreLocation.cs" />
     <Compile Include="TreeDrawer.cs" />
     <Compile Include="TypeDescription.cs" />
     <Compile Include="UnitTest.cs" />

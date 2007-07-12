@@ -21,8 +21,8 @@ namespace CellDotNet
             get { return _number; }
         }
 
-        private StorLocation _location;
-        public StorLocation Location
+        private StoreLocation _location;
+        public StoreLocation Location
         {
             get { return _location; }
             set { _location = value; }
