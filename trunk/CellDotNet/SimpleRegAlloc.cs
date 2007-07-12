@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CellDotNet
 {
-    class RegAlloc
+    class SimpleRegAlloc
     {
         // TODO Registre allokatoren bør arbejde på hele metoden.
         // returnere true hvis der forekommer spill(indtilvidre håndteres spill ikke!)

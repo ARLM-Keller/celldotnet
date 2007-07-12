@@ -6,12 +6,12 @@ using NUnit.Framework;
 namespace CellDotNet
 {
 	[TestFixture]
-	public class RegAllocTest
+	public class SimpleRegAllocTest
 	{
 		[Test]
 		public void SingleInst()
 		{
-			RegAlloc regalloc = new RegAlloc();
+			SimpleRegAlloc regalloc = new SimpleRegAlloc();
 
 			List<SpuInstruction> insts = new List<SpuInstruction>();
 
@@ -32,7 +32,7 @@ namespace CellDotNet
 		[Test]
 		public void MultipleInst()
 		{
-			RegAlloc regalloc = new RegAlloc();
+			SimpleRegAlloc regalloc = new SimpleRegAlloc();
 
 			List<SpuInstruction> insts = new List<SpuInstruction>();
 
@@ -59,7 +59,7 @@ namespace CellDotNet
 		[Test, Ignore("Not implemented")]
 		public void Spill()
 		{
-			RegAlloc regalloc = new RegAlloc();
+			SimpleRegAlloc regalloc = new SimpleRegAlloc();
 
 			List<SpuInstruction> insts = new List<SpuInstruction>();
 
