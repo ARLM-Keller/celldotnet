@@ -536,7 +536,7 @@ namespace CellDotNet
 		{
 			AssertState(MethodCompileState.S4InstructionSelectionDone);
 
-			RegAlloc regalloc = new RegAlloc();
+			SimpleRegAlloc regalloc = new SimpleRegAlloc();
 			List<SpuInstruction> asm = new List<SpuInstruction>(_instructions.Instructions);
 			regalloc.alloc(asm, 16);
 
