@@ -45,6 +45,8 @@
     <Compile Include="BasicBlock.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="CompileContextTest.cs" />
+    <Compile Include="Graph.cs" />
+    <Compile Include="GraphTest.cs" />
     <Compile Include="ILReader.cs" />
     <Compile Include="ILReaderTest.cs" />
     <Compile Include="IRCode.cs" />
@@ -53,7 +55,6 @@
     <Compile Include="MethodCompilerTest.cs" />
     <Compile Include="MethodParameter.cs" />
     <Compile Include="MethodVariable.cs" />
-    <Compile Include="RegAllocTest.cs" />
     <Compile Include="CodeGenUtils.cs" />
     <Compile Include="CompileContext.cs" />
     <Compile Include="Exceptions.cs" />
@@ -63,8 +64,9 @@
     <Compile Include="CliType.cs" />
     <Compile Include="LiveInterval.cs" />
     <Compile Include="MethodCallInstruction.cs" />
-    <Compile Include="RegAlloc.cs" />
     <Compile Include="SimpleLiveAnalyzer.cs" />
+    <Compile Include="SimpleRegAlloc.cs" />
+    <Compile Include="SimpleRegAllocTest.cs" />
     <Compile Include="SortedLinkedList.cs" />
     <Compile Include="SpeContext.cs" />
     <Compile Include="SpeContextTest.cs" />

@@ -14,6 +14,14 @@ namespace CellDotNet
 			dict[item] = true;
 		}
 
+		public void AddAll(Set<T> set)
+		{
+			foreach(T item in set)
+			{
+				Add(item);
+			}
+		}
+
 		public void Clear()
 		{
 			throw new NotImplementedException();
@@ -29,14 +37,9 @@ namespace CellDotNet
 			dict.Keys.CopyTo(array, arrayIndex);
 		}
 
-		bool ICollection<T>.Remove(T item)
+		public bool Remove(T item)
 		{
 			return dict.Remove(item);
-		}
-
-		public void Remove(T item)
-		{
-			dict.Remove(item);
 		}
 
 		public int Count
