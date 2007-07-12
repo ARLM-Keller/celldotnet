@@ -4,11 +4,11 @@ using System.Text;
 
 namespace CellDotNet
 {
-    class HardwareRegister : StorLocation
+    class HardwareRegister : StoreLocation
     {
-        public static List<StorLocation> getCellRegisteres()
+        public static List<StoreLocation> getCellRegisteres()
         {
-			List<StorLocation> regs = new List<StorLocation>();
+			List<StoreLocation> regs = new List<StoreLocation>();
 
             for (int i = 0; i <= 127; i++ )
             {
@@ -19,10 +19,10 @@ namespace CellDotNet
             return regs;
         }
 
-        public static Stack<StorLocation> getCellRegistersAsStack()
+        public static Stack<StoreLocation> getCellRegistersAsStack()
         {
-            Stack<StorLocation> regsStack = new Stack<StorLocation>();
-            List<StorLocation> regs = HardwareRegister.getCellRegisteres();
+            Stack<StoreLocation> regsStack = new Stack<StoreLocation>();
+            List<StoreLocation> regs = HardwareRegister.getCellRegisteres();
 
             for (int i = regs.Count - 1; i >= 0; i--)
             {

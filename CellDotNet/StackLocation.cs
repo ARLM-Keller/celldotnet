@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CellDotNet
 {
-    class StackLocation : StorLocation
+    class StackLocation : StoreLocation
     {
         public StackLocation() { }
 
