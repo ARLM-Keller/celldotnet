@@ -42,7 +42,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithms.cs" />
-    <Compile Include="BaseTypes.cs" />
     <Compile Include="BasicBlock.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="CompileContextTest.cs" />
