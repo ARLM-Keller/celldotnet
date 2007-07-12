@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 
 namespace CellDotNet
 {
@@ -23,7 +22,7 @@ namespace CellDotNet
 		}
 
 		private bool? _escapes;
-		public virtual bool? Escapes
+		public bool? Escapes
 		{
 			get { return _escapes; }
 			set { _escapes = value; }

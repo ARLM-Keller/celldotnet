@@ -495,7 +495,7 @@ namespace CellDotNet
 
 		private void PerformInstructionSelection()
 		{
-			AssertState(MethodCompileState.S2TreeConstructionDone);
+			AssertState(MethodCompileState.S3InstructionSelectionPreparationsDone);
 
 			ILTreeSpuWriter writer = new ILTreeSpuWriter();
 			_instructions = new SpuInstructionWriter();
@@ -503,6 +503,19 @@ namespace CellDotNet
 
 			State = MethodCompileState.S4InstructionSelectionDone;
 		}
+
+		/// <summary>
+		/// This is only for unit test
+		/// </summary>
+		/// <returns></returns>
+		public SpuInstructionWriter GetSpuInstructionWriter()
+		{
+			if (State < MethodCompileState.S4InstructionSelectionDone)
+				throw new InvalidOperationException("State < MethodCompileState.S4InstructionSelectionDone");
+
+			return _instructions;
+		}
+
 
 		public int GetSpuInstructionCount()
 		{

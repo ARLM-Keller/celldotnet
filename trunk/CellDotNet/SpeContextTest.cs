@@ -34,26 +34,30 @@ namespace CellDotNet
 
 
 			MethodBase method = del.Method;
-			MethodCompiler ci = new MethodCompiler(method);
-			ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
+			MethodCompiler mc = new MethodCompiler(method);
+			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 
-			new TreeDrawer().DrawMethod(ci, method);
+			new TreeDrawer().DrawMethod(mc, method);
 
-			ILTreeSpuWriter writer = new ILTreeSpuWriter();
-			SpuInstructionWriter ilist = new SpuInstructionWriter();
-			writer.GenerateCode(ci, ilist);
-			ilist.WriteStop();
+			mc.PerformProcessing(MethodCompileState.S6PrologAndEpilogDone);
+			mc.GetSpuInstructionWriter().WriteStop();
+
+//			ILTreeSpuWriter writer = new ILTreeSpuWriter();
+//			SpuInstructionWriter ilist = new SpuInstructionWriter();
+//			writer.GenerateCode(mc, ilist);
+//			ilist.WriteStop();
 
 			Console.WriteLine();
 			Console.WriteLine("Disassembly: ");
-			Console.WriteLine(ilist.Disassemble());
+			Console.WriteLine(mc.GetSpuInstructionWriter().Disassemble());
 
+			mc.PerformProcessing(MethodCompileState.S5RegisterAllocationDone);
 
-			SimpleRegAlloc regalloc = new SimpleRegAlloc();
-			List<SpuInstruction> asm = new List<SpuInstruction>(ilist.Instructions);
-			regalloc.alloc(asm, 16);
+//			SimpleRegAlloc regalloc = new SimpleRegAlloc();
+//			List<SpuInstruction> asm = new List<SpuInstruction>(ilist.Instructions);
+//			regalloc.alloc(asm, 16);
 
-			int[] bincode = SpuInstruction.emit(asm);
+			int[] bincode = SpuInstruction.emit(new List<SpuInstruction>(mc.GetSpuInstructionWriter().Instructions));
 
 			SpeContext ctx = new SpeContext();
 			if (!ctx.LoadProgram(bincode))
