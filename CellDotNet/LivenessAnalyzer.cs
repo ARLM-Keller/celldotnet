@@ -45,7 +45,7 @@ namespace CellDotNet
 
 		public static Graph CreatInterferenceGraph(FlowGraph flowGtaph)
 		{
-			
+			throw new NotImplementedException();
 		}
 	}
 }

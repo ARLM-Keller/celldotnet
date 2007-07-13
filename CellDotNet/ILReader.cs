@@ -514,7 +514,7 @@ namespace CellDotNet
 				{
 					int num3 = (((_il[_readoffset + 0] << 0x18) | (_il[_readoffset + 1] << 0x10)) | (_il[_readoffset + 2] << 8)) | _il[_readoffset + 3];
 					int num4 = (((_il[_readoffset + 4] << 0x18) | (_il[_readoffset + 5] << 0x10)) | (_il[_readoffset + 6] << 8)) | _il[_readoffset + 7];
-					_operand = num4 | ((long)num3 << 0x20);
+					_operand = (long)num4 | (num3 << 0x20);
 
 					_readoffset += 8;
 					return;

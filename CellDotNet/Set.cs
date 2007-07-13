@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CellDotNet
 {
-	class Set<T> : IEnumerable<T>, ICollection<T>
+	public class Set<T> : IEnumerable<T>, ICollection<T>
 	{
 		Dictionary<T, bool> dict = new Dictionary<T, bool>();
 

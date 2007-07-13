@@ -77,11 +77,11 @@ namespace CellDotNet
 //			_arrayDimension = arrayDimension;
 //		}
 
-		private int _arrayDimension;
-		public int ArrayDimension
-		{
-			get { return _arrayDimension; }
-		}
+//		private int _arrayDimension;
+//		public int ArrayDimension
+//		{
+//			get { return _arrayDimension; }
+//		}
 
 
 		private void Initialize()
