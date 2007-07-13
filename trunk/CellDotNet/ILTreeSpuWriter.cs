@@ -48,20 +48,13 @@ namespace CellDotNet
 					break;
 				case IRCode.Ldc_I4:
 					{
-//						int i = (int) inst.Operand;
-//						VirtualRegister l = _writer.WriteIlh(i);
-//						if (i >> 16 == 0)
-//							return l;
-//						VirtualRegister u = _writer.WriteIlhu(i >> 16);
-//						return _writer.WriteOr(l, u);
-
-
-						int i = (int)inst.Operand;
 						VirtualRegister r;
-						if(i >> 16 == 0)
+						int i = (int)inst.Operand;
+						if (i >> 16 == 0)
 						{
 							r = _writer.WriteIl(i);
-						} else
+						}
+						else
 						{
 							r = _writer.WriteIlhu(i >> 16);
 							_writer.WriteIohl(r, i);

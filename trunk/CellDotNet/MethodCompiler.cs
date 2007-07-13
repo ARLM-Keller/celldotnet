@@ -410,6 +410,7 @@ namespace CellDotNet
 					pb = PopBehavior.Pop2;
 					break;
 				case StackBehaviour.Popi_popi_popi:
+				case StackBehaviour.Popref_popi_pop1:
 				case StackBehaviour.Popref_popi_popi:
 				case StackBehaviour.Popref_popi_popi8:
 				case StackBehaviour.Popref_popi_popr4:
@@ -417,9 +418,6 @@ namespace CellDotNet
 				case StackBehaviour.Popref_popi_popref:
 					pb = PopBehavior.Pop3;
 					break;
-//				case StackBehaviour.PopAll:
-//					pb = PopBehavior.PopAll; // Special...
-//					break;
 				default:
 					throw new ArgumentOutOfRangeException("code");
 			}
@@ -433,18 +431,15 @@ namespace CellDotNet
 		/// <param name="correctCount"></param>
 		private void CheckTreeInstructionCount(int correctCount)
 		{
-			int sum = 0;
-			foreach (BasicBlock block in _blocks)
+			int count = 0;
+			VisitTreeInstructions(delegate
 			{
-				foreach (TreeInstruction root in block.Roots)
-				{
-					sum += root.TreeSize;
-				}
-			}
+				count += 1;
+			});
 
-			if (sum != correctCount)
+			if (count != correctCount)
 			{
-				string msg = string.Format("Invalid tree instruction count of {0}. Should have been {1}.", sum, correctCount);
+				string msg = string.Format("Invalid tree instruction count of {0}. Should have been {1}.", count, correctCount);
 				TreeDrawer td= new TreeDrawer();
 				td.DrawMethod(this, MethodBase);
 				throw new Exception(msg);
@@ -473,13 +468,13 @@ namespace CellDotNet
 			{
 				var.Escapes = false;
 				if (var.VirtualRegister == null)
-					var.VirtualRegister = new VirtualRegister();
+					var.VirtualRegister = NextRegister();
 			}
 			foreach (MethodParameter p in Parameters)
 			{
 				p.Escapes = false;
 				if (p.VirtualRegister == null)
-					p.VirtualRegister = new VirtualRegister();
+					p.VirtualRegister = NextRegister();
 			}
 
 			Action<TreeInstruction> action =
@@ -491,6 +486,12 @@ namespace CellDotNet
 							((MethodVariable) obj.Operand).Escapes = true;
 					};
 			VisitTreeInstructions(action);
+		}
+
+		private int _virtualRegisterNum = -1000; // Arbitrary...
+		private VirtualRegister NextRegister()
+		{
+			return new VirtualRegister(_virtualRegisterNum++);
 		}
 
 		private void PerformInstructionSelection()

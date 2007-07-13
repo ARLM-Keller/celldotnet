@@ -45,7 +45,7 @@ namespace CellDotNet
 //				if (oc.OpCodeType == OpCodeType.Macro)
 //					continue;
 
-				sw.Write("\t\t\tcase IRCode.{0}: // {1}\r\n", oc.IRCode, oc.Name);
+				sw.WriteLine("\t\t\tcase IRCode.{0}: // {1}", oc.IRCode, oc.Name);
 			}
 		}
 
@@ -60,9 +60,9 @@ namespace CellDotNet
 			foreach (IROpCode oc in GetILOpcodes())
 			{
 //				if (oc.OpCodeType == OpCodeType.Macro)
-//					sw.Write("\t\t// {0} = {1}, // {2} \r\n", oc.Code, (int) oc.Code, oc.OpCodeType);
+//					sw.WriteLine("\t\t// {0} = {1}, // {2}", oc.Code, (int) oc.Code, oc.OpCodeType);
 //				else
-					sw.Write("\t\t{0} = {1},\r\n", oc.IRCode, (int) oc.IRCode);
+					sw.WriteLine("\t\t{0} = {1},", oc.IRCode, (int) oc.IRCode);
 			}
 
 			Console.Write(sw.GetStringBuilder().ToString());
@@ -157,38 +157,38 @@ namespace CellDotNet
 				{
 					if (opcode.NoRegisterWrite)
 					{
-						bodynewdest.Append("inst.Rt = rt;\r\n");
-						bodyolddest.Append("inst.Rt = rt;\r\n");
+						bodynewdest.AppendLine("inst.Rt = rt;");
+						bodyolddest.AppendLine("inst.Rt = rt;");
 					}
 					else
 					{
-						bodynewdest.Append("inst.Rt = NextRegister();\r\n");
-						bodyolddest.Append("inst.Rt = rt;\r\n");
+						bodynewdest.AppendLine("inst.Rt = NextRegister();");
+						bodyolddest.AppendLine("inst.Rt = rt;");
 					}
 				}
 				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Ra) != SpuOpCodeRegisterUsage.None)
 				{
-					bodynewdest.Append("inst.Ra = ra;\r\n");
-					bodyolddest.Append("inst.Ra = ra;\r\n");
+					bodynewdest.AppendLine("inst.Ra = ra;");
+					bodyolddest.AppendLine("inst.Ra = ra;");
 				}
 				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Rb) != SpuOpCodeRegisterUsage.None)
 				{
-					bodynewdest.Append("inst.Rb = rb;\r\n");
-					bodyolddest.Append("inst.Rb = rb;\r\n");
+					bodynewdest.AppendLine("inst.Rb = rb;");
+					bodyolddest.AppendLine("inst.Rb = rb;");
 				}
 				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Rc) != SpuOpCodeRegisterUsage.None)
 				{
-					bodynewdest.Append("inst.Rc = rc;\r\n");
-					bodyolddest.Append("inst.Rc = rc;\r\n");
+					bodynewdest.AppendLine("inst.Rc = rc;");
+					bodyolddest.AppendLine("inst.Rc = rc;");
 				}
 				if (opcode.HasImmediate)
 				{
-					bodynewdest.Append("inst.Constant = immediate;\r\n");
-					bodyolddest.Append("inst.Constant = immediate;\r\n");
+					bodynewdest.AppendLine("inst.Constant = immediate;");
+					bodyolddest.AppendLine("inst.Constant = immediate;");
 				}
-				bodynewdest.Append("AddInstruction(inst);");
-				bodyolddest.Append("AddInstruction(inst);");
-				bodynewdest.Append("return inst.Rt;");
+				bodynewdest.AppendLine("AddInstruction(inst);");
+				bodyolddest.AppendLine("AddInstruction(inst);");
+				bodynewdest.AppendLine("return inst.Rt;");
 
 				// Put it together.
 

@@ -120,8 +120,8 @@ namespace CellDotNet
     	{
 			get
 			{
-				throw new Exception("Use of JumpTarget set is not implemented.");
-				return _jumpTarget;
+				throw new NotImplementedException("Use of JumpTarget set is not implemented.");
+//				return _jumpTarget;
 			}
 			set { _jumpTarget = value; }
     	}
