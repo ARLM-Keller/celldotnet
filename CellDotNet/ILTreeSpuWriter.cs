@@ -17,6 +17,7 @@ namespace CellDotNet
 
 			foreach (BasicBlock bb in ci.Blocks)
 			{
+				_writer.StartNewBasicBlock();
 				foreach (TreeInstruction root in bb.Roots)
 				{
 					GenerateCode(root);

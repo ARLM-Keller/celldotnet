@@ -452,6 +452,8 @@ namespace CellDotNet
 
 		#endregion
 
+		#region Instruction selection preparations
+
 		private void PerformInstructionSelectionPreparations()
 		{
 			if (State != MethodCompileState.S2TreeConstructionDone)
@@ -492,6 +494,8 @@ namespace CellDotNet
 			VisitTreeInstructions(action);
 		}
 
+		#endregion
+
 		private int _virtualRegisterNum = -1000; // Arbitrary...
 		private VirtualRegister NextRegister()
 		{
@@ -502,8 +506,9 @@ namespace CellDotNet
 		{
 			AssertState(MethodCompileState.S3InstructionSelectionPreparationsDone);
 
-			ILTreeSpuWriter writer = new ILTreeSpuWriter();
 			_instructions = new SpuInstructionWriter();
+
+			ILTreeSpuWriter writer = new ILTreeSpuWriter();
 			writer.GenerateCode(this, _instructions);
 
 			State = MethodCompileState.S4InstructionSelectionDone;
@@ -527,7 +532,7 @@ namespace CellDotNet
 			if (State < MethodCompileState.S4InstructionSelectionDone)
 				throw new InvalidOperationException("Too early. State: " + State);
 
-			return _instructions.Instructions.Count;
+			return _instructions.BasicBlocks.Count;
 		}
 
 		/// <summary>
@@ -576,7 +581,7 @@ namespace CellDotNet
 			AssertState(MethodCompileState.S4InstructionSelectionDone);
 
 			SimpleRegAlloc regalloc = new SimpleRegAlloc();
-			List<SpuInstruction> asm = new List<SpuInstruction>(_instructions.Instructions);
+			List<SpuInstruction> asm = _instructions.GetAsList();
 			regalloc.alloc(asm, 16);
 
 			State = MethodCompileState.S5RegisterAllocationDone;
