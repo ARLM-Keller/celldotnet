@@ -151,37 +151,16 @@ namespace CellDotNet
 			List<TreeInstruction> stack = new List<TreeInstruction>();
 			List<TreeInstruction> branches = new List<TreeInstruction>();
 
-			//KMH
-			Dictionary<int, int?> branchtargetmap = new Dictionary<int, int?>();
-			int prevtarget = -1;
-
 			reader = new ILReader(method);
 
 			TreeInstruction treeinst = null;
 
 			while (reader.Read())
 			{
-				if (reader.OpCode.FlowControl == FlowControl.Branch || reader.OpCode.FlowControl == FlowControl.Cond_Branch)
+				if (treeinst != null && stack.Count == 0)
 				{
-					branchtargetmap.Add((int) reader.Operand, ++prevtarget);
-				}
-
-				if (treeinst != null)
-				{
-					if (branchtargetmap.ContainsKey(reader.Offset))
-					{
-						currblock.Roots.Add(treeinst);
-						Blocks.Add(currblock);
-						currblock = new BasicBlock();
-					}
-					else if (stack.Count == 0)
-					{
-						// It is a root exactly when the stack is empty.
-						currblock.Roots.Add(treeinst);
-					}
-					else
-					{
-					}
+					// It is a root exactly when the stack is empty.
+					currblock.Roots.Add(treeinst);
 				}
 
 				PopBehavior popbehavior = GetPopBehavior(reader.OpCode);
@@ -316,25 +295,50 @@ namespace CellDotNet
 			}
 
 			// Fix branches.
+			// It is by definition only possible to branch to basic blocks.
+			// So we need to create these blocks.
+			Dictionary<int, BasicBlock> basicBlockOffsets = new Dictionary<int, BasicBlock>();
+
 			foreach (TreeInstruction branchinst in branches)
 			{
 				int targetOffset = (int) branchinst.Operand;
-				foreach (BasicBlock block in Blocks)
+				BasicBlock target;
+
+				if (basicBlockOffsets.TryGetValue(targetOffset, out target))
 				{
-					foreach (TreeInstruction root in block.Roots)
+					branchinst.Operand = target;
+					continue;
+				}
+
+				// Find root to create basic block from.
+				for (int bbindex = 0; bbindex < Blocks.Count; bbindex++)
+				{
+					BasicBlock bb = Blocks[bbindex];
+					for (int rootindex = 0; rootindex < bb.Roots.Count; rootindex++)
 					{
-						foreach (TreeInstruction inst in root.IterateSubtree())
-						{
-							if (inst.Offset == targetOffset)
-							{
-								branchinst.Operand = inst;
-								goto NextBranch;
-							}
-						}
+						TreeInstruction firstinst = bb.Roots[rootindex].GetFirstInstruction();
+
+						if (firstinst.Offset != targetOffset)
+							continue;
+
+						// Need to create new bb from this root.
+						List<TreeInstruction> newblockroots = bb.Roots.GetRange(rootindex, bb.Roots.Count - rootindex);
+						bb.Roots.RemoveRange(rootindex, bb.Roots.Count - rootindex);
+
+						BasicBlock newbb = new BasicBlock();
+						newbb.Roots.AddRange(newblockroots);
+						Blocks.Insert(bbindex + 1, newbb);
+
+						basicBlockOffsets.Add(newbb.Roots[0].Offset, newbb);
+						target = newbb;
+						goto NextBranch;
 					}
 				}
-				throw new ILException("Internal error while parsing IL: Couldn't determine branch target instruction.");
-			NextBranch: { }
+				throw new Exception("IR tree construction error. Can't find branch target offset " + targetOffset.ToString("X4") +
+				                    ".");
+
+			NextBranch:
+				branchinst.Operand = target;
 			}
 		}
 

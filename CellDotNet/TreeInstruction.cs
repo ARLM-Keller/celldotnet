@@ -79,18 +79,6 @@ namespace CellDotNet
 			set { _stackTyp = value; }
 		}
 
-		public int FirstOffset
-		{
-			get
-			{
-				if (_left != null)
-					return _left.FirstOffset;
-				else if (_right != null)
-					return _right.FirstOffset;
-				return Offset;
-			}
-		}
-
 		#region Tree iteration / checking.
 
 		/// <summary>
@@ -134,5 +122,18 @@ namespace CellDotNet
 		}
 
 		#endregion
+
+		/// <summary>
+		/// Returns the first instruction in the tree; that is, the instruction in the far left side.
+		/// </summary>
+		/// <returns></returns>
+		public TreeInstruction GetFirstInstruction()
+		{
+			TreeInstruction ti = this;
+			while (ti.Left != null)
+				ti = ti.Left;
+
+			return ti;
+		}
 	}
 }

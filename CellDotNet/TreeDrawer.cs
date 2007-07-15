@@ -39,15 +39,20 @@ namespace CellDotNet
 
 			if (inst.Operand != null)
 			{
-				if (inst.Operand is TreeInstruction)
-					_output.Write(" " + ((TreeInstruction)inst.Operand).Offset.ToString("x4"));
+				if (inst.Operand is BasicBlock)
+					_output.Write(" " + ((BasicBlock)inst.Operand).Offset.ToString("x4"));
 				else if (inst.Operand is MethodParameter)
 					_output.Write(" {0} ({1})", ((MethodParameter)inst.Operand).Name, ((MethodParameter)inst.Operand).Type.Name);
 				else if (inst.Operand is MethodVariable)
 					_output.Write(" {0} ({1})", inst.Operand, ((MethodVariable)inst.Operand).Type.Name);
 				else if (inst.Operand is FieldInfo)
 					_output.Write(" {0} ({1})", ((FieldInfo)inst.Operand).Name, ((FieldInfo)inst.Operand).FieldType.Name);
-				else
+				else if (inst.Operand is int && inst.Opcode.FlowControl == FlowControl.Branch || inst.Opcode.FlowControl == FlowControl.Cond_Branch)
+				{
+					// Normally this should happen for branch instructions, but we want to handle it anyway...
+					_output.Write(" " + ((int)inst.Operand).ToString("X4"));
+				}
+				else					
 					_output.Write(" " + inst.Operand);
 			}
 			if (inst.StackType != StackTypeDescription.None)
@@ -88,7 +93,10 @@ namespace CellDotNet
 		{
 			if (inst.Opcode.FlowControl == FlowControl.Branch || inst.Opcode.FlowControl == FlowControl.Cond_Branch)
 			{
-				_branchTargets.Add(((TreeInstruction)inst.Operand).Offset);
+				if (inst.Operand is BasicBlock)
+					_branchTargets.Add(((BasicBlock)inst.Operand).Offset);
+				else
+					_branchTargets.Add((int)inst.Operand);
 			}
 			if (inst.Left != null)
 				AddBranchTargets(inst.Left);

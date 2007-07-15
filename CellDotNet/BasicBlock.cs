@@ -32,7 +32,7 @@ namespace CellDotNet
 		/// <summary>
 		/// Roots of the tree representation.
 		/// </summary>
-		public IList<TreeInstruction> Roots
+		public List<TreeInstruction> Roots
 		{
 			get { return _roots; }
 		}
@@ -63,7 +63,7 @@ namespace CellDotNet
 		{
 			get 
 			{
-				return _roots[0].FirstOffset;
+				return _roots[0].GetFirstInstruction().Offset;
 			}
 		}
 	}
