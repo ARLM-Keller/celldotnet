@@ -118,6 +118,12 @@ namespace CellDotNet
 			List<SpuOpCode> list = GetSpuOpCodes();
 			foreach (SpuOpCode opcode in list)
 			{
+				if (opcode.Format == SpuInstructionFormat.None)
+				{
+					// Pseudo-instructions use None.
+					continue;
+				}
+
 				// capitalized name.
 				string ocname = opcode.Name[0].ToString().ToUpper() + opcode.Name.Substring(1);
 

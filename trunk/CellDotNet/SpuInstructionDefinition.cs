@@ -117,6 +117,11 @@ namespace CellDotNet
 		/// ROH and ROL.
 		/// </summary>
 		BranchHintOffset = 1 << 4,
+		/// <summary>
+		/// Means that the instruction in not a SPU instruction, but rather an instruction
+		/// of meaning to the compiler. Used for move.
+		/// </summary>
+		Pseudo = 1 << 5,
 	}
 
 	/// <summary>
@@ -645,7 +650,14 @@ namespace CellDotNet
 		public static readonly SpuOpCode stop =
 				new SpuOpCode("stop", "Stop and Signal", SpuInstructionFormat.WEIRD, "00000000000");
 
+		// *****************************************
+		// Pseudo instructions.
 
+		/// <summary>
+		/// This is a pseudo-instruction.
+		/// </summary>
+		public static readonly SpuOpCode move = 
+			new SpuOpCode("move", "Move (pseudo)", SpuInstructionFormat.None, "0", SpuOpCodeSpecialFeatures.Pseudo);
 
 	}
 

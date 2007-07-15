@@ -84,7 +84,7 @@ namespace CellDotNet
 				uint tag_status = 0;
 				int waitresult = spe_mfcio_tag_status_read(_handle, 0, SPE_TAG_ALL, ref tag_status);
 
-				Console.WriteLine("DMA don.");
+				Console.WriteLine("DMA done.");
 
 				if (waitresult != 0)
 					throw new Exception("spe_mfcio_status_tag_read failed.");
@@ -124,7 +124,7 @@ namespace CellDotNet
 				uint tag_status = 0;
 				int waitresult = spe_mfcio_tag_status_read(_handle, 0, SPE_TAG_ANY, ref tag_status);
 
-				Console.WriteLine("DMA don.");
+				Console.WriteLine("DMA done.");
 
 				if (waitresult == 0)
 				{

@@ -18,7 +18,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -31,6 +33,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -42,7 +45,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -55,6 +60,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -65,7 +71,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.lqa);
 			inst.Rt = NextRegister();
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -77,6 +85,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -87,7 +96,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.lqr);
 			inst.Rt = NextRegister();
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -99,6 +110,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -110,7 +122,9 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -122,7 +136,9 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -133,7 +149,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.stqa);
 			inst.Rt = rt;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -144,7 +162,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.stqr);
 			inst.Rt = rt;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -156,7 +176,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -169,6 +191,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -180,7 +203,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -193,6 +218,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -204,7 +230,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -217,6 +245,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -228,7 +257,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -241,6 +272,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -252,7 +284,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -265,6 +299,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -276,7 +311,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -289,6 +326,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -300,7 +338,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -313,6 +353,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -324,7 +365,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -337,6 +380,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -347,7 +391,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.ilh);
 			inst.Rt = NextRegister();
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -359,6 +405,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -369,7 +416,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.ilhu);
 			inst.Rt = NextRegister();
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -381,6 +430,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -391,7 +441,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.il);
 			inst.Rt = NextRegister();
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -403,6 +455,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -413,7 +466,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.ila);
 			inst.Rt = NextRegister();
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -425,6 +480,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -435,7 +491,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.iohl);
 			inst.Rt = NextRegister();
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -447,6 +505,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -457,7 +516,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.fsmbi);
 			inst.Rt = NextRegister();
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -469,6 +530,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -480,7 +542,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -493,6 +557,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -504,7 +569,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -517,6 +584,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -528,7 +596,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -541,6 +611,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -552,7 +623,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -565,6 +638,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -576,7 +650,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -589,6 +665,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -600,7 +677,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -613,6 +692,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -624,7 +704,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -637,6 +719,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -648,7 +731,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -661,6 +746,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -672,7 +758,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -685,6 +773,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -696,7 +785,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -709,6 +800,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -720,7 +812,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -733,6 +827,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -744,7 +839,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -757,6 +854,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -768,7 +866,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -781,6 +881,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -792,7 +893,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -805,6 +908,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -816,7 +920,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -829,6 +935,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -840,7 +947,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -853,6 +962,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -864,7 +974,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -877,6 +989,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -888,7 +1001,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -901,6 +1016,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -913,7 +1029,9 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			inst.Rc = rc;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -927,6 +1045,7 @@ namespace CellDotNet
 			inst.Rb = rb;
 			inst.Rc = rc;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -938,7 +1057,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -951,6 +1072,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -962,7 +1084,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -975,6 +1099,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -986,7 +1111,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -999,6 +1126,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1010,7 +1138,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1023,6 +1153,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1034,7 +1165,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1047,6 +1180,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1058,7 +1192,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1071,6 +1207,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1081,7 +1218,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.clz);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1093,6 +1232,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1103,7 +1243,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.cntb);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1115,6 +1257,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1125,7 +1268,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.fsmb);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1137,6 +1282,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1147,7 +1293,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.fsmh);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1159,6 +1307,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1169,7 +1318,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.fsm);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1181,6 +1332,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1191,7 +1343,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.gbb);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1203,6 +1357,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1213,7 +1368,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.gbh);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1225,6 +1382,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1235,7 +1393,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.gb);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1247,6 +1407,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1258,7 +1419,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1271,6 +1434,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1282,7 +1446,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1295,6 +1461,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1306,7 +1473,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1319,6 +1488,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1329,7 +1499,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.xsbh);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1341,6 +1513,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1351,7 +1524,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.xshw);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1363,6 +1538,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1373,7 +1549,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.xswd);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1385,6 +1563,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1396,7 +1575,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1409,6 +1590,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1420,7 +1602,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1433,6 +1617,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1444,7 +1629,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1457,6 +1644,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1468,7 +1656,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1481,6 +1671,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1492,7 +1683,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1505,6 +1698,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1516,7 +1710,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1529,6 +1725,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1540,7 +1737,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1553,6 +1752,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1564,7 +1764,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1577,6 +1779,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1588,7 +1791,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1601,6 +1806,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1612,7 +1818,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1625,6 +1833,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1635,7 +1844,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.orx);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1647,6 +1858,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1658,7 +1870,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1671,6 +1885,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1682,7 +1897,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1695,6 +1912,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1706,7 +1924,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1719,6 +1939,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1730,7 +1951,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1743,6 +1966,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1754,7 +1978,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1767,6 +1993,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1778,7 +2005,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1791,6 +2020,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1802,7 +2032,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1815,6 +2047,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1827,7 +2060,9 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			inst.Rc = rc;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1841,6 +2076,7 @@ namespace CellDotNet
 			inst.Rb = rb;
 			inst.Rc = rc;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1853,7 +2089,9 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			inst.Rc = rc;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1867,6 +2105,7 @@ namespace CellDotNet
 			inst.Rb = rb;
 			inst.Rc = rc;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1878,7 +2117,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1891,6 +2132,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1902,7 +2144,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1915,6 +2159,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1926,7 +2171,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1939,6 +2186,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1950,7 +2198,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1963,6 +2213,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1974,7 +2225,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -1987,6 +2240,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -1998,7 +2252,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2011,6 +2267,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2022,7 +2279,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2035,6 +2294,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2046,7 +2306,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2059,6 +2321,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2070,7 +2333,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2083,6 +2348,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2094,7 +2360,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2107,6 +2375,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2118,7 +2387,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2131,6 +2402,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2142,7 +2414,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2155,6 +2429,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2166,7 +2441,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2179,6 +2456,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2190,7 +2468,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2203,6 +2483,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2214,7 +2495,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2227,6 +2510,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2238,7 +2522,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2251,6 +2537,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2262,7 +2549,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2275,6 +2564,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2286,7 +2576,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2299,6 +2591,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2310,7 +2603,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2323,6 +2618,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2334,7 +2630,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2347,6 +2645,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2358,7 +2657,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2371,6 +2672,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2382,7 +2684,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2395,6 +2699,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2406,7 +2711,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2419,6 +2726,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2430,7 +2738,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2443,6 +2753,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2454,7 +2765,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2467,6 +2780,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2478,7 +2792,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2491,6 +2807,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2502,7 +2819,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2515,6 +2834,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2526,7 +2846,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2539,6 +2861,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2550,7 +2873,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2563,6 +2888,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2574,7 +2900,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2587,6 +2915,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2598,7 +2927,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2611,6 +2942,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2622,7 +2954,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2635,6 +2969,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2646,7 +2981,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2659,6 +2996,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2670,7 +3008,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2683,6 +3023,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2694,7 +3035,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2707,6 +3050,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2718,7 +3062,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2731,6 +3077,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2742,7 +3089,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2755,6 +3104,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2766,7 +3116,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2779,6 +3131,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2790,7 +3143,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2803,6 +3158,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2814,7 +3170,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2827,6 +3185,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2838,7 +3197,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2851,6 +3212,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2862,7 +3224,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2875,6 +3239,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2886,7 +3251,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2899,6 +3266,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2910,7 +3278,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2923,6 +3293,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2934,7 +3305,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2947,6 +3320,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2958,7 +3332,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2971,6 +3347,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -2982,7 +3359,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -2995,6 +3374,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3006,7 +3386,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3019,6 +3401,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3030,7 +3413,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3043,6 +3428,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3054,7 +3440,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3067,6 +3455,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3078,7 +3467,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3091,6 +3482,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3102,7 +3494,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3115,6 +3509,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3126,7 +3521,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3139,6 +3536,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3150,7 +3548,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3163,6 +3563,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3174,7 +3575,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3187,6 +3590,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3196,7 +3600,9 @@ namespace CellDotNet
 		{
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.br);
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3206,7 +3612,9 @@ namespace CellDotNet
 		{
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.bra);
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3217,7 +3625,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.brsl);
 			inst.Rt = NextRegister();
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3229,6 +3639,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3239,7 +3650,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.brasl);
 			inst.Rt = NextRegister();
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3251,6 +3664,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3260,7 +3674,9 @@ namespace CellDotNet
 		{
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.bi);
 			inst.Rt = NextRegister();
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3271,6 +3687,7 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.bi);
 			inst.Rt = rt;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3280,7 +3697,9 @@ namespace CellDotNet
 		{
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.iret);
 			inst.Rt = NextRegister();
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3291,6 +3710,7 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.iret);
 			inst.Rt = rt;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3301,7 +3721,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.bisled);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3313,6 +3735,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3323,7 +3746,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.bisl);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3335,6 +3760,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3345,7 +3771,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.brnz);
 			inst.Rt = NextRegister();
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3357,6 +3785,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3367,7 +3796,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.brz);
 			inst.Rt = NextRegister();
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3379,6 +3810,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3389,7 +3821,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.brhnz);
 			inst.Rt = NextRegister();
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3401,6 +3835,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3411,7 +3846,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.brhz);
 			inst.Rt = NextRegister();
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3423,6 +3860,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3433,7 +3871,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.biz);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3445,6 +3885,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3455,7 +3896,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.binz);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3467,6 +3910,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3477,7 +3921,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.bihz);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3489,6 +3935,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3499,7 +3946,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.bihnz);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3511,6 +3960,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3522,7 +3972,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3535,6 +3987,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3546,7 +3999,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3559,6 +4014,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3570,7 +4026,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3583,6 +4041,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3594,7 +4053,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3607,6 +4068,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3618,7 +4080,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3631,6 +4095,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3642,7 +4107,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3655,6 +4122,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3667,7 +4135,9 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			inst.Rc = rc;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3681,6 +4151,7 @@ namespace CellDotNet
 			inst.Rb = rb;
 			inst.Rc = rc;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3692,7 +4163,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3705,6 +4178,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3717,7 +4191,9 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			inst.Rc = rc;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3731,6 +4207,7 @@ namespace CellDotNet
 			inst.Rb = rb;
 			inst.Rc = rc;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3742,7 +4219,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3755,6 +4234,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3767,7 +4247,9 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			inst.Rc = rc;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3781,6 +4263,7 @@ namespace CellDotNet
 			inst.Rb = rb;
 			inst.Rc = rc;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3792,7 +4275,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3805,6 +4290,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3816,7 +4302,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3829,6 +4317,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3839,7 +4328,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.frest);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3851,6 +4342,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3861,7 +4353,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.frsqest);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3873,6 +4367,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3884,7 +4379,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3897,6 +4394,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3908,7 +4406,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3921,6 +4421,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3932,7 +4433,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3945,6 +4448,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3956,7 +4460,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3969,6 +4475,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -3980,7 +4487,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -3993,6 +4502,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -4003,7 +4513,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.frds);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -4015,6 +4527,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -4025,7 +4538,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.fesd);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -4037,6 +4552,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -4048,7 +4564,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -4061,6 +4579,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -4072,7 +4591,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -4085,6 +4606,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -4096,7 +4618,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -4109,6 +4633,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -4120,7 +4645,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -4133,6 +4660,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -4144,7 +4672,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Constant = immediate;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -4157,6 +4687,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Constant = immediate;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -4168,7 +4699,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -4181,6 +4714,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -4192,7 +4726,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -4205,6 +4741,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -4216,7 +4753,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -4229,6 +4768,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -4240,7 +4780,9 @@ namespace CellDotNet
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
 			inst.Rb = rb;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -4253,6 +4795,7 @@ namespace CellDotNet
 			inst.Ra = ra;
 			inst.Rb = rb;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -4263,7 +4806,9 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.fscrwr);
 			inst.Rt = NextRegister();
 			inst.Ra = ra;
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -4275,6 +4820,7 @@ namespace CellDotNet
 			inst.Rt = rt;
 			inst.Ra = ra;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -4284,7 +4830,9 @@ namespace CellDotNet
 		{
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.fscrrd);
 			inst.Rt = NextRegister();
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 		/// <summary>
@@ -4295,6 +4843,7 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.fscrrd);
 			inst.Rt = rt;
 			AddInstruction(inst);
+
 		}
 
 		/// <summary>
@@ -4303,7 +4852,9 @@ namespace CellDotNet
 		public VirtualRegister WriteStop()
 		{
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.stop);
-			AddInstruction(inst); return inst.Rt;
+			AddInstruction(inst);
+			return inst.Rt;
+
 		}
 
 	}

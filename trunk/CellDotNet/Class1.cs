@@ -104,7 +104,7 @@ namespace CellDotNet
 			
 
 			SimpleRegAlloc regalloc = new SimpleRegAlloc();
-			List<SpuInstruction> asm = new List<SpuInstruction>(ilist.Instructions);
+			List<SpuInstruction> asm = ilist.GetAsList();
 			regalloc.alloc(asm, 16);
 
 			int[] bincode = SpuInstruction.emit(asm);

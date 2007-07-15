@@ -57,7 +57,7 @@ namespace CellDotNet
 //			List<SpuInstruction> asm = new List<SpuInstruction>(ilist.Instructions);
 //			regalloc.alloc(asm, 16);
 
-			int[] bincode = SpuInstruction.emit(new List<SpuInstruction>(mc.GetSpuInstructionWriter().Instructions));
+			int[] bincode = SpuInstruction.emit(mc.GetSpuInstructionWriter().GetAsList());
 
 			SpeContext ctx = new SpeContext();
 			if (!ctx.LoadProgram(bincode))

@@ -117,6 +117,37 @@ namespace CellDotNet
 			new TreeDrawer().DrawMethod(ci, method);
 		}
 
+		[Test, Description("Test non-trivial branching.")]
+		public void TestParseBranches1()
+		{
+			BasicTestDelegate del = delegate
+			                        	{
+			                        		int i = 34;
+
+										RestartLoop:
+											for (int j = 1; j < i; j++)
+											{
+												if (Math.Max(j, i) > 4)
+													goto RestartLoop;
+
+												if (j % 10 == 0)
+													goto NextIteration;
+
+												i++;
+												if (i == 12)
+													continue;
+
+											NextIteration: {
+												throw new Exception(); }
+											}
+			                        	};
+
+			MethodCompiler mc = new MethodCompiler(del.Method);
+			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
+
+			new TreeDrawer().DrawMethod(mc, mc.MethodBase);
+		}
+
 		#region Frame tests.
 
 		private delegate void FiveIntegerArgumentDelegate(int i1, int i2, int i3, int i4, int i5);
