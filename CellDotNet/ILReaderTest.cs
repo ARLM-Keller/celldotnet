@@ -11,7 +11,7 @@ namespace CellDotNet
 	/// TODO: Instruction pattern tests. Test offsets.
 	/// </summary>
 	[TestFixture]
-	public class ILReaderTest : Assert
+	public class ILReaderTest : UnitTest
 	{
 		[Test, Explicit]
 		public void GenerateReflectionCode()
@@ -37,6 +37,7 @@ namespace CellDotNet
 
 				if (oc.OpCodeType == OpCodeType.Macro)
 				{
+//					continue;
 					// We generally don't want macros, but these are okay...
 					if (oc != OpCodes.Blt && oc != OpCodes.Ble &&
 						oc != OpCodes.Blt_Un && oc != OpCodes.Ble_Un &&
@@ -96,5 +97,128 @@ namespace CellDotNet
 			if (icount < 5)
 				throw new Exception("too few instructions.");
 		}
+
+		private delegate void BasicTestDelegate();
+
+		[Test]
+		public void TestLoadInt32()
+		{
+			BasicTestDelegate del = delegate
+			                        	{
+			                        		int i = 0x0a0b0c0d;
+			                        		Math.Abs(i);
+			                        	};
+			ILReader r = new ILReader(del.Method);
+
+			bool found = false;
+			while (r.Read())
+			{
+				if (r.OpCode == IROpCodes.Ldc_I4)
+				{
+					found = true;
+					int val = (int) r.Operand;
+					AreEqual(0x0a0b0c0d, val);
+				}
+			}
+
+			IsTrue(found);
+		}
+
+		[Test]
+		public void TestLoadInt64()
+		{
+			BasicTestDelegate del = delegate
+										{
+											long i = 0x0102030405060708L;
+											Math.Abs(i);
+										};
+			ILReader r = new ILReader(del.Method);
+
+			bool found = false;
+			while (r.Read())
+			{
+				if (r.OpCode == IROpCodes.Ldc_I8)
+				{
+					found = true;
+					long val = (long)r.Operand;
+					AreEqual(0x0102030405060708L, val);
+				}
+			}
+
+			IsTrue(found);
+		}
+
+		[Test]
+		public void TestLoadString()
+		{
+			BasicTestDelegate del = delegate
+										{
+											string s = "hey";
+											s.ToString();
+										};
+			ILReader r = new ILReader(del.Method);
+
+			bool found = false;
+			while (r.Read())
+			{
+				if (r.OpCode == IROpCodes.Ldstr)
+				{
+					found = true;
+					string s = (string) r.Operand;
+					AreEqual("hey", s);
+				}
+			}
+
+			IsTrue(found);
+		}
+
+		[Test]
+		public void TestLoadFloat()
+		{
+			BasicTestDelegate del = delegate
+										{
+											float s = 4.5f;
+											s.ToString();
+										};
+			ILReader r = new ILReader(del.Method);
+
+			bool found = false;
+			while (r.Read())
+			{
+				if (r.OpCode == IROpCodes.Ldc_R4)
+				{
+					found = true;
+					float f = (float) r.Operand;
+					AreEqual(4.5f, f);
+				}
+			}
+
+			IsTrue(found);
+		}
+
+		[Test]
+		public void TestLoadDouble()
+		{
+			BasicTestDelegate del = delegate
+										{
+											double s = 4.5d;
+											s.ToString();
+										};
+			ILReader r = new ILReader(del.Method);
+
+			bool found = false;
+			while (r.Read())
+			{
+				if (r.OpCode == IROpCodes.Ldc_R8)
+				{
+					found = true;
+					double d = (double)r.Operand;
+					AreEqual(4.5d, d);
+				}
+			}
+
+			IsTrue(found);
+		}
+
 	}
 }
