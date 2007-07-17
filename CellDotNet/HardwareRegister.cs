@@ -6,23 +6,29 @@ namespace CellDotNet
 {
     class HardwareRegister : StoreLocation
     {
-        public static List<StoreLocation> getCellRegisteres()
+    	private static HardwareRegister[] s_cellRegisters;
+        public static IList<HardwareRegister> GetCellRegisters()
         {
-			List<StoreLocation> regs = new List<StoreLocation>();
+			if (s_cellRegisters == null)
+			{
+				List<HardwareRegister> regs = new List<HardwareRegister>();
 
-            for (int i = 0; i <= 127; i++ )
-            {
-                HardwareRegister hr = new HardwareRegister();
-                hr.Register = i;
-                regs.Add(hr);
-            }
-            return regs;
+				for (int i = 0; i <= 127; i++ )
+				{
+					HardwareRegister hr = new HardwareRegister();
+					hr.Register = i;
+					regs.Add(hr);
+				}
+				s_cellRegisters = regs.ToArray();
+			}
+
+			return s_cellRegisters;
         }
 
-        public static Stack<StoreLocation> getCellRegistersAsStack()
+        public static Stack<StoreLocation> GetCellRegistersAsStack()
         {
             Stack<StoreLocation> regsStack = new Stack<StoreLocation>();
-            List<StoreLocation> regs = HardwareRegister.getCellRegisteres();
+            IList<HardwareRegister> regs = GetCellRegisters();
 
             for (int i = regs.Count - 1; i >= 0; i--)
             {

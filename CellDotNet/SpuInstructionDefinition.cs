@@ -78,7 +78,11 @@ namespace CellDotNet
 		/// 18 bit immediate.
 		/// </summary>
 		RI18,
-		WEIRD
+		WEIRD,
+		/// <summary>
+		/// For pseudo-instructions.
+		/// </summary>
+		Custom
 	}
 
 	[Flags]
@@ -248,6 +252,7 @@ namespace CellDotNet
 					_immediateBits = 18;
 					break;
 				case SpuInstructionFormat.WEIRD:
+				case SpuInstructionFormat.Custom:
 					break;
 				default:
 					throw new ArgumentException();
@@ -657,7 +662,7 @@ namespace CellDotNet
 		/// This is a pseudo-instruction.
 		/// </summary>
 		public static readonly SpuOpCode move = 
-			new SpuOpCode("move", "Move (pseudo)", SpuInstructionFormat.None, "0", SpuOpCodeSpecialFeatures.Pseudo);
+			new SpuOpCode("move", "Move (pseudo)", SpuInstructionFormat.Custom, "0", SpuOpCodeSpecialFeatures.Pseudo);
 
 	}
 

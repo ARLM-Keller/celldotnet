@@ -45,7 +45,7 @@ namespace CellDotNet
 			return new VirtualRegister(_regnum++);
 		}
 
-		public void StartNewBasicBlock()
+		public void BeginNewBasicBlock()
 		{
 			_basicBlocks.Add(new SpuBasicBlock());
 			_prevInstruction = null;
@@ -62,7 +62,7 @@ namespace CellDotNet
 			else
 			{
 				// New bb.
-				Utilities.Assert(_basicBlocks.Count != 0, "StartNewBasicBlock() has not been called.");
+				Utilities.Assert(_basicBlocks.Count != 0, "BeginNewBasicBlock() has not been called.");
 				_basicBlocks[_basicBlocks.Count - 1].Head = inst;
 				_prevInstruction = inst;
 			}
@@ -197,22 +197,30 @@ namespace CellDotNet
 		/// <param name="dest"></param>
 		public void WriteMove(VirtualRegister src, VirtualRegister dest)
 		{
-			SpuInstruction inst = new SpuInstruction(SpuOpCode.move);
-			inst.Ra = src;
-			inst.Rt = dest;
+			// set usesymbolicmove to false to generate code that will allow the
+			// simple cell test program to run (20070715)
+			bool useSymbolicMove = true;
+			if (useSymbolicMove)
+			{
+				SpuInstruction inst = new SpuInstruction(SpuOpCode.move);
+				inst.Ra = src;
+				inst.Rt = dest;
 
-			AddInstruction(inst);
-//
-//			SpuInstruction iload = new SpuInstruction(SpuOpCode.il);
-//			iload.Constant = 0;
-//			iload.Rt = NextRegister();
-//			AddInstruction(iload);
-//
-//			SpuInstruction ior = new SpuInstruction(SpuOpCode.or);
-//			ior.Ra = iload.Rt;
-//			ior.Rb = src;
-//			ior.Rt = dest;
-//			AddInstruction(ior);
+				AddInstruction(inst);
+			}
+			else
+			{
+				SpuInstruction iload = new SpuInstruction(SpuOpCode.il);
+				iload.Constant = 0;
+				iload.Rt = NextRegister();
+				AddInstruction(iload);
+
+				SpuInstruction ior = new SpuInstruction(SpuOpCode.or);
+				ior.Ra = iload.Rt;
+				ior.Rb = src;
+				ior.Rt = dest;
+				AddInstruction(ior);
+			}
 		}
 
 		/// <summary>
@@ -278,6 +286,10 @@ namespace CellDotNet
 							}
 
 							throw new NotImplementedException();
+						case SpuInstructionFormat.Custom:
+							// Currently this only need to handle move.
+							tw.WriteLine("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Ra);
+							break;
 						default:
 							throw new Exception();
 					}

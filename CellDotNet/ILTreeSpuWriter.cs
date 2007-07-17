@@ -10,18 +10,58 @@ namespace CellDotNet
 	class ILTreeSpuWriter
 	{
 		private SpuInstructionWriter _writer;
+		private MethodCompiler _method;
 
-		public void GenerateCode(MethodCompiler ci, SpuInstructionWriter writer)
+		public void GenerateCode(MethodCompiler mc, SpuInstructionWriter writer)
 		{
 			_writer = writer;
+			_method = mc;
 
-			foreach (BasicBlock bb in ci.Blocks)
+			WriteFirstBasicBlock();
+
+			foreach (BasicBlock bb in mc.Blocks)
 			{
-				_writer.StartNewBasicBlock();
+				_writer.BeginNewBasicBlock();
 				foreach (TreeInstruction root in bb.Roots)
 				{
 					GenerateCode(root);
 				}
+			}
+		}
+
+		private static VirtualRegister GetHardwareRegister(int hwregisternum)
+		{
+			VirtualRegister reg = new VirtualRegister();
+			HardwareRegister hwreg = new HardwareRegister();
+			hwreg.Register = hwregisternum;
+			reg.Location = hwreg;
+
+			return reg;
+		}
+
+
+		/// <summary>
+		/// Creates the first basic block of the method, which moves arguments from physical
+		/// registers to virtual registers.
+		/// </summary>
+		private void WriteFirstBasicBlock()
+		{
+			const int FirstArgumentRegister = 3;
+
+			if (_method.Parameters.Count > 72)
+				throw new NotSupportedException("More than 72 arguments is not supported.");
+			if (_method.Parameters.Count == 0)
+				return;
+
+			_writer.BeginNewBasicBlock();
+			IList<HardwareRegister> regs = HardwareRegister.GetCellRegisters();
+			for (int i = 0; i < _method.Parameters.Count; i++)
+			{
+				MethodParameter parameter = _method.Parameters[i];
+
+				VirtualRegister dest = GetHardwareRegister(FirstArgumentRegister + i);
+
+				_writer.WriteMove(parameter.VirtualRegister, dest);
 			}
 		}
 
@@ -82,7 +122,9 @@ namespace CellDotNet
 					break;
 				case IRCode.Ret:
 					if (inst.StackType != StackTypeDescription.None)
-						throw new NotImplementedException("Cannot return values.");
+					{
+						_writer.WriteMove(vrleft, GetHardwareRegister((int) CellRegister.REG_3));
+					}
 					return null;
 				case IRCode.Br:
 					break;
