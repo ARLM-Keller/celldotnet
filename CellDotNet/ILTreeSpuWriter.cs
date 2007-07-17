@@ -69,14 +69,9 @@ namespace CellDotNet
 		{
 			VirtualRegister vrleft = null, vrright = null;
 
-			if (inst.Left != null)
-			{
-				vrleft = GenerateCode(inst.Left);
-				if (inst.Right != null)
-					vrright = GenerateCode(inst.Right);
-			}
-			else if (inst.Right != null)
-				throw new InvalidILTreeException("Right but no left??");
+			foreach (TreeInstruction child in inst.GetChildInstructions())
+				GenerateCode(child);
+
 
 			IRCode ilcode = inst.Opcode.IRCode;
 			switch (ilcode)
@@ -124,6 +119,7 @@ namespace CellDotNet
 					if (inst.StackType != StackTypeDescription.None)
 					{
 						_writer.WriteMove(vrleft, GetHardwareRegister((int) CellRegister.REG_3));
+						_writer.WriteReturn();
 					}
 					return null;
 				case IRCode.Br:

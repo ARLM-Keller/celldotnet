@@ -152,6 +152,28 @@ namespace CellDotNet
 		{
 			BasicTestDelegate del = delegate
 				{
+					int i = Math.Max(4, 0);
+
+					for (int j = 0; j < 10; j++)
+					{
+						// It's important to have these calls to test branches to function argument
+						// loading instructions.
+						if (i < 4)
+							Math.Log(i);
+						else
+							Math.Log(j);
+					}
+				};
+
+			MethodCompiler mc = new MethodCompiler(del.Method);
+			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
+		}
+
+
+		public void TestBranchCodeGenerationBasic()
+		{
+			BasicTestDelegate del = delegate
+				{
 					int i = 0;
 
 					for (int j = 0; j < 10; j++)
@@ -163,25 +185,6 @@ namespace CellDotNet
 					}
 				};
 
-			MethodCompiler mc = new MethodCompiler(del.Method);
-			mc.PerformProcessing(MethodCompileState.S7BranchesFixed);
-		}
-
-
-		public void TestBranchCodeGenerationBasic()
-		{
-			BasicTestDelegate del = delegate
-        		{
-        			int i = Math.Max(4, 0);
-
-					for (int j = 0; j < 10; j++)
-					{
-						if (i < 4)
-							Math.Log(i);
-						else
-							Math.Log(j);
-					}
-        		};
 
 			MethodCompiler mc = new MethodCompiler(del.Method);
 			mc.PerformProcessing(MethodCompileState.S7BranchesFixed);

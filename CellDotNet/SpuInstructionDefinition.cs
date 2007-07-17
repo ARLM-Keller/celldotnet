@@ -663,6 +663,8 @@ namespace CellDotNet
 		/// </summary>
 		public static readonly SpuOpCode move = 
 			new SpuOpCode("move", "Move (pseudo)", SpuInstructionFormat.Custom, "0", SpuOpCodeSpecialFeatures.Pseudo);
+		public static readonly SpuOpCode ret =
+			new SpuOpCode("ret", "Function return (pseudo)", SpuInstructionFormat.Custom, "0", SpuOpCodeSpecialFeatures.Pseudo);
 
 	}
 

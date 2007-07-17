@@ -228,6 +228,16 @@ namespace CellDotNet
 		}
 
 		/// <summary>
+		/// Writes a return pseudo-instruction that must be patched to be a branch
+		/// to the epilog.
+		/// </summary>
+		public void WriteReturn()
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ret);
+			AddInstruction(inst);
+		}
+
+		/// <summary>
 		/// Returns the instructions that are currently in the writer as assembly code.
 		/// </summary>
 		/// <returns></returns>

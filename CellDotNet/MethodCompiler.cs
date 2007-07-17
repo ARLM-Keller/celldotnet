@@ -694,6 +694,12 @@ namespace CellDotNet
 				{
 					if (inst.JumpTarget != null)
 						branchlist.Add(new KeyValuePair<int, SpuInstruction>(curroffset, inst));
+					else if (inst.OpCode == SpuOpCode.ret)
+					{
+						inst.OpCode = SpuOpCode.br;
+						inst.JumpTarget = _epilog.BasicBlocks[0];
+						branchlist.Add(new KeyValuePair<int, SpuInstruction>(curroffset, inst));
+					}
 
 					inst = inst.Next;
 					curroffset += 4;
@@ -794,10 +800,11 @@ namespace CellDotNet
 		/// <param name="level"></param>
 		private void DeriveType(TreeInstruction inst, int level)
 		{
-			if (inst.Left != null)
-				DeriveType(inst.Left, level + 1);
-			if (inst.Right != null)
-				DeriveType(inst.Right, level + 1);
+			foreach (TreeInstruction child in inst.GetChildInstructions())
+				DeriveType(child, level + 1);
+
+			TreeInstruction firstchild;
+			Utilities.TryGetFirst(inst.GetChildInstructions(), out firstchild);
 
 			StackTypeDescription t;
 			switch (inst.Opcode.FlowControl)
@@ -826,7 +833,6 @@ namespace CellDotNet
 							DeriveType(param, level + 1);
 						}
 					}
-				//					throw new NotImplementedException("Message call not implemented.");
 					break;
 				case FlowControl.Cond_Branch:
 					if (level != 0)
@@ -847,7 +853,7 @@ namespace CellDotNet
 					}
 					break;
 				case FlowControl.Return:
-					if (inst.Left != null)
+					if ( firstchild != null)
 						t = inst.Left.StackType;
 					else
 						t = StackTypeDescription.None;
@@ -856,7 +862,7 @@ namespace CellDotNet
 					t = StackTypeDescription.None;
 					break;
 				default:
-					throw new ILException("Default");
+					throw new ILException("Invalid FlowControl: " + inst.Opcode.FlowControl);
 			}
 
 
