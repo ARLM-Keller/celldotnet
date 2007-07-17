@@ -328,7 +328,7 @@ namespace CellDotNet
 						newbb.Roots.AddRange(newblockroots);
 						Blocks.Insert(bbindex + 1, newbb);
 
-						basicBlockOffsets.Add(newbb.Roots[0].Offset, newbb);
+						basicBlockOffsets.Add(firstinst.Offset, newbb);
 						target = newbb;
 						goto NextBranch;
 					}
@@ -682,8 +682,9 @@ namespace CellDotNet
 			bblist.Add(_epilog.BasicBlocks[0]);
 
 
+			// All offsets are byte offset from start of method (prolog).
+
 			List<KeyValuePair<int, SpuInstruction>> branchlist = new List<KeyValuePair<int, SpuInstruction>>();
-			// Byte offset from start of method (prolog).
 			int curroffset = 0;
 			foreach (SpuBasicBlock bb in bblist)
 			{
