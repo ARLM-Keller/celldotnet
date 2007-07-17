@@ -63,8 +63,8 @@ namespace CellDotNet
 			td.DrawMethod(mc, del.Method);
 
 			IsTrue(mc.Blocks.Count == 1);
-			AreEqual(3, mc.Blocks[0].Roots.Count);
-			TreeInstruction popInst = mc.Blocks[0].Roots[1];
+			TreeInstruction popInst =
+				mc.Blocks[0].Roots.Find(delegate(TreeInstruction obj) { return obj.Opcode == IROpCodes.Pop; });
 			AreEqual(IRCode.Pop, popInst.Opcode.IRCode);
 
 			// Pop should not have an operand.
