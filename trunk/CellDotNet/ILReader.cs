@@ -72,6 +72,12 @@ namespace CellDotNet
 		private MethodBase _method;
 		private MethodBody _body;
 
+//		/// <summary>
+//		/// Used to decompose branch macro instructions.
+//		/// The value part is branch offset.
+//		/// </summary>
+//		Stack<KeyValuePair<IROpCode, int>> _opcodestack = new Stack<KeyValuePair<IROpCode, int>>();
+
 		private int _instructionsRead;
 		public int InstructionsRead
 		{
@@ -95,9 +101,22 @@ namespace CellDotNet
 				return false;
 			_state = ReadState.Reading;
 
-			_offset = _readoffset;
 			_instructionsRead++;
+			_offset = _readoffset;
 			_operand = null;
+
+//			if (_opcodestack.Count > 0)
+//			{
+//				KeyValuePair<IROpCode, int> pair = _opcodestack.Pop();
+//				_opcode = pair.Key;
+//				_operand = pair.Value;
+//
+//				// Wouldn't be good if both instructions got the same offset.
+//				// We give the offset to the first of the decomposed instructions,
+//				// and since we're at this place, we're not at the first one.
+//				_offset = -1;
+//				return true;
+//			}
 
 			byte b = _il[_readoffset];
 			_readoffset++;
@@ -118,7 +137,10 @@ namespace CellDotNet
 				srOpcode = _ocmap[ocval];
 			}
 
-			ReadInstructionArguments(ref srOpcode);
+			ReadInstructionArguments(srOpcode);
+			RemoveMacro(ref srOpcode);
+
+
 			IROpCode ircode;
 			if (!_irmap.TryGetValue(srOpcode.Value, out ircode))
 			{
@@ -162,56 +184,126 @@ namespace CellDotNet
 
 
 		/// <summary>
-		/// Four-byte integers in the IL stream are little-endian.
+		/// Finishes reading the specified opcode from the il and prepares the opcode operand.
 		/// </summary>
-		/// <returns></returns>
-		private int ReadInt32()
+		/// <param name="srOpcode"></param>
+		private void ReadInstructionArguments(OpCode srOpcode)
 		{
-			int i = ((_il[_readoffset] | (_il[_readoffset + 1] << 8)) |
-				(_il[_readoffset + 2] << 0x10)) | (_il[_readoffset + 3] << 0x18);
-
-			_readoffset += 4;
-
-			return i;
+			switch (srOpcode.OperandType)
+			{
+				case OperandType.InlineBrTarget:
+					int xtoken;
+					uint xindex;
+					_operand = ReadInt32();
+					break;
+				case OperandType.InlineField:
+					xtoken = ReadInt32();
+					_operand = _method.Module.ResolveField(xtoken);
+					break;
+				case OperandType.InlineI:
+					_operand = ReadInt32();
+					break;
+				case OperandType.InlineI8:
+					_operand = ReadInt64();
+					break;
+				case OperandType.InlineMethod:
+					xtoken = ReadInt32();
+					_operand = _method.Module.ResolveMethod(xtoken);
+					break;
+				case OperandType.InlineNone:
+					break;
+//				case OperandType.InlinePhi:
+//					break;
+				case OperandType.InlineR:
+					_operand = BitConverter.ToDouble(_il, _readoffset);
+					_readoffset += 8;
+					break;
+				case OperandType.InlineSig:
+					xtoken = ReadInt32();
+					_operand = _method.Module.ResolveSignature(xtoken);
+					break;
+				case OperandType.InlineString:
+					xtoken = ReadInt32();
+					_operand = _method.Module.ResolveString(xtoken);
+					break;
+				case OperandType.InlineSwitch:
+					throw new NotImplementedException("Switch is not implemented.");
+				case OperandType.InlineTok:
+					_operand = ReadInt32();
+					break;
+				case OperandType.InlineType:
+					xtoken = ReadInt32();
+					_operand = _method.Module.ResolveType(xtoken);
+					break;
+				case OperandType.ShortInlineVar:
+					xindex = (uint) ReadInt8();
+					if (srOpcode == OpCodes.Ldarg_S || srOpcode == OpCodes.Ldarga_S || srOpcode == OpCodes.Starg_S)
+						_operand = _method.GetParameters()[xindex];
+					else
+					{
+						Utilities.Assert(srOpcode == OpCodes.Ldloc_S || srOpcode == OpCodes.Ldloca_S || srOpcode == OpCodes.Stloc_S,
+						                 "Not loc?!");
+						_operand = _body.LocalVariables[(int) xindex];
+					}
+					break;
+				case OperandType.InlineVar:
+					xindex = (uint) ReadInt16();
+					if (srOpcode == OpCodes.Ldarg || srOpcode == OpCodes.Ldarga || srOpcode == OpCodes.Starg)
+						_operand = _method.GetParameters()[xindex];
+					else
+					{
+						Utilities.Assert(srOpcode == OpCodes.Ldloc || srOpcode == OpCodes.Ldloca || srOpcode == OpCodes.Stloc, "Not loc??");
+						_operand = _body.LocalVariables[(int) xindex];
+					}
+					break;
+				case OperandType.ShortInlineBrTarget:
+					_operand = ReadInt8();
+					break;
+				case OperandType.ShortInlineI:
+					// ldc.i4.s and unaligned prefix. unaligned only uses small positive values, so 
+					// we can pretend it's signed in both cases.
+					_operand = ReadInt8();
+					break;
+				case OperandType.ShortInlineR:
+					_operand = BitConverter.ToSingle(_il, _readoffset);
+					_readoffset += 4;
+					break;
+				default:
+					throw new ILException("Unknown operand type: " + srOpcode.OperandType);
+			}
 		}
 
 		/// <summary>
-		/// Finishes reading the specified opcode from the il.
-		/// Also simplifies the code by converting most macro instructions.
+		/// Gets rid of macro opcodes except for some of the branches.
 		/// </summary>
 		/// <param name="srOpcode"></param>
-		private void ReadInstructionArguments(ref OpCode srOpcode)
+		private void RemoveMacro(ref OpCode srOpcode)
 		{
 			{
 				// stloc.
-				int varindex = -1;
-				if (srOpcode == OpCodes.Stloc)
-					varindex = ReadInt32();
-				else if (srOpcode == OpCodes.Stloc_S)
-					varindex = _il[_readoffset++];
-				else if (srOpcode.Value >= OpCodes.Stloc_0.Value && srOpcode.Value <= OpCodes.Stloc_3.Value)
-					varindex = srOpcode.Value - OpCodes.Stloc_0.Value;
-
-				if (varindex != -1)
+				if (srOpcode == OpCodes.Stloc_S)
 				{
-					_operand = _body.LocalVariables[varindex];
 					srOpcode = OpCodes.Stloc;
 					return;
+				}
+				else if (srOpcode.Value >= OpCodes.Stloc_0.Value && srOpcode.Value <= OpCodes.Stloc_3.Value)
+				{
+					int varindex = srOpcode.Value - OpCodes.Stloc_0.Value;
+					_operand = _body.LocalVariables[varindex];
+					srOpcode = OpCodes.Stloc;
 				}
 			}
 
 			{
 				// ldloc.
-				int varindex = -1;
-				if (srOpcode == OpCodes.Ldloc)
-					varindex = ReadInt32();
-				else if (srOpcode == OpCodes.Ldloc_S)
-					varindex = _il[_readoffset++];
-				else if (srOpcode.Value >= OpCodes.Ldloc_0.Value && srOpcode.Value <= OpCodes.Ldloc_3.Value)
-					varindex = srOpcode.Value - OpCodes.Ldloc_0.Value;
-
-				if (varindex != -1)
+				if (srOpcode == OpCodes.Ldloc_S)
 				{
+					srOpcode = OpCodes.Ldloc;
+					return;
+				}
+				else if (srOpcode.Value >= OpCodes.Ldloc_0.Value && srOpcode.Value <= OpCodes.Ldloc_3.Value)
+				{
+					int varindex = srOpcode.Value - OpCodes.Ldloc_0.Value;
 					_operand = _body.LocalVariables[varindex];
 					srOpcode = OpCodes.Ldloc;
 					return;
@@ -220,15 +312,8 @@ namespace CellDotNet
 
 			{
 				// ldloca.
-				int index = -1;
-				if (srOpcode == OpCodes.Ldloca)
-					index = ReadInt32();
-				else if (srOpcode == OpCodes.Ldloca_S)
-					index = _il[_readoffset++];
-
-				if (index != -1)
+				if (srOpcode == OpCodes.Ldloca_S)
 				{
-					_operand = _body.LocalVariables[index];
 					srOpcode = OpCodes.Ldloca;
 					return;
 				}
@@ -236,370 +321,163 @@ namespace CellDotNet
 
 			{
 				// starg.
-				int argnum = -1;
-				if (srOpcode == OpCodes.Starg)
-					argnum = ReadInt32();
-				else if (srOpcode == OpCodes.Starg_S)
-					argnum = _il[_readoffset++];
-
-				if (argnum != -1)
+				if (srOpcode == OpCodes.Starg_S)
 				{
 					srOpcode = OpCodes.Starg;
-					_operand = _method.GetParameters()[argnum];
 					return;
 				}
 			}
 
 			{
 				// ldarg(a)
-				int index = -1;
-				if (srOpcode == OpCodes.Ldarg)
-					index = ReadInt32();
-				else if (srOpcode == OpCodes.Ldarg_S)
+				if (srOpcode == OpCodes.Ldarg_S)
 				{
-					index = _il[_readoffset++];
 					srOpcode = OpCodes.Ldarg;
+					return;
 				}
 				else if (srOpcode.Value >= OpCodes.Ldarg_0.Value && srOpcode.Value <= OpCodes.Ldarg_3.Value)
 				{
-					index = srOpcode.Value - OpCodes.Ldarg_0.Value;
-					srOpcode = OpCodes.Ldarg;
-				}
-				else if (srOpcode == OpCodes.Ldarga)
-					index = ReadInt32();
-				else if (srOpcode == OpCodes.Ldarga_S)
-				{
-					index = _il[_readoffset++];
-					srOpcode = OpCodes.Ldarga;
-				}
-
-				if (index != -1)
-				{
+					int index = srOpcode.Value - OpCodes.Ldarg_0.Value;
 					_operand = _method.GetParameters()[index];
+					srOpcode = OpCodes.Ldarg;
 					return;
 				}
-			}
-
-			{
-				// switch
-				if (srOpcode == OpCodes.Switch)
-					throw new NotImplementedException("switch");
+				else if (srOpcode == OpCodes.Ldarga_S)
+				{
+					srOpcode = OpCodes.Ldarga;
+					return;
+				}
 			}
 
 			{
 				// beq.
-				if (srOpcode == OpCodes.Beq)
-				{
-					_operand = ReadInt32();
-					return;
-				}
-				else if (srOpcode == OpCodes.Beq_S)
-				{
+				if (srOpcode == OpCodes.Beq_S)
 					srOpcode = OpCodes.Beq;
-					_operand = ReadInt8();
-					return;
-				}
+
+//				if (srOpcode == OpCodes.Beq)
+//				{
+//					srOpcode = OpCodes.Ceq;
+//					_opcodestack.Push(new KeyValuePair<IROpCode, int>(IROpCodes.Brtrue, (int) _operand));
+//					_operand = null;
+//					return;
+//				}
 			}
 
 			{
 				// bge(.un)
-				if (srOpcode == OpCodes.Bge)
-				{
-					_operand = ReadInt32();
-					return;
-				}
-				else if (srOpcode == OpCodes.Bge_S)
+				if (srOpcode == OpCodes.Bge_S)
 				{
 					srOpcode = OpCodes.Bge;
-					_operand = ReadInt8();
 					return;
 				}
-				else if (srOpcode == OpCodes.Bge_Un)
-				{
-					_operand = ReadInt32();
-					return;
-				}
-				else if (srOpcode == OpCodes.Bge_Un_S)
+
+				if (srOpcode == OpCodes.Bge_Un_S)
 				{
 					srOpcode = OpCodes.Bge_Un;
-					_operand = ReadInt8();
 					return;
 				}
 			}
 
 			{
 				// bgt(.un)
-				if (srOpcode == OpCodes.Bgt)
-				{
-					_operand = ReadInt32();
-					return;
-				}
-				else if (srOpcode == OpCodes.Bgt_S)
+				if (srOpcode == OpCodes.Bgt_S)
 				{
 					srOpcode = OpCodes.Bgt;
-					_operand = ReadInt8();
 					return;
 				}
-				else if (srOpcode == OpCodes.Bgt_Un)
-				{
-					_operand = ReadInt32();
-					return;
-				}
-				else if (srOpcode == OpCodes.Bgt_Un_S)
+				if (srOpcode == OpCodes.Bgt_Un_S)
 				{
 					srOpcode = OpCodes.Bgt_Un;
-					_operand = ReadInt8();
 					return;
 				}
 			}
 
 			{
 				// ble(.un)
-				if (srOpcode == OpCodes.Ble)
-				{
-					_operand = ReadInt32();
-					return;
-				}
-				else if (srOpcode == OpCodes.Ble_S)
+				if (srOpcode == OpCodes.Ble_S)
 				{
 					srOpcode = OpCodes.Ble;
-					_operand = ReadInt8();
 					return;
 				}
-				else if (srOpcode == OpCodes.Ble_Un)
-				{
-					_operand = ReadInt32();
-					return;
-				}
-				else if (srOpcode == OpCodes.Ble_Un_S)
+				if (srOpcode == OpCodes.Ble_Un_S)
 				{
 					srOpcode = OpCodes.Ble_Un;
-					_operand = ReadInt8();
 					return;
 				}
 			}
 
 			{
 				// blt(.un)
-				if (srOpcode == OpCodes.Blt)
-				{
-					_operand = ReadInt32();
-					return;
-				}
-				else if (srOpcode == OpCodes.Blt_S)
+				if (srOpcode == OpCodes.Blt_S)
 				{
 					srOpcode = OpCodes.Blt;
-					_operand = ReadInt8();
 					return;
 				}
-				else if (srOpcode == OpCodes.Blt_Un)
-				{
-					_operand = ReadInt32();
-					return;
-				}
-				else if (srOpcode == OpCodes.Blt_Un_S)
+				if (srOpcode == OpCodes.Blt_Un_S)
 				{
 					srOpcode = OpCodes.Blt_Un;
-					_operand = ReadInt8();
 					return;
 				}
 			}
 
-
 			{
 				// bne.un
-				if (srOpcode == OpCodes.Bne_Un)
-				{
-					_operand = ReadInt32();
-					return;
-				}
-				else if (srOpcode == OpCodes.Bne_Un_S)
+				if (srOpcode == OpCodes.Bne_Un_S)
 				{
 					srOpcode = OpCodes.Bne_Un;
-					_operand = ReadInt8();
 					return;
 				}
 			}
 
 			{
 				// br
-				if (srOpcode == OpCodes.Br)
-				{
-					_operand = ReadInt32();
-					return;
-				}
-				else if (srOpcode == OpCodes.Br_S)
+				if (srOpcode == OpCodes.Br_S)
 				{
 					srOpcode = OpCodes.Br;
-					_operand = ReadInt8();
 					return;
 				}
 			}
 
 			{
 				// br(false/null/zero).
-				if (srOpcode == OpCodes.Brfalse)
-				{
-					_operand = ReadInt32();
-					return;
-				}
-				else if (srOpcode == OpCodes.Brfalse_S)
+				if (srOpcode == OpCodes.Brfalse_S)
 				{
 					srOpcode = OpCodes.Brfalse;
-					_operand = ReadInt8();
 					return;
 				}
 			}
 
 			{
 				// br(true/inst).
-				if (srOpcode == OpCodes.Brtrue)
-				{
-					_operand = ReadInt32();
-					return;
-				}
-				else if (srOpcode == OpCodes.Brtrue_S)
+				if (srOpcode == OpCodes.Brtrue_S)
 				{
 					srOpcode = OpCodes.Brtrue;
-					_operand = ReadInt8();
 					return;
-				}
-			}
-
-			{
-				// call/calli.
-				if (srOpcode == OpCodes.Call || srOpcode == OpCodes.Calli)
-				{
-					int token = ReadInt32();
-					_operand = _method.Module.ResolveMethod(token);
-					return;
-				}
-			}
-
-			{
-				// jmp.
-				if (srOpcode == OpCodes.Jmp)
-				{
-					int token = ReadInt32();
-					_operand = _method.Module.ResolveMethod(token);
 				}
 			}
 
 			{
 				// ldc.
-				if (srOpcode == OpCodes.Ldc_I4)
+				if (srOpcode.Value >= OpCodes.Ldc_I4_M1.Value && srOpcode.Value <= OpCodes.Ldc_I4_8.Value)
 				{
-					_operand = ReadInt32();
-					return;
-				}
-				else if (srOpcode.Value >= OpCodes.Ldc_I4_0.Value && srOpcode.Value <= OpCodes.Ldc_I4_8.Value)
-				{
-					_operand = srOpcode.Value - OpCodes.Ldc_I4_0.Value;
-					srOpcode = OpCodes.Ldc_I4;
-					return;
-				}
-				else if (srOpcode == OpCodes.Ldc_I4_M1)
-				{
-					_operand = -1;
+					_operand = srOpcode.Value - OpCodes.Ldc_I4_M1.Value;
 					srOpcode = OpCodes.Ldc_I4;
 					return;
 				}
 				else if (srOpcode == OpCodes.Ldc_I4_S)
 				{
-					_operand = ReadInt8();
 					srOpcode = OpCodes.Ldc_I4;
-					return;
-				}
-				else if (srOpcode == OpCodes.Ldc_I8)
-				{
-					int num3 = (((_il[_readoffset + 0] << 0x18) | (_il[_readoffset + 1] << 0x10)) | (_il[_readoffset + 2] << 8)) | _il[_readoffset + 3];
-					int num4 = (((_il[_readoffset + 4] << 0x18) | (_il[_readoffset + 5] << 0x10)) | (_il[_readoffset + 6] << 8)) | _il[_readoffset + 7];
-					_operand = (long)num4 | (num3 << 0x20);
-
-					_readoffset += 8;
-					return;
-				}
-				else if (srOpcode == OpCodes.Ldc_R4)
-				{
-					_operand = BitConverter.ToSingle(_il, _readoffset);
-					_readoffset += 4;
-					return;
-				}
-				else if (srOpcode == OpCodes.Ldc_R8)
-				{
-					_operand = BitConverter.ToDouble(_il, _readoffset);
-					_readoffset += 8;
-					return;
-				}
-			}
-
-			{
-				// ldftn.
-				if (srOpcode == OpCodes.Ldftn)
-				{
-					int token = ReadInt32();
-					_operand = _method.Module.ResolveMethod(token);
 					return;
 				}
 			}
 
 			{
 				// leave.
-				if (srOpcode == OpCodes.Leave)
+				if (srOpcode == OpCodes.Leave_S)
 				{
-					_operand = ReadInt32();
-					return;
-				}
-				else if (srOpcode == OpCodes.Leave_S)
-				{
-					_operand = ReadInt8();
 					srOpcode = OpCodes.Leave;
 					return;
 				}
-			}
-
-			{
-				if (srOpcode == OpCodes.Callvirt || srOpcode == OpCodes.Ldvirtftn)
-				{
-					int token = ReadInt32();
-					_operand = _method.Module.ResolveMethod(token);
-					return;
-				}
-			}
-
-			{
-				if (srOpcode == OpCodes.Castclass || srOpcode == OpCodes.Cpobj || srOpcode == OpCodes.Initobj ||
-					srOpcode == OpCodes.Isinst || srOpcode == OpCodes.Box || srOpcode == OpCodes.Ldelema ||
-					srOpcode == OpCodes.Ldobj || srOpcode == OpCodes.Mkrefany || srOpcode == OpCodes.Newarr ||
-					srOpcode == OpCodes.Refanyval || srOpcode == OpCodes.Sizeof ||
-					srOpcode == OpCodes.Stobj || srOpcode == OpCodes.Unbox)
-				{
-					int token = ReadInt32();
-					_operand = _method.Module.ResolveType(token);
-					return;
-				}
-				if (srOpcode == OpCodes.Newobj)
-				{
-					int token = ReadInt32();
-					_operand = _method.Module.ResolveMethod(token);
-					return;
-				}
-			}
-
-			if (srOpcode == OpCodes.Ldfld || srOpcode == OpCodes.Ldflda ||
-				srOpcode == OpCodes.Ldsfld || srOpcode == OpCodes.Ldsflda ||
-				srOpcode == OpCodes.Stfld || srOpcode == OpCodes.Stsfld)
-			{
-				int token = ReadInt32();
-				_operand = _method.Module.ResolveField(token);
-				return;
-			}
-
-			if (srOpcode == OpCodes.Ldstr)
-			{
-				int token = ReadInt32();
-				_operand = _method.Module.ResolveString(token);
-				return;
 			}
 
 			if (srOpcode == OpCodes.Ldtoken)
@@ -608,6 +486,41 @@ namespace CellDotNet
 				_operand = token;
 				return;
 			}
+		}
+
+		/// <summary>
+		/// Four-byte integers in the IL stream are little-endian.
+		/// </summary>
+		/// <returns></returns>
+		private short ReadInt16()
+		{
+			short i = (short) (_il[_readoffset] | (_il[_readoffset + 1] << 8));
+
+			_readoffset += 2;
+
+			return i;
+		}
+
+		/// <summary>
+		/// Two-byte integers in the IL stream are little-endian.
+		/// </summary>
+		/// <returns></returns>
+		private int ReadInt32()
+		{
+			int i = ((_il[_readoffset] | (_il[_readoffset + 1] << 8)) |
+					 (_il[_readoffset + 2] << 0x10)) | (_il[_readoffset + 3] << 0x18);
+
+			_readoffset += 4;
+
+			return i;
+		}
+
+		private long ReadInt64()
+		{
+			int num3 = (((_il[_readoffset + 0]) | (_il[_readoffset + 1] << 8)) | (_il[_readoffset + 2] << 0x10)) | (_il[_readoffset + 3] << 0x18);
+			int num4 = (((_il[_readoffset + 4]) | (_il[_readoffset + 5] << 8)) | (_il[_readoffset + 6] << 0x10)) | (_il[_readoffset + 7] << 0x18);
+			_readoffset += 8;
+			return num3 | ((long)num4 << 0x20);
 		}
 
 		/// <summary>
