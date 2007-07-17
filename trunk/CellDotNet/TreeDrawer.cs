@@ -104,6 +104,7 @@ namespace CellDotNet
 
 		private void AddBranchTargets(TreeInstruction inst)
 		{
+			// Do we still use this method?
 			if (inst.Opcode.FlowControl == FlowControl.Branch || inst.Opcode.FlowControl == FlowControl.Cond_Branch)
 			{
 				if (inst.Operand is BasicBlock)
