@@ -300,10 +300,10 @@ namespace CellDotNet
 
 			foreach (TreeInstruction branchinst in branches)
 			{
-				int targetOffset = (int) branchinst.Operand;
+				int targetPos = (int) branchinst.Operand;
 				BasicBlock target;
 
-				if (basicBlockOffsets.TryGetValue(targetOffset, out target))
+				if (basicBlockOffsets.TryGetValue(targetPos, out target))
 				{
 					branchinst.Operand = target;
 					continue;
@@ -317,7 +317,7 @@ namespace CellDotNet
 					{
 						TreeInstruction firstinst = bb.Roots[rootindex].GetFirstInstruction();
 
-						if (firstinst.Offset != targetOffset)
+						if (firstinst.Offset != targetPos)
 							continue;
 
 						// Need to create new bb from this root.
@@ -333,12 +333,15 @@ namespace CellDotNet
 						goto NextBranch;
 					}
 				}
-				throw new Exception("IR tree construction error. Can't find branch target offset " + targetOffset.ToString("X4") +
-				                    ".");
+				throw new Exception("IR tree construction error. Can't find branch target " + targetPos.ToString("x4") + " from instruction at " + branchinst.Offset.ToString("x4") + ".");
 
 			NextBranch:
 				branchinst.Operand = target;
 			}
+
+			Console.WriteLine("after parse:");
+			new TreeDrawer().DrawMethod(this, method);
+
 		}
 
 		/// <summary>
@@ -558,7 +561,11 @@ namespace CellDotNet
 			if (State < MethodCompileState.S6PrologAndEpilogDone && targetState >= MethodCompileState.S6PrologAndEpilogDone)
 				PerformPrologAndEpilogGeneration();
 
-			if (targetState >= MethodCompileState.S7BranchesFixed)
+			if (State < MethodCompileState.S7BranchesFixed && targetState >= MethodCompileState.S7BranchesFixed)
+				PerformBranchOffsetDetermination();
+
+
+			if (targetState >= MethodCompileState.S8AdressSubstitutionDone)
 			{
 				if (targetState <= MethodCompileState.S9Complete) 
 					throw new NotImplementedException("Target state: " + targetState);
@@ -567,17 +574,32 @@ namespace CellDotNet
 			}
 		}
 
+		private void PerformRegisterAllocation()
+		{
+			AssertState(MethodCompileState.S4InstructionSelectionDone);
+
+			SimpleRegAlloc regalloc = new SimpleRegAlloc();
+			List<SpuInstruction> asm = _instructions.GetAsList();
+			regalloc.alloc(asm, 16);
+
+			State = MethodCompileState.S5RegisterAllocationDone;
+		}
+
 		#region Prolog/epilog
+		SpuInstructionWriter _prolog;
+		SpuInstructionWriter _epilog;
 
 		private void PerformPrologAndEpilogGeneration()
 		{
 			Utilities.Assert(State == MethodCompileState.S5RegisterAllocationDone, "Invalid state: " + State);
 
-			SpuInstructionWriter prolog = new SpuInstructionWriter();
-			WriteProlog(prolog);
+			_prolog = new SpuInstructionWriter();
+			_prolog.BeginNewBasicBlock();
+			WriteProlog(_prolog);
 
-			SpuInstructionWriter epilog = new SpuInstructionWriter();
-			WriteEpilog(epilog);
+			_epilog = new SpuInstructionWriter();
+			_epilog.BeginNewBasicBlock();
+			WriteEpilog(_epilog);
 
 			_state = MethodCompileState.S6PrologAndEpilogDone;
 		}
@@ -643,15 +665,52 @@ namespace CellDotNet
 
 		#endregion
 
-		private void PerformRegisterAllocation()
+		private void PerformBranchOffsetDetermination()
 		{
-			AssertState(MethodCompileState.S4InstructionSelectionDone);
+			AssertState(MethodCompileState.S6PrologAndEpilogDone);
 
-			SimpleRegAlloc regalloc = new SimpleRegAlloc();
-			List<SpuInstruction> asm = _instructions.GetAsList();
-			regalloc.alloc(asm, 16);
+			// Iterate bbs, instructions to determine bb offsets and collect branch instructions,
+			// so that the branch instructions afterwards can be patched with the bb addresses.
 
-			State = MethodCompileState.S5RegisterAllocationDone;
+			Utilities.Assert(_prolog.BasicBlocks.Count == 0, "_prolog.BasicBlocks.Count == 0");
+			Utilities.Assert(_epilog.BasicBlocks.Count == 0, "_epilog.BasicBlocks.Count == 0");
+
+			List<SpuBasicBlock> bblist = new List<SpuBasicBlock>();
+			bblist.Add(_prolog.BasicBlocks[0]);
+			foreach (SpuBasicBlock block in _instructions.BasicBlocks)
+				bblist.Add(block);
+			bblist.Add(_epilog.BasicBlocks[0]);
+
+
+			List<KeyValuePair<int, SpuInstruction>> branchlist = new List<KeyValuePair<int, SpuInstruction>>();
+			// Byte offset from start of method (prolog).
+			int curroffset = 0;
+			foreach (SpuBasicBlock bb in bblist)
+			{
+				bb.Offset = curroffset;
+
+				SpuInstruction inst = bb.Head;
+				while (inst != null)
+				{
+					if (inst.JumpTarget != null)
+						branchlist.Add(new KeyValuePair<int, SpuInstruction>(curroffset, inst));
+
+					inst = inst.Next;
+					curroffset += 4;
+				}
+			}
+
+			// Insert offsets.
+			foreach (KeyValuePair<int, SpuInstruction> branchpair in branchlist)
+			{
+				SpuBasicBlock targetbb = branchpair.Value.JumpTarget;
+
+				int relativebranchbytes = branchpair.Key - targetbb.Offset;
+				branchpair.Value.Constant = relativebranchbytes >> 2;
+			}
+
+
+			State = MethodCompileState.S7BranchesFixed;
 		}
 
 
