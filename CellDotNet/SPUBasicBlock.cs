@@ -12,5 +12,17 @@ namespace CellDotNet
 			get { return _head; }
 			set { _head = value; }
 		}
+
+		private int _offset;
+
+		/// <summary>
+		/// Byte offset of the basic block.
+		/// </summary>
+		public int Offset
+		{
+			get { return _offset; }
+			set { _offset = value; }
+		}
+
 	}
 }

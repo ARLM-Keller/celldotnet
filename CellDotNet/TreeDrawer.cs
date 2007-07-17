@@ -15,9 +15,16 @@ namespace CellDotNet
 
 		private TextWriter _output;
 
+		public TextWriter Output
+		{
+			get { return _output; }
+			set { _output = value; }
+		}
+
+
 		void DrawTree(MethodBase method, TreeInstruction inst, int level)
 		{
-			_output.Write(new string(' ', level * 2));
+			Output.Write(new string(' ', level * 2));
 
 			// Branch coloring.
 /*
@@ -35,32 +42,32 @@ namespace CellDotNet
 			else if (isTarget)
 				Console.ForegroundColor = ConsoleColor.Green;
 */
-			_output.Write(inst.Offset.ToString("x4") + " " + inst.Opcode.Name);
+			Output.Write(inst.Offset.ToString("x4") + " " + inst.Opcode.Name);
 
 			if (inst.Operand != null)
 			{
 				if (inst.Operand is BasicBlock)
-					_output.Write(" " + ((BasicBlock)inst.Operand).Offset.ToString("x4"));
+					Output.Write(" " + ((BasicBlock)inst.Operand).Offset.ToString("x4"));
 				else if (inst.Operand is MethodParameter)
-					_output.Write(" {0} ({1})", ((MethodParameter)inst.Operand).Name, ((MethodParameter)inst.Operand).Type.Name);
+					Output.Write(" {0} ({1})", ((MethodParameter)inst.Operand).Name, ((MethodParameter)inst.Operand).Type.Name);
 				else if (inst.Operand is MethodVariable)
-					_output.Write(" {0} ({1})", inst.Operand, ((MethodVariable)inst.Operand).Type.Name);
+					Output.Write(" {0} ({1})", inst.Operand, ((MethodVariable)inst.Operand).Type.Name);
 				else if (inst.Operand is FieldInfo)
-					_output.Write(" {0} ({1})", ((FieldInfo)inst.Operand).Name, ((FieldInfo)inst.Operand).FieldType.Name);
+					Output.Write(" {0} ({1})", ((FieldInfo)inst.Operand).Name, ((FieldInfo)inst.Operand).FieldType.Name);
 				else if (inst.Operand is int && inst.Opcode.FlowControl == FlowControl.Branch || inst.Opcode.FlowControl == FlowControl.Cond_Branch)
 				{
 					// Normally this should happen for branch instructions, but we want to handle it anyway...
-					_output.Write(" " + ((int)inst.Operand).ToString("X4"));
+					Output.Write(" " + ((int)inst.Operand).ToString("X4"));
 				}
 				else					
-					_output.Write(" " + inst.Operand);
+					Output.Write(" " + inst.Operand);
 			}
 			if (inst.StackType != StackTypeDescription.None)
-				_output.Write("   " + inst.StackType.CliType + (inst.StackType.IsByRef ? "&" : "")); // Fix &
+				Output.Write("   " + inst.StackType.CliType + (inst.StackType.IsByRef ? "&" : "")); // Fix &
 			else
-				_output.Write("   -");
+				Output.Write("   -");
 
-			_output.WriteLine();
+			Output.WriteLine();
 
 //			Console.ResetColor(); //Denne metode fejler på PS3
 
@@ -69,7 +76,11 @@ namespace CellDotNet
 				if (inst.Left != null)
 				DrawTree(method, inst.Left, level + 1);
 				if (inst.Right != null)
-				DrawTree(method, inst.Right, level + 1);
+				{
+					if (inst.Left == null)
+						Output.Write(new string(' ', (level + 1) * 2) + "!! Only right side is non-null. -----------------");
+					DrawTree(method, inst.Right, level + 1);
+				}
 			}
 			else if (inst is MethodCallInstruction)
 			{
@@ -83,6 +94,8 @@ namespace CellDotNet
 
 		public void DrawTree(MethodBase method, BasicBlock block)
 		{
+			if (Output == null)
+				Output = Console.Out;
 			foreach (TreeInstruction root in block.Roots)
 			{
 				DrawTree(method, root, 0);
@@ -117,22 +130,38 @@ namespace CellDotNet
 
 		public void DrawMethod(MethodCompiler ci, MethodBase method)
 		{
-			_output = new StringWriter();
+			Output = new StringWriter();
 
 			try
 			{
-				_branchTargets = new Set<int>();
-				FindBranchTargets(ci, method);
-
-				foreach (BasicBlock block in ci.Blocks)
-				{
-					_output.WriteLine(" - Basic Block:");
-					DrawTree(method, block);
-				}
+				DrawMethod(ci, method, Output);
 			}
 			finally
 			{
-				Console.Write(((StringWriter)_output).GetStringBuilder().ToString());				
+				Console.Write(((StringWriter)Output).GetStringBuilder().ToString());				
+			}
+		}
+
+		public string GetMethodDrawing(MethodCompiler ci)
+		{
+			StringWriter sw = new StringWriter();
+
+			DrawMethod(ci, ci.MethodBase, sw);
+
+			return sw.GetStringBuilder().ToString();
+		}
+
+		public void DrawMethod(MethodCompiler ci, MethodBase method, TextWriter output)
+		{
+			Output = output;
+
+			_branchTargets = new Set<int>();
+			FindBranchTargets(ci, method);
+
+			foreach (BasicBlock block in ci.Blocks)
+			{
+				Output.WriteLine(" - Basic Block:");
+				DrawTree(method, block);
 			}
 		}
 	}

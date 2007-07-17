@@ -45,6 +45,10 @@ namespace CellDotNet
 			return new VirtualRegister(_regnum++);
 		}
 
+		/// <summary>
+		/// Marks the start of a new <see cref="SpuBasicBlock"/>. You need to call this on a new instance
+		/// before using the WriteXXX methods.
+		/// </summary>
 		public void BeginNewBasicBlock()
 		{
 			_basicBlocks.Add(new SpuBasicBlock());

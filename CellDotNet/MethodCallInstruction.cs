@@ -36,5 +36,10 @@ namespace CellDotNet
 			}
 //			base.BuildPreorder(list);
 		}
+
+		public override IEnumerable<TreeInstruction> GetChildInstructions()
+		{
+			return Parameters;
+		}
 	}
 }

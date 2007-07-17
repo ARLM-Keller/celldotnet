@@ -6,6 +6,8 @@ namespace CellDotNet
 {
 	static class Utilities
 	{
+		#region Asserts.
+
 		static public void AssertArgumentNotNull(object arg, string paramName)
 		{
 			if (arg == null)
@@ -28,6 +30,22 @@ namespace CellDotNet
 		{
 			if (!condition)
 				throw new Exception(message); // Should we use another exception?
+		}
+
+		#endregion
+
+		static public bool TryGetFirst<T>(IEnumerable<T> enumerable, out T first)
+		{
+			first = default(T);
+
+			using (IEnumerator<T> e = enumerable.GetEnumerator())
+			{
+				if (!e.MoveNext())
+					return false;
+
+				first = e.Current;
+				return true;
+			}
 		}
 	}
 }

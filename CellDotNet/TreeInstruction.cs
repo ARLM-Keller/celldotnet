@@ -18,6 +18,19 @@ namespace CellDotNet
 			set { _left = value; }
 		}
 
+		/// <summary>
+		/// Returns left and right if they are non-null.
+		/// <para>Overridden implementations may return more - as does <see cref="MethodCallInstruction"/>.</para>
+		/// </summary>
+		/// <returns></returns>
+		public virtual IEnumerable<TreeInstruction> GetChildInstructions()
+		{
+			if (Left != null)
+				yield return Left;
+			if (Right != null)
+				yield return Right;
+		}
+
 		private string DebuggerDisplay
 		{
 			get
@@ -129,11 +142,18 @@ namespace CellDotNet
 		/// <returns></returns>
 		public TreeInstruction GetFirstInstruction()
 		{
-			TreeInstruction ti = this;
-			while (ti.Left != null)
-				ti = ti.Left;
+			TreeInstruction parent = this;
+			TreeInstruction child = null;
 
-			return ti;
+			do
+			{
+				if (child != null)
+					parent = child;
+
+				Utilities.TryGetFirst(parent.GetChildInstructions(), out child);
+			} while (child != null);
+
+			return parent;
 		}
 	}
 }

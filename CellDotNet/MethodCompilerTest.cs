@@ -148,6 +148,45 @@ namespace CellDotNet
 			new TreeDrawer().DrawMethod(mc, mc.MethodBase);
 		}
 
+		public void TestParseBranchBasic()
+		{
+			BasicTestDelegate del = delegate
+				{
+					int i = 0;
+
+					for (int j = 0; j < 10; j++)
+					{
+						if (i < 4)
+							i = 4;
+						else
+							i = 10;
+					}
+				};
+
+			MethodCompiler mc = new MethodCompiler(del.Method);
+			mc.PerformProcessing(MethodCompileState.S7BranchesFixed);
+		}
+
+
+		public void TestBranchCodeGenerationBasic()
+		{
+			BasicTestDelegate del = delegate
+        		{
+        			int i = Math.Max(4, 0);
+
+					for (int j = 0; j < 10; j++)
+					{
+						if (i < 4)
+							Math.Log(i);
+						else
+							Math.Log(j);
+					}
+        		};
+
+			MethodCompiler mc = new MethodCompiler(del.Method);
+			mc.PerformProcessing(MethodCompileState.S7BranchesFixed);
+		}
+
 		#region Frame tests.
 
 		private delegate void FiveIntegerArgumentDelegate(int i1, int i2, int i3, int i4, int i5);
