@@ -42,20 +42,11 @@ namespace CellDotNet
 			mc.PerformProcessing(MethodCompileState.S6PrologAndEpilogDone);
 			mc.GetSpuInstructionWriter().WriteStop();
 
-//			ILTreeSpuWriter writer = new ILTreeSpuWriter();
-//			SpuInstructionWriter ilist = new SpuInstructionWriter();
-//			writer.GenerateCode(mc, ilist);
-//			ilist.WriteStop();
-
 			Console.WriteLine();
 			Console.WriteLine("Disassembly: ");
 			Console.WriteLine(mc.GetSpuInstructionWriter().Disassemble());
 
 			mc.PerformProcessing(MethodCompileState.S5RegisterAllocationDone);
-
-//			SimpleRegAlloc regalloc = new SimpleRegAlloc();
-//			List<SpuInstruction> asm = new List<SpuInstruction>(ilist.Instructions);
-//			regalloc.alloc(asm, 16);
 
 			int[] bincode = SpuInstruction.emit(mc.GetSpuInstructionWriter().GetAsList());
 

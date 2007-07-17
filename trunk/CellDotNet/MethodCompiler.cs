@@ -232,7 +232,6 @@ namespace CellDotNet
 							}
 							stack.RemoveRange(stack.Count - paramcount, paramcount);
 
-							// HACK: Only works for non-void methods.
 							MethodInfo methodinfo = mr as MethodInfo;
 							if (mr is ConstructorInfo || (methodinfo != null && methodinfo.ReturnType != typeof(void)))
 								pushcount = 1;
@@ -568,13 +567,81 @@ namespace CellDotNet
 			}
 		}
 
+		#region Prolog/epilog
+
 		private void PerformPrologAndEpilogGeneration()
 		{
 			Utilities.Assert(State == MethodCompileState.S5RegisterAllocationDone, "Invalid state: " + State);
 
+			SpuInstructionWriter prolog = new SpuInstructionWriter();
+			WriteProlog(prolog);
+
+			SpuInstructionWriter epilog = new SpuInstructionWriter();
+			WriteEpilog(epilog);
 
 			_state = MethodCompileState.S6PrologAndEpilogDone;
 		}
+
+		private VirtualRegister GetHardwareRegister(int hwregnum)
+		{
+			VirtualRegister reg = new VirtualRegister();
+			HardwareRegister hwreg = new HardwareRegister();
+			hwreg.Register = hwregnum;
+			reg.Location = hwreg;
+
+			return reg;
+		}
+
+		private void WriteProlog(SpuInstructionWriter prolog)
+		{
+			// TODO: Store caller-saves registers that this method uses, based on negative offsts
+			// from the caller's SP. Set GRSA_slots.
+
+
+			// Number of 16 byte slots in the frame.
+			int RASA_slots = 0; // Register argument save area. (vararg)
+			int GRSA_slots = 0; // General register save area. (non-volatile registers)
+			int LVS_slots = 0; // Local variable space. (escapes and spills)
+			int PLA_slots = 0; // Parameter list area. (more than 72 argument registers)
+			int frameSlots = RASA_slots + GRSA_slots + LVS_slots + PLA_slots + 2;
+
+			// First/topmost caller-saves register caller SP slot offset.
+//			int first_GRSA_slot_offset = -(RASA_slots + 1);
+
+			VirtualRegister lr = GetHardwareRegister(0);
+			VirtualRegister sp = GetHardwareRegister(1);
+
+			// Save LR in caller's frame.
+			prolog.WriteStqd(lr, sp, 1);
+
+			// Establish new SP.
+			prolog.WriteSfi(sp, sp, -frameSlots*16);
+
+			// Store SP at new frame's Back Chain.
+			prolog.WriteStqd(sp, sp, 0);
+		}
+
+		private void WriteEpilog(SpuInstructionWriter epilog)
+		{
+			// Assume that the code that wants to return has placed the return value in the correct
+			// registers (R3+).
+
+			VirtualRegister lr = GetHardwareRegister(0);
+			VirtualRegister sp = GetHardwareRegister(1);
+
+			// Restore old SP.
+			epilog.WriteLqd(sp, sp, 0);
+
+			// TODO: Restore caller-saves.
+
+			// Restore old LR from callers frame.
+			epilog.WriteLqd(lr, sp, 1);
+
+			// Return.
+			epilog.WriteBi(lr);
+		}
+
+		#endregion
 
 		private void PerformRegisterAllocation()
 		{

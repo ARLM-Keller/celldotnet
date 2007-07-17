@@ -13,7 +13,7 @@ namespace CellDotNet
         {
             SortedLinkedList<LiveInterval> activeIntervals =
                 new SortedLinkedList<LiveInterval>(new LiveInterval.ComparByEnd());
-            Stack<StoreLocation> freeRegisters = HardwareRegister.getCellRegistersAsStack();
+            Stack<StoreLocation> freeRegisters = HardwareRegister.GetCellRegistersAsStack();
             for (int i = 1; i <= regnum; i++) 
                 freeRegisters.Pop();
 
