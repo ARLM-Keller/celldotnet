@@ -40,15 +40,15 @@ namespace CellDotNet
 			new TreeDrawer().DrawMethod(mc, method);
 
 			mc.PerformProcessing(MethodCompileState.S6PrologAndEpilogDone);
-			mc.GetSpuInstructionWriter().WriteStop();
+			mc.GetBodyWriter().WriteStop();
 
 			Console.WriteLine();
 			Console.WriteLine("Disassembly: ");
-			Console.WriteLine(mc.GetSpuInstructionWriter().Disassemble());
+			Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
 			mc.PerformProcessing(MethodCompileState.S5RegisterAllocationDone);
 
-			int[] bincode = SpuInstruction.emit(mc.GetSpuInstructionWriter().GetAsList());
+			int[] bincode = SpuInstruction.emit(mc.GetBodyWriter().GetAsList());
 
 			SpeContext ctx = new SpeContext();
 			if (!ctx.LoadProgram(bincode))

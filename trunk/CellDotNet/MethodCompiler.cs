@@ -338,10 +338,6 @@ namespace CellDotNet
 			NextBranch:
 				branchinst.Operand = target;
 			}
-
-			Console.WriteLine("after parse:");
-			new TreeDrawer().DrawMethod(this, method);
-
 		}
 
 		/// <summary>
@@ -520,7 +516,7 @@ namespace CellDotNet
 		/// This is only for unit test
 		/// </summary>
 		/// <returns></returns>
-		public SpuInstructionWriter GetSpuInstructionWriter()
+		public SpuInstructionWriter GetBodyWriter()
 		{
 			if (State < MethodCompileState.S4InstructionSelectionDone)
 				throw new InvalidOperationException("State < MethodCompileState.S4InstructionSelectionDone");
@@ -663,6 +659,25 @@ namespace CellDotNet
 			epilog.WriteBi(lr);
 		}
 
+		/// <summary>
+		/// For unit testing.
+		/// </summary>
+		/// <returns></returns>
+		public SpuInstructionWriter GetPrologWriter()
+		{
+			return _prolog;
+		}
+
+		/// <summary>
+		/// For unit testing.
+		/// </summary>
+		/// <returns></returns>
+		public SpuInstructionWriter GetEpilogWriter()
+		{
+			return _epilog;
+		}
+
+
 		#endregion
 
 		private void PerformBranchOffsetDetermination()
@@ -672,8 +687,8 @@ namespace CellDotNet
 			// Iterate bbs, instructions to determine bb offsets and collect branch instructions,
 			// so that the branch instructions afterwards can be patched with the bb addresses.
 
-			Utilities.Assert(_prolog.BasicBlocks.Count == 0, "_prolog.BasicBlocks.Count == 0");
-			Utilities.Assert(_epilog.BasicBlocks.Count == 0, "_epilog.BasicBlocks.Count == 0");
+			Utilities.Assert(_prolog.BasicBlocks.Count > 0, "_prolog.BasicBlocks.Count == 0");
+			Utilities.Assert(_epilog.BasicBlocks.Count > 0, "_epilog.BasicBlocks.Count == 0");
 
 			List<SpuBasicBlock> bblist = new List<SpuBasicBlock>();
 			bblist.Add(_prolog.BasicBlocks[0]);
@@ -1300,5 +1315,6 @@ namespace CellDotNet
 		}
 
 		#endregion
+
 	}
 }

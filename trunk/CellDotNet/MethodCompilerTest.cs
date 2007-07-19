@@ -188,6 +188,20 @@ namespace CellDotNet
 
 			MethodCompiler mc = new MethodCompiler(del.Method);
 			mc.PerformProcessing(MethodCompileState.S7BranchesFixed);
+
+
+			Console.WriteLine("Disassembly - prolog:");
+			Console.Write(mc.GetPrologWriter().Disassemble());
+			Console.WriteLine();
+			Console.WriteLine("Disassembly - body:");
+			Console.Write(mc.GetBodyWriter().Disassemble());
+			Console.WriteLine();
+			Console.WriteLine("Disassembly - epilog:");
+			Console.Write(mc.GetEpilogWriter().Disassemble());
+
+			mc.GetPrologWriter().AssertNoPseudoInstructions();
+			mc.GetBodyWriter().AssertNoPseudoInstructions();
+			mc.GetEpilogWriter().AssertNoPseudoInstructions();
 		}
 
 		#region Frame tests.

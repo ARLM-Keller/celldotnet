@@ -12,20 +12,36 @@ namespace CellDotNet
 		private SpuInstructionWriter _writer;
 		private MethodCompiler _method;
 
+		private List<KeyValuePair<SpuInstruction, BasicBlock>> _branchInstructions;
+		private Dictionary<BasicBlock, SpuBasicBlock> _spubasicblocks;
+
 		public void GenerateCode(MethodCompiler mc, SpuInstructionWriter writer)
 		{
 			_writer = writer;
 			_method = mc;
+			
+			// Thes two are used to patch up branch instructions after instruction selection.
+			_branchInstructions = new List<KeyValuePair<SpuInstruction, BasicBlock>>();
+			_spubasicblocks = new Dictionary<BasicBlock, SpuBasicBlock>();
 
 			WriteFirstBasicBlock();
 
 			foreach (BasicBlock bb in mc.Blocks)
 			{
 				_writer.BeginNewBasicBlock();
+				_spubasicblocks.Add(bb, _writer.CurrentBlock);
 				foreach (TreeInstruction root in bb.Roots)
 				{
 					GenerateCode(root);
 				}
+			}
+
+			foreach (KeyValuePair<SpuInstruction, BasicBlock> pair in _branchInstructions)
+			{
+				SpuBasicBlock target;
+
+				target = _spubasicblocks[pair.Value];
+				pair.Key.JumpTarget = target;
 			}
 		}
 
@@ -74,6 +90,7 @@ namespace CellDotNet
 
 
 			IRCode ilcode = inst.Opcode.IRCode;
+			StackTypeDescription lefttype = inst.Left != null ? inst.Left.StackType : StackTypeDescription.None;
 			switch (ilcode)
 			{
 				case IRCode.Nop:
@@ -123,14 +140,18 @@ namespace CellDotNet
 					}
 					return null;
 				case IRCode.Br:
-					break;
+					WriteBranch(SpuOpCode.br, (BasicBlock) inst.Operand);
+					return null;
 				case IRCode.Brfalse:
-					break;
+					WriteBranch(SpuOpCode.brz, (BasicBlock)inst.Operand);
+					return null;
 				case IRCode.Brtrue:
-					break;
+					WriteBranch(SpuOpCode.brnz, (BasicBlock) inst.Operand);
+					return null;
 				case IRCode.Beq:
 					break;
 				case IRCode.Bge:
+//					if (lefttype.CliType != CliType.)
 					break;
 				case IRCode.Bgt:
 					break;
@@ -180,8 +201,8 @@ namespace CellDotNet
 					break;
 				case IRCode.Stind_I4:
 					{
-						if (inst.Left.StackType.IndirectionLevel != 1) 
-							throw new InvalidILTreeException("Invalid level of indirection for stind. Stack type: " + inst.Left.StackType);
+						if (lefttype.IndirectionLevel != 1) 
+							throw new InvalidILTreeException("Invalid level of indirection for stind. Stack type: " + lefttype);
 						VirtualRegister ptr = GetVirtualRegister(inst.Left);
 
 						VirtualRegister loadedvalue = _writer.WriteLqd(ptr, 0);
@@ -198,7 +219,11 @@ namespace CellDotNet
 				case IRCode.Stind_R8:
 					break;
 				case IRCode.Add:
-					break;
+					if (lefttype.CliBasicType != CliBasicType.Integer ||
+						lefttype.NumericSize != CliNumericSize.FourBytes)
+						throw new NotImplementedException();
+
+					return _writer.WriteA(vrleft, vrright);
 				case IRCode.Sub:
 					break;
 				case IRCode.Mul:
@@ -406,13 +431,35 @@ namespace CellDotNet
 				case IRCode.Arglist:
 					break;
 				case IRCode.Ceq:
-					break;
+					if (lefttype.CliBasicType == CliBasicType.Integer)
+					{
+						switch (lefttype.NumericSize)
+						{
+							case CliNumericSize.OneByte:
+								return _writer.WriteCeqb(vrleft, vrright);
+							case CliNumericSize.FourBytes:
+								return _writer.WriteCeq(vrleft, vrright);
+							case CliNumericSize.TwoBytes:
+								return _writer.WriteCeqh(vrleft, vrright);
+							case CliNumericSize.EightBytes:
+								throw new NotImplementedException();
+							default:
+								throw new Exception();
+						}
+					}
+					else
+						throw new NotImplementedException("Compare: " + lefttype);
 				case IRCode.Cgt:
 					break;
 				case IRCode.Cgt_Un:
 					break;
 				case IRCode.Clt:
-					break;
+					if (lefttype.CliBasicType != CliBasicType.Integer ||
+						lefttype.NumericSize != CliNumericSize.FourBytes ||
+						!lefttype.IsSigned)
+						throw new NotImplementedException();
+
+					return _writer.WriteCgt(vrright, vrleft);
 				case IRCode.Clt_Un:
 					break;
 				case IRCode.Ldftn:
@@ -456,6 +503,12 @@ namespace CellDotNet
 			}
 
 			throw new ILNotImplementedException(inst);
+		}
+
+		private void WriteBranch(SpuOpCode branchopcode, BasicBlock target)
+		{
+			_writer.WriteBranch(branchopcode);
+			_branchInstructions.Add(new KeyValuePair<SpuInstruction, BasicBlock>(_writer.LastInstruction, target));
 		}
 
 		private VirtualRegister GetVirtualRegister(TreeInstruction inst)
