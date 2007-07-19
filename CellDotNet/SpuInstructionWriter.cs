@@ -52,23 +52,38 @@ namespace CellDotNet
 		public void BeginNewBasicBlock()
 		{
 			_basicBlocks.Add(new SpuBasicBlock());
-			_prevInstruction = null;
+			_lastInstruction = null;
 		}
 
-		private SpuInstruction _prevInstruction;
+		public SpuBasicBlock CurrentBlock
+		{
+			get
+			{
+				if (_basicBlocks.Count == 0)
+					throw new InvalidOperationException("No BB has been started.");
+				return _basicBlocks[_basicBlocks.Count - 1];
+			}
+		}
+
+		public SpuInstruction LastInstruction
+		{
+			get { return _lastInstruction; }
+		}
+
+		private SpuInstruction _lastInstruction;
 		private void AddInstruction(SpuInstruction inst)
 		{
-			if (_prevInstruction != null)
+			if (_lastInstruction != null)
 			{
-				_prevInstruction.Next = inst;
-				_prevInstruction = inst;
+				_lastInstruction.Next = inst;
+				_lastInstruction = inst;
 			}
 			else
 			{
 				// New bb.
 				Utilities.Assert(_basicBlocks.Count != 0, "BeginNewBasicBlock() has not been called.");
 				_basicBlocks[_basicBlocks.Count - 1].Head = inst;
-				_prevInstruction = inst;
+				_lastInstruction = inst;
 			}
 		}
 
@@ -203,7 +218,7 @@ namespace CellDotNet
 		{
 			// set usesymbolicmove to false to generate code that will allow the
 			// simple cell test program to run (20070715)
-			bool useSymbolicMove = true;
+			bool useSymbolicMove = false;
 			if (useSymbolicMove)
 			{
 				SpuInstruction inst = new SpuInstruction(SpuOpCode.move);
@@ -238,6 +253,15 @@ namespace CellDotNet
 		}
 
 		/// <summary>
+		/// This will generate a pseudo-instruction that must be patched with a <see cref="SpuBasicBlock"/>.
+		/// </summary>
+		public void WriteBranch(SpuOpCode branchopcode)
+		{
+			SpuInstruction inst = new SpuInstruction(branchopcode);
+			AddInstruction(inst);
+		}
+
+		/// <summary>
 		/// Returns the instructions that are currently in the writer as assembly code.
 		/// </summary>
 		/// <returns></returns>
@@ -252,6 +276,7 @@ namespace CellDotNet
 
 		private void Disassemble(TextWriter tw)
 		{
+			int offset = 0;
 			foreach (SpuBasicBlock bb in _basicBlocks)
 			{
 				SpuInstruction inst = bb.Head;
@@ -260,6 +285,7 @@ namespace CellDotNet
 
 				do
 				{
+					tw.Write("{0:x4}: ", offset);
 					switch (inst.OpCode.Format)
 					{
 						case SpuInstructionFormat.None:
@@ -309,6 +335,7 @@ namespace CellDotNet
 					}
 					tw.WriteLine();
 
+					offset += 4;
 					inst = inst.Next;
 				} while (inst != null);
 			}
