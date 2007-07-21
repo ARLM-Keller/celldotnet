@@ -160,29 +160,38 @@ namespace CellDotNet
 				{
 					if (opcode.NoRegisterWrite)
 					{
+						bodynewdest.AppendLine("AssertRegisterNotNull(rt, \"rt\");");
 						bodynewdest.AppendLine("inst.Rt = rt;");
+						bodyolddest.AppendLine("AssertRegisterNotNull(rt, \"rt\");");
 						bodyolddest.AppendLine("inst.Rt = rt;");
 					}
 					else
 					{
 						bodynewdest.AppendLine("inst.Rt = NextRegister();");
+						bodyolddest.AppendLine("AssertRegisterNotNull(rt, \"rt\");");
 						bodyolddest.AppendLine("inst.Rt = rt;");
 					}
 				}
 				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Ra) != SpuOpCodeRegisterUsage.None)
 				{
 					bodynewdest.AppendLine("inst.Ra = ra;");
+					bodynewdest.AppendLine("AssertRegisterNotNull(ra, \"ra\");");
 					bodyolddest.AppendLine("inst.Ra = ra;");
+					bodyolddest.AppendLine("AssertRegisterNotNull(ra, \"ra\");");
 				}
 				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Rb) != SpuOpCodeRegisterUsage.None)
 				{
 					bodynewdest.AppendLine("inst.Rb = rb;");
+					bodynewdest.AppendLine("AssertRegisterNotNull(rb, \"rb\");");
 					bodyolddest.AppendLine("inst.Rb = rb;");
+					bodyolddest.AppendLine("AssertRegisterNotNull(rb, \"rb\");");
 				}
 				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Rc) != SpuOpCodeRegisterUsage.None)
 				{
 					bodynewdest.AppendLine("inst.Rc = rc;");
+					bodynewdest.AppendLine("AssertRegisterNotNull(rc, \"rc\");");
 					bodyolddest.AppendLine("inst.Rc = rc;");
+					bodyolddest.AppendLine("AssertRegisterNotNull(rc, \"rc\");");
 				}
 				if (opcode.HasImmediate)
 				{
