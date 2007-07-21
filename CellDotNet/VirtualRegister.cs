@@ -43,7 +43,12 @@ namespace CellDotNet
 		/// <returns></returns>
 		public override string ToString()
 		{
-			return "$" + Number;
+			if (Location is HardwareRegister)
+				return "$" + ((HardwareRegister)Location).Register;
+			else if (Number != 0)
+				return "$$" + Number;
+			else
+				return "$$";
 		}
 
     }

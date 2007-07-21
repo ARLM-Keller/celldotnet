@@ -85,8 +85,19 @@ namespace CellDotNet
 		{
 			VirtualRegister vrleft = null, vrright = null;
 
+			// Subtree instructions.
+			List<VirtualRegister> childregs = new List<VirtualRegister>();
 			foreach (TreeInstruction child in inst.GetChildInstructions())
-				GenerateCode(child);
+			{
+				VirtualRegister reg = GenerateCode(child);
+				childregs.Add(reg);
+			}
+			if (childregs.Count >= 1)
+			{
+				vrleft = childregs[0];
+				if (childregs.Count >= 2)
+					vrright = childregs[1];
+			}
 
 
 			IRCode ilcode = inst.Opcode.IRCode;

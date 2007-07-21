@@ -87,6 +87,12 @@ namespace CellDotNet
 			}
 		}
 
+		private void AssertRegisterNotNull(VirtualRegister reg, string regname)
+		{
+			if (reg == null)
+				throw new ArgumentException("Register argument " + regname + " is null.");
+		}
+
 		private VirtualRegister WriteRR(SpuOpCode opcode, VirtualRegister ra, VirtualRegister rb)
 		{
 			VirtualRegister rt = NextRegister();
@@ -338,6 +344,28 @@ namespace CellDotNet
 					offset += 4;
 					inst = inst.Next;
 				} while (inst != null);
+			}
+		}
+
+		public void AssertNoPseudoInstructions()
+		{
+			int bbindex = 0;
+			foreach (SpuBasicBlock bb in _basicBlocks)
+			{
+				SpuInstruction inst = bb.Head;
+				int instnum = 0;
+
+				while (inst != null)
+				{
+					if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.Pseudo) != SpuOpCodeSpecialFeatures.None)
+						throw new Exception("Error at basic block " + bbindex + ", instruction " + instnum + ": Pseudo instruction \"" + inst.OpCode.Name + "\" found.");
+
+
+					inst = inst.Next;
+					instnum++;
+				}
+
+				bbindex++;
 			}
 		}
 	}
