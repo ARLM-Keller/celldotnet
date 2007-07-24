@@ -151,13 +151,13 @@ namespace CellDotNet
 					}
 					return null;
 				case IRCode.Br:
-					WriteBranch(SpuOpCode.br, (BasicBlock) inst.Operand);
+					WriteUnconditionalBranch(SpuOpCode.br, (BasicBlock) inst.Operand);
 					return null;
 				case IRCode.Brfalse:
-					WriteBranch(SpuOpCode.brz, (BasicBlock)inst.Operand);
+					WriteConditionalBranch(SpuOpCode.brz, vrleft, (BasicBlock)inst.Operand);
 					return null;
 				case IRCode.Brtrue:
-					WriteBranch(SpuOpCode.brnz, (BasicBlock) inst.Operand);
+					WriteConditionalBranch(SpuOpCode.brnz, vrleft, (BasicBlock) inst.Operand);
 					return null;
 				case IRCode.Beq:
 					break;
@@ -516,9 +516,16 @@ namespace CellDotNet
 			throw new ILNotImplementedException(inst);
 		}
 
-		private void WriteBranch(SpuOpCode branchopcode, BasicBlock target)
+		private void WriteUnconditionalBranch(SpuOpCode branchopcode, BasicBlock target)
 		{
 			_writer.WriteBranch(branchopcode);
+			_branchInstructions.Add(new KeyValuePair<SpuInstruction, BasicBlock>(_writer.LastInstruction, target));
+		}
+
+		private void WriteConditionalBranch(SpuOpCode branchopcode, VirtualRegister conditionregister, BasicBlock target)
+		{
+			_writer.WriteBranch(branchopcode);
+			_writer.LastInstruction.Rt = conditionregister;
 			_branchInstructions.Add(new KeyValuePair<SpuInstruction, BasicBlock>(_writer.LastInstruction, target));
 		}
 
