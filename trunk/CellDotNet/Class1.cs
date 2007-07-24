@@ -9,7 +9,11 @@ namespace CellDotNet
 	{
 		static public void Main(string[] args)
 		{
-			new SpeContextTest().TestFirstCellProgram();
+//			new SpeContextTest().TestFirstCellProgram();
+			new SpuAbiUtilitiesTest().TestInitializationCode();
+
+
+			
 //			GenericExperiment();
 //			return;
 //			RunSpu();

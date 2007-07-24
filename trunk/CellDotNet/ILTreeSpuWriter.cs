@@ -111,20 +111,7 @@ namespace CellDotNet
 				case IRCode.Ldnull:
 					break;
 				case IRCode.Ldc_I4:
-					{
-						VirtualRegister r;
-						int i = (int)inst.Operand;
-						if (i >> 16 == 0)
-						{
-							r = _writer.WriteIl(i);
-						}
-						else
-						{
-							r = _writer.WriteIlhu(i >> 16);
-							_writer.WriteIohl(r, i);
-						}
-						return r;
-					}
+					return _writer.WriteLoadI4((int) inst.Operand);
 				case IRCode.Ldc_I8:
 					break;
 				case IRCode.Ldc_R4:
@@ -154,7 +141,7 @@ namespace CellDotNet
 					WriteUnconditionalBranch(SpuOpCode.br, (BasicBlock) inst.Operand);
 					return null;
 				case IRCode.Brfalse:
-					WriteConditionalBranch(SpuOpCode.brz, vrleft, (BasicBlock)inst.Operand);
+					WriteConditionalBranch(SpuOpCode.brz, vrleft, (BasicBlock) inst.Operand);
 					return null;
 				case IRCode.Brtrue:
 					WriteConditionalBranch(SpuOpCode.brnz, vrleft, (BasicBlock) inst.Operand);
@@ -212,7 +199,7 @@ namespace CellDotNet
 					break;
 				case IRCode.Stind_I4:
 					{
-						if (lefttype.IndirectionLevel != 1) 
+						if (lefttype.IndirectionLevel != 1)
 							throw new InvalidILTreeException("Invalid level of indirection for stind. Stack type: " + lefttype);
 						VirtualRegister ptr = GetVirtualRegister(inst.Left);
 
@@ -231,7 +218,7 @@ namespace CellDotNet
 					break;
 				case IRCode.Add:
 					if (lefttype.CliBasicType != CliBasicType.Integer ||
-						lefttype.NumericSize != CliNumericSize.FourBytes)
+					    lefttype.NumericSize != CliNumericSize.FourBytes)
 						throw new NotImplementedException();
 
 					return _writer.WriteA(vrleft, vrright);
@@ -466,8 +453,8 @@ namespace CellDotNet
 					break;
 				case IRCode.Clt:
 					if (lefttype.CliBasicType != CliBasicType.Integer ||
-						lefttype.NumericSize != CliNumericSize.FourBytes ||
-						!lefttype.IsSigned)
+					    lefttype.NumericSize != CliNumericSize.FourBytes ||
+					    !lefttype.IsSigned)
 						throw new NotImplementedException();
 
 					return _writer.WriteCgt(vrright, vrleft);
@@ -487,11 +474,11 @@ namespace CellDotNet
 				case IRCode.Starg:
 					break;
 				case IRCode.Ldloc:
-					return ((MethodVariable)inst.Operand).VirtualRegister;
+					return ((MethodVariable) inst.Operand).VirtualRegister;
 				case IRCode.Ldloca:
 					break;
 				case IRCode.Stloc:
-					VirtualRegister dest = ((MethodVariable)inst.Operand).VirtualRegister;
+					VirtualRegister dest = ((MethodVariable) inst.Operand).VirtualRegister;
 					_writer.WriteMove(vrleft, dest);
 					return null;
 				case IRCode.Localloc:
