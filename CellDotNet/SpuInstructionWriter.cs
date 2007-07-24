@@ -268,6 +268,40 @@ namespace CellDotNet
 		}
 
 		/// <summary>
+		/// Pseudo instruction to load the integer into the register.
+		/// No other registers are used.
+		/// </summary>
+		/// <param name="rt"></param>
+		/// <param name="i"></param>
+		/// <returns></returns>
+		public void WriteLoadI4(VirtualRegister rt, int i)
+		{
+			if (i >> 16 == 0)
+			{
+				WriteIl(rt, i);
+			}
+			else
+			{
+				WriteIlhu(rt, i >> 16);
+				WriteIohl(rt, i);
+			}
+		}
+
+		/// <summary>
+		/// Pseudo instruction to load the integer into a register.
+		/// </summary>
+		/// <param name="i"></param>
+		/// <returns></returns>
+		public VirtualRegister WriteLoadI4(int i)
+		{
+			VirtualRegister rt = NextRegister();
+			WriteLoadI4(rt, i);
+
+			return rt;
+		}
+
+
+		/// <summary>
 		/// Returns the instructions that are currently in the writer as assembly code.
 		/// </summary>
 		/// <returns></returns>

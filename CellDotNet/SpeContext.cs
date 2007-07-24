@@ -148,7 +148,7 @@ namespace CellDotNet
 			uint entry = 0;
 			int rc = spe_context_run(_handle, ref entry, 0, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 			if (rc < 0)
-				throw new Exception();
+				throw new Exception("spe_context_run failed. Return code:" + rc);
 			return rc;
 		}
 

@@ -7,7 +7,7 @@ namespace CellDotNet
     /// <summary>
     /// Represents an SPU instruction.
     /// </summary>
-	[DebuggerDisplay("{OpCode}")]
+	[DebuggerDisplay("{OpCode.Name}")]
     internal class SpuInstruction
     {
         public SpuInstruction(SpuOpCode _opcode)
@@ -143,8 +143,11 @@ namespace CellDotNet
             {
                 case SpuInstructionFormat.None:
                     throw new Exception("Err.");
-                case SpuInstructionFormat.RR2:
-                case SpuInstructionFormat.RR1:
+				case SpuInstructionFormat.RR1:
+					if (dest == null) // ra
+						throw new Exception("Err.");
+            		return _opcode.OpCode | (dest.Register << 7);
+				case SpuInstructionFormat.RR2:
                 case SpuInstructionFormat.RR:
                     if (reg1 != null && reg2 != null && dest != null)
                         return _opcode.OpCode | (reg2.Register << 14) | (reg1.Register << 7) | dest.Register;
@@ -192,9 +195,11 @@ namespace CellDotNet
 		{
 			List<int> bincode = new List<int>(code.Count);
 
+			int instnum = 0;
 			foreach (SpuInstruction inst in code)
 			{
 				bincode.Add(inst.emit());
+				instnum++;
 			}
 
 			return bincode.ToArray();

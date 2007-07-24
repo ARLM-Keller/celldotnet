@@ -72,6 +72,8 @@
     <Compile Include="SortedLinkedList.cs" />
     <Compile Include="SpeContext.cs" />
     <Compile Include="SpeContextTest.cs" />
+    <Compile Include="SpuAbiUtilities.cs" />
+    <Compile Include="SpuAbiUtilitiesTest.cs" />
     <Compile Include="SPUBasicBlock.cs" />
     <Compile Include="SpuInstruction.cs" />
     <Compile Include="OpCodeGroup.cs" />
