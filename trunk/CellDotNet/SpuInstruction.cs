@@ -115,21 +115,42 @@ namespace CellDotNet
     		}
     	}
 
-    	private SpuBasicBlock _jumpTarget;
+    	private object _jumpTargetOrObjectWithAddress;
+		/// <summary>
+		/// A local branch target. This cannot be set while <see cref="ObjectWithAddress"/> is set.
+		/// </summary>
 		public SpuBasicBlock JumpTarget
     	{
 			get
 			{
-//				throw new NotImplementedException("Use of JumpTarget set is not implemented.");
-				return _jumpTarget;
+				return _jumpTargetOrObjectWithAddress as SpuBasicBlock;
 			}
 			set
 			{
-				if (_jumpTarget != null)
+				if (_jumpTargetOrObjectWithAddress != null)
 					throw new Exception("Setting jumptarget for the second time??");
-				_jumpTarget = value;
+				_jumpTargetOrObjectWithAddress = value;
 			}
     	}
+
+		/// <summary>
+		/// A non-local object/method. This cannot be set while <see cref="JumpTarget"/> is set.
+		/// </summary>
+		public ObjectWithAddress ObjectWithAddress
+		{
+			get
+			{
+				return _jumpTargetOrObjectWithAddress as ObjectWithAddress;
+			}
+			set
+			{
+				if (_jumpTargetOrObjectWithAddress != null)
+					throw new Exception("Setting ObjectWithAddress for the second time??");
+				_jumpTargetOrObjectWithAddress = value;
+			}
+		}
+
+
 
         public int emit()
         {
@@ -145,46 +166,46 @@ namespace CellDotNet
                     throw new Exception("Err.");
 				case SpuInstructionFormat.RR1:
 					if (dest == null) // ra
-						throw new Exception("Err.");
+						throw new BadSpuInstructionException(this);
             		return _opcode.OpCode | (dest.Register << 7);
 				case SpuInstructionFormat.RR2:
                 case SpuInstructionFormat.RR:
                     if (reg1 != null && reg2 != null && dest != null)
                         return _opcode.OpCode | (reg2.Register << 14) | (reg1.Register << 7) | dest.Register;
                     else
-                        throw new Exception("Err.");
-                case SpuInstructionFormat.RRR:
+						throw new BadSpuInstructionException(this);
+				case SpuInstructionFormat.RRR:
                     if (reg1 != null && reg2 != null && reg3 != null && dest != null)
                         return _opcode.OpCode | (dest.Register << 21) | (reg2.Register << 14) | (reg1.Register << 7) | reg3.Register;
                     else
-                        throw new Exception("Err.");
-                case SpuInstructionFormat.RI7:
+						throw new BadSpuInstructionException(this);
+				case SpuInstructionFormat.RI7:
                     if (reg1 != null && dest != null)
                         return _opcode.OpCode | ((_constant & 0x7F) << 14) | (reg1.Register << 7) | dest.Register;
                     else
-                        throw new Exception("Err.");
-                case SpuInstructionFormat.RI10: 
+						throw new BadSpuInstructionException(this);
+				case SpuInstructionFormat.RI10: 
                     if (reg1 != null && dest != null)
                         return _opcode.OpCode | ((_constant & 0x3ff) << 14) | (reg1.Register << 7) | dest.Register;
                     else
-                        throw new Exception("Err.");
-                case SpuInstructionFormat.RI16:
+						throw new BadSpuInstructionException(this);
+				case SpuInstructionFormat.RI16:
 					if (dest != null)
 						return _opcode.OpCode | ((_constant & 0xffff) << 7) | dest.Register;
 					else
-						throw new Exception("Err.");
+						throw new BadSpuInstructionException(this);
 				case SpuInstructionFormat.RI16NoRegs:
                         return _opcode.OpCode | ((_constant & 0xffff) << 7) | 0;
                 case SpuInstructionFormat.RI18:
                     if (reg1 != null && dest != null)
                         return _opcode.OpCode | ((_constant & 0x3ffff) << 7) | dest.Register;
                     else
-                        throw new Exception("Err.");
-                case SpuInstructionFormat.RI8:
+						throw new BadSpuInstructionException(this);
+				case SpuInstructionFormat.RI8:
                     if (reg1 != null && dest != null)
                         return _opcode.OpCode | ((_constant & 0xff) << 14) | (reg1.Register << 7) | dest.Register;
                     else
-                        throw new Exception("Err.");
+						throw new BadSpuInstructionException(this);
 				case SpuInstructionFormat.WEIRD:
             		return _opcode.OpCode | _constant;
             }

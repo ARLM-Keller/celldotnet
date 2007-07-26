@@ -79,6 +79,7 @@ namespace CellDotNet
 		//
 
 		public BadSpuInstructionException() { }
+		internal BadSpuInstructionException(SpuInstruction inst) : base("Opcode: " + inst.OpCode.Name) { }
 		public BadSpuInstructionException(string message) : base(message) { }
 		public BadSpuInstructionException(string message, Exception inner) : base(message, inner) { }
 		protected BadSpuInstructionException(

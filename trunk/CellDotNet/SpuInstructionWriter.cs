@@ -259,11 +259,24 @@ namespace CellDotNet
 		}
 
 		/// <summary>
-		/// This will generate a pseudo-instruction that must be patched with a <see cref="SpuBasicBlock"/>.
+		/// This will generate an instruction that must be patched with a <see cref="SpuBasicBlock"/>.
 		/// </summary>
 		public void WriteBranch(SpuOpCode branchopcode)
 		{
 			SpuInstruction inst = new SpuInstruction(branchopcode);
+			AddInstruction(inst);
+		}
+
+		/// <summary>
+		/// This will generate an instruction that must be patched with a <see cref="SpuBasicBlock"/>.
+		/// </summary>
+		/// <param name="branchopcode"></param>
+		/// <param name="target"></param>
+		public void WriteBranchAndSetLink(SpuOpCode branchopcode, ObjectWithAddress target)
+		{
+			SpuInstruction inst = new SpuInstruction(branchopcode);
+			inst.ObjectWithAddress = target;
+			inst.Rt = SpuAbiUtilities.LR;
 			AddInstruction(inst);
 		}
 
