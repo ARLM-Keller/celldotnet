@@ -75,6 +75,11 @@ namespace CellDotNet
 			get { return _variables; }
 		}
 
+		public override int Size
+		{
+			get { throw new NotImplementedException(); }
+		}
+
 		public MethodCompiler(MethodBase method)
 		{
 			_methodBase = method;

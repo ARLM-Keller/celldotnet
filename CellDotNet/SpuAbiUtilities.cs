@@ -9,16 +9,10 @@ namespace CellDotNet
 	/// </summary>
 	class SpuAbiUtilities
 	{
-		private VirtualRegister SP;
-		private VirtualRegister LR;
+		public static VirtualRegister LR = GetHardwareRegister(0);
+		public static VirtualRegister SP = GetHardwareRegister(1);
 
-		public SpuAbiUtilities()
-		{
-			LR = GetHardwareRegister(0);
-			SP = GetHardwareRegister(1);
-		}
-
-		private static VirtualRegister GetHardwareRegister(int regnum)
+		public static VirtualRegister GetHardwareRegister(int regnum)
 		{
 			HardwareRegister reg = new HardwareRegister();
 			reg.Register = regnum;
@@ -27,27 +21,5 @@ namespace CellDotNet
 			return vr;
 		}
 
-		public int[] GetInitializationCode()
-		{
-			SpuInstructionWriter w = new SpuInstructionWriter();
-
-			w.BeginNewBasicBlock();
-
-			// Initialize stack pointer to two qwords below ls top.
-			w.WriteLoadI4(SP, 0x4ffff - 0x20);
-
-			// Store zero to Back Chain.
-			VirtualRegister zeroreg = GetHardwareRegister(75);
-			w.WriteLoadI4(zeroreg, 0);
-			w.WriteStqd(zeroreg, SP, 0);
-			
-			// Branch to method and set LR.
-			// The methode is assumed to be immediately after this code.
-			w.WriteBrsl(LR, 1);
-
-			w.WriteStop();
-
-			return SpuInstruction.emit(w.GetAsList());
-		}
 	}
 }

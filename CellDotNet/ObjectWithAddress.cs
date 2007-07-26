@@ -19,5 +19,10 @@ namespace CellDotNet
 			get { return _offset; }
 			set { _offset = value; }
 		}
+
+		/// <summary>
+		/// The byte size of the object.
+		/// </summary>
+		public abstract int Size { get; }
 	}
 }

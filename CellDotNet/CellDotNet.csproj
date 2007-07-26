@@ -76,12 +76,15 @@
     <Compile Include="SpuAbiUtilities.cs" />
     <Compile Include="SpuAbiUtilitiesTest.cs" />
     <Compile Include="SPUBasicBlock.cs" />
+    <Compile Include="SpuInitializer.cs" />
+    <Compile Include="SpuInitializerTest.cs" />
     <Compile Include="SpuInstruction.cs" />
     <Compile Include="OpCodeGroup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SpuInstructionDefinition.cs" />
     <Compile Include="SpuInstructionWriter.cs" />
     <Compile Include="SpuInstructionWriter_autogen.cs" />
+    <Compile Include="SpuRoutine.cs" />
     <Compile Include="StackLocation.cs" />
     <Compile Include="StoreLocation.cs" />
     <Compile Include="TreeDrawer.cs" />
