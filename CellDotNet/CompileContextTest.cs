@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using NUnit.Framework;
 
 namespace CellDotNet
 {
 	[TestFixture]
-	public class CompileContextTest
+	public class CompileContextTest : UnitTest
 	{
 		private static void MethodCallerInternal()
 		{
@@ -23,15 +22,19 @@ namespace CellDotNet
 			Math.Max(4, 99);
 		}
 
+		private static void MethodRecursiveCaller()
+		{
+			MethodRecursiveCaller();
+		}
+
 		delegate void SimpleDelegate();
 
 		[Test]
 		public void TestAcquireTwoMethodsInternal()
 		{
 			SimpleDelegate del = MethodCallerInternal;
-			MethodBase method = del.Method;
 
-			CompileContext cc = new CompileContext(method);
+			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
 			Assert.AreEqual(2, cc.Methods.Count);
 		}
@@ -40,12 +43,21 @@ namespace CellDotNet
 		public void TestAcquireThreeMethodsExternal()
 		{
 			SimpleDelegate del = MethodCallerExternal;
-			MethodBase method = del.Method;
 
-			CompileContext cc = new CompileContext(method);
+			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
 			Assert.AreEqual(3, cc.Methods.Count);
+		}
 
+		[Test]
+		public void TestAcquireRecursiveMethod()
+		{
+			SimpleDelegate del = MethodRecursiveCaller;
+			
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
+
+			AreEqual(1, cc.Methods.Count);
 			
 		}
 
@@ -58,8 +70,7 @@ namespace CellDotNet
 								i = (int*)30000;
 								*i = Math.Max(100, 200);
 							};
-			MethodBase method = del.Method;
-			CompileContext cc = new CompileContext(method);
+			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S7Complete);
 		}
 	}

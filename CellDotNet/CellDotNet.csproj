@@ -66,6 +66,7 @@
     <Compile Include="CliType.cs" />
     <Compile Include="LiveInterval.cs" />
     <Compile Include="MethodCallInstruction.cs" />
+    <Compile Include="ObjectWithAddress.cs" />
     <Compile Include="SimpleLiveAnalyzer.cs" />
     <Compile Include="SimpleRegAlloc.cs" />
     <Compile Include="SimpleRegAllocTest.cs" />

@@ -36,7 +36,7 @@ namespace CellDotNet
 	/// <summary>
 	/// Data used during compilation of a method.
 	/// </summary>
-	internal class MethodCompiler
+	internal class MethodCompiler : ObjectWithAddress
 	{
 		private MethodCompileState _state;
 
@@ -84,7 +84,7 @@ namespace CellDotNet
 			DeriveTypes();
 		}
 
-		private void VisitTreeInstructions(Action<TreeInstruction> action)
+		public void VisitTreeInstructions(Action<TreeInstruction> action)
 		{
 			foreach (BasicBlock block in _blocks)
 			{
