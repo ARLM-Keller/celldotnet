@@ -182,6 +182,8 @@ namespace CellDotNet
 
 			// Compile entry point and all any called methods.
 			Dictionary<string, MethodBase> methodsToCompile = new Dictionary<string, MethodBase>();
+			Dictionary<string, MethodBase> allMethods = new Dictionary<string, MethodBase>();
+			Dictionary<string, List<TreeInstruction>> instructionsToPatch = new Dictionary<string, List<TreeInstruction>>();
 			methodsToCompile.Add(CreateMethodRefKey(_entryMethod), _entryMethod);
 
 			while (methodsToCompile.Count > 0)
@@ -190,30 +192,60 @@ namespace CellDotNet
 				string nextmethodkey = GetFirstElement(methodsToCompile.Keys);
 				MethodBase method = methodsToCompile[nextmethodkey];
 				methodsToCompile.Remove(nextmethodkey);
-
-				// rh new branch
+				allMethods.Add(nextmethodkey, method);
 
 				// Compile.
-				MethodCompiler ci = new MethodCompiler(method);
-				ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
-				Methods.Add(nextmethodkey, ci);
-				throw new NotImplementedException();
+				MethodCompiler mc = new MethodCompiler(method);
+				mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
+				Methods.Add(nextmethodkey, mc);
 
-/*
 				// Find referenced methods.
-				foreach (Instruction inst in method.Body.Instructions)
+				mc.VisitTreeInstructions(
+					delegate(TreeInstruction inst)
+         			{
+						MethodBase mr = inst.Operand as MethodBase;
+						if (mr == null)
+							return;
+
+						string methodkey = CreateMethodRefKey(mr);
+         				MethodCompiler calledMethod;
+						if (Methods.TryGetValue(methodkey, out calledMethod))
+						{
+							// We encountered the method before, so just use it.
+							inst.Operand = calledMethod;
+							return;
+						}
+						else
+						{
+							// We haven't seen this method referenced before, so 
+							// make a note that we need to compile it and remember
+							// that this instruction must be patched with a MethodCompiler
+							// once it is created.
+							methodsToCompile[methodkey] = mr;
+							List<TreeInstruction> patchlist;
+							if (!instructionsToPatch.TryGetValue(methodkey, out patchlist))
+							{
+								patchlist = new List<TreeInstruction>();
+								instructionsToPatch.Add(methodkey, patchlist);
+							}
+							inst.Operand = methodkey;
+							patchlist.Add(inst);
+						}
+					});
+
 				{
-					MethodBase mr = inst.Operand as MethodBase;
-					if (mr == null)
-						continue;
-
-					string methodkey = CreateMethodRefKey(mr);
-					if (Methods.ContainsKey(methodkey))
-						continue;
-
-					methodsToCompile[methodkey] = mr;
+					// Patch the instructions that we've encountered earlier and that referenced this method.
+					List<TreeInstruction> patchlist;
+					string thismethodkey = CreateMethodRefKey(method);
+					if (instructionsToPatch.TryGetValue(thismethodkey, out patchlist))
+					{
+						foreach (TreeInstruction inst in patchlist)
+						{
+							string methodkey = (string) inst.Operand;
+							inst.Operand = allMethods[methodkey];
+						}
+					}
 				}
-*/
 			}
 			_entryPoint = new MethodCompiler(_entryMethod);
 			_entryPoint.PerformProcessing(MethodCompileState.S2TreeConstructionDone);

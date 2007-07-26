@@ -20,7 +20,7 @@ namespace CellDotNet
 			_writer = writer;
 			_method = mc;
 			
-			// Thes two are used to patch up branch instructions after instruction selection.
+			// These two are used to patch up branch instructions after instruction selection.
 			_branchInstructions = new List<KeyValuePair<SpuInstruction, BasicBlock>>();
 			_spubasicblocks = new Dictionary<BasicBlock, SpuBasicBlock>();
 
