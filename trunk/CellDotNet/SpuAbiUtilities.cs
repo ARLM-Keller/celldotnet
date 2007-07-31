@@ -9,7 +9,13 @@ namespace CellDotNet
 	/// </summary>
 	class SpuAbiUtilities
 	{
+		/// <summary>
+		/// The Link Register.
+		/// </summary>
 		public static VirtualRegister LR = GetHardwareRegister(0);
+		/// <summary>
+		/// The Stack Pointer register.
+		/// </summary>
 		public static VirtualRegister SP = GetHardwareRegister(1);
 
 		public static VirtualRegister GetHardwareRegister(int regnum)
@@ -20,6 +26,5 @@ namespace CellDotNet
 			vr.Location = reg;
 			return vr;
 		}
-
 	}
 }

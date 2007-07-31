@@ -16,6 +16,15 @@ namespace CellDotNet
 			get { return _basicBlocks.AsReadOnly(); }
 		}
 
+		public int GetInstructionCount()
+		{
+			int count = 0;
+			foreach (SpuBasicBlock bb in _basicBlocks)
+				count += bb.GetInstructionCount();
+
+			return count;
+		}
+
 		/// <summary>
 		/// Creates a list from the instructions in the basic blocks. You probably don't want to use
 		/// this method for anything but experimenting.

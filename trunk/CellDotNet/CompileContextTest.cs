@@ -71,7 +71,7 @@ namespace CellDotNet
 								*i = Math.Max(100, 200);
 							};
 			CompileContext cc = new CompileContext(del.Method);
-			cc.PerformProcessing(CompileContextState.S7Complete);
+			cc.PerformProcessing(CompileContextState.S8Complete);
 		}
 	}
 }

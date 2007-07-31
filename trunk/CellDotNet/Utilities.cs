@@ -46,5 +46,15 @@ namespace CellDotNet
 				return true;
 			}
 		}
+
+		public static T GetFirst<T>(IEnumerable<T> set)
+		{
+			T first;
+
+			if (!TryGetFirst(set, out first))
+				throw new ArgumentException("Empty set.");
+
+			return first;
+		}
 	}
 }

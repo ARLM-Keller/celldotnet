@@ -13,6 +13,19 @@ namespace CellDotNet
 			set { _head = value; }
 		}
 
+		public int GetInstructionCount()
+		{
+			int c = 0;
+			SpuInstruction inst = Head;
+			while (inst != null)
+			{
+				c++;
+				inst = inst.Next;
+			}
+
+			return c;
+		}
+
 		private int _offset;
 		/// <summary>
 		/// Offset from the beginning of the method, in bytes.

@@ -7,7 +7,7 @@ namespace CellDotNet
 	/// <summary>
 	/// Used to generate code to initialize a spu and call the initial method.
 	/// </summary>
-	class SpuInitializer : ObjectWithAddress
+	class SpuInitializer : SpuRoutine
 	{
 		private SpuInstructionWriter _writer = new SpuInstructionWriter();
 
@@ -38,13 +38,12 @@ namespace CellDotNet
 
 		public override int Size
 		{
-			get { throw new NotImplementedException(); }
+			get { return _writer.GetInstructionCount()*4; }
 		}
 
-		public int[] GetCode()
+		public override int[] Emit()
 		{
 			return SpuInstruction.emit(_writer.GetAsList());			
 		}
-
 	}
 }
