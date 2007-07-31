@@ -12,8 +12,9 @@ namespace CellDotNet
 		S3InstructionSelectionDone,
 		S4RegisterAllocationDone,
 		S5MethodAddressesDetermined,
-		S6AddressSubstitutionDone,
-		S7Complete
+		S6AddressPatchingDone,
+		S7CodeEmitted,
+		S8Complete
 	}
 
 	/// <summary>
@@ -77,48 +78,14 @@ namespace CellDotNet
 			if (targetState >= CompileContextState.S5MethodAddressesDetermined && State < CompileContextState.S5MethodAddressesDetermined)
 				PerformMethodAddressDetermination();
 
-			if (targetState >= CompileContextState.S6AddressSubstitutionDone && State < CompileContextState.S6AddressSubstitutionDone)
-				PerformAddressSubstitution();
+			if (targetState >= CompileContextState.S6AddressPatchingDone && State < CompileContextState.S6AddressPatchingDone)
+				PerformAddressPatching();
 
-			if (targetState >= CompileContextState.S7Complete && State < CompileContextState.S7Complete)
-				throw new NotImplementedException("State: " + targetState);
+			if (targetState >= CompileContextState.S7CodeEmitted && State < CompileContextState.S7CodeEmitted)
+				PerformCodeEmission();
 
-			if (targetState > CompileContextState.S7Complete)
+			if (targetState > CompileContextState.S8Complete)
 				throw new ArgumentException("Invalid target state: " + targetState, "targetState");
-		}
-
-		/// <summary>
-		/// Substitute label and method addresses for calls.
-		/// </summary>
-		private void PerformAddressSubstitution()
-		{
-			AssertState(CompileContextState.S5MethodAddressesDetermined);
-
-			foreach (MethodCompiler mc in Methods.Values)
-				mc.PerformProcessing(MethodCompileState.S8AdressSubstitutionDone);
-
-			State = CompileContextState.S7Complete;
-		}
-
-		/// <summary>
-		/// Determines local storage addresses for the methods.
-		/// </summary>
-		private void PerformMethodAddressDetermination()
-		{
-			AssertState(CompileContextState.S4RegisterAllocationDone);
-
-			// Start from the beginning and lay them out sequentially.
-			const int lsMethodStart = 0;
-
-			int lsAddress = lsMethodStart;
-			Dictionary<MethodCompiler, int> methodAddresses = new Dictionary<MethodCompiler, int>();
-			foreach (MethodCompiler mc in Methods.Values)
-			{
-				methodAddresses.Add(mc, lsAddress);
-				lsAddress += mc.GetSpuInstructionCount();
-			}
-
-			State = CompileContextState.S5MethodAddressesDetermined;
 		}
 
 		private void PerformRegisterAllocation()
@@ -129,6 +96,80 @@ namespace CellDotNet
 				mc.PerformProcessing(MethodCompileState.S5RegisterAllocationDone);
 
 			State = CompileContextState.S4RegisterAllocationDone;
+		}
+
+		private int _totalCodeSize = -1;
+
+		/// <summary>
+		/// Determines local storage addresses for the methods.
+		/// </summary>
+		private void PerformMethodAddressDetermination()
+		{
+			AssertState(CompileContextState.S4RegisterAllocationDone);
+
+			// Start from the beginning and lay them out sequentially.
+			int lsOffset = 0;
+			foreach (MethodCompiler mc in Methods.Values)
+			{
+				mc.Offset = lsOffset;
+				lsOffset += mc.Size;
+			}
+			_totalCodeSize = lsOffset;
+
+			State = CompileContextState.S5MethodAddressesDetermined;
+		}
+
+		/// <summary>
+		/// Substitute label and method addresses for calls.
+		/// </summary>
+		private void PerformAddressPatching()
+		{
+			AssertState(CompileContextState.S5MethodAddressesDetermined);
+
+			foreach (MethodCompiler mc in Methods.Values)
+				mc.PerformProcessing(MethodCompileState.S7AddressPatchingDone);
+
+			State = CompileContextState.S8Complete;
+		}
+
+		private List<SpuRoutine> _spuRoutines;
+
+		/// <summary>
+		/// Returns a list of infrastructure SPU routines, including the initalization code.
+		/// </summary>
+		/// <returns></returns>
+		private List<SpuRoutine> GetSpuRoutines()
+		{
+			if (_spuRoutines != null)
+				return _spuRoutines;
+
+			_spuRoutines = new List<SpuRoutine>();
+			SpuInitializer init = new SpuInitializer(EntryPoint);
+			_spuRoutines.Add(init);
+
+			return _spuRoutines;
+		}
+
+		private void PerformCodeEmission()
+		{
+			AssertState(CompileContextState.S6AddressPatchingDone);
+
+			List<SpuRoutine> all = new List<SpuRoutine>();
+			all.AddRange(GetSpuRoutines());
+			foreach (MethodCompiler mc in Methods.Values)
+				all.Add(mc);
+
+
+			int[] allcode = new int[_totalCodeSize];
+			foreach (SpuRoutine routine in all)
+			{
+				int[] code = routine.Emit();
+				Buffer.BlockCopy(code, 0, allcode, routine.Offset, code.Length);
+			}
+
+			// TODO: Do something with the code.
+
+			State = CompileContextState.S7CodeEmitted;
 		}
 
 		private void AssertState(CompileContextState requiredState)
@@ -165,14 +206,6 @@ namespace CellDotNet
 			return key;
 		}
 
-		private T GetFirstElement<T>(IEnumerable<T> set)
-		{
-			IEnumerator<T> enumerator = set.GetEnumerator();
-			if (!enumerator.MoveNext())
-				throw new ArgumentException("Empty set.");
-			return enumerator.Current;
-		}
-
 		/// <summary>
 		/// Finds and build MethodCompilers for the methods that are transitively referenced from the entry method.
 		/// </summary>
@@ -189,7 +222,7 @@ namespace CellDotNet
 			while (methodsToCompile.Count > 0)
 			{
 				// Find next method.
-				string nextmethodkey = GetFirstElement(methodsToCompile.Keys);
+				string nextmethodkey = Utilities.GetFirst(methodsToCompile.Keys);
 				MethodBase method = methodsToCompile[nextmethodkey];
 				methodsToCompile.Remove(nextmethodkey);
 				allMethods.Add(nextmethodkey, method);

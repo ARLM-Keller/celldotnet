@@ -1,28 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace CellDotNet
 {
 	/// <summary>
-	/// Represents code which is not the result of a method compilation.
+	/// Represents anything that can be emitted as SPU code.
 	/// </summary>
-	class SpuRoutine : ObjectWithAddress
+	abstract class SpuRoutine : ObjectWithAddress
 	{
-		public SpuRoutine()
-		{
-			_writer = new SpuInstructionWriter();
-		}
-
-		private SpuInstructionWriter _writer;
-		public SpuInstructionWriter Writer
-		{
-			get { return _writer; }
-		}
-
-		public override int Size
-		{
-			get { throw new NotImplementedException(); }
-		}
+		/// <summary>
+		/// Implementations of this method should return the emitted binary code.
+		/// </summary>
+		/// <returns></returns>
+		public abstract int[] Emit();
 	}
 }

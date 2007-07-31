@@ -187,7 +187,7 @@ namespace CellDotNet
 
 
 			MethodCompiler mc = new MethodCompiler(del.Method);
-			mc.PerformProcessing(MethodCompileState.S7BranchesFixed);
+			mc.PerformProcessing(MethodCompileState.S7AddressPatchingDone);
 
 
 			Console.WriteLine("Disassembly - prolog:");
@@ -258,6 +258,12 @@ namespace CellDotNet
 		}
 
 		#endregion
+
+//		[Test]
+//		public void TestAddressAssignment()
+//		{
+//			
+//		}
 
 		[Test]
 		public void Test()

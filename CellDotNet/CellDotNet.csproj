@@ -84,6 +84,7 @@
     <Compile Include="SpuInstructionDefinition.cs" />
     <Compile Include="SpuInstructionWriter.cs" />
     <Compile Include="SpuInstructionWriter_autogen.cs" />
+    <Compile Include="SpuManualRoutine.cs" />
     <Compile Include="SpuRoutine.cs" />
     <Compile Include="StackLocation.cs" />
     <Compile Include="StoreLocation.cs" />

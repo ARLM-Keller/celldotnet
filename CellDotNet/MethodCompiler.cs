@@ -28,15 +28,14 @@ namespace CellDotNet
 		/// At this point the only changes that must be done to the code
 		/// is address changes.
 		/// </summary>
-		S7BranchesFixed,
-		S8AdressSubstitutionDone,
-		S9Complete
+		S7AddressPatchingDone,
+		S8Complete
 	}
 
 	/// <summary>
 	/// Data used during compilation of a method.
 	/// </summary>
-	internal class MethodCompiler : ObjectWithAddress
+	internal class MethodCompiler : SpuRoutine
 	{
 		private MethodCompileState _state;
 
@@ -77,7 +76,7 @@ namespace CellDotNet
 
 		public override int Size
 		{
-			get { throw new NotImplementedException(); }
+			get { return GetSpuInstructionCount()*4; }
 		}
 
 		public MethodCompiler(MethodBase method)
@@ -529,13 +528,21 @@ namespace CellDotNet
 			return _instructions;
 		}
 
-
+		/// <summary>
+		/// Return the number of instructions currently in the prolog, body and epilog.
+		/// </summary>
+		/// <returns></returns>
 		public int GetSpuInstructionCount()
 		{
 			if (State < MethodCompileState.S4InstructionSelectionDone)
 				throw new InvalidOperationException("Too early. State: " + State);
 
-			return _instructions.BasicBlocks.Count;
+			int count = 
+				_prolog.GetInstructionCount() + 
+				_instructions.GetInstructionCount() + 
+				_epilog.GetInstructionCount();
+
+			return count;
 		}
 
 		/// <summary>
@@ -562,13 +569,12 @@ namespace CellDotNet
 			if (State < MethodCompileState.S6PrologAndEpilogDone && targetState >= MethodCompileState.S6PrologAndEpilogDone)
 				PerformPrologAndEpilogGeneration();
 
-			if (State < MethodCompileState.S7BranchesFixed && targetState >= MethodCompileState.S7BranchesFixed)
-				PerformBranchOffsetDetermination();
+			if (State < MethodCompileState.S7AddressPatchingDone && targetState >= MethodCompileState.S7AddressPatchingDone)
+				PerformAddressPatching();
 
-
-			if (targetState >= MethodCompileState.S8AdressSubstitutionDone)
+			if (targetState >= MethodCompileState.S8Complete)
 			{
-				if (targetState <= MethodCompileState.S9Complete) 
+				if (targetState <= MethodCompileState.S8Complete) 
 					throw new NotImplementedException("Target state: " + targetState);
 				else 
 					throw new ArgumentException("Invalid state: " + targetState, "targetState");
@@ -605,16 +611,6 @@ namespace CellDotNet
 			_state = MethodCompileState.S6PrologAndEpilogDone;
 		}
 
-		private VirtualRegister GetHardwareRegister(int hwregnum)
-		{
-			VirtualRegister reg = new VirtualRegister();
-			HardwareRegister hwreg = new HardwareRegister();
-			hwreg.Register = hwregnum;
-			reg.Location = hwreg;
-
-			return reg;
-		}
-
 		private void WriteProlog(SpuInstructionWriter prolog)
 		{
 			// TODO: Store caller-saves registers that this method uses, based on negative offsts
@@ -631,8 +627,8 @@ namespace CellDotNet
 			// First/topmost caller-saves register caller SP slot offset.
 //			int first_GRSA_slot_offset = -(RASA_slots + 1);
 
-			VirtualRegister lr = GetHardwareRegister(0);
-			VirtualRegister sp = GetHardwareRegister(1);
+			VirtualRegister lr = SpuAbiUtilities.GetHardwareRegister(0);
+			VirtualRegister sp = SpuAbiUtilities.GetHardwareRegister(1);
 
 			// Save LR in caller's frame.
 			prolog.WriteStqd(lr, sp, 1);
@@ -649,8 +645,8 @@ namespace CellDotNet
 			// Assume that the code that wants to return has placed the return value in the correct
 			// registers (R3+).
 
-			VirtualRegister lr = GetHardwareRegister(0);
-			VirtualRegister sp = GetHardwareRegister(1);
+			VirtualRegister lr = SpuAbiUtilities.GetHardwareRegister(0);
+			VirtualRegister sp = SpuAbiUtilities.GetHardwareRegister(1);
 
 			// Restore old SP.
 			epilog.WriteLqd(sp, sp, 0);
@@ -685,7 +681,11 @@ namespace CellDotNet
 
 		#endregion
 
-		private void PerformBranchOffsetDetermination()
+		/// <summary>
+		/// Inserts offsets for local branches and call. That is, for instrukctions containing 
+		/// <see cref="SpuBasicBlock"/> and <see cref="ObjectWithAddress"/> objects.
+		/// </summary>
+		private void PerformAddressPatching()
 		{
 			AssertState(MethodCompileState.S6PrologAndEpilogDone);
 
@@ -702,7 +702,8 @@ namespace CellDotNet
 			bblist.Add(_epilog.BasicBlocks[0]);
 
 
-			// All offsets are byte offset from start of method (prolog).
+			// All offsets are byte offset from start of method; 
+			// that is, from the ObjectWithAddress.
 
 			List<KeyValuePair<int, SpuInstruction>> branchlist = new List<KeyValuePair<int, SpuInstruction>>();
 			int curroffset = 0;
@@ -721,6 +722,13 @@ namespace CellDotNet
 						inst.JumpTarget = _epilog.BasicBlocks[0];
 						branchlist.Add(new KeyValuePair<int, SpuInstruction>(curroffset, inst));
 					}
+					else if (inst.ObjectWithAddress != null)
+					{
+						Utilities.Assert(inst.ObjectWithAddress.Offset > 0, "Bad ObjectWithAddress offset: " + inst.ObjectWithAddress.Offset);
+						int diff = inst.ObjectWithAddress.Offset - (Offset + curroffset);
+						Utilities.Assert(diff % 4 == 0, "branch offset not multiple of four bytes: " + diff);
+						inst.Constant = diff >> 2; // instructions and therefore branch offsets are 4-byte aligned.
+					}
 
 					inst = inst.Next;
 					curroffset += 4;
@@ -733,11 +741,13 @@ namespace CellDotNet
 				SpuBasicBlock targetbb = branchpair.Value.JumpTarget;
 
 				int relativebranchbytes = branchpair.Key - targetbb.Offset;
+				// Branch offset operands don't use the last two bytes, since all
+				// instructions are 4-byte aligned.
 				branchpair.Value.Constant = relativebranchbytes >> 2;
 			}
 
 
-			State = MethodCompileState.S7BranchesFixed;
+			State = MethodCompileState.S7AddressPatchingDone;
 		}
 
 
@@ -1321,5 +1331,18 @@ namespace CellDotNet
 
 		#endregion
 
+		public override int[] Emit()
+		{
+			int[] prologbin = SpuInstruction.emit(GetPrologWriter().GetAsList());
+			int[] bodybin = SpuInstruction.emit(GetBodyWriter().GetAsList());
+			int[] epilogbin = SpuInstruction.emit(GetEpilogWriter().GetAsList());
+
+			int[] combined = new int[prologbin.Length + bodybin.Length + epilogbin.Length];
+			Buffer.BlockCopy(prologbin, 0, combined, 0, prologbin.Length);
+			Buffer.BlockCopy(bodybin, 0, combined, prologbin.Length, bodybin.Length);
+			Buffer.BlockCopy(epilogbin, 0, combined, prologbin.Length + bodybin.Length, epilogbin.Length);
+
+			return combined;
+		}
 	}
 }

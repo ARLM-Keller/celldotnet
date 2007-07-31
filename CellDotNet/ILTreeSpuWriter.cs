@@ -45,16 +45,6 @@ namespace CellDotNet
 			}
 		}
 
-		private static VirtualRegister GetHardwareRegister(int hwregisternum)
-		{
-			VirtualRegister reg = new VirtualRegister();
-			HardwareRegister hwreg = new HardwareRegister();
-			hwreg.Register = hwregisternum;
-			reg.Location = hwreg;
-
-			return reg;
-		}
-
 
 		/// <summary>
 		/// Creates the first basic block of the method, which moves arguments from physical
@@ -75,7 +65,7 @@ namespace CellDotNet
 			{
 				MethodParameter parameter = _method.Parameters[i];
 
-				VirtualRegister dest = GetHardwareRegister(FirstArgumentRegister + i);
+				VirtualRegister dest = SpuAbiUtilities.GetHardwareRegister(FirstArgumentRegister + i);
 
 				_writer.WriteMove(parameter.VirtualRegister, dest);
 			}
@@ -133,7 +123,7 @@ namespace CellDotNet
 				case IRCode.Ret:
 					if (inst.StackType != StackTypeDescription.None)
 					{
-						_writer.WriteMove(vrleft, GetHardwareRegister((int) CellRegister.REG_3));
+						_writer.WriteMove(vrleft, SpuAbiUtilities.GetHardwareRegister((int) CellRegister.REG_3));
 						_writer.WriteReturn();
 					}
 					return null;
