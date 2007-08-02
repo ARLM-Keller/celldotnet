@@ -21,16 +21,16 @@ namespace CellDotNet
 			_writer.BeginNewBasicBlock();
 
 			// Initialize stack pointer to two qwords below ls top.
-			_writer.WriteLoadI4(SpuAbiUtilities.SP, 0x4ffff - 0x20);
+			_writer.WriteLoadI4(HardwareRegister.SP, 0x4ffff - 0x20);
 
 			// Store zero to Back Chain.
-			VirtualRegister zeroreg = SpuAbiUtilities.GetHardwareRegister(75);
+			VirtualRegister zeroreg = HardwareRegister.GetHardwareRegister(75);
 			_writer.WriteLoadI4(zeroreg, 0);
-			_writer.WriteStqd(zeroreg, SpuAbiUtilities.SP, 0);
+			_writer.WriteStqd(zeroreg, HardwareRegister.SP, 0);
 
 			// Branch to method and set LR.
 			// The methode is assumed to be immediately after this code.
-			_writer.WriteBrsl(SpuAbiUtilities.LR, 1);
+			_writer.WriteBrsl(HardwareRegister.LR, 1);
 			_writer.WriteBranchAndSetLink(SpuOpCode.brsl, intialMethod);
 
 			_writer.WriteStop();

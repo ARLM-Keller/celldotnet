@@ -13,7 +13,7 @@ namespace CellDotNet
 			// The code to run just returns.
 			SpuManualRoutine routine = new SpuManualRoutine();
 			routine.Writer.BeginNewBasicBlock();
-			routine.Writer.WriteBi(SpuAbiUtilities.LR);
+			routine.Writer.WriteBi(HardwareRegister.LR);
 
 
 			// Initialization.
@@ -23,7 +23,7 @@ namespace CellDotNet
 			// A single return instruction.
 			SpuInstructionWriter writer = new SpuInstructionWriter();
 			writer.BeginNewBasicBlock();
-			writer.WriteBi(SpuAbiUtilities.LR);
+			writer.WriteBi(HardwareRegister.LR);
 
 			code.AddRange(SpuInstruction.emit(writer.GetAsList()));
 

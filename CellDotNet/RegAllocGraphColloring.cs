@@ -4,6 +4,13 @@ namespace CellDotNet
 {
 	class RegAllocGraphColloring
 	{
+		// TODO list 
+		// - få plads på stakken til spilled variabler
+		// - mere optimal brug af lister(brug ikke LinkedList i forbindelse med contains)
+		// - det er ikke alle registre der er tilgængelig for regalloc
+		//
+
+
 //		private FlowGraph flowGraph;
 
 		private MethodCompiler method;
@@ -661,7 +668,7 @@ namespace CellDotNet
 
 							inst.Rt = vt;
 
-							SpuInstruction stor = new SpuInstruction(SpuOpCode.stqa);
+							SpuInstruction stor = new SpuInstruction(SpuOpCode.stqd);
 
 							stor.Rt = vt;
 							stor.Constant = 0; // TODO Offset in frame
@@ -691,7 +698,7 @@ namespace CellDotNet
 							else if (inst.Rt == v)
 								inst.Rt = vt;
 
-							SpuInstruction load = new SpuInstruction(SpuOpCode.lqa);
+							SpuInstruction load = new SpuInstruction(SpuOpCode.lqd);
 
 							load.Rt = vt;
 							load.Constant = 0; // TODO Offset in frame

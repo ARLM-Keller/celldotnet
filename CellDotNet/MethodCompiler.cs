@@ -527,7 +527,7 @@ namespace CellDotNet
 			{
 				VirtualRegister temp = NextRegister();
 				calleTemps.Add(temp);
-				_instructions.WriteMove(SpuAbiUtilities.GetHardwareRegister(regnum), temp);
+				_instructions.WriteMove(HardwareRegister.GetHardwareRegister(regnum), temp);
 			}
 
 			// Generate the body.
@@ -538,7 +538,7 @@ namespace CellDotNet
 			_instructions.BeginNewBasicBlock();
 			for (int regnum = 80; regnum <= 127; regnum++)
 			{
-				_instructions.WriteMove(calleTemps[regnum - 80], SpuAbiUtilities.GetHardwareRegister(regnum));
+				_instructions.WriteMove(calleTemps[regnum - 80], HardwareRegister.GetHardwareRegister(regnum));
 			}
 
 			State = MethodCompileState.S4InstructionSelectionDone;
@@ -670,13 +670,13 @@ namespace CellDotNet
 //			int first_GRSA_slot_offset = -(RASA_slots + 1);
 
 			// Save LR in caller's frame.
-			prolog.WriteStqd(SpuAbiUtilities.LR, SpuAbiUtilities.SP, 1);
+			prolog.WriteStqd(HardwareRegister.LR, HardwareRegister.SP, 1);
 
 			// Establish new SP.
-			prolog.WriteSfi(SpuAbiUtilities.SP, SpuAbiUtilities.SP, -frameSlots*16);
+			prolog.WriteSfi(HardwareRegister.SP, HardwareRegister.SP, -frameSlots*16);
 
 			// Store SP at new frame's Back Chain.
-			prolog.WriteStqd(SpuAbiUtilities.SP, SpuAbiUtilities.SP, 0);
+			prolog.WriteStqd(HardwareRegister.SP, HardwareRegister.SP, 0);
 		}
 
 		/// <summary>
@@ -689,15 +689,15 @@ namespace CellDotNet
 			// registers (R3+).
 
 			// Restore old SP.
-			epilog.WriteLqd(SpuAbiUtilities.SP, SpuAbiUtilities.SP, 0);
+			epilog.WriteLqd(HardwareRegister.SP, HardwareRegister.SP, 0);
 
 			// TODO: Restore caller-saves.
 
 			// Restore old LR from callers frame.
-			epilog.WriteLqd(SpuAbiUtilities.LR, SpuAbiUtilities.SP, 1);
+			epilog.WriteLqd(HardwareRegister.LR, HardwareRegister.SP, 1);
 
 			// Return.
-			epilog.WriteBi(SpuAbiUtilities.LR);
+			epilog.WriteBi(HardwareRegister.LR);
 		}
 
 		/// <summary>

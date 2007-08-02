@@ -285,7 +285,7 @@ namespace CellDotNet
 		{
 			SpuInstruction inst = new SpuInstruction(branchopcode);
 			inst.ObjectWithAddress = target;
-			inst.Rt = SpuAbiUtilities.LR;
+			inst.Rt = HardwareRegister.LR;
 			AddInstruction(inst);
 		}
 
