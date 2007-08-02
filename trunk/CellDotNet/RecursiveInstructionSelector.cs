@@ -65,7 +65,7 @@ namespace CellDotNet
 			{
 				MethodParameter parameter = _method.Parameters[i];
 
-				VirtualRegister dest = SpuAbiUtilities.GetHardwareRegister(FirstArgumentRegister + i);
+				VirtualRegister dest = HardwareRegister.GetHardwareRegister(FirstArgumentRegister + i);
 
 				_writer.WriteMove(parameter.VirtualRegister, dest);
 			}
@@ -125,11 +125,11 @@ namespace CellDotNet
 
 						// Move parameters into hardware registers.
 						for (int i = 0; i < target.Parameters.Count; i++)
-							_writer.WriteMove(childregs[i], SpuAbiUtilities.GetHardwareArgumentRegister(i));
+							_writer.WriteMove(childregs[i], HardwareRegister.GetHardwareArgumentRegister(i));
 
 
 						if (inst.StackType != StackTypeDescription.None)
-							return SpuAbiUtilities.GetHardwareRegister(3);
+							return HardwareRegister.GetHardwareRegister(3);
 						else
 							return null;
 					}
@@ -140,7 +140,7 @@ namespace CellDotNet
 				case IRCode.Ret:
 					if (inst.StackType != StackTypeDescription.None)
 					{
-						_writer.WriteMove(vrleft, SpuAbiUtilities.GetHardwareRegister((int) CellRegister.REG_3));
+						_writer.WriteMove(vrleft, HardwareRegister.GetHardwareRegister((int) CellRegister.REG_3));
 						_writer.WriteReturn();
 					}
 					return null;

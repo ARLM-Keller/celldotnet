@@ -30,7 +30,7 @@ namespace CellDotNet
 			for (int i = 80; i <= 127; i++)
 			{
 				int spOffset = -48 + (i - 80);
-				_writer.WriteStqd(SpuAbiUtilities.GetHardwareRegister(i), SpuAbiUtilities.SP, spOffset);
+				_writer.WriteStqd(HardwareRegister.GetHardwareRegister(i), HardwareRegister.SP, spOffset);
 			}
 		}
 
