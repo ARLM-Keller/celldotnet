@@ -46,8 +46,8 @@ namespace CellDotNet
 
 			if (inst.Operand != null)
 			{
-				if (inst.Operand is BasicBlock)
-					Output.Write(" " + ((BasicBlock)inst.Operand).Offset.ToString("x4"));
+				if (inst.Operand is IRBasicBlock)
+					Output.Write(" " + ((IRBasicBlock)inst.Operand).Offset.ToString("x4"));
 				else if (inst.Operand is MethodParameter)
 					Output.Write(" {0} ({1})", ((MethodParameter)inst.Operand).Name, ((MethodParameter)inst.Operand).Type.Name);
 				else if (inst.Operand is MethodVariable)
@@ -92,7 +92,7 @@ namespace CellDotNet
 			}
 		}
 
-		public void DrawTree(MethodBase method, BasicBlock block)
+		public void DrawTree(MethodBase method, IRBasicBlock block)
 		{
 			if (Output == null)
 				Output = Console.Out;
@@ -107,8 +107,8 @@ namespace CellDotNet
 			// Do we still use this method?
 			if (inst.Opcode.FlowControl == FlowControl.Branch || inst.Opcode.FlowControl == FlowControl.Cond_Branch)
 			{
-				if (inst.Operand is BasicBlock)
-					_branchTargets.Add(((BasicBlock)inst.Operand).Offset);
+				if (inst.Operand is IRBasicBlock)
+					_branchTargets.Add(((IRBasicBlock)inst.Operand).Offset);
 				else
 					_branchTargets.Add((int)inst.Operand);
 			}
@@ -120,7 +120,7 @@ namespace CellDotNet
 
 		private void FindBranchTargets(MethodCompiler ci, MethodBase method)
 		{
-			foreach (BasicBlock block in ci.Blocks)
+			foreach (IRBasicBlock block in ci.Blocks)
 			{
 				foreach (TreeInstruction inst in block.Roots)
 				{
@@ -159,7 +159,7 @@ namespace CellDotNet
 			_branchTargets = new Set<int>();
 			FindBranchTargets(ci, method);
 
-			foreach (BasicBlock block in ci.Blocks)
+			foreach (IRBasicBlock block in ci.Blocks)
 			{
 				Output.WriteLine(" - Basic Block:");
 				DrawTree(method, block);

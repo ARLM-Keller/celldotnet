@@ -17,11 +17,11 @@ namespace CellDotNet
 	/// at the beginning of the block, never in the middle.
 	/// </para>
 	/// </remarks>
-	internal class BasicBlock
+	internal class IRBasicBlock
 	{
-		private BasicBlock _next;
+		private IRBasicBlock _next;
 
-		public BasicBlock Next
+		public IRBasicBlock Next
 		{
 			get { return _next; }
 			set { _next = value; }
@@ -38,23 +38,23 @@ namespace CellDotNet
 		}
 
 
-		private Set<BasicBlock> _ingoing = new Set<BasicBlock>();
+		private Set<IRBasicBlock> _ingoing = new Set<IRBasicBlock>();
 
 		/// <summary>
 		/// Ingoing basic blocks.
 		/// </summary>
-		public Set<BasicBlock> Ingoing
+		public Set<IRBasicBlock> Ingoing
 		{
 			get { return _ingoing; }
 		}
 
 
-		private Set<BasicBlock> _outgoing = new Set<BasicBlock>();
+		private Set<IRBasicBlock> _outgoing = new Set<IRBasicBlock>();
 
 		/// <summary>
 		/// Outgoing basic blocks.
 		/// </summary>
-		public Set<BasicBlock> Outgoing
+		public Set<IRBasicBlock> Outgoing
 		{
 			get { return _outgoing; }
 		}

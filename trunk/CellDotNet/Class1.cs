@@ -43,7 +43,7 @@ namespace CellDotNet
 			MethodCompiler ci = new MethodCompiler(method);
 			ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 			new TreeDrawer().DrawMethod(ci, method);
-			ILTreeSpuWriter writer = new ILTreeSpuWriter();
+			RecursiveInstructionSelector writer = new RecursiveInstructionSelector();
 			SpuInstructionWriter ilist = new SpuInstructionWriter();
 			writer.GenerateCode(ci, ilist);
 			Console.WriteLine();
@@ -97,7 +97,7 @@ namespace CellDotNet
 
 			new TreeDrawer().DrawMethod(ci, method);
 
-			ILTreeSpuWriter writer = new ILTreeSpuWriter();
+			RecursiveInstructionSelector writer = new RecursiveInstructionSelector();
 			SpuInstructionWriter ilist = new SpuInstructionWriter();
 			writer.GenerateCode(ci, ilist);
 			ilist.WriteStop();
