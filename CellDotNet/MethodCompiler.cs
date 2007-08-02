@@ -124,7 +124,7 @@ namespace CellDotNet
 		{
 			AssertState(MethodCompileState.S1Initial);
 
-			// Build Variables and Parameters.
+			// Build Parameters.
 			List<MethodParameter> parlist = new List<MethodParameter>();
 			int i = 0;
 			foreach (ParameterInfo pi in _methodBase.GetParameters())
@@ -136,6 +136,7 @@ namespace CellDotNet
 			}
 			_parameters = new ReadOnlyCollection<MethodParameter>(parlist);
 
+			// Build Variables.
 			List<MethodVariable> varlist = new List<MethodVariable>();
 			i = 0;
 			foreach (LocalVariableInfo lv in _methodBase.GetMethodBody().LocalVariables)
@@ -617,6 +618,16 @@ namespace CellDotNet
 			regalloc.alloc(asm, 16);
 
 			State = MethodCompileState.S5RegisterAllocationDone;
+		}
+
+		private int _nextSpillOffset = 3; // Start by pointing to start of Local Variable Space.
+		/// <summary>
+		/// For the register allocator to use to get SP offsets for spilling.
+		/// </summary>
+		/// <returns></returns>
+		public int GetNewSpillOffset()
+		{
+			return _nextSpillOffset++;
 		}
 
 		#region Prolog/epilog
