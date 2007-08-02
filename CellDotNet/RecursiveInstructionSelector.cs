@@ -7,13 +7,13 @@ namespace CellDotNet
 	/// <summary>
 	/// This class writes IL trees as SPU instructions.
 	/// </summary>
-	class ILTreeSpuWriter
+	class RecursiveInstructionSelector
 	{
 		private SpuInstructionWriter _writer;
 		private MethodCompiler _method;
 
-		private List<KeyValuePair<SpuInstruction, BasicBlock>> _branchInstructions;
-		private Dictionary<BasicBlock, SpuBasicBlock> _spubasicblocks;
+		private List<KeyValuePair<SpuInstruction, IRBasicBlock>> _branchInstructions;
+		private Dictionary<IRBasicBlock, SpuBasicBlock> _spubasicblocks;
 
 		public void GenerateCode(MethodCompiler mc, SpuInstructionWriter writer)
 		{
@@ -21,12 +21,12 @@ namespace CellDotNet
 			_method = mc;
 			
 			// These two are used to patch up branch instructions after instruction selection.
-			_branchInstructions = new List<KeyValuePair<SpuInstruction, BasicBlock>>();
-			_spubasicblocks = new Dictionary<BasicBlock, SpuBasicBlock>();
+			_branchInstructions = new List<KeyValuePair<SpuInstruction, IRBasicBlock>>();
+			_spubasicblocks = new Dictionary<IRBasicBlock, SpuBasicBlock>();
 
 			WriteFirstBasicBlock();
 
-			foreach (BasicBlock bb in mc.Blocks)
+			foreach (IRBasicBlock bb in mc.Blocks)
 			{
 				_writer.BeginNewBasicBlock();
 				_spubasicblocks.Add(bb, _writer.CurrentBlock);
@@ -36,7 +36,7 @@ namespace CellDotNet
 				}
 			}
 
-			foreach (KeyValuePair<SpuInstruction, BasicBlock> pair in _branchInstructions)
+			foreach (KeyValuePair<SpuInstruction, IRBasicBlock> pair in _branchInstructions)
 			{
 				SpuBasicBlock target;
 
@@ -145,13 +145,13 @@ namespace CellDotNet
 					}
 					return null;
 				case IRCode.Br:
-					WriteUnconditionalBranch(SpuOpCode.br, (BasicBlock) inst.Operand);
+					WriteUnconditionalBranch(SpuOpCode.br, (IRBasicBlock) inst.Operand);
 					return null;
 				case IRCode.Brfalse:
-					WriteConditionalBranch(SpuOpCode.brz, vrleft, (BasicBlock) inst.Operand);
+					WriteConditionalBranch(SpuOpCode.brz, vrleft, (IRBasicBlock) inst.Operand);
 					return null;
 				case IRCode.Brtrue:
-					WriteConditionalBranch(SpuOpCode.brnz, vrleft, (BasicBlock) inst.Operand);
+					WriteConditionalBranch(SpuOpCode.brnz, vrleft, (IRBasicBlock) inst.Operand);
 					return null;
 				case IRCode.Beq:
 					break;
@@ -510,17 +510,17 @@ namespace CellDotNet
 			throw new ILNotImplementedException(inst);
 		}
 
-		private void WriteUnconditionalBranch(SpuOpCode branchopcode, BasicBlock target)
+		private void WriteUnconditionalBranch(SpuOpCode branchopcode, IRBasicBlock target)
 		{
 			_writer.WriteBranch(branchopcode);
-			_branchInstructions.Add(new KeyValuePair<SpuInstruction, BasicBlock>(_writer.LastInstruction, target));
+			_branchInstructions.Add(new KeyValuePair<SpuInstruction, IRBasicBlock>(_writer.LastInstruction, target));
 		}
 
-		private void WriteConditionalBranch(SpuOpCode branchopcode, VirtualRegister conditionregister, BasicBlock target)
+		private void WriteConditionalBranch(SpuOpCode branchopcode, VirtualRegister conditionregister, IRBasicBlock target)
 		{
 			_writer.WriteBranch(branchopcode);
 			_writer.LastInstruction.Rt = conditionregister;
-			_branchInstructions.Add(new KeyValuePair<SpuInstruction, BasicBlock>(_writer.LastInstruction, target));
+			_branchInstructions.Add(new KeyValuePair<SpuInstruction, IRBasicBlock>(_writer.LastInstruction, target));
 		}
 
 		private VirtualRegister GetVirtualRegister(TreeInstruction inst)

@@ -45,7 +45,7 @@ namespace CellDotNet
 			private set { _state = value; }
 		}
 
-		private List<BasicBlock> _blocks = new List<BasicBlock>();
+		private List<IRBasicBlock> _blocks = new List<IRBasicBlock>();
 
 		public List<SpuBasicBlock> SpuBasicBlocks
 		{
@@ -55,7 +55,7 @@ namespace CellDotNet
 			}
 		}
 
-		public List<BasicBlock> Blocks
+		public List<IRBasicBlock> Blocks
 		{
 			get { return _blocks; }
 		}
@@ -99,7 +99,7 @@ namespace CellDotNet
 
 		public void VisitTreeInstructions(Action<TreeInstruction> action)
 		{
-			foreach (BasicBlock block in _blocks)
+			foreach (IRBasicBlock block in _blocks)
 			{
 				foreach (TreeInstruction root in block.Roots)
 				{
@@ -160,7 +160,7 @@ namespace CellDotNet
 			Utilities.Assert(_variables != null, "_variables != null");
 			Utilities.Assert(_parameters != null, "_parameters != null");
 
-			BasicBlock currblock = new BasicBlock();
+			IRBasicBlock currblock = new IRBasicBlock();
 			List<TreeInstruction> stack = new List<TreeInstruction>();
 			List<TreeInstruction> branches = new List<TreeInstruction>();
 
@@ -309,12 +309,12 @@ namespace CellDotNet
 			// Fix branches.
 			// It is by definition only possible to branch to basic blocks.
 			// So we need to create these blocks.
-			Dictionary<int, BasicBlock> basicBlockOffsets = new Dictionary<int, BasicBlock>();
+			Dictionary<int, IRBasicBlock> basicBlockOffsets = new Dictionary<int, IRBasicBlock>();
 
 			foreach (TreeInstruction branchinst in branches)
 			{
 				int targetPos = (int) branchinst.Operand;
-				BasicBlock target;
+				IRBasicBlock target;
 
 				if (basicBlockOffsets.TryGetValue(targetPos, out target))
 				{
@@ -325,7 +325,7 @@ namespace CellDotNet
 				// Find root to create basic block from.
 				for (int bbindex = 0; bbindex < Blocks.Count; bbindex++)
 				{
-					BasicBlock bb = Blocks[bbindex];
+					IRBasicBlock bb = Blocks[bbindex];
 					for (int rootindex = 0; rootindex < bb.Roots.Count; rootindex++)
 					{
 						TreeInstruction firstinst = bb.Roots[rootindex].GetFirstInstruction();
@@ -337,7 +337,7 @@ namespace CellDotNet
 						List<TreeInstruction> newblockroots = bb.Roots.GetRange(rootindex, bb.Roots.Count - rootindex);
 						bb.Roots.RemoveRange(rootindex, bb.Roots.Count - rootindex);
 
-						BasicBlock newbb = new BasicBlock();
+						IRBasicBlock newbb = new IRBasicBlock();
 						newbb.Roots.AddRange(newblockroots);
 						Blocks.Insert(bbindex + 1, newbb);
 
@@ -530,7 +530,7 @@ namespace CellDotNet
 			}
 
 			// Generate the body.
-			ILTreeSpuWriter selector = new ILTreeSpuWriter();
+			RecursiveInstructionSelector selector = new RecursiveInstructionSelector();
 			selector.GenerateCode(this, _instructions);
 
 			// Move callee saves temps back to physical regs.
@@ -844,7 +844,7 @@ namespace CellDotNet
 		/// </summary>
 		private void DeriveTypes()
 		{
-			foreach (BasicBlock block in Blocks)
+			foreach (IRBasicBlock block in Blocks)
 			{
 				foreach (TreeInstruction root in block.Roots)
 				{

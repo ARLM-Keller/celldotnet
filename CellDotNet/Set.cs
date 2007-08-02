@@ -8,7 +8,7 @@ namespace CellDotNet
 	{
 		Dictionary<T, bool> dict = new Dictionary<T, bool>();
 
-		public static Set<T> Add<T>(T item, Set<T> set)
+		public static Set<T> Add(T item, Set<T> set)
 		{
 			if(set == null)
 				set = new Set<T>();
@@ -107,6 +107,15 @@ namespace CellDotNet
 				if (!Contains(e))
 					return false;
 			return true;
+		}
+
+		public override int GetHashCode()
+		{
+			int hash = 0;
+			foreach (T t in this)
+				hash += t.GetHashCode();
+
+			return hash;
 		}
 
 		IEnumerator<T> IEnumerable<T>.GetEnumerator()

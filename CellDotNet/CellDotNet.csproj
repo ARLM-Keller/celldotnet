@@ -42,7 +42,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithms.cs" />
-    <Compile Include="BasicBlock.cs" />
     <Compile Include="CalleeSavesStoreRoutine.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="CompileContextTest.cs" />
@@ -52,6 +51,7 @@
     <Compile Include="ILReader.cs" />
     <Compile Include="ILReaderTest.cs" />
     <Compile Include="InterferenceGraph.cs" />
+    <Compile Include="IRBasicBlock.cs" />
     <Compile Include="IRCode.cs" />
     <Compile Include="IROpCodes.cs" />
     <Compile Include="LivenessAnalyzer.cs" />
@@ -63,12 +63,12 @@
     <Compile Include="CompileContext.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="HardwareRegister.cs" />
-    <Compile Include="ILTreeSpuWriter.cs" />
     <Compile Include="IrOpCode.cs" />
     <Compile Include="CliType.cs" />
     <Compile Include="LiveInterval.cs" />
     <Compile Include="MethodCallInstruction.cs" />
     <Compile Include="ObjectWithAddress.cs" />
+    <Compile Include="RecursiveInstructionSelector.cs" />
     <Compile Include="RegAllocGraphColloring.cs" />
     <Compile Include="SimpleLiveAnalyzer.cs" />
     <Compile Include="SimpleRegAlloc.cs" />
