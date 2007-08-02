@@ -96,7 +96,7 @@ namespace CellDotNet
 			}
 		}
 
-		private void AssertRegisterNotNull(VirtualRegister reg, string regname)
+		static private void AssertRegisterNotNull(VirtualRegister reg, string regname)
 		{
 			if (reg == null)
 				throw new ArgumentException("Register argument " + regname + " is null.");
