@@ -60,6 +60,7 @@ namespace CellDotNet
 			get { return _blocks; }
 		}
 
+
 		private MethodBase _methodBase;
 
 		public MethodBase MethodBase
