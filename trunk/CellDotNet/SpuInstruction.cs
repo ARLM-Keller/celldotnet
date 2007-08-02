@@ -8,7 +8,7 @@ namespace CellDotNet
     /// Represents an SPU instruction.
     /// </summary>
 	[DebuggerDisplay("{OpCode.Name}")]
-    public class SpuInstruction
+    class SpuInstruction
     {
         public SpuInstruction(SpuOpCode _opcode)
         {

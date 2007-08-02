@@ -115,7 +115,24 @@ namespace CellDotNet
 				case IRCode.Jmp:
 					break;
 				case IRCode.Call:
-					break;
+					{
+						MethodCompiler target = (MethodCompiler) inst.Operand;
+
+						if (target.MethodBase.IsConstructor)
+							throw new NotImplementedException("Constructors are not implemented.");
+						if (!target.MethodBase.IsStatic)
+							throw new NotImplementedException("Only static methods are implemented.");
+
+						// Move parameters into hardware registers.
+						for (int i = 0; i < target.Parameters.Count; i++)
+							_writer.WriteMove(childregs[i], SpuAbiUtilities.GetHardwareArgumentRegister(i));
+
+
+						if (inst.StackType != StackTypeDescription.None)
+							return SpuAbiUtilities.GetHardwareRegister(3);
+						else
+							return null;
+					}
 				case IRCode.Callvirt:
 					break;
 				case IRCode.Calli:

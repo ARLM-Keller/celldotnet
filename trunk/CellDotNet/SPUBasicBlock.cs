@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CellDotNet
 {
-	public class SpuBasicBlock
+	class SpuBasicBlock
 	{
 		private SpuInstruction _head;
 		public SpuInstruction Head

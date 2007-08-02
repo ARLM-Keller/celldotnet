@@ -26,5 +26,13 @@ namespace CellDotNet
 			vr.Location = reg;
 			return vr;
 		}
+
+		public static VirtualRegister GetHardwareArgumentRegister(int argumentnum)
+		{
+			if (argumentnum < 0 || argumentnum > 71)
+				throw new ArgumentOutOfRangeException("argumentnum", argumentnum, "0 <= x < 71");
+
+			return GetHardwareRegister(3 + argumentnum);
+		}
 	}
 }

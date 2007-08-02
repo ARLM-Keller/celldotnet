@@ -519,8 +519,26 @@ namespace CellDotNet
 
 			_instructions = new SpuInstructionWriter();
 
-			ILTreeSpuWriter writer = new ILTreeSpuWriter();
-			writer.GenerateCode(this, _instructions);
+			// Move calle-saves regs to virtual regs.
+			_instructions.BeginNewBasicBlock();
+			List<VirtualRegister> calleTemps = new List<VirtualRegister>(48);
+			for (int regnum = 80; regnum <= 127; regnum++)
+			{
+				VirtualRegister temp = NextRegister();
+				calleTemps.Add(temp);
+				_instructions.WriteMove(SpuAbiUtilities.GetHardwareRegister(regnum), temp);
+			}
+
+			// Generate the body.
+			ILTreeSpuWriter selector = new ILTreeSpuWriter();
+			selector.GenerateCode(this, _instructions);
+
+			// Move callee saves temps back to physical regs.
+			_instructions.BeginNewBasicBlock();
+			for (int regnum = 80; regnum <= 127; regnum++)
+			{
+				_instructions.WriteMove(calleTemps[regnum - 80], SpuAbiUtilities.GetHardwareRegister(regnum));
+			}
 
 			State = MethodCompileState.S4InstructionSelectionDone;
 		}
@@ -620,6 +638,10 @@ namespace CellDotNet
 			_state = MethodCompileState.S6PrologAndEpilogDone;
 		}
 
+		/// <summary>
+		/// Writes outer prolog.
+		/// </summary>
+		/// <param name="prolog"></param>
 		private void WriteProlog(SpuInstructionWriter prolog)
 		{
 			// TODO: Store caller-saves registers that this method uses, based on negative offsts
@@ -636,37 +658,35 @@ namespace CellDotNet
 			// First/topmost caller-saves register caller SP slot offset.
 //			int first_GRSA_slot_offset = -(RASA_slots + 1);
 
-			VirtualRegister lr = SpuAbiUtilities.GetHardwareRegister(0);
-			VirtualRegister sp = SpuAbiUtilities.GetHardwareRegister(1);
-
 			// Save LR in caller's frame.
-			prolog.WriteStqd(lr, sp, 1);
+			prolog.WriteStqd(SpuAbiUtilities.LR, SpuAbiUtilities.SP, 1);
 
 			// Establish new SP.
-			prolog.WriteSfi(sp, sp, -frameSlots*16);
+			prolog.WriteSfi(SpuAbiUtilities.SP, SpuAbiUtilities.SP, -frameSlots*16);
 
 			// Store SP at new frame's Back Chain.
-			prolog.WriteStqd(sp, sp, 0);
+			prolog.WriteStqd(SpuAbiUtilities.SP, SpuAbiUtilities.SP, 0);
 		}
 
+		/// <summary>
+		/// Writes inner epilog.
+		/// </summary>
+		/// <param name="epilog"></param>
 		private void WriteEpilog(SpuInstructionWriter epilog)
 		{
 			// Assume that the code that wants to return has placed the return value in the correct
 			// registers (R3+).
 
-			VirtualRegister lr = SpuAbiUtilities.GetHardwareRegister(0);
-			VirtualRegister sp = SpuAbiUtilities.GetHardwareRegister(1);
-
 			// Restore old SP.
-			epilog.WriteLqd(sp, sp, 0);
+			epilog.WriteLqd(SpuAbiUtilities.SP, SpuAbiUtilities.SP, 0);
 
 			// TODO: Restore caller-saves.
 
 			// Restore old LR from callers frame.
-			epilog.WriteLqd(lr, sp, 1);
+			epilog.WriteLqd(SpuAbiUtilities.LR, SpuAbiUtilities.SP, 1);
 
 			// Return.
-			epilog.WriteBi(lr);
+			epilog.WriteBi(SpuAbiUtilities.LR);
 		}
 
 		/// <summary>
@@ -926,8 +946,6 @@ namespace CellDotNet
 				optype = (Type) inst.Operand;
 			else if (inst.Operand is MethodVariable)
 				optype = ((MethodVariable)inst.Operand).Type;
-			else if (inst.Operand is MethodParameter)
-				optype = ((MethodParameter) inst.Operand).Type;
 			else
 				optype = null;
 

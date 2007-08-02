@@ -14,7 +14,7 @@ namespace CellDotNet
 		/// <summary>
 		/// Byte offset of the basic block relative to the start of the compilation set.
 		/// </summary>
-		public int Offset
+		public virtual int Offset
 		{
 			get { return _offset; }
 			set { _offset = value; }
