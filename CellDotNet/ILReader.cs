@@ -215,8 +215,9 @@ namespace CellDotNet
 //				case OperandType.InlinePhi:
 //					break;
 				case OperandType.InlineR:
-					_operand = BitConverter.ToDouble(_il, _readoffset);
-					_readoffset += 8;
+//					_operand = BitConverter.ToDouble(_il, _readoffset);
+//					_readoffset += 8;
+					_operand = ReadDouble();
 					break;
 				case OperandType.InlineSig:
 					xtoken = ReadInt32();
@@ -265,12 +266,23 @@ namespace CellDotNet
 					_operand = ReadInt8();
 					break;
 				case OperandType.ShortInlineR:
-					_operand = BitConverter.ToSingle(_il, _readoffset);
-					_readoffset += 4;
+					_operand = ReadSingle();
 					break;
 				default:
 					throw new ILException("Unknown operand type: " + srOpcode.OperandType);
 			}
+		}
+
+		private unsafe float ReadSingle()
+		{
+			int i = ReadInt32();
+			return *(((float*)&i));
+		}
+
+		private unsafe double ReadDouble()
+		{
+			long i = ReadInt64();
+			return *(((double*)&i));
 		}
 
 		/// <summary>
