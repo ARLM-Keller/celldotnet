@@ -47,6 +47,14 @@ namespace CellDotNet
 
 		private List<BasicBlock> _blocks = new List<BasicBlock>();
 
+		public List<SpuBasicBlock> SpuBasicBlocks
+		{
+			get
+			{
+				return GetBodyWriter().BasicBlocks;
+			}
+		}
+
 		public List<BasicBlock> Blocks
 		{
 			get { return _blocks; }

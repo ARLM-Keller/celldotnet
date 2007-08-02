@@ -6,6 +6,24 @@ namespace CellDotNet
 {
     class HardwareRegister : StoreLocation
     {
+		private static Dictionary<CellRegister, VirtualRegister> preColoredVirtualRegister;
+
+		static HardwareRegister()
+    	{
+			preColoredVirtualRegister = new Dictionary<CellRegister, VirtualRegister>();
+
+			for (int i = 0; i <= 127; i++)
+			{
+				preColoredVirtualRegister[(CellRegister) i] = new VirtualRegister();
+			}
+    	}
+
+		public static IEnumerable<VirtualRegister> getPrecolored()
+		{
+			return preColoredVirtualRegister.Values;
+		}
+
+
     	private static HardwareRegister[] s_cellRegisters;
         public static IList<HardwareRegister> GetCellRegisters()
         {
@@ -44,6 +62,8 @@ namespace CellDotNet
             get { return _register; }
             set { _register = value; }
         }
+
+
     }
 
     public enum CellRegister

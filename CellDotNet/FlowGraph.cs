@@ -1,38 +1,36 @@
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace CellDotNet
 {
 	public class FlowGraph : Graph
 	{
-		private Dictionary<Node, VirtualRegister> defs = new Dictionary<Node, VirtualRegister>();
-		private Dictionary<Node, List<VirtualRegister>> uses = new Dictionary<Node, List<VirtualRegister>>();
+		private Dictionary<GraphNode, VirtualRegister> defs = new Dictionary<GraphNode, VirtualRegister>();
+		private Dictionary<GraphNode, List<VirtualRegister>> uses = new Dictionary<GraphNode, List<VirtualRegister>>();
 
-		private Dictionary<Node, bool> isMoves = new Dictionary<Node, bool>();
+		private Dictionary<GraphNode, bool> isMoves = new Dictionary<GraphNode, bool>();
 
-		public Node NewNode(VirtualRegister def, List<VirtualRegister> use, bool isMove)
+		public GraphNode NewNode(VirtualRegister def, List<VirtualRegister> use, bool isMove)
 		{
-			Node node = NewNode();
-			defs[node] = def;
-			uses[node] = use;
-			isMoves[node] = isMove;
-			return node;
+			GraphNode graphNode = NewNode();
+			defs[graphNode] = def;
+			uses[graphNode] = use;
+			isMoves[graphNode] = isMove;
+			return graphNode;
 		}
 
-		public VirtualRegister def(Node node)
+		public VirtualRegister def(GraphNode graphNode)
 		{
-			return defs[node];
+			return defs[graphNode];
 		}
 
-		public List<VirtualRegister> use(Node node)
+		public List<VirtualRegister> use(GraphNode graphNode)
 		{
-			return uses[node];
+			return uses[graphNode];
 		}
 
-		public bool IsMove(Node node)
+		public bool IsMove(GraphNode graphNode)
 		{
-			return isMoves[node];
+			return isMoves[graphNode];
 		}
 
 

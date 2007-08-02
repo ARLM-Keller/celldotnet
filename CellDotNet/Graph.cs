@@ -4,67 +4,153 @@ namespace CellDotNet
 {
 	public class Graph
 	{
-		private Set<Node> _nodes = new Set<Node>();
-		public Set<Node> Nodes
+		private Set<GraphNode> _nodes = new Set<GraphNode>();
+		public Set<GraphNode> Nodes
 		{
 			get { return _nodes; }
 		}
 
-		public Node NewNode()
+		private Set<GraphNode> _frozenNodes = new Set<GraphNode>();
+
+		private bool isFrozen = false;
+
+		virtual public GraphNode NewNode()
 		{
-			Node n = new Node(this);
+			GraphNode n = new GraphNode(this);
 			_nodes.Add(n);
 			return n;
 		}
 
-		public void AddEdge(Node from, Node to)
+		public void AddEdge(GraphNode from, GraphNode to)
 		{
 			if (from.Graph != this || to.Graph != this)
 				throw new ArgumentException("Nodes do not belong to the graph.");
+
+			if (isFrozen && (!_frozenNodes.Contains(from) || !_frozenNodes.Contains(to)))
+				throw new ArgumentException();
+
 			from.Succ.Add(to);
 			to.Pred.Add(from);
 		}
 
-		public void RemoveEdge(Node from, Node to)
+		public void RemoveEdge(GraphNode from, GraphNode to)
 		{
 			if (from.Graph != this || to.Graph != this)
 				throw new ArgumentException("Nodes do not belong to the graph.");
+
+			if (isFrozen && (!_frozenNodes.Contains(from) || !_frozenNodes.Contains(to)))
+				throw new ArgumentException();
+
 			from.Succ.Remove(to);
 			to.Pred.Remove(from);
 		}
+
+		public void Freez()
+		{
+			if (isFrozen)
+				throw new Exception("Error.");
+
+			_frozenNodes.AddAll(_nodes);
+
+			foreach (GraphNode node in _nodes)
+				 node.Freez();
+		}
+
+		public void RemoveNode(GraphNode graphNode)
+		{
+			if (graphNode.Graph != this)
+				throw new ArgumentException();
+
+			_nodes.Remove(graphNode);
+
+			foreach (GraphNode succ in graphNode.Succ)
+				RemoveEdge(graphNode, succ);
+
+			foreach (GraphNode pred in graphNode.Pred)
+				RemoveEdge(pred, graphNode);
+
+			if (!isFrozen)
+				graphNode.Graph = null;
+		}
+
+		public void AddFrozenNodeWithEdges(GraphNode graphNode)
+		{
+			if (!isFrozen)
+				throw new Exception("Graph not frozen.");
+
+			if (graphNode.Graph != this )
+				throw new ArgumentException();
+
+			if (isFrozen && (!_frozenNodes.Contains(graphNode)))
+				throw new ArgumentException();
+
+			_nodes.Add(graphNode);
+
+			foreach (GraphNode succ in graphNode.FrozenSucc)
+				if (_nodes.Contains(succ))
+					AddEdge(graphNode, succ);
+
+			foreach (GraphNode pred in graphNode.FrozenPred)
+				if (_nodes.Contains(pred))
+					AddEdge(pred, graphNode);
+		}
 	}
 
-	public class Node
+	public class GraphNode
 	{
-		private Set<Node> _succ = new Set<Node>();
+		private Set<GraphNode> _succ = new Set<GraphNode>();
 		// NOTE: Succ og Pred returneres en referense til den interne representation,
 		// så der skal laves en kopi inden der laves strukturelle ændringer på den returnerede liste.
-		public Set<Node> Succ
+		public Set<GraphNode> Succ
 		{
 			get { return _succ; }
 		}
 
 		// Ikke nødvendig for at representere grafer, men hurtgere i forbindelse med at finde forgængeren
-		private Set<Node> _pred = new Set<Node>();
-		public Set<Node> Pred
+		private Set<GraphNode> _pred = new Set<GraphNode>();
+		public Set<GraphNode> Pred
 		{
 			get { return _pred; }
 		}
+
+		private Set<GraphNode> _frozenPred = new Set<GraphNode>();
+		public Set<GraphNode> FrozenPred
+		{
+			get { return _frozenPred; }
+		}
+
+		private Set<GraphNode> _frozenSucc = new Set<GraphNode>();
+		public Set<GraphNode> FrozenSucc
+		{
+			get { return _frozenSucc; }
+		}
+
+		private bool isFrozen = false;
 
 		private Graph _graph;
 		public Graph Graph
 		{
 			get { return _graph; }
+			set { _graph = value; }
 		}
 
-		public Node(Graph graph)
+		public GraphNode(Graph graph)
 		{
 			_graph = graph;
 		}
 
-		public Set<Node> Adj()
+		public void Freez()
 		{
-			Set<Node> nodeSet = new Set<Node>();
+			if (isFrozen)
+				throw new Exception("Error.");
+
+			_frozenPred.AddAll(_pred);
+			_frozenSucc.AddAll(_succ);
+		}
+
+		public Set<GraphNode> Adj()
+		{
+			Set<GraphNode> nodeSet = new Set<GraphNode>();
 			nodeSet.AddAll(_succ);
 			nodeSet.AddAll(_pred);
 			return nodeSet;
@@ -85,19 +171,19 @@ namespace CellDotNet
 			return Adj().Count;
 		}
 
-		public bool GoesTo(Node node)
+		public bool GoesTo(GraphNode graphNode)
 		{
-			return _succ.Contains(node);
+			return _succ.Contains(graphNode);
 		}
 
-		public bool ComesFrom(Node node)
+		public bool ComesFrom(GraphNode graphNode)
 		{
-			return _pred.Contains(node);
+			return _pred.Contains(graphNode);
 		}
 
-		public bool Adj(Node node)
+		public bool Adj(GraphNode graphNode)
 		{
-			return GoesTo(node) || ComesFrom(node);
+			return GoesTo(graphNode) || ComesFrom(graphNode);
 		}
 	}
 }

@@ -50,6 +50,5 @@ namespace CellDotNet
 			else
 				return "$$";
 		}
-
     }
 }

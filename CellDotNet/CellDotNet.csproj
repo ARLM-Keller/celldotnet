@@ -50,6 +50,7 @@
     <Compile Include="GraphTest.cs" />
     <Compile Include="ILReader.cs" />
     <Compile Include="ILReaderTest.cs" />
+    <Compile Include="InterferenceGraph.cs" />
     <Compile Include="IRCode.cs" />
     <Compile Include="IROpCodes.cs" />
     <Compile Include="LivenessAnalyzer.cs" />
@@ -67,6 +68,7 @@
     <Compile Include="LiveInterval.cs" />
     <Compile Include="MethodCallInstruction.cs" />
     <Compile Include="ObjectWithAddress.cs" />
+    <Compile Include="RegAllocGraphColloring.cs" />
     <Compile Include="SimpleLiveAnalyzer.cs" />
     <Compile Include="SimpleRegAlloc.cs" />
     <Compile Include="SimpleRegAllocTest.cs" />

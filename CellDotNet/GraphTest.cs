@@ -12,7 +12,7 @@ namespace CellDotNet
 		public void CreatGraphNodeTest()
 		{
 			Graph g = new Graph();
-			Node n = g.NewNode();
+			GraphNode n = g.NewNode();
 			g.Nodes.Contains(n);
 		}
 
@@ -21,8 +21,8 @@ namespace CellDotNet
 		{
 			Graph g1 = new Graph();
 			Graph g2 = new Graph();
-			Node n1 = new Node(g1);
-			Node n2 = new Node(g2);
+			GraphNode n1 = new GraphNode(g1);
+			GraphNode n2 = new GraphNode(g2);
 
 			g1.AddEdge(n1, n2);
 		}
