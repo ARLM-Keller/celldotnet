@@ -1,13 +1,22 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 
 namespace CellDotNet
 {
 	public class Set<T> : IEnumerable<T>, ICollection<T>
 	{
 		Dictionary<T, bool> dict = new Dictionary<T, bool>();
+
+		public static Set<T> Add<T>(T item, Set<T> set)
+		{
+			if(set == null)
+				set = new Set<T>();
+
+			set.Add(item);
+
+			return set;
+		}
 
 		public void Add(T item)
 		{
@@ -16,15 +25,33 @@ namespace CellDotNet
 
 		public void AddAll(Set<T> set)
 		{
-			foreach(T item in set)
+			if (set != null)
+				foreach (T item in set)
+				{
+					Add(item);
+			}
+		}
+
+		public void AddAll(IEnumerable<T> values)
+		{
+			if (values != null)
+				foreach (T item in values)
+				{
+					Add(item);
+				}
+		}
+
+		public void RemoveAll(Set<T> set)
+		{
+			foreach (T item in set)
 			{
-				Add(item);
+				Remove(item);
 			}
 		}
 
 		public void Clear()
 		{
-			throw new NotImplementedException();
+			dict.Clear();
 		}
 
 		public bool Contains(T item)
@@ -42,6 +69,20 @@ namespace CellDotNet
 			return dict.Remove(item);
 		}
 
+		public void RemoveAll(IEnumerable<T> values)
+		{
+			if(values != null)
+				foreach (T t in values)
+					Remove(t);
+		}
+
+		// Returns a "Random" item from the set.
+		public T getItem()
+		{
+			IEnumerator<T> e = ((IEnumerable<T>)this).GetEnumerator();
+			return e.Current;
+		}
+
 		public int Count
 		{
 			get { return dict.Count; }
@@ -50,6 +91,22 @@ namespace CellDotNet
 		public bool IsReadOnly
 		{
 			get { return false; }
+		}
+
+		override public bool Equals(Object o)
+		{
+			if (!(o is Set<T>))
+				return false;
+
+			Set<T> set = (Set<T>) o;
+
+			if (Count != set.Count)
+				return false;
+
+			foreach (T e in set)
+				if (!Contains(e))
+					return false;
+			return true;
 		}
 
 		IEnumerator<T> IEnumerable<T>.GetEnumerator()

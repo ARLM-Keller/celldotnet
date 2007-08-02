@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace CellDotNet
@@ -7,7 +6,7 @@ namespace CellDotNet
 	/// <summary>
 	/// Bit-layout of an instruction.
 	/// </summary>
-	enum SpuInstructionFormat
+	public enum SpuInstructionFormat
 	{
 		None,
 		/// <summary>
@@ -86,7 +85,7 @@ namespace CellDotNet
 	}
 
 	[Flags]
-	enum SpuOpCodeRegisterUsage
+	public enum SpuOpCodeRegisterUsage
 	{
 		None,
 		Rt = 1 << 0,
@@ -106,7 +105,7 @@ namespace CellDotNet
 	/// <summary>
 	/// Special features that an opcode can have, like D and E bits or branch hint offset.
 	/// </summary>
-	enum SpuOpCodeSpecialFeatures
+	public enum SpuOpCodeSpecialFeatures
 	{
 		None = 0,
 		BitC = 1 << 0,
@@ -133,7 +132,7 @@ namespace CellDotNet
 	/// "Synergistic Processor Unit Instruction Set Architecture" version 1.2
 	/// </summary>
 	[DebuggerDisplay("{Name}")]
-	class SpuOpCode
+	public class SpuOpCode
 	{
 		private string _name;
 		public string Name

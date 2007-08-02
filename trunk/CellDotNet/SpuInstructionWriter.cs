@@ -11,9 +11,9 @@ namespace CellDotNet
 		/// <summary>
 		/// The instructions that have been written.
 		/// </summary>
-		public ReadOnlyCollection<SpuBasicBlock> BasicBlocks
+		public List<SpuBasicBlock> BasicBlocks
 		{
-			get { return _basicBlocks.AsReadOnly(); }
+			get { return _basicBlocks; }
 		}
 
 		public int GetInstructionCount()
