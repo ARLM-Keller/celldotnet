@@ -8,16 +8,6 @@ namespace CellDotNet
 	{
 		Dictionary<T, bool> dict = new Dictionary<T, bool>();
 
-		public static Set<T> Add(T item, Set<T> set)
-		{
-			if(set == null)
-				set = new Set<T>();
-
-			set.Add(item);
-
-			return set;
-		}
-
 		public void Add(T item)
 		{
 			dict[item] = true;
