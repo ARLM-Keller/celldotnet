@@ -270,6 +270,8 @@ namespace CellDotNet
 			CompareExecution(g);
 		}
 
+		
+
 		private void CompareExecution<T>(Getter<T> getter) where T : IComparable<T>
 		{
 			CompileContext cc = new CompileContext(getter.Method);
@@ -280,6 +282,7 @@ namespace CellDotNet
 				ctx.LoadProgram(code);
 				ctx.Run();
 			}
+
 			// TODO: Run both delegates and compare the return value.
 			throw new NotImplementedException();
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 
@@ -9,6 +10,8 @@ namespace CellDotNet
 	{
 		static public void Main(string[] args)
 		{
+			Trace.Listeners.Add(new ConsoleTraceListener());
+
 			new SpeContextTest().TestGetPutInt32();
 //			new SpeContextTest().TestFirstCellProgram();
 //			new SpuInitializerTest().TestInitialization();
@@ -21,7 +24,7 @@ namespace CellDotNet
 //			TypeExperimenalStuff(3);
 //			new MethodCompilerTest().TestBuildTree();
 //			DoExtremelySimpleParameterCodeGen();
-			System.Console.WriteLine("Program done.");
+			Console.WriteLine("Program done.");
 		}
 
 		private static void GenericExperiment()

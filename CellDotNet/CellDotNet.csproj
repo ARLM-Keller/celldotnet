@@ -55,6 +55,7 @@
     <Compile Include="IRCode.cs" />
     <Compile Include="IROpCodes.cs" />
     <Compile Include="LivenessAnalyzer.cs" />
+    <Compile Include="LocalStorageAddress.cs" />
     <Compile Include="MethodCompiler.cs" />
     <Compile Include="MethodCompilerTest.cs" />
     <Compile Include="MethodParameter.cs" />
@@ -86,6 +87,7 @@
     <Compile Include="OpCodeGroup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SpuInstructionDefinition.cs" />
+    <Compile Include="SpuInstructionTest.cs" />
     <Compile Include="SpuInstructionWriter.cs" />
     <Compile Include="SpuInstructionWriter_autogen.cs" />
     <Compile Include="SpuManualRoutine.cs" />

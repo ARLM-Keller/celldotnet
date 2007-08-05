@@ -27,13 +27,6 @@ namespace CellDotNet
 	[Serializable]
 	public class InvalidILTreeException : Exception
 	{
-		//
-		// For guidelines regarding the creation of new exception types, see
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
-		// and
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
-		//
-
 		public InvalidILTreeException() { }
 		public InvalidILTreeException(string message) : base(message) { }
 		public InvalidILTreeException(string message, Exception inner) : base(message, inner) { }
@@ -47,13 +40,6 @@ namespace CellDotNet
 	[Serializable]
 	class ILNotImplementedException : Exception
 	{
-		//
-		// For guidelines regarding the creation of new exception types, see
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
-		// and
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
-		//
-
 		public ILNotImplementedException() { }
 		public ILNotImplementedException(string message) : base(message) { }
 		public ILNotImplementedException(string message, Exception inner) : base(message, inner) { }
@@ -69,16 +55,9 @@ namespace CellDotNet
 	}
 
 
-	[global::System.Serializable]
+	[Serializable]
 	public class BadSpuInstructionException : Exception
 	{
-		//
-		// For guidelines regarding the creation of new exception types, see
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
-		// and
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
-		//
-
 		public BadSpuInstructionException() { }
 		internal BadSpuInstructionException(SpuInstruction inst) : base("Opcode: " + inst.OpCode.Name) { }
 		public BadSpuInstructionException(string message) : base(message) { }
@@ -93,21 +72,19 @@ namespace CellDotNet
 	[Serializable]
 	public class LibSpeException : Exception
 	{
-		//
-		// For guidelines regarding the creation of new exception types, see
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
-		// and
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
-		//
+		private static Type s_stdlib;
+
+		static LibSpeException()
+		{
+			//  /usr/lib/mono/gac/Mono.Posix/2.0.0.0__0738eb9f132ed756/Mono.Posix.dll
+			Assembly ass = Assembly.LoadFrom("/usr/lib/mono/gac/Mono.Posix/2.0.0.0__0738eb9f132ed756/Mono.Posix.dll");
+			s_stdlib = ass.GetType("Mono.Unix.Native.Stdlib");
+		}
 
 		static string GetErrorMessage()
 		{
 			return "";
-//			//  /usr/lib/mono/gac/Mono.Posix/2.0.0.0__0738eb9f132ed756/Mono.Posix.dll
-//			Assembly ass = Assembly.LoadFrom("/usr/lib/mono/gac/Mono.Posix/2.0.0.0__0738eb9f132ed756/Mono.Posix.dll");
-////			Assembly ass = AppDomain.CurrentDomain.Load("Mono.Posix");
-//			Type type = ass.GetType("Mono.Unix.Native.Stdlib");
-//			return " code: " + type.GetMethod("GetLastError").Invoke(null, null).ToString();
+//			return " code: " + s_stdlib.GetMethod("GetLastError").Invoke(null, null);
 		}
 
 		public LibSpeException() { }

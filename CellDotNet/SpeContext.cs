@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -70,8 +72,6 @@ namespace CellDotNet
 				int codeBufSize = ((code.Length*4)/16 + 1)*16;
 
 				uint DMA_tag = 1;
-				Console.WriteLine("Starting DMA.");
-
 				spe_mfcio_get(0, dataBuf, codeBufSize, DMA_tag, 0, 0);
 
 
@@ -96,32 +96,41 @@ namespace CellDotNet
 		/// Gets a 4-byte integer from the specified local storage address.
 		/// </summary>
 		/// <param name="lsAddress"></param>
-		public int DmaGetInt32(int lsAddress)
+		public int DmaGetInt32(LocalStorageAddress lsAddress)
 		{
-			uint DMA_tag = 1;
-//			Align16 block = new Align16();
-//			IntPtr ptr = block.Get8BytesAlignedAddress();
-			byte* buf = stackalloc byte[7];
-			IntPtr ptr = (IntPtr) (((int)buf + 3) & ~3);
+			byte* buf = stackalloc byte[31];
+			IntPtr ptr = (IntPtr) (((int)buf + 15) & ~15);
 
-			spe_mfcio_put(lsAddress, ptr, 4, DMA_tag, 0, 0);
-			return *((int*) ptr);
+			uint DMA_tag = 1;
+			spe_mfcio_put(lsAddress.Value, ptr, 16, DMA_tag, 0, 0);
+
+			uint tag_status = 0;
+			int waitresult = UnsafeNativeMethods.spe_mfcio_tag_status_read(_handle, 0, SPE_TAG_ANY, ref tag_status);
+			if (waitresult != 0)
+				throw new LibSpeException("spe_mfcio_tag_status_read failed.");
+
+			return Marshal.ReadInt32(ptr);
 		}
 
 		/// <summary>
-		/// Puts a 4-byte integer to the specified local storage address.
+		/// Puts an integer to the specified local storage address.
 		/// </summary>
 		/// <param name="lsAddress"></param>
 		/// <param name="value"></param>
-		public void DmaPut(int lsAddress, int value)
+		public void DmaPut(LocalStorageAddress lsAddress, int value)
 		{
 			uint DMA_tag = 1;
-//			Align16 block = new Align16();
-//			IntPtr ptr = block.Get8BytesAlignedAddress();
-			byte* buf = stackalloc byte[7];
-			IntPtr ptr = (IntPtr)(((int)buf + 3) & ~3);
+			byte* buf = stackalloc byte[31];
+			IntPtr ptr = (IntPtr)(((int)buf + 15) & ~15);
 
-			spe_mfcio_get(lsAddress, ptr, 4, DMA_tag, 0, 0);
+			Marshal.WriteInt32(ptr, value);
+
+			spe_mfcio_get(lsAddress.Value, ptr, 16, DMA_tag, 0, 0);
+
+			uint tag_status = 0;
+			int waitresult = UnsafeNativeMethods.spe_mfcio_tag_status_read(_handle, 0, SPE_TAG_ANY, ref tag_status);
+			if (waitresult != 0)
+				throw new LibSpeException("spe_mfcio_tag_status_read failed.");
 		}
 
 		public int[] GetCopyOffLocalStorage()
@@ -135,7 +144,6 @@ namespace CellDotNet
 				IntPtr dataBuf = (IntPtr) (((int) dataBufMain + 15) & ~0xf);
 
 				uint DMA_tag = 2;
-				Console.WriteLine("Starting DMA.");
 
 				spe_mfcio_put(0, dataBuf, (uint) LocalStorageSize, DMA_tag, 0, 0);
 
@@ -147,17 +155,14 @@ namespace CellDotNet
 
 				Console.WriteLine("DMA done.");
 
-				if (waitresult == 0)
-				{
-					int[] data = new int[LocalStorageSize/4];
-					Marshal.Copy(dataBuf, data, 0, LocalStorageSize/4);
-					return data;
-				}
-				else
-				{
+				if (waitresult != 0)
 					throw new LibSpeException("spe_mfcio_tag_status_read failed.");
-				}
-			} finally
+
+				int[] data = new int[LocalStorageSize/4];
+				Marshal.Copy(dataBuf, data, 0, LocalStorageSize/4);
+				return data;
+			}
+			finally
 			{
 				if(dataBufMain != IntPtr.Zero)
 					Marshal.FreeHGlobal(dataBufMain);
@@ -184,7 +189,16 @@ namespace CellDotNet
 		/// <param name="rid"></param>
 		private void spe_mfcio_get(int lsa, IntPtr ea, int size, uint tag, uint tid, uint rid)
 		{
-			int loadresult = UnsafeNativeMethods.spe_mfcio_get(_handle, (uint) lsa, ea, (uint) size, tag, tid, rid);
+			// Seems like 16 bytes is the smallest transfer unit that works...
+			if ((size <= 0) || (size % 16) != 0)
+				throw new ArgumentException("Size is not a positive multiplum of 16 bytes.");
+			if ((lsa % 16) != 0)
+				throw new ArgumentException("Not 16-byte aligned LSA.");
+			if (((long)ea % 16) != 0)
+				throw new ArgumentException("Not 16-byte aligned EA.");
+
+			Trace.WriteLine(string.Format("Starting DMA: spe_mfcio_get: EA: {0:x8}, LSA: {1:x6}, size: {2:x6}", (int)ea, lsa, size));
+			int loadresult = UnsafeNativeMethods.spe_mfcio_get(_handle, (uint)lsa, ea, (uint)size, tag, tid, rid);
 
 			if (loadresult != 0)
 				throw new LibSpeException("spe_mfcio_get failed.");
@@ -201,7 +215,16 @@ namespace CellDotNet
 		/// <param name="rid"></param>
 		private void spe_mfcio_put(int lsa, IntPtr ea, uint size, uint tag, uint tid, uint rid)
 		{
-			int loadresult = UnsafeNativeMethods.spe_mfcio_put(_handle, (uint) lsa, ea, size, tag, tid, rid);
+			// Seems like 16 bytes is the smallest transfer unit that works...
+			if ((size <= 0) || (size % 16) != 0)
+				throw new ArgumentException("Size is not a positive multiplum of 16 bytes.");
+			if ((lsa % 16) != 0)
+				throw new ArgumentException("Not 16-byte aligned LSA.");
+			if (((long)ea % 16) != 0)
+				throw new ArgumentException("Not 16-byte aligned EA.");
+
+			Trace.WriteLine(string.Format("Starting DMA: spe_mfcio_put: EA: {0:x8}, LSA: {1:x6}, size: {2:x6}", (int)ea, lsa, size));
+			int loadresult = UnsafeNativeMethods.spe_mfcio_put(_handle, (uint)lsa, ea, size, tag, tid, rid);
 
 			if (loadresult != 0)
 				throw new LibSpeException("spe_mfcio_put failed.");
@@ -209,34 +232,34 @@ namespace CellDotNet
 
 		static class UnsafeNativeMethods
 		{
-			[DllImport("libspe2.so")]
+			[DllImport("libspe2")]
 //		private static extern SpeHandle spe_context_create(uint flags, IntPtr gang);
 			public static extern IntPtr spe_context_create(uint flags, IntPtr gang);
 
-			[DllImport("libspe2.so")]
+			[DllImport("libspe2")]
 //		private static extern int spe_context_destroy(SpeHandle handle);
 			public static extern int spe_context_destroy(IntPtr handle);
 
-			[DllImport("libspe2.so")]
+			[DllImport("libspe2")]
 //		private static extern IntPtr spe_ls_area_get(SpeHandle spe);
 			public static extern IntPtr spe_ls_area_get(IntPtr spe);
 
-			[DllImport("libspe2.so")]
+			[DllImport("libspe2")]
 			public static extern int spe_ls_size_get(IntPtr spe);
 
-			[DllImport("libspe2.so")]
+			[DllImport("libspe2")]
 //		private static extern int spe_context_run(SpeHandle spe, uint* entry, uint runflags, IntPtr argp, IntPtr envp,
 //		                                          IntPtr stopinfo);
 			public static extern int spe_context_run(IntPtr spe, ref uint entry, uint runflags, IntPtr argp, IntPtr envp,
 			                                          IntPtr stopinfo);
 
-			[DllImport("libspe2.so")]
+			[DllImport("libspe2")]
 			public static extern int spe_mfcio_get(IntPtr spe, uint lsa, IntPtr ea, uint size, uint tag, uint tid, uint rid);
 
-			[DllImport("libspe2.so")]
+			[DllImport("libspe2")]
 			public static extern int spe_mfcio_put(IntPtr spe, uint lsa, IntPtr ea, uint size, uint tag, uint tid, uint rid);
 
-			[DllImport("libspe2.so")]
+			[DllImport("libspe2")]
 			public static extern int spe_mfcio_tag_status_read(IntPtr spe, uint mask, uint behavior, ref uint tag_status);
 		}
 
@@ -246,75 +269,6 @@ namespace CellDotNet
 			if (!_handle.IsInvalid)
 				_handle.Close();
 */
-		}
-
-//		/// <summary>
-//		/// A struct that takes up 28 bytes, so it contains a 16 bytes-aligned 16-byte block.
-//		/// <para>
-//		/// Make sure that the instance can't be relocated/compacted while using the address returned by
-//		/// <see cref="Get16BytesAlignedAddress"/> by allocating it on the stack.
-//		/// </para>
-//		/// </summary>
-//		[StructLayout(LayoutKind.Sequential, Pack=16)]
-//		public struct Align16
-//		{
-//			private int i1;
-//			private int i2;
-//
-//			public unsafe IntPtr Get8BytesAlignedAddress()
-//			{
-//				return Get16BytesAlignedAddress();
-//			}
-//
-//			public unsafe IntPtr Get16BytesAlignedAddress()
-//			{
-//				fixed (Align16* ptr = &this)
-//				{
-//					return (IntPtr) ptr;
-//				}
-//			}
-//		}
-
-		/// <summary>
-		/// A struct that takes up 28 bytes, so it contains a 16 bytes-aligned 16-byte block.
-		/// <para>
-		/// Make sure that the instance can't be relocated/compacted while using the address returned by
-		/// <see cref="Get16BytesAlignedAddress"/> by allocating it on the stack.
-		/// </para>
-		/// </summary>
-		public struct Align16
-		{
-			private int i1;
-			private int i2;
-			private int i3;
-			private int i4;
-			private int i5;
-			private int i6;
-			private int i7;
-
-			public unsafe IntPtr Get16BytesAlignedAddress()
-			{
-				fixed (Align16* ptr = &this)
-				{
-					long ptr2 = (long)ptr;
-					long l = (ptr2 + 16) & ~0xf;
-
-					if (sizeof(void*) == 8)
-					{
-						// Mono doesn't like this on 32 bit.
-						return new IntPtr(l);
-					}
-					else
-					{
-						return new IntPtr((int) l);
-					}
-				}
-			}
-
-			public unsafe IntPtr Get8BytesAlignedAddress()
-			{
-				return Get16BytesAlignedAddress();
-			}
 		}
 	}
 }

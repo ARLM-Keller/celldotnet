@@ -58,14 +58,6 @@ namespace CellDotNet
 			return first;
 		}
 
-//		public static IEnumerable<TTarget> CastEnumerable<TSource, TTarget>(IEnumerable<TSource> source) where TSource : TTarget
-//		{
-//			foreach (TSource tSource in source)
-//			{
-//				yield return tSource;
-//			}
-//		}
-
 		public static int Align16(int value)
 		{
 			return (value + 15) & ~0xf;
