@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace CellDotNet
 {
@@ -55,6 +56,31 @@ namespace CellDotNet
 				throw new ArgumentException("Empty set.");
 
 			return first;
+		}
+
+//		public static IEnumerable<TTarget> CastEnumerable<TSource, TTarget>(IEnumerable<TSource> source) where TSource : TTarget
+//		{
+//			foreach (TSource tSource in source)
+//			{
+//				yield return tSource;
+//			}
+//		}
+
+		public static int Align16(int value)
+		{
+			return (value + 15) & ~0xf;
+		}
+
+		/// <summary>
+		/// You can use this one to make resharper think that a variable is used so that it won't
+		/// show a warning. Can be handy when the variable isn't used for anything but debugging.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="var"></param>
+		[Conditional("DEBUG")]
+		public static void PretendVariableIsUsed<T>(T var)
+		{
+			
 		}
 	}
 }

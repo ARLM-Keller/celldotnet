@@ -70,6 +70,7 @@
     <Compile Include="ObjectWithAddress.cs" />
     <Compile Include="RecursiveInstructionSelector.cs" />
     <Compile Include="RegAllocGraphColloring.cs" />
+    <Compile Include="RegisterSizedObject.cs" />
     <Compile Include="SimpleLiveAnalyzer.cs" />
     <Compile Include="SimpleRegAlloc.cs" />
     <Compile Include="SimpleRegAllocTest.cs" />
@@ -98,6 +99,9 @@
     <Compile Include="VirtualRegister.cs" />
     <Compile Include="Set.cs" />
     <Compile Include="TreeInstruction.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SPU.cd" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

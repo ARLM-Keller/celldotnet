@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 
 namespace CellDotNet
@@ -83,6 +84,36 @@ namespace CellDotNet
 		public BadSpuInstructionException(string message) : base(message) { }
 		public BadSpuInstructionException(string message, Exception inner) : base(message, inner) { }
 		protected BadSpuInstructionException(
+		  System.Runtime.Serialization.SerializationInfo info,
+		  System.Runtime.Serialization.StreamingContext context)
+			: base(info, context) { }
+	}
+
+
+	[Serializable]
+	public class LibSpeException : Exception
+	{
+		//
+		// For guidelines regarding the creation of new exception types, see
+		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
+		// and
+		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
+		//
+
+		static string GetErrorMessage()
+		{
+			return "";
+//			//  /usr/lib/mono/gac/Mono.Posix/2.0.0.0__0738eb9f132ed756/Mono.Posix.dll
+//			Assembly ass = Assembly.LoadFrom("/usr/lib/mono/gac/Mono.Posix/2.0.0.0__0738eb9f132ed756/Mono.Posix.dll");
+////			Assembly ass = AppDomain.CurrentDomain.Load("Mono.Posix");
+//			Type type = ass.GetType("Mono.Unix.Native.Stdlib");
+//			return " code: " + type.GetMethod("GetLastError").Invoke(null, null).ToString();
+		}
+
+		public LibSpeException() { }
+		public LibSpeException(string message) : base(message + GetErrorMessage()) { }
+		public LibSpeException(string message, Exception inner) : base(message + GetErrorMessage(), inner) { }
+		protected LibSpeException(
 		  System.Runtime.Serialization.SerializationInfo info,
 		  System.Runtime.Serialization.StreamingContext context)
 			: base(info, context) { }

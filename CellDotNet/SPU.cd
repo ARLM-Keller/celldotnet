@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Font Name="Segoe UI" Size="9" />
+  <Class Name="CellDotNet.ObjectWithAddress">
+    <Position X="4.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>ObjectWithAddress.cs</FileName>
+      <HashCode>AAAAAAAAAAAAgAAAIAAAAAAAAAAAAAAAAAAAAAAAgAA=</HashCode>
+    </TypeIdentifier>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+  </Class>
+  <Class Name="CellDotNet.RegisterSizedObject" Collapsed="true">
+    <Position X="3.25" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>RegisterSizedObject.cs</FileName>
+      <HashCode>AAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CellDotNet.SpuRoutine">
+    <Position X="5.5" Y="3" Width="2.5" />
+    <TypeIdentifier>
+      <FileName>SpuRoutine.cs</FileName>
+      <HashCode>AAAAAAAAAAACAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CellDotNet.CalleeSavesStoreRoutine" Collapsed="true">
+    <Position X="2.25" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>CalleeSavesStoreRoutine.cs</FileName>
+      <HashCode>AAEAAAAAAAACgAAAAAAAABAAAAAAAAAAAAAAAAAAAIA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CellDotNet.MethodCompiler" Collapsed="true">
+    <Position X="4.5" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>MethodCompiler.cs</FileName>
+      <HashCode>hAAEABAAIEAmrAUAAIBQCDJgAAoJEAMgEIQAhgCMAMA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CellDotNet.SpuInitializer" Collapsed="true">
+    <Position X="6.75" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SpuInitializer.cs</FileName>
+      <HashCode>AAAAAAAAAAACgAAAAAAAABAAAAAAAAAAAAAAAAAAAIA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CellDotNet.SpuManualRoutine" Collapsed="true">
+    <Position X="9" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SpuManualRoutine.cs</FileName>
+      <HashCode>AAAAAAAAAAACgAAAAAAAABAAAAAAAAAAAAAAAAEAAIA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+</ClassDiagram>

@@ -34,5 +34,10 @@ namespace CellDotNet
 			int[] bodybin = SpuInstruction.emit(Writer.GetAsList());
 			return bodybin;
 		}
+
+		public override void PerformAddressPatching()
+		{
+			PerformAddressPatching(Writer.BasicBlocks, null);
+		}
 	}
 }

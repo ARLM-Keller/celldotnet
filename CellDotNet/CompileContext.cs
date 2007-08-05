@@ -90,7 +90,7 @@ namespace CellDotNet
 
 		private void PerformRegisterAllocation()
 		{
-			AssertState(CompileContextState.S2TreeConstructionDone);
+			AssertState(CompileContextState.S3InstructionSelectionDone);
 
 			foreach (MethodCompiler mc in Methods.Values)
 				mc.PerformProcessing(MethodCompileState.S5RegisterAllocationDone);
@@ -109,10 +109,15 @@ namespace CellDotNet
 
 			// Start from the beginning and lay them out sequentially.
 			int lsOffset = 0;
-			foreach (MethodCompiler mc in Methods.Values)
+			foreach (ObjectWithAddress o in GetAllObjects())
 			{
-				mc.Offset = lsOffset;
-				lsOffset += mc.Size;
+				if (o is MethodCompiler)
+				{
+					((MethodCompiler) o).PerformProcessing(MethodCompileState.S6PrologAndEpilogDone);
+				}
+
+				o.Offset = lsOffset;
+				lsOffset = Utilities.Align16(lsOffset + o.Size);
 			}
 			_totalCodeSize = lsOffset;
 
@@ -126,13 +131,31 @@ namespace CellDotNet
 		{
 			AssertState(CompileContextState.S5MethodAddressesDetermined);
 
-			foreach (MethodCompiler mc in Methods.Values)
-				mc.PerformProcessing(MethodCompileState.S7AddressPatchingDone);
+			foreach (ObjectWithAddress owa in GetAllObjects())
+			{
+				if (owa is MethodCompiler)
+					((MethodCompiler) owa).PerformProcessing(MethodCompileState.S7AddressPatchingDone);
+				else if (owa is SpuRoutine)
+					((SpuRoutine) owa).PerformAddressPatching();
+			}
+			
 
-			State = CompileContextState.S8Complete;
+			State = CompileContextState.S6AddressPatchingDone;
 		}
 
 		private List<SpuRoutine> _spuRoutines;
+		private RegisterSizedObject _returnValueLocation;
+		private int[] _emittedCode;
+
+		public int[] GetEmittedCode()
+		{
+			if (State < CompileContextState.S7CodeEmitted)
+				throw new InvalidOperationException("State: " + State);
+
+			Utilities.Assert(_emittedCode != null, "_emittedCode != null");
+
+			return _emittedCode;
+		}
 
 		/// <summary>
 		/// Returns a list of infrastructure SPU routines, including the initalization code.
@@ -140,31 +163,64 @@ namespace CellDotNet
 		/// <returns></returns>
 		private List<SpuRoutine> GetSpuRoutines()
 		{
-			if (_spuRoutines != null)
-				return _spuRoutines;
+			Utilities.Assert(_spuRoutines != null, "_spuRoutines != null");
+			return _spuRoutines;
+		}
+
+		private void GenerateSpuRoutines()
+		{
+			Utilities.Assert(_spuRoutines == null, "_spuRoutines == null");
+
+			// Need address patching.
+			if (State >= CompileContextState.S6AddressPatchingDone)
+				throw new InvalidOperationException();
+
+			// This one is not a routine, but it's convenient to initialize it here.
+			_returnValueLocation = new RegisterSizedObject();
 
 			_spuRoutines = new List<SpuRoutine>();
-			SpuInitializer init = new SpuInitializer(EntryPoint);
-			_spuRoutines.Add(init);
+			SpuInitializer init = new SpuInitializer(EntryPoint, _returnValueLocation);
 
-			return _spuRoutines;
+			// It's important that the initialization routine is the first one, since execution
+			// will start at address 0.
+			_spuRoutines.Add(init);
+		}
+
+		/// <summary>
+		/// Enumerates all <see cref="ObjectWithAddress"/> objects that require storage and 
+		/// optionally patching, including initialization and <see cref="RegisterSizedObject"/> objects.
+		/// </summary>
+		/// <returns></returns>
+		private IEnumerable<ObjectWithAddress> GetAllObjects()
+		{
+			List<ObjectWithAddress> all = new List<ObjectWithAddress>();
+			// SPU routines go first, since we start execution at address 0.
+			foreach (SpuRoutine routine in GetSpuRoutines())
+				all.Add(routine);
+			foreach (MethodCompiler mc in Methods.Values)
+				all.Add(mc);
+
+			// Data at the end.
+			all.Add(_returnValueLocation);
+
+			return all;
 		}
 
 		private void PerformCodeEmission()
 		{
 			AssertState(CompileContextState.S6AddressPatchingDone);
 
-			List<SpuRoutine> all = new List<SpuRoutine>();
-			all.AddRange(GetSpuRoutines());
-			foreach (MethodCompiler mc in Methods.Values)
-				all.Add(mc);
-
-
-			int[] allcode = new int[_totalCodeSize];
-			foreach (SpuRoutine routine in all)
+			_emittedCode = new int[_totalCodeSize];
+			foreach (ObjectWithAddress owa in GetAllObjects())
 			{
+				/// Non-routine objects don't need to be consulted, since they get an address
+				/// and currently can't be initialized.
+				SpuRoutine routine = owa as SpuRoutine;
+				if (routine == null)
+					continue;
+
 				int[] code = routine.Emit();
-				Buffer.BlockCopy(code, 0, allcode, routine.Offset, code.Length);
+				Buffer.BlockCopy(code, 0, _emittedCode, routine.Offset, code.Length);
 			}
 
 			// TODO: Do something with the code.
@@ -219,6 +275,8 @@ namespace CellDotNet
 			Dictionary<string, List<TreeInstruction>> instructionsToPatch = new Dictionary<string, List<TreeInstruction>>();
 			methodsToCompile.Add(CreateMethodRefKey(_entryMethod), _entryMethod);
 
+			bool isfirst = true;
+
 			while (methodsToCompile.Count > 0)
 			{
 				// Find next method.
@@ -231,6 +289,12 @@ namespace CellDotNet
 				MethodCompiler mc = new MethodCompiler(method);
 				mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 				Methods.Add(nextmethodkey, mc);
+
+				if (isfirst)
+				{
+					_entryPoint = mc;
+					isfirst = false;
+				}
 
 				// Find referenced methods.
 				mc.VisitTreeInstructions(
@@ -280,8 +344,8 @@ namespace CellDotNet
 					}
 				}
 			}
-			_entryPoint = new MethodCompiler(_entryMethod);
-			_entryPoint.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
+//			_entryPoint = new MethodCompiler(_entryMethod);
+//			_entryPoint.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 
 
 			State = CompileContextState.S2TreeConstructionDone;
@@ -296,6 +360,8 @@ namespace CellDotNet
 
 			foreach (MethodCompiler mc in Methods.Values)
 				mc.PerformProcessing(MethodCompileState.S4InstructionSelectionDone);
+
+			GenerateSpuRoutines();
 
 			State = CompileContextState.S3InstructionSelectionDone;
 		}

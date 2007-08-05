@@ -15,10 +15,9 @@ namespace CellDotNet
 			routine.Writer.BeginNewBasicBlock();
 			routine.Writer.WriteBi(HardwareRegister.LR);
 
-
 			// Initialization.
 			List<int> code = new List<int>();
-			code.AddRange(new SpuInitializer(routine).Emit());
+			code.AddRange(new SpuInitializer(routine, null).Emit());
 
 			// A single return instruction.
 			SpuInstructionWriter writer = new SpuInstructionWriter();

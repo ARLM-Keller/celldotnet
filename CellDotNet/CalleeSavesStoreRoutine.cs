@@ -87,5 +87,10 @@ namespace CellDotNet
 		}
 
 		#endregion
+
+		public override void PerformAddressPatching()
+		{
+			// This one doesn't need patching.
+		}
 	}
 }

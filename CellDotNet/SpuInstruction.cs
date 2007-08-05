@@ -173,44 +173,54 @@ namespace CellDotNet
                     if (reg1 != null && reg2 != null && dest != null)
                         return _opcode.OpCode | (reg2.Register << 14) | (reg1.Register << 7) | dest.Register;
                     else
-						throw new BadSpuInstructionException(this);
+						throw CreateEmitException();
 				case SpuInstructionFormat.RRR:
                     if (reg1 != null && reg2 != null && reg3 != null && dest != null)
                         return _opcode.OpCode | (dest.Register << 21) | (reg2.Register << 14) | (reg1.Register << 7) | reg3.Register;
                     else
-						throw new BadSpuInstructionException(this);
+						throw CreateEmitException();
 				case SpuInstructionFormat.RI7:
                     if (reg1 != null && dest != null)
                         return _opcode.OpCode | ((_constant & 0x7F) << 14) | (reg1.Register << 7) | dest.Register;
                     else
-						throw new BadSpuInstructionException(this);
+						throw CreateEmitException();
 				case SpuInstructionFormat.RI10: 
                     if (reg1 != null && dest != null)
                         return _opcode.OpCode | ((_constant & 0x3ff) << 14) | (reg1.Register << 7) | dest.Register;
                     else
-						throw new BadSpuInstructionException(this);
+						throw CreateEmitException();
 				case SpuInstructionFormat.RI16:
 					if (dest != null)
 						return _opcode.OpCode | ((_constant & 0xffff) << 7) | dest.Register;
 					else
-						throw new BadSpuInstructionException(this);
+						throw CreateEmitException();
 				case SpuInstructionFormat.RI16NoRegs:
                         return _opcode.OpCode | ((_constant & 0xffff) << 7) | 0;
                 case SpuInstructionFormat.RI18:
                     if (reg1 != null && dest != null)
                         return _opcode.OpCode | ((_constant & 0x3ffff) << 7) | dest.Register;
                     else
-						throw new BadSpuInstructionException(this);
+						throw CreateEmitException();
 				case SpuInstructionFormat.RI8:
                     if (reg1 != null && dest != null)
                         return _opcode.OpCode | ((_constant & 0xff) << 14) | (reg1.Register << 7) | dest.Register;
                     else
-						throw new BadSpuInstructionException(this);
+						throw CreateEmitException();
 				case SpuInstructionFormat.WEIRD:
             		return _opcode.OpCode | _constant;
             }
             return 0;
         }
+
+		private BadSpuInstructionException CreateEmitException()
+		{
+			if (JumpTarget != null)
+				return new BadSpuInstructionException("JumpTarget is not null, so the instruction has not been patched.");
+			else if (ObjectWithAddress != null)
+				return new BadSpuInstructionException("ObjectWithAddress is not null, so the instruction has not been patched.");
+			else
+				return new BadSpuInstructionException(this);
+		}
 
 		public static int[] emit(List<SpuInstruction> code)
 		{
@@ -222,6 +232,8 @@ namespace CellDotNet
 				bincode.Add(inst.emit());
 				instnum++;
 			}
+
+			Utilities.PretendVariableIsUsed(instnum);
 
 			return bincode.ToArray();
 		}

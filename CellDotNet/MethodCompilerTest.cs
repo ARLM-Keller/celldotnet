@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -259,11 +260,34 @@ namespace CellDotNet
 
 		#endregion
 
-//		[Test]
-//		public void TestAddressAssignment()
-//		{
-//			
-//		}
+		private delegate T Getter<T>();
+
+		[Test]
+		public void TestReturnValue()
+		{
+			Getter<int> g = delegate { return 500; };
+
+			CompareExecution(g);
+		}
+
+		private void CompareExecution<T>(Getter<T> getter) where T : IComparable<T>
+		{
+			CompileContext cc = new CompileContext(getter.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+			int[] code = cc.GetEmittedCode();
+			using (SpeContext ctx = new SpeContext())
+			{
+				ctx.LoadProgram(code);
+				ctx.Run();
+			}
+			// TODO: Run both delegates and compare the return value.
+			throw new NotImplementedException();
+
+			T t1 = getter();
+			T t2 = default(T);
+
+			AreEqual(t1, t2, "SPU delegate execution returned a different value.");
+		}
 
 		[Test]
 		public void Test()
