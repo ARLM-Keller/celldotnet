@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -39,6 +40,7 @@ namespace CellDotNet
 
 			new TreeDrawer().DrawMethod(mc, method);
 
+
 			mc.PerformProcessing(MethodCompileState.S6PrologAndEpilogDone);
 			mc.GetBodyWriter().WriteStop();
 
@@ -70,40 +72,12 @@ namespace CellDotNet
 		{
 			using (SpeContext ctx = new SpeContext())
 			{
-				ctx.DmaPut(32, 33000);
-				ctx.DmaPut(36, 34000);
+				ctx.DmaPut((LocalStorageAddress) 32, 33000);
+				ctx.DmaPut((LocalStorageAddress) 64, 34000);
 
-				int readvalue = ctx.DmaGetInt32(32);
+				int readvalue = ctx.DmaGetInt32((LocalStorageAddress) 32);
 				AreEqual(33000, readvalue);
 			}
 		}
 	}
-
-	[TestFixture]
-	public class Align16Test : UnitTest
-	{
-		[Test]
-		unsafe public void TestAlignment16()
-		{
-			SpeContext.Align16 a = new SpeContext.Align16(), b = new SpeContext.Align16();
-			long pa = (long)a.Get16BytesAlignedAddress();
-			long pb = (long)b.Get16BytesAlignedAddress();
-
-			AreEqual(0L, pa & 0xf, "Bad alignment for a.");
-			AreEqual(0L, pb & 0xf, "Bad alignment for b.");
-		}
-
-		[Test]
-		public unsafe void TestAlignment8()
-		{
-			SpeContext.Align16 a = new SpeContext.Align16(), b = new SpeContext.Align16();
-			long pa = (long)a.Get8BytesAlignedAddress();
-			long pb = (long)b.Get8BytesAlignedAddress();
-
-			AreEqual(0L, pa & 7, "Bad alignment for a.");
-			AreEqual(0L, pb & 7, "Bad alignment for b.");
-		}
-
-	}
-
 }

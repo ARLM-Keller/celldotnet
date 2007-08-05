@@ -9,7 +9,7 @@ namespace CellDotNet
 	/// </summary>
 	class SpuInitializer : SpuRoutine
 	{
-		private SpuInstructionWriter _writer = new SpuInstructionWriter();
+		public SpuInstructionWriter _writer = new SpuInstructionWriter();
 
 		/// <summary>
 		/// The argument is of type <see cref="ObjectWithAddress"/> so that testing doesn't
@@ -31,7 +31,7 @@ namespace CellDotNet
 
 			// Branch to method and set LR.
 			// The methode is assumed to be immediately after this code.
-			_writer.WriteBrsl(HardwareRegister.LR, 1);
+//			_writer.WriteBrsl(HardwareRegister.LR, 1);
 			_writer.WriteBranchAndSetLink(SpuOpCode.brsl, initialMethod);
 
 			// At this point the method has returned.
