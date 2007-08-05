@@ -725,7 +725,7 @@ namespace CellDotNet
 		/// Inserts offsets for local branches and call. That is, for instrukctions containing 
 		/// <see cref="SpuBasicBlock"/> and <see cref="ObjectWithAddress"/> objects.
 		/// </summary>
-		private void PerformAddressPatching()
+		public override void PerformAddressPatching()
 		{
 			AssertState(MethodCompileState.S6PrologAndEpilogDone);
 
@@ -737,54 +737,11 @@ namespace CellDotNet
 
 			List<SpuBasicBlock> bblist = new List<SpuBasicBlock>();
 			bblist.Add(_prolog.BasicBlocks[0]);
-			foreach (SpuBasicBlock block in _instructions.BasicBlocks)
-				bblist.Add(block);
+			bblist.AddRange(_instructions.BasicBlocks);
 			bblist.Add(_epilog.BasicBlocks[0]);
 
 
-			// All offsets are byte offset from start of method; 
-			// that is, from the ObjectWithAddress.
-
-			List<KeyValuePair<int, SpuInstruction>> branchlist = new List<KeyValuePair<int, SpuInstruction>>();
-			int curroffset = 0;
-			foreach (SpuBasicBlock bb in bblist)
-			{
-				bb.Offset = curroffset;
-
-				SpuInstruction inst = bb.Head;
-				while (inst != null)
-				{
-					if (inst.JumpTarget != null)
-						branchlist.Add(new KeyValuePair<int, SpuInstruction>(curroffset, inst));
-					else if (inst.OpCode == SpuOpCode.ret)
-					{
-						inst.OpCode = SpuOpCode.br;
-						inst.JumpTarget = _epilog.BasicBlocks[0];
-						branchlist.Add(new KeyValuePair<int, SpuInstruction>(curroffset, inst));
-					}
-					else if (inst.ObjectWithAddress != null)
-					{
-						Utilities.Assert(inst.ObjectWithAddress.Offset > 0, "Bad ObjectWithAddress offset: " + inst.ObjectWithAddress.Offset);
-						int diff = inst.ObjectWithAddress.Offset - (Offset + curroffset);
-						Utilities.Assert(diff % 4 == 0, "branch offset not multiple of four bytes: " + diff);
-						inst.Constant = diff >> 2; // instructions and therefore branch offsets are 4-byte aligned.
-					}
-
-					inst = inst.Next;
-					curroffset += 4;
-				}
-			}
-
-			// Insert offsets.
-			foreach (KeyValuePair<int, SpuInstruction> branchpair in branchlist)
-			{
-				SpuBasicBlock targetbb = branchpair.Value.JumpTarget;
-
-				int relativebranchbytes = branchpair.Key - targetbb.Offset;
-				// Branch offset operands don't use the last two bytes, since all
-				// instructions are 4-byte aligned.
-				branchpair.Value.Constant = relativebranchbytes >> 2;
-			}
+			PerformAddressPatching(bblist, _epilog.BasicBlocks[0]);
 
 
 			State = MethodCompileState.S7AddressPatchingDone;

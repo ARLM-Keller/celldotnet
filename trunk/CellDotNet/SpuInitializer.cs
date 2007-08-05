@@ -5,7 +5,7 @@ using System.Text;
 namespace CellDotNet
 {
 	/// <summary>
-	/// Used to generate code to initialize a spu and call the initial method.
+	/// Used to generate code to initialize an spu and call the initial method.
 	/// </summary>
 	class SpuInitializer : SpuRoutine
 	{
@@ -15,8 +15,9 @@ namespace CellDotNet
 		/// The argument is of type <see cref="ObjectWithAddress"/> so that testing doesn't
 		/// have to supply a real method; but normally a method is passed.
 		/// </summary>
-		/// <param name="intialMethod"></param>
-		public SpuInitializer(ObjectWithAddress intialMethod)
+		/// <param name="initialMethod"></param>
+		/// <param name="returnValueLocation">The location where the return value should be placed. Null is ok.</param>
+		public SpuInitializer(ObjectWithAddress initialMethod, RegisterSizedObject returnValueLocation)
 		{
 			_writer.BeginNewBasicBlock();
 
@@ -31,7 +32,14 @@ namespace CellDotNet
 			// Branch to method and set LR.
 			// The methode is assumed to be immediately after this code.
 			_writer.WriteBrsl(HardwareRegister.LR, 1);
-			_writer.WriteBranchAndSetLink(SpuOpCode.brsl, intialMethod);
+			_writer.WriteBranchAndSetLink(SpuOpCode.brsl, initialMethod);
+
+			// At this point the method has returned.
+
+			if (returnValueLocation != null)
+			{
+				_writer.WriteStqr(HardwareRegister.GetHardwareRegister(3), returnValueLocation);
+			}
 
 			_writer.WriteStop();
 		}
@@ -44,6 +52,11 @@ namespace CellDotNet
 		public override int[] Emit()
 		{
 			return SpuInstruction.emit(_writer.GetAsList());			
+		}
+
+		public override void PerformAddressPatching()
+		{
+			PerformAddressPatching(_writer.BasicBlocks, null);
 		}
 	}
 }

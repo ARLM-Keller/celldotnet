@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -56,18 +53,16 @@ namespace CellDotNet
 			                        	};
 			ILReader r = new ILReader(del.Method);
 
-			bool found = false;
 			while (r.Read())
 			{
-				if (r.OpCode == IROpCodes.Ldc_I4)
-				{
-					found = true;
-					int val = (int) r.Operand;
-					AreEqual(0x0a0b0c0d, val);
-				}
+				if (r.OpCode != IROpCodes.Ldc_I4)
+					continue;
+				int val = (int) r.Operand;
+				AreEqual(0x0a0b0c0d, val);
+				return;
 			}
 
-			IsTrue(found);
+			Fail();
 		}
 
 		[Test]
@@ -80,18 +75,16 @@ namespace CellDotNet
 										};
 			ILReader r = new ILReader(del.Method);
 
-			bool found = false;
 			while (r.Read())
 			{
-				if (r.OpCode == IROpCodes.Ldc_I8)
-				{
-					found = true;
-					long val = (long)r.Operand;
-					AreEqual(0x0102030405060708L, val);
-				}
+				if (r.OpCode != IROpCodes.Ldc_I8)
+					continue;
+				long val = (long)r.Operand;
+				AreEqual(0x0102030405060708L, val);
+				return;
 			}
 
-			IsTrue(found);
+			Fail();
 		}
 
 		[Test]
@@ -104,18 +97,16 @@ namespace CellDotNet
 										};
 			ILReader r = new ILReader(del.Method);
 
-			bool found = false;
 			while (r.Read())
 			{
-				if (r.OpCode == IROpCodes.Ldstr)
-				{
-					found = true;
-					string s = (string) r.Operand;
-					AreEqual("hey", s);
-				}
+				if (r.OpCode != IROpCodes.Ldstr)
+					continue;
+				string s = (string) r.Operand;
+				AreEqual("hey", s);
+				return;
 			}
 
-			IsTrue(found);
+			Fail();
 		}
 
 		[Test]
@@ -128,18 +119,16 @@ namespace CellDotNet
 										};
 			ILReader r = new ILReader(del.Method);
 
-			bool found = false;
 			while (r.Read())
 			{
-				if (r.OpCode == IROpCodes.Ldc_R4)
-				{
-					found = true;
-					float f = (float) r.Operand;
-					AreEqual(4.5f, f);
-				}
+				if (r.OpCode != IROpCodes.Ldc_R4)
+					continue;
+				float f = (float) r.Operand;
+				AreEqual(4.5f, f);
+				return;
 			}
 
-			IsTrue(found);
+			Fail();
 		}
 
 		[Test]
@@ -152,18 +141,16 @@ namespace CellDotNet
 										};
 			ILReader r = new ILReader(del.Method);
 
-			bool found = false;
 			while (r.Read())
 			{
-				if (r.OpCode == IROpCodes.Ldc_R8)
-				{
-					found = true;
-					double d = (double)r.Operand;
-					AreEqual(4.5d, d);
-				}
+				if (r.OpCode != IROpCodes.Ldc_R8)
+					continue;
+				double d = (double)r.Operand;
+				AreEqual(4.5d, d);
+				return;
 			}
 
-			IsTrue(found);
+			Fail();
 		}
 
 	}

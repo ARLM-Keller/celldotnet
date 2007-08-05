@@ -89,6 +89,8 @@ namespace CellDotNet
 					vrright = childregs[1];
 			}
 
+//			// For the compare instructions.
+//			bool orderedCompare = true;
 
 			IRCode ilcode = inst.Opcode.IRCode;
 			StackTypeDescription lefttype = inst.Left != null ? inst.Left.StackType : StackTypeDescription.None;
@@ -99,7 +101,7 @@ namespace CellDotNet
 				case IRCode.Break:
 					break;
 				case IRCode.Ldnull:
-					break;
+					return _writer.WriteLoadI4(0);
 				case IRCode.Ldc_I4:
 					return _writer.WriteLoadI4((int) inst.Operand);
 				case IRCode.Ldc_I8:
@@ -109,8 +111,8 @@ namespace CellDotNet
 				case IRCode.Ldc_R8:
 					break;
 				case IRCode.Dup:
-					break;
 				case IRCode.Pop:
+					// Does it make sense that these two are IR instructions?
 					break;
 				case IRCode.Jmp:
 					break;
@@ -212,7 +214,6 @@ namespace CellDotNet
 
 						VirtualRegister loadedvalue = _writer.WriteLqd(ptr, 0);
 						VirtualRegister mask = _writer.WriteCwd(ptr, 0);
-//						VirtualRegister combined = _writer.WriteShufb(loadedvalue, vrright, mask);
 						VirtualRegister combined = _writer.WriteShufb(vrright, loadedvalue, mask);
 						_writer.WriteStqd(combined, ptr, 0);
 						return null;
@@ -224,14 +225,46 @@ namespace CellDotNet
 				case IRCode.Stind_R8:
 					break;
 				case IRCode.Add:
-					if (lefttype.CliBasicType != CliBasicType.Integer ||
-					    lefttype.NumericSize != CliNumericSize.FourBytes)
-						throw new NotImplementedException();
-
-					return _writer.WriteA(vrleft, vrright);
+					switch (lefttype.CliType)
+					{
+						case CliType.Int32:
+						case CliType.UInt32:
+						case CliType.NativeInt:
+						case CliType.NativeUInt:
+							return _writer.WriteA(vrleft, vrright);
+					}
+					break;
 				case IRCode.Sub:
+					switch (lefttype.CliType)
+					{
+						case CliType.Int32:
+						case CliType.UInt32:
+						case CliType.NativeInt:
+						case CliType.NativeUInt:
+							return _writer.WriteSf(vrright, vrleft);
+					}
 					break;
 				case IRCode.Mul:
+					switch (lefttype.CliType)
+					{
+						case CliType.Int32:
+						case CliType.UInt32:
+						case CliType.NativeInt:
+						case CliType.NativeUInt:
+							// "A 32-bit multiply instruction, mpy32 rt,ra,rb, can be 
+							// emulated with the following instruction sequence:
+							// mpyh t1,ra,rb
+							// mpyh t2,rb,ra
+							// mpyu t3,ra,rb
+							// a    rt,t1,t2
+							// a    rt,rt,t3"
+							VirtualRegister t1 = _writer.WriteMpyh(vrleft, vrright);
+							VirtualRegister t2 = _writer.WriteMpyh(vrright, vrleft);
+							VirtualRegister t3 = _writer.WriteMpyu(vrleft, vrright);
+							VirtualRegister rt = _writer.WriteA(t1, t2);
+							_writer.WriteA(rt, rt, t3);
+							return rt;
+					}
 					break;
 				case IRCode.Div:
 					break;
@@ -436,35 +469,44 @@ namespace CellDotNet
 				case IRCode.Arglist:
 					break;
 				case IRCode.Ceq:
-					if (lefttype.CliBasicType == CliBasicType.Integer)
+					switch (lefttype.CliType)
 					{
-						switch (lefttype.NumericSize)
-						{
-							case CliNumericSize.OneByte:
-								return _writer.WriteCeqb(vrleft, vrright);
-							case CliNumericSize.FourBytes:
-								return _writer.WriteCeq(vrleft, vrright);
-							case CliNumericSize.TwoBytes:
-								return _writer.WriteCeqh(vrleft, vrright);
-							case CliNumericSize.EightBytes:
-								throw new NotImplementedException();
-							default:
-								throw new Exception();
-						}
+						case CliType.Int8:
+						case CliType.UInt8:
+							return _writer.WriteCeqb(vrleft, vrright);
+						case CliType.Int32:
+						case CliType.UInt32:
+							return _writer.WriteCeq(vrleft, vrright);
+						case CliType.Int16:
+						case CliType.UInt16:
+							return _writer.WriteCeqh(vrleft, vrright);
+						case CliType.Int64:
+						case CliType.UInt64:
+							return _writer.WriteCeq(vrleft, vrright);
 					}
-					else
-						throw new NotImplementedException("Compare: " + lefttype);
+					break;
 				case IRCode.Cgt:
+					switch (lefttype.CliType)
+					{
+						case CliType.NativeInt:
+						case CliType.NativeUInt:
+						case CliType.Int32:
+						case CliType.UInt32:
+							return _writer.WriteCgt(vrleft, vrright);
+					}
 					break;
 				case IRCode.Cgt_Un:
 					break;
 				case IRCode.Clt:
-					if (lefttype.CliBasicType != CliBasicType.Integer ||
-					    lefttype.NumericSize != CliNumericSize.FourBytes ||
-					    !lefttype.IsSigned)
-						throw new NotImplementedException();
-
-					return _writer.WriteCgt(vrright, vrleft);
+					switch (lefttype.CliType)
+					{
+						case CliType.NativeInt:
+						case CliType.NativeUInt:
+						case CliType.Int32:
+						case CliType.UInt32:
+							return _writer.WriteCgt(vrright, vrleft);
+					}
+					break;
 				case IRCode.Clt_Un:
 					break;
 				case IRCode.Ldftn:
@@ -525,14 +567,12 @@ namespace CellDotNet
 
 		private VirtualRegister GetVirtualRegister(TreeInstruction inst)
 		{
-			if (inst.Operand is MethodVariable)
-			{
-				MethodVariable var = (MethodVariable)inst.Operand;
-				Utilities.AssertNotNull(var.VirtualRegister, "var.VirtualRegister");
-				return var.VirtualRegister;
-			}
-			else
-				throw new NotImplementedException();
+			if (!(inst.Operand is MethodVariable))
+				throw new InvalidOperationException();
+
+			MethodVariable var = (MethodVariable) inst.Operand;
+			Utilities.AssertNotNull(var.VirtualRegister, "var.VirtualRegister");
+			return var.VirtualRegister;
 		}
 	}
 

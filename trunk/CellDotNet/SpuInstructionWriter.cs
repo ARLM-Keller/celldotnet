@@ -290,6 +290,17 @@ namespace CellDotNet
 		}
 
 		/// <summary>
+		/// This will generate an instruction that must be patched with a <see cref="SpuBasicBlock"/>.
+		/// </summary>
+		public void WriteStqr(VirtualRegister rt, ObjectWithAddress address)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.stqr);
+			inst.ObjectWithAddress = address;
+			inst.Rt = rt;
+			AddInstruction(inst);
+		}
+
+		/// <summary>
 		/// Pseudo instruction to load the integer into the register.
 		/// No other registers are used.
 		/// </summary>

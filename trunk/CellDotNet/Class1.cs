@@ -9,8 +9,9 @@ namespace CellDotNet
 	{
 		static public void Main(string[] args)
 		{
+			new SpeContextTest().TestGetPutInt32();
 //			new SpeContextTest().TestFirstCellProgram();
-			new SpuInitializerTest().TestInitialization();
+//			new SpuInitializerTest().TestInitialization();
 
 
 			
@@ -148,12 +149,7 @@ namespace CellDotNet
 
 //			int[] ls1 = ctx.GetCopyOffLocalStorage();
 
-			if (!ctx.LoadProgram(bincode))
-//			if (!ctx.LoadProgram(testbincode))
-			{
-				Console.WriteLine("Programe load failed!");
-				return;
-			}
+			ctx.LoadProgram(bincode);
 				
 //			int[] ls2 = ctx.GetCopyOffLocalStorage();
 

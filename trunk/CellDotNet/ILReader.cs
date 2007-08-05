@@ -215,8 +215,6 @@ namespace CellDotNet
 //				case OperandType.InlinePhi:
 //					break;
 				case OperandType.InlineR:
-//					_operand = BitConverter.ToDouble(_il, _readoffset);
-//					_readoffset += 8;
 					_operand = ReadDouble();
 					break;
 				case OperandType.InlineSig:
