@@ -6,42 +6,11 @@ using System.Reflection.Emit;
 
 namespace CellDotNet
 {
+	/// <summary>
+	/// Used by <see cref="MethodCompiler"/> to construct it's IR tree.
+	/// </summary>
 	class IRTreeBuilder
 	{
-		/// <summary>
-		/// Returns the number of values pushed by the opcode. -1 is returned for function calls.
-		/// </summary>
-		/// <param name="code"></param>
-		/// <returns></returns>
-		private static int GetPushCount(IROpCode code)
-		{
-			int pushCount;
-
-			switch (code.StackBehaviourPush)
-			{
-				case StackBehaviour.Push0:
-					pushCount = 0;
-					break;
-				case StackBehaviour.Push1:
-				case StackBehaviour.Pushi:
-				case StackBehaviour.Pushi8:
-				case StackBehaviour.Pushr4:
-				case StackBehaviour.Pushr8:
-				case StackBehaviour.Pushref:
-					pushCount = 1;
-					break;
-				case StackBehaviour.Push1_push1:
-					pushCount = 2;
-					break;
-				case StackBehaviour.Varpush:
-				default:
-					pushCount = -1;
-					break;
-			}
-
-			return pushCount;
-		}
-
 		private enum PopBehavior
 		{
 			Pop0 = 0,
@@ -52,53 +21,15 @@ namespace CellDotNet
 			VarPop = 1001
 		}
 
-		private static PopBehavior GetPopBehavior(IROpCode code)
-		{
-			PopBehavior pb;
-
-			switch (code.StackBehaviourPop)
-			{
-				case StackBehaviour.Pop0:
-					pb = PopBehavior.Pop0;
-					break;
-				case StackBehaviour.Varpop:
-					pb = PopBehavior.VarPop;
-					break;
-				case StackBehaviour.Pop1:
-				case StackBehaviour.Popi:
-				case StackBehaviour.Popref:
-					pb = PopBehavior.Pop1;
-					break;
-				case StackBehaviour.Pop1_pop1:
-				case StackBehaviour.Popi_pop1:
-				case StackBehaviour.Popi_popi:
-				case StackBehaviour.Popi_popi8:
-				case StackBehaviour.Popi_popr4:
-				case StackBehaviour.Popi_popr8:
-				case StackBehaviour.Popref_pop1:
-				case StackBehaviour.Popref_popi:
-					pb = PopBehavior.Pop2;
-					break;
-				case StackBehaviour.Popi_popi_popi:
-				case StackBehaviour.Popref_popi_pop1:
-				case StackBehaviour.Popref_popi_popi:
-				case StackBehaviour.Popref_popi_popi8:
-				case StackBehaviour.Popref_popi_popr4:
-				case StackBehaviour.Popref_popi_popr8:
-				case StackBehaviour.Popref_popi_popref:
-					pb = PopBehavior.Pop3;
-					break;
-				default:
-					throw new ArgumentOutOfRangeException("code");
-			}
-
-			return pb;
-		}
-
 		public List<IRBasicBlock> BuildBasicBlocks(MethodBase method, ILReader reader, 
 		                                           List<MethodVariable> variables, ReadOnlyCollection<MethodParameter> parameters)
 		{
 			return BuildBasicBlocks(method.Name, reader, variables, parameters);
+		}
+
+		internal List<IRBasicBlock> BuildBasicBlocks(ILReader reader, List<MethodVariable> variables, ReadOnlyCollection<MethodParameter> parameters)
+		{
+			return BuildBasicBlocks("methodXX", reader, variables, parameters);
 		}
 
 		/// <summary>
@@ -109,7 +40,7 @@ namespace CellDotNet
 		/// <param name="variables"></param>
 		/// <param name="parameters"></param>
 		/// <returns></returns>
-		internal List<IRBasicBlock> BuildBasicBlocks(string methodName, ILReader reader, List<MethodVariable> variables, ReadOnlyCollection<MethodParameter> parameters)
+		private List<IRBasicBlock> BuildBasicBlocks(string methodName, ILReader reader, List<MethodVariable> variables, ReadOnlyCollection<MethodParameter> parameters)
 		{
 			Utilities.AssertArgumentNotNull(variables, "_variables != null");
 			Utilities.AssertArgumentNotNull(parameters, "_parameters != null");
@@ -311,6 +242,83 @@ namespace CellDotNet
 			}
 
 			return blocks;
+		}
+
+		/// <summary>
+		/// Returns the number of values pushed by the opcode. -1 is returned for function calls.
+		/// </summary>
+		/// <param name="code"></param>
+		/// <returns></returns>
+		private static int GetPushCount(IROpCode code)
+		{
+			int pushCount;
+
+			switch (code.StackBehaviourPush)
+			{
+				case StackBehaviour.Push0:
+					pushCount = 0;
+					break;
+				case StackBehaviour.Push1:
+				case StackBehaviour.Pushi:
+				case StackBehaviour.Pushi8:
+				case StackBehaviour.Pushr4:
+				case StackBehaviour.Pushr8:
+				case StackBehaviour.Pushref:
+					pushCount = 1;
+					break;
+				case StackBehaviour.Push1_push1:
+					pushCount = 2;
+					break;
+				case StackBehaviour.Varpush:
+				default:
+					pushCount = -1;
+					break;
+			}
+
+			return pushCount;
+		}
+
+		private static PopBehavior GetPopBehavior(IROpCode code)
+		{
+			PopBehavior pb;
+
+			switch (code.StackBehaviourPop)
+			{
+				case StackBehaviour.Pop0:
+					pb = PopBehavior.Pop0;
+					break;
+				case StackBehaviour.Varpop:
+					pb = PopBehavior.VarPop;
+					break;
+				case StackBehaviour.Pop1:
+				case StackBehaviour.Popi:
+				case StackBehaviour.Popref:
+					pb = PopBehavior.Pop1;
+					break;
+				case StackBehaviour.Pop1_pop1:
+				case StackBehaviour.Popi_pop1:
+				case StackBehaviour.Popi_popi:
+				case StackBehaviour.Popi_popi8:
+				case StackBehaviour.Popi_popr4:
+				case StackBehaviour.Popi_popr8:
+				case StackBehaviour.Popref_pop1:
+				case StackBehaviour.Popref_popi:
+					pb = PopBehavior.Pop2;
+					break;
+				case StackBehaviour.Popi_popi_popi:
+				case StackBehaviour.Popref_popi_pop1:
+				case StackBehaviour.Popref_popi_popi:
+				case StackBehaviour.Popref_popi_popi8:
+				case StackBehaviour.Popref_popi_popr4:
+				case StackBehaviour.Popref_popi_popr8:
+				case StackBehaviour.Popref_popi_popref:
+					pb = PopBehavior.Pop3;
+					break;
+				default:
+					throw new ArgumentOutOfRangeException("code");
+			}
+
+			return pb;
 		}
 	}
 }

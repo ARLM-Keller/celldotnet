@@ -14,6 +14,7 @@ namespace CellDotNet
 		Set<int> _branchTargets;
 
 		private TextWriter _output;
+		private MethodBase _method;
 
 		public TextWriter Output
 		{
@@ -22,7 +23,7 @@ namespace CellDotNet
 		}
 
 
-		void DrawTree(MethodBase method, TreeInstruction inst, int level)
+		void DrawTree(TreeInstruction inst, int level)
 		{
 			Output.Write(new string(' ', level * 2));
 
@@ -74,12 +75,12 @@ namespace CellDotNet
 			if (inst.GetType() == typeof(TreeInstruction))
 			{
 				if (inst.Left != null)
-				DrawTree(method, inst.Left, level + 1);
+				DrawTree(inst.Left, level + 1);
 				if (inst.Right != null)
 				{
 					if (inst.Left == null)
 						Output.Write(new string(' ', (level + 1) * 2) + "!! Only right side is non-null. -----------------");
-					DrawTree(method, inst.Right, level + 1);
+					DrawTree(inst.Right, level + 1);
 				}
 			}
 			else if (inst is MethodCallInstruction)
@@ -87,18 +88,18 @@ namespace CellDotNet
 				MethodCallInstruction mci = (MethodCallInstruction)inst;
 				foreach (TreeInstruction param in mci.Parameters)
 				{
-					DrawTree(method, param, level + 1);
+					DrawTree(param, level + 1);
 				}
 			}
 		}
 
-		public void DrawTree(MethodBase method, IRBasicBlock block)
+		private void DrawTree(IRBasicBlock block)
 		{
 			if (Output == null)
 				Output = Console.Out;
 			foreach (TreeInstruction root in block.Roots)
 			{
-				DrawTree(method, root, 0);
+				DrawTree(root, 0);
 			}
 		}
 
@@ -129,13 +130,13 @@ namespace CellDotNet
 			}
 		}
 
-		public void DrawMethod(MethodCompiler ci, MethodBase method)
+		public void DrawMethod(MethodCompiler ci)
 		{
 			Output = new StringWriter();
 
 			try
 			{
-				DrawMethod(ci, method, Output);
+				DrawMethod(ci.MethodBase, Output, ci.Blocks);
 			}
 			finally
 			{
@@ -147,22 +148,33 @@ namespace CellDotNet
 		{
 			StringWriter sw = new StringWriter();
 
-			DrawMethod(ci, ci.MethodBase, sw);
+			DrawMethod(ci.MethodBase, sw, ci.Blocks);
 
 			return sw.GetStringBuilder().ToString();
 		}
 
 		public void DrawMethod(MethodCompiler ci, MethodBase method, TextWriter output)
 		{
+			DrawMethod(ci);
+			
+		}
+
+		public void DrawMethod(MethodBase method, TextWriter output, List<IRBasicBlock> blocks)
+		{
+			DrawMethod(blocks, output);
+		}
+
+		public void DrawMethod(List<IRBasicBlock> blocks, TextWriter output)
+		{
 			Output = output;
 
 			_branchTargets = new Set<int>();
-			FindBranchTargets(ci, method);
+//			FindBranchTargets(ci, method);
 
-			foreach (IRBasicBlock block in ci.Blocks)
+			foreach (IRBasicBlock block in blocks)
 			{
 				Output.WriteLine(" - Basic Block:");
-				DrawTree(method, block);
+				DrawTree(block);
 			}
 		}
 	}

@@ -174,7 +174,7 @@ namespace CellDotNet
 			{
 				string msg = string.Format("Invalid tree instruction count of {0}. Should have been {1}.", count, correctCount);
 				TreeDrawer td= new TreeDrawer();
-				td.DrawMethod(this, MethodBase);
+				td.DrawMethod(this);
 				throw new Exception(msg);
 			}
 		}
