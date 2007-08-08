@@ -484,7 +484,7 @@ namespace CellDotNet
 				// ldc.
 				if (srOpcode.Value >= OpCodes.Ldc_I4_M1.Value && srOpcode.Value <= OpCodes.Ldc_I4_8.Value)
 				{
-					_operand = srOpcode.Value - OpCodes.Ldc_I4_M1.Value;
+					_operand = srOpcode.Value - OpCodes.Ldc_I4_0.Value;
 					srOpcode = OpCodes.Ldc_I4;
 					return;
 				}

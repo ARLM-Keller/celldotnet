@@ -172,9 +172,9 @@ namespace CellDotNet
 
 			if (count != correctCount)
 			{
-				string msg = string.Format("Invalid tree instruction count of {0}. Should have been {1}.", count, correctCount);
 				TreeDrawer td= new TreeDrawer();
 				td.DrawMethod(this);
+				string msg = string.Format("Invalid tree instruction count of {0}. Should have been {1}.", count, correctCount);
 				throw new Exception(msg);
 			}
 		}

@@ -214,12 +214,12 @@ namespace CellDotNet
 
 			// offset 2.
 			w.Write((byte)OpCodes.Ble_S.Value);
-			w.Write((byte)4);
+			w.Write((byte)3);
 
 			// offset 4.
 			w.Write((byte)OpCodes.Ldc_I4_1.Value);
 			w.Write((byte)OpCodes.Br_S.Value);
-			w.Write((byte)2);
+			w.Write((byte)1);
 
 			// offset 7.
 			w.Write((byte)OpCodes.Ldc_I4_5.Value);
@@ -229,9 +229,14 @@ namespace CellDotNet
 
 			IRTreeBuilder builder = new IRTreeBuilder();
 			ILReader reader = new ILReader(il.ToArray());
+//			while (reader.Read())
+//			{
+//				int i = 3;
+//			}
 			List<MethodVariable> variables = new List<MethodVariable>();
-			List<IRBasicBlock> blocks = builder.BuildBasicBlocks(reader, variables, new ReadOnlyCollection<MethodParameter>(new MethodParameter[] {}));
+			builder.BuildBasicBlocks(reader, variables, new ReadOnlyCollection<MethodParameter>(new MethodParameter[] {}));
 
+			AreEqual(1, variables.Count);
 			AreEqual(7, reader.InstructionsRead);
 		}
 
