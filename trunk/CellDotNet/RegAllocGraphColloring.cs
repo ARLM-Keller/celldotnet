@@ -5,13 +5,10 @@ namespace CellDotNet
 	class RegAllocGraphColloring
 	{
 		// TODO list 
-		// - få plads på stakken til spilled variabler
+		// - OK få plads på stakken til spilled variabler
 		// - mere optimal brug af lister(brug ikke LinkedList i forbindelse med contains)
-		// - det er ikke alle registre der er tilgængelig for regalloc
+		// - OK det er ikke alle registre der er tilgængelig for regalloc
 		//
-
-
-//		private FlowGraph flowGraph;
 
 		private MethodCompiler method;
 
@@ -61,7 +58,7 @@ namespace CellDotNet
 			new Dictionary<VirtualRegister, Set<SpuInstruction>>();
 
 		private Dictionary<VirtualRegister, VirtualRegister> alias = new Dictionary<VirtualRegister, VirtualRegister>();
-		private Dictionary<VirtualRegister, HardwareRegister> color = new Dictionary<VirtualRegister, HardwareRegister>();
+		private Dictionary<VirtualRegister, CellRegister> color = new Dictionary<VirtualRegister, CellRegister>();
 
 		public void Alloc(MethodCompiler methodCompiler)
 		{
@@ -71,17 +68,102 @@ namespace CellDotNet
 
 			bool redoAlloc;
 
-			K = HardwareRegister.GetCellRegisters().Count; //TODO overvej en mere smart/fleksibel måde.
+			K = 0;
+			K += HardwareRegister.getCallerSavesCellRegisters().Length;
+			K += HardwareRegister.getCalleeSavesCellRegisters().Length;
+			//TODO overvej en mere smart/fleksibel måde.
 			// f.eks. mulighed for dynamisk at angive antallet af tilgængelige registre.
 			// eller at alloc tager som argument de registre der må bruges.
 
-			precolored.AddAll(HardwareRegister.getPrecolored());
+			precolored.AddAll(HardwareRegister.VirtualHardwareRegisters);
 			initial = getInitialVirtualRegisters();
 			
 			do
 			{
+				pred.Clear();
+				succ.Clear();
+
+				liveIn.Clear();
+				liveOut.Clear();
+
+				degree.Clear();
+
+				adjSet.Clear();
+				adjList.Clear();
+
+				moveList.Clear();
+
+				foreach (SpuBasicBlock block in basicBlocks)
+				{
+					SpuInstruction inst = block.Head;
+
+					while (inst != null)
+					{
+						pred[inst] = new Set<SpuInstruction>();
+						succ[inst] = new Set<SpuInstruction>();
+
+						liveIn[inst] = new Set<VirtualRegister>();
+						liveOut[inst] = new Set<VirtualRegister>();
+
+						if(inst.Ra != null)
+						{
+							adjSet[inst.Ra] = new Set<VirtualRegister>();
+							adjList[inst.Ra] = new Set<VirtualRegister>();
+							moveList[inst.Ra]  = new Set<SpuInstruction>();
+							degree[inst.Ra] = 0;
+						}
+						if (inst.Rb != null)
+						{
+							adjSet[inst.Rb] = new Set<VirtualRegister>();
+							adjList[inst.Rb] = new Set<VirtualRegister>();
+							moveList[inst.Rb] = new Set<SpuInstruction>();
+							degree[inst.Rb] = 0;
+						}
+						if (inst.Rc != null)
+						{
+							adjSet[inst.Rc] = new Set<VirtualRegister>();
+							adjList[inst.Rc] = new Set<VirtualRegister>();
+							moveList[inst.Rc] = new Set<SpuInstruction>();
+							degree[inst.Rc] = 0;
+						}
+						if (inst.Rt != null)
+						{
+							adjSet[inst.Rt] = new Set<VirtualRegister>();
+							adjList[inst.Rt] = new Set<VirtualRegister>();
+							moveList[inst.Rt] = new Set<SpuInstruction>();
+							degree[inst.Rt] = 0;
+						}
+						inst = inst.Next;
+					}
+				}
+
+
+				simplifyWorklist.Clear();
+				freezeWorklist.Clear();
+				spillWorklist.Clear();
+				spilledNodes.Clear();
+				coalescedNodes.Clear();
+				coloredNodes.Clear();
+				selctStack.Clear();
+
+				coalescedMoves.Clear();
+				constrainedMoves.Clear();
+				frozenMoves.Clear();
+				worklistMoves.Clear();
+				activeMoves.Clear();
+
+				alias.Clear();
+
+				color.Clear();
+				
+				foreach (VirtualRegister register in HardwareRegister.VirtualHardwareRegisters)
+				{
+					color[register] = register.Register;
+				}
+
 				LivenessAnalysis();
 				Build();
+
 				MakeWorklist();
 				do
 				{
@@ -100,6 +182,30 @@ namespace CellDotNet
 				if (redoAlloc)
 					RewriteProgram();
 			} while (redoAlloc);
+
+			setColors();
+		}
+
+		private void setColors()
+		{
+			foreach (SpuBasicBlock block in basicBlocks)
+			{
+				SpuInstruction inst = block.Head;
+
+				while (inst != null)
+				{
+					if (inst.Ra != null)
+						inst.Ra.Register = color[inst.Ra];
+					if (inst.Rb != null)
+						inst.Rb.Register = color[inst.Rb];
+					if (inst.Rc != null)
+						inst.Rc.Register = color[inst.Rc];
+					if (inst.Rt != null)
+						inst.Rt.Register = color[inst.Rt];
+
+					inst = inst.Next;
+				}
+			}
 		}
 
 		private LinkedList<VirtualRegister> getInitialVirtualRegisters()
@@ -112,10 +218,14 @@ namespace CellDotNet
 
 				while(inst != null)
 				{
-					result.Add(inst.Ra);
-					result.Add(inst.Rb);
-					result.Add(inst.Rc);
-					result.Add(inst.Rt);
+					if (inst.Ra != null && !inst.Ra.IsRegisterSet)
+						result.Add(inst.Ra);
+					if (inst.Rb != null && !inst.Rb.IsRegisterSet)
+						result.Add(inst.Rb);
+					if (inst.Rc != null && !inst.Rc.IsRegisterSet)
+						result.Add(inst.Rc);
+					if (inst.Rt != null && !inst.Rt.IsRegisterSet)
+						result.Add(inst.Rt);
 
 					inst = inst.Next;
 				}
@@ -131,134 +241,6 @@ namespace CellDotNet
 			return listResult;
 		}
 
-/*
-
-		public static FlowGraph CreatFlowGraph(List<SpuBasicBlock> basicBlocks)
-		{
-			Dictionary<SpuBasicBlock, GraphNode> jumpTargets = new Dictionary<SpuBasicBlock, GraphNode>();
-			Dictionary<SpuBasicBlock, LinkedList<GraphNode>> jumpSources = new Dictionary<SpuBasicBlock, LinkedList<GraphNode>>();
-
-			FlowGraph flowGraph = new FlowGraph();
-
-			foreach (SpuBasicBlock bb in basicBlocks)
-			{
-				SpuInstruction spuinst = bb.Head;
-				GraphNode graphNode = flowGraph.NewNode(spuinst.Def, spuinst.Use, false); //TODO isMove skal sættes!
-				jumpTargets[bb] = graphNode;
-
-				if (spuinst.JumpTarget != null)
-					jumpSources[bb].AddLast(graphNode);
-
-				while (spuinst.Next != null)
-				{
-					spuinst = spuinst.Next;
-					graphNode = flowGraph.NewNode(spuinst.Def, spuinst.Use, false); //TODO isMove skal sættes!
-					if (spuinst.JumpTarget != null)
-						jumpSources[bb].AddLast(graphNode);
-				}
-			}
-
-			foreach (SpuBasicBlock bb in jumpTargets.Keys)
-			{
-				GraphNode targetGraphNode = jumpTargets[bb];
-				foreach (GraphNode sourceNode in jumpSources[bb])
-				{
-					flowGraph.AddEdge(sourceNode, targetGraphNode);
-				}
-			}
-
-			return flowGraph;
-		}
-
-*/
-
-/*
-		public InterferenceGraph CreatInterferenceGraph()
-		{
-			Dictionary<GraphNode, Set<VirtualRegister>> liveInDic = new Dictionary<GraphNode, Set<VirtualRegister>>();
-			Dictionary<GraphNode, Set<VirtualRegister>> liveOutDic = new Dictionary<GraphNode, Set<VirtualRegister>>();
-
-			bool calculating;
-
-			do
-			{
-				calculating = false;
-
-				foreach (GraphNode node in flowGraph.Nodes)
-				{
-					Set<VirtualRegister> oldLiveIn;
-					Set<VirtualRegister> oldLiveOut;
-
-					Set<VirtualRegister> liveIn = new Set<VirtualRegister>();
-					Set<VirtualRegister> liveOut = new Set<VirtualRegister>();
-
-					liveInDic.TryGetValue(node, out oldLiveIn);
-					liveOutDic.TryGetValue(node, out oldLiveOut);
-
-					// Beregner livein
-					liveIn.AddAll(oldLiveOut);
-					liveIn.Remove(flowGraph.def(node));
-					foreach (VirtualRegister vr in flowGraph.use(node))
-						liveIn.Add(vr);
-					liveInDic[node] = liveIn;
-
-					//Beregner liveout
-					foreach (GraphNode succ in node.Succ)
-						liveOut.AddAll(liveInDic[succ]);
-					liveOutDic[node] = liveOut;
-
-					// I første gennemløb er kan oldLiveIn og oldLiveOut være null, og dremed ikke lig med
-					// det tomme set, men da algoritmen skal i normale tilfælde skal køre mindst to gange,
-					// så giver det ingen problemer.
-					calculating = !liveIn.Equals(oldLiveIn) || !liveOut.Equals(oldLiveOut) || calculating;
-				}
-			} while (calculating);
-
-			//Build interferenceGraph
-
-			InterferenceGraph interferenceGraph = new InterferenceGraph();
-
-			Dictionary<VirtualRegister, GraphNode> vrNodeDic = new Dictionary<VirtualRegister, GraphNode>();
-
-			foreach (GraphNode node in flowGraph.Nodes)
-			{
-				if (flowGraph.def(node) != null)
-					vrNodeDic[flowGraph.def(node)] = interferenceGraph.NewNode(flowGraph.def(node));
-
-				foreach (VirtualRegister vr in flowGraph.use(node))
-					vrNodeDic[vr] = interferenceGraph.NewNode(vr);
-			}
-
-			foreach (GraphNode flowNode in flowGraph.Nodes)
-			{
-				Set<VirtualRegister> lives = new Set<VirtualRegister>();
-				lives.AddAll(liveOutDic[flowNode]);
-
-				if (flowGraph.IsMove(flowNode))
-				{
-					lives.RemoveAll(flowGraph.use(flowNode));
-					foreach (VirtualRegister r in flowGraph.use(flowNode))
-						moveList[r] = Set<GraphNode>.Add(flowNode, moveList[r]);
-					worklistMoves.Add(flowNode);
-				}
-
-				lives.Add(flowGraph.def(flowNode));
-
-				VirtualRegister def = flowGraph.def(flowNode);
-
-				foreach (VirtualRegister l in lives)
-					if (def != l)
-					{
-						interferenceGraph.AddEdge(vrNodeDic[def], vrNodeDic[l]);
-						interferenceGraph.AddEdge(vrNodeDic[l], vrNodeDic[def]);
-						//TODO AddEdge?
-					}
-			}
-
-			return interferenceGraph;
-		}
-*/
-
 		private void LivenessAnalysis()
 		{
 			Dictionary<SpuBasicBlock, SpuInstruction> jumpTargets = new Dictionary<SpuBasicBlock, SpuInstruction>();
@@ -266,6 +248,9 @@ namespace CellDotNet
 				new Dictionary<SpuBasicBlock, LinkedList<SpuInstruction>>();
 
 			SpuInstruction predecessor = null;
+
+			foreach (SpuBasicBlock bb in basicBlocks)
+				jumpSources[bb] = new LinkedList<SpuInstruction>();
 
 			// Building predecessore og successor
 			foreach (SpuBasicBlock bb in basicBlocks)
@@ -314,23 +299,38 @@ namespace CellDotNet
 			{
 				reIterate = false;
 
-				Dictionary<SpuInstruction, Set<VirtualRegister>> oldLiveOut;
-				Dictionary<SpuInstruction, Set<VirtualRegister>> oldLiveIn;
-				oldLiveOut = liveOut;
-				oldLiveIn = liveIn;
+//				Dictionary<SpuInstruction, Set<VirtualRegister>> oldLiveOut = new Dictionary<SpuInstruction, Set<VirtualRegister>>();
+//				Dictionary<SpuInstruction, Set<VirtualRegister>> oldLiveIn = new Dictionary<SpuInstruction, Set<VirtualRegister>>();
+//
+//				foreach (SpuInstruction i in liveOut.Keys)
+//				{
+//					oldLiveOut[i] = new Set<VirtualRegister>();
+//					oldLiveOut[i].AddAll(liveOut[i]);
+//				}
+//
+//
+//				oldLiveOut = liveOut;
+//				oldLiveIn = liveIn;
 				foreach (SpuBasicBlock bb in basicBlocks)
 					for (SpuInstruction inst = bb.Head; inst != null; inst = inst.Next)
 					{
+						Set<VirtualRegister> oldLiveIn = new Set<VirtualRegister>();
+						oldLiveIn.AddAll(liveIn[inst]);
+
+						Set<VirtualRegister> oldLiveOut = new Set<VirtualRegister>();
+						oldLiveOut.AddAll(liveOut[inst]);
+
 						liveIn[inst] = new Set<VirtualRegister>();
 						liveIn[inst].AddAll(liveOut[inst]);
-						liveIn[inst].Remove(inst.Def);
+						if(inst.Def != null)
+							liveIn[inst].Remove(inst.Def);
 						liveIn[inst].AddAll(inst.Use);
 						liveOut[inst] = new Set<VirtualRegister>();
 						foreach (SpuInstruction s in succ[inst])
 							liveOut[inst].AddAll(liveIn[s]);
 
 						if (!reIterate)
-							reIterate |= !oldLiveIn[inst].Equals(liveIn[inst]) || !oldLiveOut[inst].Equals(liveOut[inst]);
+							reIterate |= !oldLiveIn.Equals(liveIn[inst]) || !oldLiveOut.Equals(liveOut[inst]);
 					}
 			} while (reIterate);
 		}
@@ -350,16 +350,19 @@ namespace CellDotNet
 						moveList[inst.Use[0]].Add(inst); // Move instruction only have one use register.
 						worklistMoves.Add(inst);
 					}
-					live.Add(inst.Def);
-					foreach (VirtualRegister l in live)
-						AddEdge(l, inst.Def);
+					if (inst.Def != null)
+					{
+						live.Add(inst.Def);
+						foreach (VirtualRegister l in live)
+							AddEdge(l, inst.Def);
+					}
 				}
 			}
 		}
 
 		private void AddEdge(VirtualRegister from, VirtualRegister to)
 		{
-			if (adjSet[from].Contains(to) && from != to)
+			if (!adjSet[from].Contains(to) && from != to)
 			{
 				adjSet[from].Add(to);
 				adjSet[to].Add(from);
@@ -566,7 +569,7 @@ namespace CellDotNet
 
 		private VirtualRegister GetAlias(VirtualRegister r)
 		{
-			if (coloredNodes.Contains(r))
+			if (coalescedNodes.Contains(r))
 				return GetAlias(alias[r]);
 			else
 				return r;
@@ -620,28 +623,28 @@ namespace CellDotNet
 			{
 				VirtualRegister n = selctStack.Pop();
 
-				Set<HardwareRegister> okColors = new Set<HardwareRegister>();
-				okColors.AddAll(HardwareRegister.GetCellRegisters()); //TODO overvej en mere smart/fleksibel måde.
+				Set<CellRegister> okColors = new Set<CellRegister>();
+				okColors.AddAll(HardwareRegister.getCallerSavesCellRegisters());
+				okColors.AddAll(HardwareRegister.getCalleeSavesCellRegisters());
 
 				foreach (VirtualRegister w in adjList[n])
 				{
 					VirtualRegister a = GetAlias(w);
 
 					if (coloredNodes.Contains(a) || precolored.Contains(a))
-					{
 						okColors.Remove(color[a]);
-					}
-					if (okColors.Count <= 0)
-					{
-						spilledNodes.Add(n);
-					}
-					else
-					{
-						coloredNodes.Add(n);
-						HardwareRegister c = okColors.getItem();
-						color[n] = c;
-					}
 				}
+				if (okColors.Count <= 0)
+				{
+					spilledNodes.Add(n);
+				}
+				else
+				{
+					coloredNodes.Add(n);
+					CellRegister c = okColors.getItem();
+					color[n] = c;
+				}
+				
 			}
 
 			foreach (VirtualRegister n in coalescedNodes)
@@ -671,8 +674,8 @@ namespace CellDotNet
 							SpuInstruction stor = new SpuInstruction(SpuOpCode.stqd);
 
 							stor.Rt = vt;
-							stor.Constant = 0; // TODO Offset in frame
-							stor.Ra = null; // TODO Frame pointer
+							stor.Constant = method.GetNewSpillOffset();
+							stor.Ra = HardwareRegister.SP;
 
 							SpuInstruction next = inst.Next;
 							inst.Next = stor;
@@ -701,8 +704,8 @@ namespace CellDotNet
 							SpuInstruction load = new SpuInstruction(SpuOpCode.lqd);
 
 							load.Rt = vt;
-							load.Constant = 0; // TODO Offset in frame
-							load.Ra = null; // TODO Frame pointer
+							load.Constant = method.GetNewSpillOffset();
+							load.Ra = HardwareRegister.SP;
 
 							if (prevInst != null)
 							{
@@ -730,4 +733,6 @@ namespace CellDotNet
 			}
 		}
 	}
+
+
 }

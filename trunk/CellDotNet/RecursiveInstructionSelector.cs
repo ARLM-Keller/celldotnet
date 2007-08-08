@@ -60,7 +60,6 @@ namespace CellDotNet
 				return;
 
 			_writer.BeginNewBasicBlock();
-			IList<HardwareRegister> regs = HardwareRegister.GetCellRegisters();
 			for (int i = 0; i < _method.Parameters.Count; i++)
 			{
 				MethodParameter parameter = _method.Parameters[i];
