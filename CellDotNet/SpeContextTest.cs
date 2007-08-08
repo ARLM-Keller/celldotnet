@@ -41,7 +41,7 @@ namespace CellDotNet
 			new TreeDrawer().DrawMethod(mc);
 
 
-			mc.PerformProcessing(MethodCompileState.S6PrologAndEpilogDone);
+			mc.PerformProcessing(MethodCompileState.S4InstructionSelectionDone);
 			mc.GetBodyWriter().WriteStop();
 
 			Console.WriteLine();
@@ -49,6 +49,10 @@ namespace CellDotNet
 			Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
 			mc.PerformProcessing(MethodCompileState.S5RegisterAllocationDone);
+
+			Console.WriteLine();
+			Console.WriteLine("Disassembly after regalloc: ");
+			Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
 			int[] bincode = SpuInstruction.emit(mc.GetBodyWriter().GetAsList());
 

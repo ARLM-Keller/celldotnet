@@ -1,9 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace CellDotNet
 {
+	[DebuggerDisplay("Count = {Count}")]
 	public class Set<T> : IEnumerable<T>, ICollection<T>
 	{
 		Dictionary<T, bool> dict = new Dictionary<T, bool>();
@@ -70,6 +72,7 @@ namespace CellDotNet
 		public T getItem()
 		{
 			IEnumerator<T> e = ((IEnumerable<T>)this).GetEnumerator();
+			e.MoveNext();
 			return e.Current;
 		}
 
@@ -117,5 +120,11 @@ namespace CellDotNet
 		{
 			return ((IEnumerable<T>) this).GetEnumerator();
 		}
+
+		public override string ToString()
+		{
+			return "Count = " + Count;
+		}
+
 	}
 }

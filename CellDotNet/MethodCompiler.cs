@@ -330,9 +330,12 @@ namespace CellDotNet
 		{
 			AssertState(MethodCompileState.S4InstructionSelectionDone);
 
-			SimpleRegAlloc regalloc = new SimpleRegAlloc();
-			List<SpuInstruction> asm = _instructions.GetAsList();
-			regalloc.alloc(asm, 16);
+			RegAllocGraphColloring regalloc = new RegAllocGraphColloring();
+			regalloc.Alloc(this);
+
+//			SimpleRegAlloc regalloc = new SimpleRegAlloc();
+//			List<SpuInstruction> asm = _instructions.GetAsList();
+//			regalloc.alloc(asm, 16);
 
 			State = MethodCompileState.S5RegisterAllocationDone;
 		}

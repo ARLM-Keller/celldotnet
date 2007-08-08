@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace CellDotNet
 {
     /// <summary>
@@ -21,7 +17,7 @@ namespace CellDotNet
         public VirtualRegister(int _number)
         {
             this._number = _number;
-            this._location = null;
+            _location = null;
         }
 
         private int _number;
@@ -37,14 +33,37 @@ namespace CellDotNet
             set { _location = value; }
         }
 
+		private bool _isRegisterSet = false;
+    	public bool IsRegisterSet
+    	{
+			get { return _isRegisterSet; }
+    	}
+
+
+    	private CellRegister _register;
+    	public CellRegister Register
+    	{
+    		get
+    		{
+    			return _register;
+    		}
+			set
+			{
+				_isRegisterSet = true;
+				_register = value;
+			}
+    	}
+
 		/// <summary>
 		/// Used for disassembly.
 		/// </summary>
 		/// <returns></returns>
 		public override string ToString()
 		{
-			if (Location is HardwareRegister)
+			if (Location is HardwareRegister) //TODO old
 				return "$" + ((HardwareRegister)Location).Register;
+			else if (_isRegisterSet)
+				return "$" + Register;
 			else if (Number != 0)
 				return "$$" + Number;
 			else

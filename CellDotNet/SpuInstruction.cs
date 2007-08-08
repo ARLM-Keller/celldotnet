@@ -154,6 +154,9 @@ namespace CellDotNet
 
         public int emit()
         {
+			// Old implementation
+
+/*
 			HardwareRegister reg3 = (_rc != null) ? _rc.Location as HardwareRegister : null;
 			HardwareRegister reg2 = (_rb != null) ? _rb.Location as HardwareRegister : null;
 			HardwareRegister reg1 = (_ra != null) ? _ra.Location as HardwareRegister : null;
@@ -208,7 +211,38 @@ namespace CellDotNet
 						throw CreateEmitException();
 				case SpuInstructionFormat.WEIRD:
             		return _opcode.OpCode | _constant;
-            }
+			}
+ */
+
+			// New switch
+ 
+			switch (_opcode.Format)
+			{
+				case SpuInstructionFormat.None:
+					throw new Exception("Err.");
+				case SpuInstructionFormat.RR1:
+					return _opcode.OpCode | ((int) _rt.Register << 7);
+				case SpuInstructionFormat.RR2:
+				case SpuInstructionFormat.RR:
+						return _opcode.OpCode | ((int) _rb.Register << 14) | ((int) _ra.Register << 7) | (int) _rt.Register;
+				case SpuInstructionFormat.RRR:
+					return _opcode.OpCode | ((int) _rt.Register << 21) | ((int) _rb.Register << 14) | ((int) _ra.Register << 7) | (int) _rc.Register;
+				case SpuInstructionFormat.RI7:
+					return _opcode.OpCode | ((_constant & 0x7F) << 14) | ((int)_ra.Register << 7) | (int)_rt.Register;
+				case SpuInstructionFormat.RI10:
+					return _opcode.OpCode | ((_constant & 0x3ff) << 14) | ((int)_ra.Register << 7) | (int)_rt.Register;
+				case SpuInstructionFormat.RI16:
+					return _opcode.OpCode | ((_constant & 0xffff) << 7) | (int)_rt.Register;
+				case SpuInstructionFormat.RI16NoRegs:
+					return _opcode.OpCode | ((_constant & 0xffff) << 7) | 0;
+				case SpuInstructionFormat.RI18:
+					return _opcode.OpCode | ((_constant & 0x3ffff) << 7) | (int)_rt.Register;
+				case SpuInstructionFormat.RI8:
+					return _opcode.OpCode | ((_constant & 0xff) << 14) | ((int)_ra.Register << 7) | (int)_rt.Register;
+				case SpuInstructionFormat.WEIRD:
+					return _opcode.OpCode | _constant;
+			}
+
             return 0;
         }
 

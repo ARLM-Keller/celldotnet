@@ -10,12 +10,15 @@ namespace CellDotNet
 	{
 		static public void Main(string[] args)
 		{
-			Trace.Listeners.Add(new ConsoleTraceListener());
+//			Trace.Listeners.Add(new ConsoleTraceListener());
 
-			new SpeContextTest().TestGetPutInt32();
+//			new SpeContextTest().TestGetPutInt32();
+
 //			new SpeContextTest().TestFirstCellProgram();
+
 //			new SpuInitializerTest().TestInitialization();
 
+			MyRunSPU();
 
 			
 //			GenericExperiment();
@@ -60,6 +63,72 @@ namespace CellDotNet
 		/// </summary>
 		private delegate void BasicTestDelegate();
 
+
+		private unsafe static void MyRunSPU() {
+			BasicTestDelegate del = delegate
+			                        	{
+											int* i;
+											i = (int*)0x40;
+			                        		int j = 18;
+											bool test = false;
+
+											if(test && !test)
+												*i = 32;
+											else
+												*i = 34;
+			                        	};
+
+//			BasicTestDelegate del = delegate()
+//										{
+//											int a;
+//											int i = 42;
+//											if (true)
+//												a = 1;
+//											else
+//												a = 2;
+//										};
+
+
+
+
+			MethodBase method = del.Method;
+			MethodCompiler mc = new MethodCompiler(method);
+			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
+
+			new TreeDrawer().DrawMethod(mc, method);
+
+
+			mc.PerformProcessing(MethodCompileState.S4InstructionSelectionDone);
+			mc.GetBodyWriter().WriteStop();
+
+			Console.WriteLine();
+			Console.WriteLine("Disassembly: ");
+			Console.WriteLine(mc.GetBodyWriter().Disassemble());
+
+			mc.PerformProcessing(MethodCompileState.S5RegisterAllocationDone);
+
+			Console.WriteLine();
+			Console.WriteLine("Disassembly after regalloc: ");
+			Console.WriteLine(mc.GetBodyWriter().Disassemble());
+
+			int[] bincode = SpuInstruction.emit(mc.GetBodyWriter().GetAsList());
+
+			SpeContext ctx = new SpeContext();
+			ctx.LoadProgram(bincode);
+
+			ctx.Run();
+			int[] ls = ctx.GetCopyOffLocalStorage();
+
+			Console.WriteLine("Value: {0}", ls[0x40 / 4]);
+
+//			if (ls[0x40 / 4] != 34)
+//			{
+//				Console.WriteLine("øv");
+//				Console.WriteLine("Value: {0}", ls[0x40 / 4]);
+//			}
+//			else
+//				Console.WriteLine("Selvfølgelig :)");
+		}
 
 		private unsafe static void RunSpu()
 		{
