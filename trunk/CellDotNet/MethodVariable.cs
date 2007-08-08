@@ -10,15 +10,22 @@ namespace CellDotNet
 	/// </summary>
 	class MethodVariable
 	{
-		private LocalVariableInfo _locaVariableInfo;
+//		private StackTypeDescription _stackType;
+//		public StackTypeDescription StackType
+//		{
+//			get { return _stackType; }
+//		}
+
+		private LocalVariableInfo _localVariableInfo;
 		public LocalVariableInfo LocalVariableInfo
 		{
-			get { return _locaVariableInfo; }
+			get { return _localVariableInfo; }
 		}
 
+		private int _index;
 		public virtual int Index
 		{
-			get { return _locaVariableInfo.LocalIndex; }
+			get { return _index; }
 		}
 
 		private bool? _escapes;
@@ -30,15 +37,36 @@ namespace CellDotNet
 
 		public virtual string Name
 		{
-			get { return _locaVariableInfo.ToString(); }
+			get
+			{
+				if (_localVariableInfo != null)
+					return _localVariableInfo.ToString();
+				else
+					return "StackVar_" + Index;
+			}
 		}
 
 		public virtual Type Type
 		{
-			get { return _locaVariableInfo.LocalType; }
+			get
+			{
+				if (_type == null)
+					throw new InvalidOperationException(
+						"No information is currently known about this variable. Probably it is a stack variable and type derival has not yet been performed.");
+				return _type;
+			}
+			set
+			{
+				if (_type != null)
+					throw new InvalidOperationException("Variable already has a type.");
+				_type = value;
+			}
 		}
 
+
 		private VirtualRegister _virtualRegister;
+		private Type _type;
+
 		public VirtualRegister VirtualRegister
 		{
 			get { return _virtualRegister; }
@@ -47,11 +75,24 @@ namespace CellDotNet
 
 		protected MethodVariable() { }
 
-		public MethodVariable(LocalVariableInfo locaVariableInfo)
+		/// <summary>
+		/// For stack variables.
+		/// </summary>
+		/// <param name="variableIndex"></param>
+		/// <param name="?"></param>
+		public MethodVariable(int variableIndex)
 		{
-			Utilities.AssertArgumentNotNull(locaVariableInfo, "locaVariableInfo");
+			Utilities.AssertArgument(variableIndex >= 1000, "Stack varibles indices should be >= 1000.");
+			_index = variableIndex;
+		}
 
-			_locaVariableInfo = locaVariableInfo;
+		public MethodVariable(LocalVariableInfo localVariableInfo)
+		{
+			Utilities.AssertArgumentNotNull(localVariableInfo, "localVariableInfo");
+
+			_type = localVariableInfo.LocalType;
+			_localVariableInfo = localVariableInfo;
+			_index = localVariableInfo.LocalIndex;
 		}
 
 		public override string ToString()

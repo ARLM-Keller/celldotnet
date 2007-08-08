@@ -21,6 +21,117 @@ namespace CellDotNet
 			VarPop = 1001
 		}
 
+		struct ForwardBranchStackInfo
+		{
+			public readonly int TargetOffset;
+			public readonly int TopOfStack;
+
+			public ForwardBranchStackInfo(int targetOffset, int topOfStack)
+			{
+				TargetOffset = targetOffset;
+				TopOfStack = topOfStack;
+			}
+		}
+
+		#region class VariableStack
+
+		internal class VariableStack
+		{
+			public VariableStack()
+			{
+				_variableStack = new List<MethodVariable>();
+				_topIndex = -1;
+			}
+
+			private List<MethodVariable> _variableStack;
+
+			private int _topIndex;
+
+			/// <summary>
+			/// Index of the top of the stack. Emtpy stack value is -1.
+			/// </summary>
+			public int TopIndex
+			{
+				get { return _topIndex; }
+				set
+				{
+					if (value < -1 || value >= _variableStack.Count)
+						throw new ArgumentOutOfRangeException("value", "Value: " + value);
+					_topIndex = value;
+				}
+			}
+
+
+			/// <summary>
+			/// Increments <see cref="TopIndex"/> and returns the variable at the new top.
+			/// A new variable is created if none exists.
+			/// </summary>
+			/// <returns></returns>
+			public MethodVariable PushTopVariable()
+			{
+				Utilities.Assert(_topIndex >= -1 && _topIndex < _variableStack.Count, 
+				                 "TopIndex >= -1 && TopIndex < _variableStack.Count");
+
+				_topIndex++;
+				MethodVariable var;
+				if (_topIndex == _variableStack.Count)
+				{
+					var = new MethodVariable(_topIndex + 1000);
+					_variableStack.Add(var);
+				}
+				else
+					var = _variableStack[_topIndex];
+
+				return var;
+			}
+			
+			/// <summary>
+			/// Pops the variable at the top of the stack.
+			/// </summary>
+			public MethodVariable PopTopVariable()
+			{
+				if (_topIndex < 0)
+					throw new InvalidOperationException("The variable stack is empty.");
+
+				MethodVariable var = _variableStack[_topIndex];
+				_topIndex--;
+
+				return var;
+			}
+		}
+
+		#endregion
+
+		/// <summary>
+		/// The set of currently known and not yet reached forward branch targets.
+		/// </summary>
+		private Dictionary<int, ForwardBranchStackInfo> _forwardBranches = new Dictionary<int, ForwardBranchStackInfo>();
+
+		private void AddForwardBranchAddress(ForwardBranchStackInfo branchAddress)
+		{
+			// If the branch target has been seen before, check that they agree on the stack top.
+			ForwardBranchStackInfo old;
+			if (_forwardBranches.TryGetValue(branchAddress.TargetOffset, out old))
+			{
+				if (old.TopOfStack != branchAddress.TopOfStack)
+					throw new ArgumentException();
+			}
+			else
+				_forwardBranches.Add(branchAddress.TargetOffset, branchAddress);
+		}
+
+		private ForwardBranchStackInfo PopNextForwardBranchInfo()
+		{
+			ForwardBranchStackInfo min = new ForwardBranchStackInfo(int.MaxValue, int.MaxValue);
+			foreach (ForwardBranchStackInfo info in _forwardBranches.Values)
+			{
+				if (info.TargetOffset < min.TargetOffset)
+					min = info;
+			}
+
+			return min;
+		}
+
 		public List<IRBasicBlock> BuildBasicBlocks(MethodBase method, ILReader reader, 
 		                                           List<MethodVariable> variables, ReadOnlyCollection<MethodParameter> parameters)
 		{
@@ -48,6 +159,7 @@ namespace CellDotNet
 			IRBasicBlock currblock = new IRBasicBlock();
 			List<TreeInstruction> stack = new List<TreeInstruction>();
 			List<TreeInstruction> branches = new List<TreeInstruction>();
+			VariableStack variableStack = new VariableStack();
 
 			List<IRBasicBlock> blocks = new List<IRBasicBlock>();
 
@@ -68,7 +180,7 @@ namespace CellDotNet
 				treeinst.Opcode = reader.OpCode;
 				treeinst.Offset = reader.Offset;
 
-				// Replace variable and parametere references with our own types.
+				// Replace variable and parameter references with our own types.
 				// Do not determine escapes here, since it may change later.
 				if (treeinst.Opcode.IRCode == IRCode.Ldloc || treeinst.Opcode.IRCode == IRCode.Stloc ||
 				    treeinst.Opcode.IRCode == IRCode.Ldloca)
@@ -155,6 +267,18 @@ namespace CellDotNet
 							throw new Exception("Invalid PopBehavior: " + popbehavior + ". Only two-argument method calls are supported.");
 						break;
 				}
+
+//				if (stack.Count > 0 && reader.OpCode.FlowControl == FlowControl.Branch || 
+//					reader.OpCode.FlowControl == FlowControl.Cond_Branch)
+//				{
+//					// Need to save the instruction stack on the variable stack, since
+//					// we've encountered a branch.
+//
+//					foreach (TreeInstruction inst in stack)
+//					{
+//						
+//					}
+//				}
 
 				// Push
 				if (pushcount == 1)
