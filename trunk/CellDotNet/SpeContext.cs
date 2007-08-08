@@ -265,10 +265,11 @@ namespace CellDotNet
 
 		public void Dispose()
 		{
-/*
-			if (!_handle.IsInvalid)
-				_handle.Close();
-*/
+			if (_handle != IntPtr.Zero)
+			{
+				UnsafeNativeMethods.spe_context_destroy(_handle);
+				_handle = IntPtr.Zero;
+			}
 		}
 	}
 }

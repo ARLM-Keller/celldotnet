@@ -91,7 +91,21 @@ namespace CellDotNet
 
 			_method = method;
 			_body = method.GetMethodBody();
-			_il = method.GetMethodBody().GetILAsByteArray();
+			Initialize(method.GetMethodBody().GetILAsByteArray());
+		}
+
+		/// <summary>
+		/// For unit testing.
+		/// </summary>
+		/// <param name="il"></param>
+		public ILReader(byte[] il)
+		{
+			Initialize(il);
+		}
+
+		private void Initialize(byte[] il)
+		{
+			_il = il;
 			_state = ReadState.Initial;
 		}
 
