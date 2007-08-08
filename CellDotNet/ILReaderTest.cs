@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection.Emit;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -153,5 +155,38 @@ namespace CellDotNet
 			Fail();
 		}
 
+		[Test]
+		public void TestVariableStack()
+		{
+			MemoryStream il = new MemoryStream();
+			BinaryWriter w = new BinaryWriter(il);
+
+			// A hard-coded version of Math.Max.
+
+			// Load "arguments".
+			w.Write((byte)OpCodes.Ldc_I4_1.Value);
+			w.Write((byte)OpCodes.Ldc_I4_5.Value);
+
+			// offset 2.
+			w.Write((byte)OpCodes.Ble_S.Value);
+			w.Write((byte) 4);
+
+			// offset 4.
+			w.Write((byte)OpCodes.Ldc_I4_1.Value);
+			w.Write((byte)OpCodes.Br_S.Value);
+			w.Write((byte) 2);
+
+			// offset 7.
+			w.Write((byte)OpCodes.Ldc_I4_5.Value);
+
+			// offset 8.
+			w.Write((byte)OpCodes.Ret.Value);
+
+			ILReader reader = new ILReader(il.ToArray());
+			while (reader.Read())
+				; // nothing.
+
+			AreEqual(7, reader.InstructionsRead);
+		}
 	}
 }

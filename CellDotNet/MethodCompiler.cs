@@ -223,7 +223,11 @@ namespace CellDotNet
 							{
 								treeinst.Left = stack[0];
 								if (stack.Count > 1)
-									throw new ILException("Stack.Count > 1 ??");
+								{
+									throw new ILException(string.Format(
+										"Stack.Count = {0} > 1 for VarPop opcode {1} in method {2} at offset {3:x4} ??",
+										stack.Count, reader.OpCode.Name, method.Name, reader.Offset));
+								}
 								stack.Clear();
 							}
 						}
