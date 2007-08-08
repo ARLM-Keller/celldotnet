@@ -107,6 +107,9 @@ namespace CellDotNet
 		/// </summary>
 		private Dictionary<int, ForwardBranchStackInfo> _forwardBranches = new Dictionary<int, ForwardBranchStackInfo>();
 
+		private VariableStack _variableStack = new VariableStack();
+		private List<TreeInstruction> _instructionStack = new List<TreeInstruction>();
+
 		private void AddForwardBranchAddress(ForwardBranchStackInfo branchAddress)
 		{
 			// If the branch target has been seen before, check that they agree on the stack top.
@@ -130,6 +133,41 @@ namespace CellDotNet
 			}
 
 			return min;
+		}
+
+		/// <summary>
+		/// If the instruction stack is not empty, the top of that stack is popped.
+		/// Otherwise, an <see cref="IROpCodes.Ldloc"/> instruction that reads the variable 
+		/// at the top of the variable stack is created and returned (and the top is popped).
+		/// <para>
+		/// So basically, this abstract whether an operand comes from a stack variable or the 
+		/// instruction stack.
+		/// </para>
+		/// </summary>
+		/// <returns></returns>
+		private TreeInstruction Pop()
+		{
+			if (_instructionStack.Count > 0)
+			{
+				TreeInstruction inst = _instructionStack[_instructionStack.Count - 1];
+				_instructionStack.RemoveAt(_instructionStack.Count - 1);
+				return inst;
+			}
+			else if (_variableStack.TopIndex >= 0)
+			{
+				MethodVariable var = _variableStack.PopTopVariable();
+				TreeInstruction inst = new TreeInstruction();
+				inst.Opcode = IROpCodes.Ldloc;
+				inst.Operand = var;
+				return inst;
+			}
+			else
+				throw new Exception("??");
+		}
+
+		private int StackSize
+		{
+			get { return _variableStack.TopIndex + 1 + _instructionStack.Count; }
 		}
 
 		public List<IRBasicBlock> BuildBasicBlocks(MethodBase method, ILReader reader, 
@@ -157,9 +195,7 @@ namespace CellDotNet
 			Utilities.AssertArgumentNotNull(parameters, "_parameters != null");
 
 			IRBasicBlock currblock = new IRBasicBlock();
-			List<TreeInstruction> stack = new List<TreeInstruction>();
 			List<TreeInstruction> branches = new List<TreeInstruction>();
-			VariableStack variableStack = new VariableStack();
 
 			List<IRBasicBlock> blocks = new List<IRBasicBlock>();
 
@@ -167,7 +203,7 @@ namespace CellDotNet
 
 			while (reader.Read())
 			{
-				if (treeinst != null && stack.Count == 0)
+				if (treeinst != null && StackSize == 0)
 				{
 					// It is a root exactly when the stack is empty.
 					currblock.Roots.Add(treeinst);
@@ -201,37 +237,34 @@ namespace CellDotNet
 				switch (popbehavior)
 				{
 					case PopBehavior.Pop1:
-						treeinst.Left = stack[stack.Count - 1];
-						stack.RemoveRange(stack.Count - 1, 1);
+						treeinst.Left = Pop();
 						break;
 					case PopBehavior.Pop2:
-						treeinst.Left = stack[stack.Count - 2];
-						treeinst.Right = stack[stack.Count - 1];
-						stack.RemoveRange(stack.Count - 2, 2);
+						treeinst.Right = Pop();
+						treeinst.Left = Pop();
 						break;
 					case PopBehavior.PopAll: // "leave"
 						throw new NotImplementedException("PopAll");
 					case PopBehavior.VarPop: // "ret"
 						if (reader.OpCode == IROpCodes.Ret)
 						{
-							// CLI: "The 10 evaluation stack for the current method must be empty except for the value to be returned."
-							if (stack.Count > 0)
+							// CLI: "The evaluation stack for the current method must be empty except for the value to be returned."
+							if (StackSize > 0)
 							{
-								treeinst.Left = stack[0];
-								if (stack.Count > 1)
+								if (StackSize > 1)
 								{
 									throw new ILException(string.Format(
 									                      	"Stack.Count = {0} > 1 for VarPop opcode {1} in method {2} at offset {3:x4} ??",
-									                      	stack.Count, reader.OpCode.Name, methodName, reader.Offset));
+									                      	StackSize, reader.OpCode.Name, methodName, reader.Offset));
 								}
-								stack.Clear();
+								treeinst.Left = Pop();
 							}
 						}
 						else if (reader.OpCode.FlowControl == FlowControl.Call)
 						{
 							// Build a method call from the stack.
 							MethodBase mr = (MethodBase) reader.Operand;
-							if (stack.Count < mr.GetParameters().Length)
+							if (StackSize < mr.GetParameters().Length)
 								throw new ILException("Too few parameters on stack.");
 
 							int hasThisExtraParam = ((int) (mr.CallingConvention & CallingConventions.HasThis) != 0 && 
@@ -240,11 +273,15 @@ namespace CellDotNet
 
 							MethodCallInstruction mci = new MethodCallInstruction(mr, reader.OpCode);
 							mci.Offset = reader.Offset;
+
+							TreeInstruction[] arr = new TreeInstruction[paramcount];
 							for (int i = 0; i < paramcount; i++)
 							{
-								mci.Parameters.Add(stack[stack.Count - paramcount + i]);
+								arr[paramcount - 1 - i] = Pop();
+//								mci.Parameters.Add(_instructionStack[StackSize - paramcount + i]);
 							}
-							stack.RemoveRange(stack.Count - paramcount, paramcount);
+							mci.Parameters.AddRange(arr);
+//							_instructionStack.RemoveRange(StackSize - paramcount, paramcount);
 
 							MethodInfo methodinfo = mr as MethodInfo;
 							if (mr is ConstructorInfo || (methodinfo != null && methodinfo.ReturnType != typeof(void)))
@@ -268,21 +305,30 @@ namespace CellDotNet
 						break;
 				}
 
-//				if (stack.Count > 0 && reader.OpCode.FlowControl == FlowControl.Branch || 
+				// If it's a branch and there's contents on the instruction stack then
+				// we need to save the instruction stack on the variable stack.
+				// We do it by making a root for each instruction on the stack that saves the
+				// instruction value in a stack variable.
+//				if (_instructionStack.Count > 0 && reader.OpCode.FlowControl == FlowControl.Branch || 
 //					reader.OpCode.FlowControl == FlowControl.Cond_Branch)
 //				{
-//					// Need to save the instruction stack on the variable stack, since
-//					// we've encountered a branch.
+//					currblock.Roots.Add(treeinst);
+////					treeinst = null;
 //
-//					foreach (TreeInstruction inst in stack)
-//					{
-//						
-//					}
+////					foreach (TreeInstruction inst in _instructionStack)
+////					{
+////						TreeInstruction storeInst = new TreeInstruction();
+////						storeInst.Opcode = IROpCodes.Stloc;
+////						storeInst.Operand = _variableStack.PushTopVariable();
+////						storeInst.Left = inst;
+////
+////						currblock.Roots.Add(storeInst);
+////					}
 //				}
 
 				// Push
 				if (pushcount == 1)
-					stack.Add(treeinst);
+					_instructionStack.Add(treeinst);
 				else if (pushcount != 0)
 					throw new Exception("Only 1-push is supported.");
 
@@ -290,17 +336,12 @@ namespace CellDotNet
 				{
 					case FlowControl.Branch:
 					case FlowControl.Cond_Branch:
+						// For now, just store the target offset; this is fixed below.
+						treeinst.Operand = reader.Operand;
+						branches.Add(treeinst);
+						break;
 					case FlowControl.Return:
 					case FlowControl.Throw:
-						if (reader.OpCode.FlowControl == FlowControl.Branch ||
-						    reader.OpCode.FlowControl == FlowControl.Cond_Branch)
-						{
-							// For now, just store the target offset; this is fixed below.
-
-							treeinst.Operand = reader.Operand;
-							branches.Add(treeinst);
-						}
-						break;
 					case FlowControl.Call:
 					case FlowControl.Meta:
 					case FlowControl.Next:
