@@ -18,11 +18,12 @@ namespace CellDotNet
 
 //			new SpuInitializerTest().TestInitialization();
 
-			MyRunSPU();
-
 			
 //			GenericExperiment();
 //			return;
+
+			MyRunSPU();
+
 //			RunSpu();
 //			TypeExperimenalStuff(3);
 //			new MethodCompilerTest().TestBuildTree();
@@ -64,52 +65,71 @@ namespace CellDotNet
 		private delegate void BasicTestDelegate();
 
 
-		private unsafe static void MyRunSPU() {
-			BasicTestDelegate del = delegate
-			                        	{
-											int* i;
-											i = (int*)0x40;
-			                        		int j = 18;
-											bool test = false;
-
-											if(test && !test)
-												*i = 32;
-											else
-												*i = 34;
-			                        	};
-
-//			BasicTestDelegate del = delegate()
-//										{
-//											int a;
-//											int i = 42;
-//											if (true)
-//												a = 1;
+		private static unsafe  void MyRunSPU() {
+			BasicTestDelegate del = null;
+//			del = delegate
+//			                        	{
+//											int* i;
+//											i = (int*)0x40;
+//			                        		int j = 18;
+//											bool test = false;
+//
+//											if(test && !test)
+//												*i = 32;
 //											else
-//												a = 2;
-//										};
+//												*i = 34;
+//			                        	};
 
+			del = delegate()
+										{
+											int a;
+											int i = 42;
+											if (true)
+												a = 1;
+											else
+												a = 2;
+										};
 
+			del = delegate()
+							{
+								int* i;
+								i = (int*)0x40;
+								*i = 34;
+							};
 
 
 			MethodBase method = del.Method;
 			MethodCompiler mc = new MethodCompiler(method);
 			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 
+			System.Console.WriteLine("Debug 1");
+
 			new TreeDrawer().DrawMethod(mc);
 
+			mc.PerformProcessing(MethodCompileState.S3InstructionSelectionPreparationsDone);
+
+			System.Console.WriteLine("Debug 2");
 
 			mc.PerformProcessing(MethodCompileState.S4InstructionSelectionDone);
 			mc.GetBodyWriter().WriteStop();
+
+			System.Console.WriteLine("Debug 3");
 
 			Console.WriteLine();
 			Console.WriteLine("Disassembly: ");
 			Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
+			System.Console.WriteLine("Debug 4");
+
 			mc.PerformProcessing(MethodCompileState.S5RegisterAllocationDone);
+
+			System.Console.WriteLine("Debug 5");
 
 			Console.WriteLine();
 			Console.WriteLine("Disassembly after regalloc: ");
 			Console.WriteLine(mc.GetBodyWriter().Disassemble());
+
+			return;
 
 			int[] bincode = SpuInstruction.emit(mc.GetBodyWriter().GetAsList());
 
@@ -182,7 +202,7 @@ namespace CellDotNet
 
 			SimpleRegAlloc regalloc = new SimpleRegAlloc();
 			List<SpuInstruction> asm = ilist.GetAsList();
-			regalloc.alloc(asm, 16);
+//			regalloc.alloc(asm, 16); //Out dated
 
 			int[] bincode = SpuInstruction.emit(asm);
 			int[] testbincode = new int[10];
