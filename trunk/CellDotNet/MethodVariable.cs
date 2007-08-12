@@ -95,6 +95,7 @@ namespace CellDotNet
 
 		protected MethodVariable(StackTypeDescription stackType)
 		{
+			Utilities.AssertArgument(stackType != StackTypeDescription.None, "stackType != StackTypeDescription.None");
 			_stackType = stackType;
 		}
 
@@ -106,6 +107,7 @@ namespace CellDotNet
 		public MethodVariable(int variableIndex, StackTypeDescription stackType)
 		{
 			Utilities.AssertArgument(variableIndex >= 1000, "Stack varibles indices should be >= 1000.");
+			Utilities.AssertArgument(stackType != StackTypeDescription.None, "stackType != StackTypeDescription.None");
 			_index = variableIndex;
 			_stackType = stackType;
 		}
@@ -118,6 +120,7 @@ namespace CellDotNet
 		public MethodVariable(LocalVariableInfo localVariableInfo, StackTypeDescription stackType)
 		{
 			Utilities.AssertArgumentNotNull(localVariableInfo, "localVariableInfo");
+			Utilities.AssertArgument(stackType != StackTypeDescription.None, "stackType != StackTypeDescription.None");
 
 			_reflectionType = localVariableInfo.LocalType;
 			_localVariableInfo = localVariableInfo;
