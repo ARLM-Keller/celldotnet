@@ -95,7 +95,7 @@ namespace CellDotNet
 			State = MethodCompileState.S1Initial;
 
 			PerformIRTreeConstruction();
-			new TypeDeriver().DeriveTypes(Blocks);
+//			new TypeDeriver().DeriveTypes(Blocks);
 		}
 
 		public void VisitTreeInstructions(Action<TreeInstruction> action)
@@ -116,6 +116,9 @@ namespace CellDotNet
 		{
 			AssertState(MethodCompileState.S1Initial);
 
+			TypeDeriver typederiver = new TypeDeriver();
+
+
 			// Build Parameters.
 			List<MethodParameter> parlist = new List<MethodParameter>();
 			int i = 0;
@@ -124,9 +127,10 @@ namespace CellDotNet
 				Utilities.Assert(pi.Position == i, "pi.Index == i");
 				i++;
 					
-				parlist.Add(new MethodParameter(pi));
+				parlist.Add(new MethodParameter(pi, typederiver.GetStackTypeDescription(pi.ParameterType)));
 			}
 			_parameters = new ReadOnlyCollection<MethodParameter>(parlist);
+
 
 			// Build Variables.
 			List<MethodVariable> varlist = new List<MethodVariable>();
@@ -136,7 +140,7 @@ namespace CellDotNet
 				Utilities.Assert(lv.LocalIndex == i, "lv.LocalIndex == i");
 				i++;
 
-				varlist.Add(new MethodVariable(lv));
+				varlist.Add(new MethodVariable(lv, typederiver.GetStackTypeDescription(lv.LocalType)));
 			}
 			_variables = new ReadOnlyCollection<MethodVariable>(varlist);
 			_variablesMutable = varlist;
