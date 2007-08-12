@@ -68,6 +68,28 @@ namespace CellDotNet
 		}
 
 		[Test]
+		public void TestLoadInt32_Short()
+		{
+			BasicTestDelegate del = delegate
+										{
+											int i = 4; // Will generate ldc.i.4
+											Math.Abs(i);
+										};
+			ILReader r = new ILReader(del.Method);
+
+			while (r.Read())
+			{
+				if (r.OpCode != IROpCodes.Ldc_I4)
+					continue;
+				int val = (int)r.Operand;
+				AreEqual(4, val);
+				return;
+			}
+
+			Fail();
+		}
+
+		[Test]
 		public void TestLoadInt64()
 		{
 			BasicTestDelegate del = delegate

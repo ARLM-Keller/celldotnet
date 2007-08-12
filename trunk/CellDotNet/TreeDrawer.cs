@@ -52,7 +52,18 @@ namespace CellDotNet
 				else if (inst.Operand is MethodParameter)
 					Output.Write(" {0} ({1})", ((MethodParameter)inst.Operand).Name, ((MethodParameter)inst.Operand).Type.Name);
 				else if (inst.Operand is MethodVariable)
-					Output.Write(" {0} ({1})", inst.Operand, ((MethodVariable)inst.Operand).Type.Name);
+				{
+					string typename;
+					try
+					{
+						typename = ((MethodVariable)inst.Operand).Type.Name;
+					}
+					catch (InvalidOperationException)
+					{
+						typename = "(unknown type)";
+					}
+					Output.Write(" {0} ({1})", inst.Operand, typename);
+				}
 				else if (inst.Operand is FieldInfo)
 					Output.Write(" {0} ({1})", ((FieldInfo)inst.Operand).Name, ((FieldInfo)inst.Operand).FieldType.Name);
 				else if (inst.Operand is int && inst.Opcode.FlowControl == FlowControl.Branch || inst.Opcode.FlowControl == FlowControl.Cond_Branch)
@@ -130,18 +141,23 @@ namespace CellDotNet
 			}
 		}
 
-		public void DrawMethod(MethodCompiler ci)
+		public void DrawMethod(List<IRBasicBlock> blocks)
 		{
 			Output = new StringWriter();
 
 			try
 			{
-				DrawMethod(ci.MethodBase, Output, ci.Blocks);
+				DrawMethod(blocks, Output);
 			}
 			finally
 			{
-				Console.Write(((StringWriter)Output).GetStringBuilder().ToString());				
+				Console.Write(((StringWriter)Output).GetStringBuilder().ToString());
 			}
+		}
+
+		public void DrawMethod(MethodCompiler ci)
+		{
+			DrawMethod(ci.Blocks);
 		}
 
 		public string GetMethodDrawing(MethodCompiler ci)
