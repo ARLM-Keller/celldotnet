@@ -15,6 +15,31 @@ namespace CellDotNet
 		private delegate void BasicTestDelegate();
 
 		[Test]
+		public void TestNonEmptyBasicBlocks()
+		{
+			BasicTestDelegate del = delegate()
+										{
+											int a;
+											int i = 42;
+											if (true)
+												a = 1;
+											else
+												a = 2;
+										};
+
+			MethodBase method = del.Method;
+			MethodCompiler mc = new MethodCompiler(method);
+			mc.PerformProcessing(MethodCompileState.S4InstructionSelectionDone);
+			mc.GetBodyWriter().WriteStop();
+
+			foreach (SpuBasicBlock block in mc.SpuBasicBlocks)
+			{
+				if(block.Head == null)
+					Fail();
+			}
+		}
+
+		[Test]
 		public void TestBuildTree()
 		{
 			Converter<int, long> del =

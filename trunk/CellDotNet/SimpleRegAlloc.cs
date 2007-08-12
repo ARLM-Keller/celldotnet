@@ -9,13 +9,33 @@ namespace CellDotNet
         // TODO Registre allokatoren bør arbejde på hele metoden.
         // returnere true hvis der forekommer spill(indtilvidre håndteres spill ikke!)
         // regnum, er altallet af registre som register allokatoren ikke bruger.
-        public bool alloc(List<SpuInstruction> code, int regnum)
+        public bool alloc(MethodCompiler method)
         {
+			List<SpuInstruction> code = new List<SpuInstruction>();
+			// TODO genarate codelist from method.
+
+        	foreach (SpuBasicBlock block in method.SpuBasicBlocks)
+        	{
+        		SpuInstruction inst = block.Head;
+				while(inst != null)
+				{
+					code.Add(inst);
+					inst = inst.Next;
+				}
+        	}
+
             SortedLinkedList<LiveInterval> activeIntervals =
                 new SortedLinkedList<LiveInterval>(new LiveInterval.ComparByEnd());
-            Stack<StoreLocation> freeRegisters = HardwareRegister.GetCellRegistersAsStack();
-            for (int i = 1; i <= regnum; i++) 
-                freeRegisters.Pop();
+			Stack<CellRegister> freeRegisters = new Stack<CellRegister>();
+
+        	foreach (CellRegister register in HardwareRegister.getCallerSavesCellRegisters())
+        	{
+        		freeRegisters.Push(register);	
+        	}
+			foreach (CellRegister register in HardwareRegister.getCalleeSavesCellRegisters())
+			{
+				freeRegisters.Push(register);
+			}
 
         bool isSpill = false;
             List<LiveInterval> liveIntervals = SimpleLiveAnalyzer.Analyze(code);
@@ -27,7 +47,7 @@ namespace CellDotNet
 				while (activeIntervals.Count > 0 && activeIntervals.Head.end < interval.start)
                 {
                     LiveInterval li = activeIntervals.RemoveHead();
-                    freeRegisters.Push(li.r.Location);
+                    freeRegisters.Push(li.r.Register);
                 }
 
                 if (freeRegisters.Count == 0)
@@ -54,7 +74,7 @@ namespace CellDotNet
                 }
                 else
                 {
-                    interval.r.Location = freeRegisters.Pop();
+                    interval.r.Register = freeRegisters.Pop();
                     activeIntervals.Add(interval);
                 }
             }

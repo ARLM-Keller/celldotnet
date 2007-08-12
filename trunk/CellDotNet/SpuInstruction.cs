@@ -7,12 +7,17 @@ namespace CellDotNet
     /// <summary>
     /// Represents an SPU instruction.
     /// </summary>
-	[DebuggerDisplay("{OpCode.Name}")]
+	[DebuggerDisplay("{OpCode.Name} {SpuInstructionNumber}")]
     class SpuInstruction
     {
+		private static int SpuInstructionCount = 0;
+
+    	private int SpuInstructionNumber;
+
         public SpuInstruction(SpuOpCode _opcode)
         {
-            this._opcode = _opcode;
+			SpuInstructionNumber = ++SpuInstructionCount;
+			this._opcode = _opcode;
         }
 
         private SpuOpCode _opcode;
