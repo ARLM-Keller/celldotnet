@@ -51,6 +51,7 @@
     <Compile Include="GraphTest.cs" />
     <Compile Include="ILReader.cs" />
     <Compile Include="ILReaderTest.cs" />
+    <Compile Include="ILWriter.cs" />
     <Compile Include="InterferenceGraph.cs" />
     <Compile Include="IRBasicBlock.cs" />
     <Compile Include="IRCode.cs" />
@@ -99,6 +100,7 @@
     <Compile Include="StackLocation.cs" />
     <Compile Include="StoreLocation.cs" />
     <Compile Include="TreeDrawer.cs" />
+    <Compile Include="TypeDeriver.cs" />
     <Compile Include="TypeDescription.cs" />
     <Compile Include="UnitTest.cs" />
     <Compile Include="Utilities.cs" />
