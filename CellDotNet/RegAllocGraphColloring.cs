@@ -49,6 +49,8 @@ namespace CellDotNet
 		private Dictionary<VirtualRegister, Set<VirtualRegister>> adjSet =
 			new Dictionary<VirtualRegister, Set<VirtualRegister>>();
 
+		private BitMatrix adjMatrix;
+
 		private Dictionary<VirtualRegister, Set<VirtualRegister>> adjList =
 			new Dictionary<VirtualRegister, Set<VirtualRegister>>();
 
@@ -60,11 +62,19 @@ namespace CellDotNet
 		private Dictionary<VirtualRegister, VirtualRegister> alias = new Dictionary<VirtualRegister, VirtualRegister>();
 		private Dictionary<VirtualRegister, CellRegister> color = new Dictionary<VirtualRegister, CellRegister>();
 
+		private Dictionary<VirtualRegister, int> virtualRegisteWeight = new Dictionary<VirtualRegister, int>();
+
+		// TODO evt. tage kode og en delagate, der kan allokere plads i frames, som argument.
 		public void Alloc(MethodCompiler methodCompiler)
 		{
 			method = methodCompiler;
 
 			basicBlocks = method.SpuBasicBlocks;
+
+//			basicBlocks = new List<SpuBasicBlock>();
+//
+//			for(int i = 1; i < method.SpuBasicBlocks.Count-1; i++)
+//				basicBlocks.Add(method.SpuBasicBlocks[i]);
 
 			bool redoAlloc;
 
@@ -311,8 +321,14 @@ namespace CellDotNet
 //
 //				oldLiveOut = liveOut;
 //				oldLiveIn = liveIn;
-				foreach (SpuBasicBlock bb in basicBlocks)
+				for(int i = basicBlocks.Count-1; i >= 0; i--)
+				{
+					SpuBasicBlock bb = basicBlocks[i];
+					SpuInstruction lastinst = null;
 					for (SpuInstruction inst = bb.Head; inst != null; inst = inst.Next)
+						lastinst = inst;
+
+					for (SpuInstruction inst = lastinst; inst != null; inst = inst.Prev)
 					{
 						Set<VirtualRegister> oldLiveIn = new Set<VirtualRegister>();
 						oldLiveIn.AddAll(liveIn[inst]);
@@ -320,18 +336,20 @@ namespace CellDotNet
 						Set<VirtualRegister> oldLiveOut = new Set<VirtualRegister>();
 						oldLiveOut.AddAll(liveOut[inst]);
 
-						liveIn[inst] = new Set<VirtualRegister>();
-						liveIn[inst].AddAll(liveOut[inst]);
-						if(inst.Def != null)
-							liveIn[inst].Remove(inst.Def);
-						liveIn[inst].AddAll(inst.Use);
 						liveOut[inst] = new Set<VirtualRegister>();
 						foreach (SpuInstruction s in succ[inst])
 							liveOut[inst].AddAll(liveIn[s]);
+						
+						liveIn[inst] = new Set<VirtualRegister>();
+						liveIn[inst].AddAll(liveOut[inst]);
+						if (inst.Def != null)
+							liveIn[inst].Remove(inst.Def);
+						liveIn[inst].AddAll(inst.Use);
 
 						if (!reIterate)
 							reIterate |= !oldLiveIn.Equals(liveIn[inst]) || !oldLiveOut.Equals(liveOut[inst]);
 					}
+				}
 			} while (reIterate);
 		}
 
@@ -610,9 +628,24 @@ namespace CellDotNet
 		private void SelectSpill()
 		{
 			// TODO Bedre måde at vælge m på, se p. 239.
-			//      Den nnuværende måde at vælge m på, lægger op til ballade.
-			VirtualRegister m = spillWorklist.First.Value;
-			spillWorklist.RemoveFirst();
+
+			VirtualRegister m = null;
+
+			foreach (VirtualRegister register in spillWorklist)
+			{
+				int weight;
+
+				if (!virtualRegisteWeight.TryGetValue(register, out weight) || weight < 100)
+				{
+					m = register;
+					spillWorklist.Remove(register);
+					break;
+				}
+
+			}
+
+//			VirtualRegister m = spillWorklist.First.Value;
+//			spillWorklist.RemoveFirst();
 			simplifyWorklist.AddLast(m);
 			FreezeMoves(m);
 		}
@@ -667,6 +700,7 @@ namespace CellDotNet
 						if (inst.Def == v)
 						{
 							VirtualRegister vt = new VirtualRegister();
+							virtualRegisteWeight[vt] = int.MaxValue;
 							newTemps.Add(vt);
 
 							inst.Rt = vt;
@@ -689,6 +723,7 @@ namespace CellDotNet
 						else if (inst.Ra == v || inst.Rb == v || inst.Rc == v || inst.Rt == v)
 						{
 							VirtualRegister vt = new VirtualRegister();
+							virtualRegisteWeight[vt] = int.MaxValue;
 							newTemps.Add(vt);
 
 							// Det antages at et register kun kan bruges en gang i en instruktion.

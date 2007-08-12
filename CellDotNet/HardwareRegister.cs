@@ -75,6 +75,7 @@ namespace CellDotNet
 
 		static HardwareRegister()
 		{
+//			throw new Exception("NEJ!!");
 			_virtualHardwareRegisters = new VirtualRegister[128];
 
 			for (int i = 0; i <= 127; i++)

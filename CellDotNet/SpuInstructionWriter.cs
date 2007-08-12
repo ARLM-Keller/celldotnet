@@ -84,6 +84,8 @@ namespace CellDotNet
 		{
 			if (_lastInstruction != null)
 			{
+				inst.Prev = _lastInstruction;
+
 				_lastInstruction.Next = inst;
 				_lastInstruction = inst;
 			}
