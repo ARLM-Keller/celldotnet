@@ -21,127 +21,39 @@ namespace CellDotNet
 			VarPop = 1001
 		}
 
-		struct ForwardBranchStackInfo
-		{
-			public readonly int TargetOffset;
-			public readonly int StackTopIndex;
+		private Dictionary<int, List<MethodVariable>> _branchTargetStackVariables = new Dictionary<int, List<MethodVariable>>();
 
-			public ForwardBranchStackInfo(int targetOffset, int topOfStack)
-			{
-				TargetOffset = targetOffset;
-				StackTopIndex = topOfStack;
-			}
-		}
-
-		#region class VariableStack
-
-		internal class VariableStack
-		{
-			public VariableStack()
-			{
-				_variableStack = new List<MethodVariable>();
-				_topIndex = -1;
-			}
-
-			private List<MethodVariable> _variableStack;
-
-			private int _topIndex;
-
-			/// <summary>
-			/// Index of the top of the stack. Emtpy stack value is -1.
-			/// </summary>
-			public int TopIndex
-			{
-				get { return _topIndex; }
-				set
-				{
-					if (value < -1 || value >= _variableStack.Count)
-						throw new ArgumentOutOfRangeException("value", "Value: " + value);
-					_topIndex = value;
-				}
-			}
-
-			public List<MethodVariable> ToList()
-			{
-				return new List<MethodVariable>(_variableStack);
-			}
-
-			/// <summary>
-			/// Increments <see cref="TopIndex"/> and returns the variable at the new top.
-			/// A new variable is created if none exists.
-			/// </summary>
-			/// <returns></returns>
-			public MethodVariable PushTopVariable()
-			{
-				Utilities.Assert(_topIndex >= -1 && _topIndex < _variableStack.Count, 
-				                 "TopIndex >= -1 && TopIndex < _variableStack.Count");
-
-				_topIndex++;
-				MethodVariable var;
-				if (_topIndex == _variableStack.Count)
-				{
-					var = new MethodVariable(_topIndex + 1000);
-					_variableStack.Add(var);
-				}
-				else
-					var = _variableStack[_topIndex];
-
-				return var;
-			}
-			
-			/// <summary>
-			/// Pops the variable at the top of the stack.
-			/// </summary>
-			public MethodVariable PopTopVariable()
-			{
-				if (_topIndex < 0)
-					throw new InvalidOperationException("The variable stack is empty.");
-
-				MethodVariable var = _variableStack[_topIndex];
-				_topIndex--;
-
-				return var;
-			}
-		}
-
-		#endregion
-
-		/// <summary>
-		/// The set of currently known and not yet reached forward branch targets.
-		/// </summary>
-		private Dictionary<int, ForwardBranchStackInfo> _forwardBranches = new Dictionary<int, ForwardBranchStackInfo>();
-
-		private VariableStack _variableStack = new VariableStack();
 		private List<TreeInstruction> _instructionStack = new List<TreeInstruction>();
+		private List<MethodVariable> _currentVariableStack;
+		private int _currentVariableStackTop = -1;
+		private int _lastStackVariableNumber = 999;
 
-		private void AddForwardBranchAddress(int branchTargetAddress)
+		private List<MethodVariable> GetBranchVariableStack(int branchTargetAddress)
 		{
-			AddForwardBranchAddress(new ForwardBranchStackInfo(branchTargetAddress, _variableStack.TopIndex));
-		}
-
-		private void AddForwardBranchAddress(ForwardBranchStackInfo branchinfo)
-		{
-			// If the branch target has been seen before, check that they agree on the stack top.
-			ForwardBranchStackInfo old;
-			if (_forwardBranches.TryGetValue(branchinfo.TargetOffset, out old))
+			List<MethodVariable> targetvariablestack;
+			if (_branchTargetStackVariables.TryGetValue(branchTargetAddress, out targetvariablestack))
 			{
-				if (old.StackTopIndex != _variableStack.TopIndex)
-					throw new ArgumentException();
+				// If the branch target has been seen before, check that they agree on the stack top.
+				Utilities.Assert(targetvariablestack.Count == _instructionStack.Count,
+					"targetvariablestack.Count == _instructionStack.Count");
 			}
 			else
-				_forwardBranches.Add(branchinfo.TargetOffset, branchinfo);
-		}
-
-		private ForwardBranchStackInfo PopNextForwardBranchInfo()
-		{
-			ForwardBranchStackInfo min = new ForwardBranchStackInfo(int.MaxValue, int.MaxValue);
-			foreach (ForwardBranchStackInfo info in _forwardBranches.Values)
 			{
-				if (info.TargetOffset < min.TargetOffset)
-					min = info;
+				targetvariablestack = new List<MethodVariable>();
+				_branchTargetStackVariables.Add(branchTargetAddress, targetvariablestack);
 			}
 
-			_forwardBranches.Remove(min.TargetOffset);
+			return targetvariablestack;
+		}
+
+		private int GetNextForwardBranchAddress(int currentReaderAddress)
+		{
+			int min = int.MaxValue;
+			foreach (int target in _branchTargetStackVariables.Keys)
+			{
+				if (target > currentReaderAddress && target < min)
+					min = target;
+			}
 
 			return min;
 		}
@@ -164,9 +76,10 @@ namespace CellDotNet
 				_instructionStack.RemoveAt(_instructionStack.Count - 1);
 				return inst;
 			}
-			else if (_variableStack.TopIndex >= 0)
+			else if (_currentVariableStackTop >= 0)
 			{
-				MethodVariable var = _variableStack.PopTopVariable();
+				MethodVariable var = _currentVariableStack[_currentVariableStackTop];
+				_currentVariableStackTop--;
 				TreeInstruction inst = new TreeInstruction();
 				inst.Opcode = IROpCodes.Ldloc;
 				inst.Operand = var;
@@ -176,9 +89,57 @@ namespace CellDotNet
 				throw new Exception("??");
 		}
 
+		/// <summary>
+		/// <list type="ordered">
+		/// <item>
+		/// Creates instructions to save the contents of the instruction stack to the variable
+		/// stack associated with the branch target.
+		/// </item>
+		/// <item>Activates the variable stack.</item>
+		/// <item>Clears the instruction stack.</item>
+		/// </list>
+		/// </summary>
+		/// <param name="branchTarget"></param>
+		/// <returns></returns>
+		/// <param name="currentBB"></param>
+		private void SaveInstructionStack(int branchTarget, List<TreeInstruction> currentBB)
+		{
+			List<MethodVariable> stack = GetBranchVariableStack(branchTarget);
+			List<TreeInstruction> saveInstructionRoots = new List<TreeInstruction>();
+
+			// If it's the first time that we save for this target, we need to create variables.
+			if (stack.Count == 0 && _instructionStack.Count > 0)
+			{
+				for (int i = 0; i < _instructionStack.Count; i++)
+				{
+					_lastStackVariableNumber++;
+					stack.Add(new MethodVariable(_lastStackVariableNumber));
+				}
+			}
+
+			// Insert instructions to save.
+			for (int i = 0; i < _instructionStack.Count; i++)
+			{
+				TreeInstruction storeInst = new TreeInstruction();
+				storeInst.Opcode = IROpCodes.Stloc;
+				storeInst.Operand = stack[i];
+				storeInst.Left = _instructionStack[i];
+
+				saveInstructionRoots.Add(storeInst);
+			}
+
+			// Activate the variable stack.
+			_currentVariableStack = stack;
+			_currentVariableStackTop = stack.Count - 1;
+
+			_instructionStack.Clear();
+
+			currentBB.AddRange(saveInstructionRoots);
+		}
+
 		private int TotalStackSize
 		{
-			get { return _variableStack.TopIndex + 1 + _instructionStack.Count; }
+			get { return _currentVariableStackTop + 1 + _instructionStack.Count; }
 		}
 
 		public List<IRBasicBlock> BuildBasicBlocks(MethodBase method, ILReader reader, 
@@ -209,44 +170,28 @@ namespace CellDotNet
 			List<TreeInstruction> branches = new List<TreeInstruction>();
 
 			List<IRBasicBlock> blocks = new List<IRBasicBlock>();
-			ForwardBranchStackInfo nextForwardBranchTarget = PopNextForwardBranchInfo();
-			TreeInstruction lastTreeInst = null;
+			int nextForwardBranchTarget = int.MaxValue;
 
 			while (reader.Read())
 			{
 				// Adjust variable stack if we've reached a new forward branch.
-				if (nextForwardBranchTarget.TargetOffset == reader.Offset)
+				if (nextForwardBranchTarget == reader.Offset)
 				{
-					_variableStack.TopIndex = nextForwardBranchTarget.StackTopIndex;
-					nextForwardBranchTarget = PopNextForwardBranchInfo();
+					nextForwardBranchTarget = GetNextForwardBranchAddress(reader.Offset);
 
 					// If it's a branch target and there's contents on the instruction stack then
 					// we need to save the instruction stack on the variable stack.
-					// We do it by making a root for each instruction on the stack that saves the
-					// instruction value in a stack variable.
-					// We're iterating from the bottom of the instruction stack.
-					foreach (TreeInstruction inst in _instructionStack)
-					{
-						TreeInstruction storeInst = new TreeInstruction();
-						storeInst.Opcode = IROpCodes.Stloc;
-						storeInst.Operand = _variableStack.PushTopVariable();
-						storeInst.Left = inst;
-
-						currblock.Roots.Add(storeInst);
-					}
-					_instructionStack.Clear();
-//					treeinst = null;
+					SaveInstructionStack(reader.Offset, currblock.Roots);
 				}
 
-				Utilities.Assert(nextForwardBranchTarget.TargetOffset > reader.Offset, 
-					"nextForwardBranchTarget.TargetOffset > reader.Offset");
+				Utilities.Assert(nextForwardBranchTarget > reader.Offset, 
+					"nextForwardBranchTarget > reader.Offset");
 
 				PopBehavior popbehavior = GetPopBehavior(reader.OpCode);
 				int pushcount = GetPushCount(reader.OpCode);
 
 
 				TreeInstruction treeinst = new TreeInstruction();
-				lastTreeInst = treeinst;
 				treeinst.Opcode = reader.OpCode;
 				treeinst.Offset = reader.Offset;
 
@@ -348,36 +293,26 @@ namespace CellDotNet
 				{
 					branches.Add(treeinst);
 
-					// Store variable stack state (ie. top index) if it's a forward branch.
+					// Store instruction stack associated with the target.
 					int targetOffset = (int)reader.Operand;
-					if (targetOffset > reader.Offset)
+					SaveInstructionStack(targetOffset, currblock.Roots);
+
+					if (targetOffset > reader.Offset && 
+						targetOffset < nextForwardBranchTarget)
 					{
-						AddForwardBranchAddress(targetOffset);
-						if (targetOffset < nextForwardBranchTarget.TargetOffset)
-						{
-							// The target is closer than the previous one, 
-							// so put the old one back in line and start looking for the new one.
-							AddForwardBranchAddress(nextForwardBranchTarget);
-							nextForwardBranchTarget = PopNextForwardBranchInfo();
-						}
+						// The target is closer than the previous one, 
+						// so put the old one back in line and start looking for the new one.
+						nextForwardBranchTarget = GetNextForwardBranchAddress(reader.Offset);
 					}
 				}
 
 				if ( _instructionStack.Count == 0)
 				{
 					// It is a root when the instruction stack is empty.
-					//					if (treeinst.Opcode.StackBehaviourPush == StackBehaviour.Push0)
 					currblock.Roots.Add(treeinst);
 				}
-
 			}
-
-			// Adds the last instruction tree and basic Block
-//			if (lastTreeInst != null)
-//			{
-//				currblock.Roots.Add(lastTreeInst);
-//			}
-							blocks.Add(currblock);
+			blocks.Add(currblock);
 
 			// Fix branches.
 			// It is by definition only possible to branch to basic blocks.
@@ -430,7 +365,10 @@ namespace CellDotNet
 				branchinst.Operand = target;
 			}
 
-			variables.AddRange(_variableStack.ToList());
+			foreach (List<MethodVariable> methodVariables in _branchTargetStackVariables.Values)
+			{
+				variables.AddRange(methodVariables);
+			}
 
 			return blocks;
 		}
