@@ -285,7 +285,7 @@ namespace CellDotNet
 						break;
 				}
 
-				typederiver.DeriveTypeNonRecursive(treeinst);
+				typederiver.DeriveType(treeinst);
 
 				// Push
 				if (pushcount == 1)

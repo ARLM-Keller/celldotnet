@@ -14,7 +14,6 @@ namespace CellDotNet
 		Set<int> _branchTargets;
 
 		private TextWriter _output;
-		private MethodBase _method;
 
 		public TextWriter Output
 		{

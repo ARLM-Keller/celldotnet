@@ -67,44 +67,11 @@ namespace CellDotNet
 		}
 
 		/// <summary>
-		/// Derives the types of each tree node using a bottom-up analysis.
-		/// </summary>
-		public void DeriveTypes(List<IRBasicBlock> blocks)
-		{
-			foreach (IRBasicBlock block in blocks)
-			{
-				foreach (TreeInstruction root in block.Roots)
-				{
-					DeriveType(root, 0);
-				}
-			}
-		}
-
-		private void DeriveType(TreeInstruction inst, int level)
-		{
-			DeriveType(inst, level, false);
-		}
-
-		public void DeriveTypeNonRecursive(TreeInstruction inst)
-		{
-			DeriveType(inst, 0, true);
-		}
-
-
-		/// <summary>
-		/// This is the recursive part of DeriveTypes.
+		/// Derives the type from the instruction's immediate children, ie. it is not recursive.
 		/// </summary>
 		/// <param name="inst"></param>
-		/// <param name="level"></param>
-		/// <param name="dontRecurse"></param>
-		private void DeriveType(TreeInstruction inst, int level, bool dontRecurse)
+		public void DeriveType(TreeInstruction inst)
 		{
-			if (!dontRecurse)
-			{
-				foreach (TreeInstruction child in inst.GetChildInstructions())
-					DeriveType(child, level + 1);
-			}
-
 			TreeInstruction firstchild;
 			Utilities.TryGetFirst(inst.GetChildInstructions(), out firstchild);
 
@@ -130,13 +97,11 @@ namespace CellDotNet
 
 						foreach (TreeInstruction param in mci.Parameters)
 						{
-							DeriveType(param, level + 1, dontRecurse);
+							DeriveType(param);
 						}
 					}
 					break;
 				case FlowControl.Cond_Branch:
-					if (level != 0)
-						throw new NotImplementedException("Only root branches are implemented.");
 					t = StackTypeDescription.None;
 					break;
 				//				case FlowControl.Meta:
@@ -145,7 +110,7 @@ namespace CellDotNet
 				case FlowControl.Next:
 					try
 					{
-						t = DeriveTypeForFlowNext(inst, level);
+						t = DeriveTypeForFlowNext(inst);
 					}
 					catch (NotImplementedException e)
 					{
@@ -174,27 +139,11 @@ namespace CellDotNet
 		/// that do not change the flow; that is, OpCode.Flow == Next.
 		/// </summary>
 		/// <param name="inst"></param>
-		/// <param name="level"></param>
-		private StackTypeDescription DeriveTypeForFlowNext(TreeInstruction inst, int level)
+		private StackTypeDescription DeriveTypeForFlowNext(TreeInstruction inst)
 		{
 			// The cases are generated and all opcodes with flow==next are present 
 			// (except macro codes such as ldc.i4.3).
 			StackTypeDescription t;
-
-//			Type optype;
-//			if (inst.Operand is Type)
-//				optype = (Type)inst.Operand;
-//			else if (inst.Operand is MethodVariable)
-//			{
-//				// Stores to locals may be stores to stack variables for which no type
-//				// has been determined.
-//				if (inst.Opcode != IROpCodes.Stloc)
-//					optype = ((MethodVariable)inst.Operand).ReflectionType;
-//				else
-//					optype = null;
-//			}
-//			else
-//				optype = null;
 
 			switch (inst.Opcode.IRCode)
 			{
@@ -219,8 +168,6 @@ namespace CellDotNet
 				case IRCode.Dup: // dup
 					throw new NotImplementedException("dup, pop");
 				case IRCode.Pop: // pop
-					if (level != 0)
-						throw new NotImplementedException("Pop only supported at root level.");
 					t = StackTypeDescription.None;
 					break;
 				case IRCode.Ldind_I1: // ldind.i1
@@ -263,8 +210,6 @@ namespace CellDotNet
 				case IRCode.Stind_I8: // stind.i8
 				case IRCode.Stind_R4: // stind.r4
 				case IRCode.Stind_R8: // stind.r8
-					if (level != 0)
-						throw new NotSupportedException();
 					t = StackTypeDescription.None;
 					break;
 				case IRCode.Add: // add
@@ -461,7 +406,6 @@ namespace CellDotNet
 				case IRCode.Ldloc: // ldloc
 				case IRCode.Ldarga: // ldarga
 					t = ((MethodVariable) inst.Operand).StackType;
-//					t = GetStackTypeDescription(optype);
 					if (t == StackTypeDescription.None)
 						throw new NotImplementedException("Invalid variable stack type for load instruction: None.");
 					if (inst.Opcode.IRCode == IRCode.Ldloca || inst.Opcode.IRCode == IRCode.Ldarga)
@@ -470,14 +414,7 @@ namespace CellDotNet
 					break;
 				case IRCode.Starg: // starg
 				case IRCode.Stloc: // stloc
-					{
-						// Stack variables currently (20070812) don't get their type when
-						// they are created.
-						MethodVariable var = inst.Operand as MethodVariable;
-						if (var != null && var.IsStackVariable)
-							var.SetType(inst.Left.StackType);
-						t = StackTypeDescription.None;
-					}
+					t = StackTypeDescription.None;
 					break;
 				case IRCode.Localloc: // localloc
 					throw new NotImplementedException();
