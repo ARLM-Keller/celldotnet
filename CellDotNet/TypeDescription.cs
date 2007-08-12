@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace CellDotNet
 {
 	/// <summary>
-	/// This is our own representation of a type. It wraps a <see c="System.Type" /> and also
+	/// This is our own representation of a type. It wraps a <see c="System.ReflectionType" /> and also
 	/// contains runtime information about the type, such as field offsets and methods.
 	/// 
 	/// <para>
@@ -16,13 +16,13 @@ namespace CellDotNet
 	/// </summary>
 	class TypeDescription
 	{
-		private Type _type;
+		private Type _reflectionType;
 		/// <summary>
 		/// Contains the <see cref="System.Type"/> representation of the type.
 		/// </summary>
-		public Type Type
+		public Type ReflectionType
 		{
-			get { return _type; }
+			get { return _reflectionType; }
 		}
 
 		public TypeDescription(Type type)
@@ -37,7 +37,7 @@ namespace CellDotNet
 			if (type.IsGenericTypeDefinition)
 				throw new ArgumentException("Argument is a generic type.");
 
-			_type = type;
+			_reflectionType = type;
 
 			Initialize();
 		}
@@ -53,7 +53,7 @@ namespace CellDotNet
 			List<Type> genTypes = new List<Type>();
 			foreach (StackTypeDescription t in genericParameters)
 				genTypes.Add(t.GetNonPointerType());
-			_type = genericType.Type.MakeGenericType(genTypes.ToArray());
+			_reflectionType = genericType.Type.MakeGenericType(genTypes.ToArray());
 
 			_genericType = genericType;
 			_genericParameters = genericParameters;
@@ -73,7 +73,7 @@ namespace CellDotNet
 //			if (arrayDimension < 1)
 //				throw new ArgumentOutOfRangeException("arrayDimension");
 //
-//			_type = type;
+//			_reflectionType = type;
 //			_arrayDimension = arrayDimension;
 //		}
 

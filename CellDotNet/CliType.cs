@@ -103,7 +103,7 @@ namespace CellDotNet
 		/// <param name="complexType"></param>
 		public StackTypeDescription(TypeDescription complexType)
 		{
-			_cliBasicType = complexType.Type.IsValueType ? CliBasicType.Valuetype : CliBasicType.ObjectType;
+			_cliBasicType = complexType.ReflectionType.IsValueType ? CliBasicType.Valuetype : CliBasicType.ObjectType;
 			_isSigned = false;
 			_numericSize = CliNumericSize.None;
 			_indirectionLevel = 0;
@@ -230,7 +230,7 @@ namespace CellDotNet
 		public StackTypeDescription Dereference()
 		{
 			if (IndirectionLevel == 0)
-				throw new InvalidOperationException("Type is not byref.");
+				throw new InvalidOperationException("ReflectionType is not byref.");
 
 			StackTypeDescription e = this;
 			e._indirectionLevel--;
@@ -241,7 +241,7 @@ namespace CellDotNet
 		public StackTypeDescription DereferenceFully()
 		{
 			if (IndirectionLevel == 0)
-				throw new InvalidOperationException("Type is not byref.");
+				throw new InvalidOperationException("ReflectionType is not byref.");
 
 			StackTypeDescription e = this;
 			e._indirectionLevel = 0;
@@ -289,7 +289,7 @@ namespace CellDotNet
 					return typeof(float);
 				case CliType.ValueType:
 				case CliType.ObjectType:
-					return ComplexType.Type;
+					return ComplexType.ReflectionType;
 				case CliType.ManagedPointer:
 				default:
 					throw new InvalidOperationException();

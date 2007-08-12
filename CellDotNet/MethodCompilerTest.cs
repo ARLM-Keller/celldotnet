@@ -47,29 +47,6 @@ namespace CellDotNet
 			mc.GetEpilogWriter().AssertNoPseudoInstructions();
 		}
 
-		[Test]
-		public void TestTypeDerivingForVariableStack()
-		{
-			// This IL will must introduce a stack variable of type I4 to 
-			// hold the integer because of the branch.
-			ILWriter w = new ILWriter();
-			w.WriteOpcode(OpCodes.Ldc_I4_4);
-			w.WriteOpcode(OpCodes.Br_S);
-			w.WriteByte(1);
-			w.WriteOpcode(OpCodes.Nop);
-			w.WriteOpcode(OpCodes.Pop);
-
-			IRTreeBuilder builder = new IRTreeBuilder();
-			List<MethodVariable> vars = new List<MethodVariable>();
-			List<IRBasicBlock> blocks = builder.BuildBasicBlocks(w.CreateReader(), vars);
-			AreEqual(1, vars.Count, "Invalid variable count.");
-
-			new TypeDeriver().DeriveTypes(blocks);
-			// TODO: Check type I4.
-		}
-
-		#region Frame tests.
-
 		private delegate void FiveIntegerArgumentDelegate(int i1, int i2, int i3, int i4, int i5);
 
 
@@ -120,8 +97,6 @@ namespace CellDotNet
 			if (varindices.Count != 1 || varindices[0] != 1)
 				Assert.Fail("Didn't correctly determine escaping varaible.");
 		}
-
-		#endregion
 
 		private delegate T Getter<T>();
 

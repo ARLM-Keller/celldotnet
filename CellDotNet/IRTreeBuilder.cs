@@ -82,6 +82,7 @@ namespace CellDotNet
 				_currentVariableStackTop--;
 				TreeInstruction inst = new TreeInstruction();
 				inst.Opcode = IROpCodes.Ldloc;
+				inst.StackType = var.StackType;
 				inst.Operand = var;
 				return inst;
 			}
@@ -113,7 +114,7 @@ namespace CellDotNet
 				for (int i = 0; i < _instructionStack.Count; i++)
 				{
 					_lastStackVariableNumber++;
-					stack.Add(new MethodVariable(_lastStackVariableNumber));
+					stack.Add(new MethodVariable(_lastStackVariableNumber, _instructionStack[i].StackType));
 				}
 			}
 
@@ -121,6 +122,7 @@ namespace CellDotNet
 			for (int i = 0; i < _instructionStack.Count; i++)
 			{
 				TreeInstruction storeInst = new TreeInstruction();
+				storeInst.StackType = StackTypeDescription.None;
 				storeInst.Opcode = IROpCodes.Stloc;
 				storeInst.Operand = stack[i];
 				storeInst.Left = _instructionStack[i];
@@ -172,6 +174,7 @@ namespace CellDotNet
 
 			List<IRBasicBlock> blocks = new List<IRBasicBlock>();
 			int nextForwardBranchTarget = int.MaxValue;
+			TypeDeriver typederiver = new TypeDeriver();
 
 			while (reader.Read())
 			{
@@ -281,6 +284,8 @@ namespace CellDotNet
 							throw new Exception("Invalid PopBehavior: " + popbehavior + ". Only two-argument method calls are supported.");
 						break;
 				}
+
+				typederiver.DeriveTypeNonRecursive(treeinst);
 
 				// Push
 				if (pushcount == 1)

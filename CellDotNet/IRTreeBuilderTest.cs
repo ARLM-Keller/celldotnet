@@ -203,7 +203,7 @@ namespace CellDotNet
 		}
 
 		[Test]
-		public void TestParseUsingVariableStackNew()
+		public void TestParseUsingVariableStack()
 		{
 			ILWriter w = new ILWriter();
 
@@ -271,6 +271,27 @@ namespace CellDotNet
 			AreEqual(1, loadcount, "Invalid load count.");
 			AreEqual(2, storecount, "Invalid store count.");
 			AreEqual(4, ldccount, "Invalid load constant count.");
+		}
+
+		[Test]
+		public void TestTypeDerivingForVariableStack()
+		{
+			// This IL will must introduce a stack variable of type I4 to 
+			// hold the integer because of the branch.
+			ILWriter w = new ILWriter();
+			w.WriteOpcode(OpCodes.Ldc_I4_4);
+			w.WriteOpcode(OpCodes.Br_S);
+			w.WriteByte(1);
+			w.WriteOpcode(OpCodes.Ldc_I4_7);
+			w.WriteOpcode(OpCodes.Pop);
+
+			IRTreeBuilder builder = new IRTreeBuilder();
+			List<MethodVariable> vars = new List<MethodVariable>();
+			builder.BuildBasicBlocks(w.CreateReader(), vars);
+			AreEqual(1, vars.Count, "Invalid variable count.");
+			AreEqual(StackTypeDescription.Int32, vars[0].StackType);
+
+			// TODO: Move this test to IRTreeBuilderTest or TypeDeriveTest since we don't use MethodCompiler.
 		}
 	}
 }

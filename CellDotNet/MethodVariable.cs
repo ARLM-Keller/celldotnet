@@ -10,16 +10,21 @@ namespace CellDotNet
 	/// </summary>
 	class MethodVariable
 	{
-//		private StackTypeDescription _stackType;
-//		public StackTypeDescription StackType
-//		{
-//			get { return _stackType; }
-//		}
+		private StackTypeDescription _stackType;
+		public StackTypeDescription StackType
+		{
+			get { return _stackType; }
+		}
 
 		private LocalVariableInfo _localVariableInfo;
 		public LocalVariableInfo LocalVariableInfo
 		{
 			get { return _localVariableInfo; }
+		}
+
+		public bool IsStackVariable
+		{
+			get { return _localVariableInfo == null; }
 		}
 
 		private int _index;
@@ -46,26 +51,41 @@ namespace CellDotNet
 			}
 		}
 
-		public virtual Type Type
+		public virtual void SetType(StackTypeDescription stackType)
+		{
+			if (_localVariableInfo != null)
+				throw new InvalidOperationException("Can't change variable type.");
+
+			_stackType = stackType;
+			if (stackType.ComplexType != null)
+				_reflectionType = stackType.ComplexType.ReflectionType;
+		}
+
+		/// <summary>
+		/// This will currently (20070812) not be set for complex stack variables, so
+		/// try to use <see cref="StackType"/> instead.
+		/// </summary>
+		public virtual Type ReflectionType
 		{
 			get
 			{
-				if (_type == null)
-					throw new InvalidOperationException(
-						"No information is currently known about this variable. Probably it is a stack variable and type derival has not yet been performed.");
-				return _type;
+				if (_reflectionType == null)
+				{
+					Utilities.Assert(IsStackVariable, "IsStackVariable");
+					throw new InvalidOperationException("Stack variable type has not yet been determined.");
+				}
+				return _reflectionType;
 			}
 			set
 			{
-				if (_type != null)
+				if (_reflectionType != null)
 					throw new InvalidOperationException("Variable already has a type.");
-				_type = value;
+				_reflectionType = value;
 			}
 		}
 
-
 		private VirtualRegister _virtualRegister;
-		private Type _type;
+		private Type _reflectionType;
 
 		public VirtualRegister VirtualRegister
 		{
@@ -73,26 +93,36 @@ namespace CellDotNet
 			set { _virtualRegister = value; }
 		}
 
-		protected MethodVariable() { }
+		protected MethodVariable(StackTypeDescription stackType)
+		{
+			_stackType = stackType;
+		}
 
 		/// <summary>
 		/// For stack variables.
 		/// </summary>
 		/// <param name="variableIndex"></param>
-		/// <param name="?"></param>
-		public MethodVariable(int variableIndex)
+		/// <param name="stackType"></param>
+		public MethodVariable(int variableIndex, StackTypeDescription stackType)
 		{
 			Utilities.AssertArgument(variableIndex >= 1000, "Stack varibles indices should be >= 1000.");
 			_index = variableIndex;
+			_stackType = stackType;
 		}
 
-		public MethodVariable(LocalVariableInfo localVariableInfo)
+		/// <summary>
+		/// For CIL variables.
+		/// </summary>
+		/// <param name="localVariableInfo"></param>
+		/// <param name="stackType"></param>
+		public MethodVariable(LocalVariableInfo localVariableInfo, StackTypeDescription stackType)
 		{
 			Utilities.AssertArgumentNotNull(localVariableInfo, "localVariableInfo");
 
-			_type = localVariableInfo.LocalType;
+			_reflectionType = localVariableInfo.LocalType;
 			_localVariableInfo = localVariableInfo;
 			_index = localVariableInfo.LocalIndex;
+			_stackType = stackType;
 		}
 
 		public override string ToString()

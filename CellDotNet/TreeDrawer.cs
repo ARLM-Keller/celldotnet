@@ -50,13 +50,13 @@ namespace CellDotNet
 				if (inst.Operand is IRBasicBlock)
 					Output.Write(" " + ((IRBasicBlock)inst.Operand).Offset.ToString("x4"));
 				else if (inst.Operand is MethodParameter)
-					Output.Write(" {0} ({1})", ((MethodParameter)inst.Operand).Name, ((MethodParameter)inst.Operand).Type.Name);
+					Output.Write(" {0} ({1})", ((MethodParameter)inst.Operand).Name, ((MethodParameter)inst.Operand).ReflectionType.Name);
 				else if (inst.Operand is MethodVariable)
 				{
 					string typename;
 					try
 					{
-						typename = ((MethodVariable)inst.Operand).Type.Name;
+						typename = ((MethodVariable)inst.Operand).ReflectionType.Name;
 					}
 					catch (InvalidOperationException)
 					{

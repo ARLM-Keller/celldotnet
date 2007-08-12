@@ -80,15 +80,30 @@ namespace CellDotNet
 			}
 		}
 
+		private void DeriveType(TreeInstruction inst, int level)
+		{
+			DeriveType(inst, level, false);
+		}
+
+		public void DeriveTypeNonRecursive(TreeInstruction inst)
+		{
+			DeriveType(inst, 0, true);
+		}
+
+
 		/// <summary>
 		/// This is the recursive part of DeriveTypes.
 		/// </summary>
 		/// <param name="inst"></param>
 		/// <param name="level"></param>
-		private void DeriveType(TreeInstruction inst, int level)
+		/// <param name="dontRecurse"></param>
+		private void DeriveType(TreeInstruction inst, int level, bool dontRecurse)
 		{
-			foreach (TreeInstruction child in inst.GetChildInstructions())
-				DeriveType(child, level + 1);
+			if (!dontRecurse)
+			{
+				foreach (TreeInstruction child in inst.GetChildInstructions())
+					DeriveType(child, level + 1);
+			}
 
 			TreeInstruction firstchild;
 			Utilities.TryGetFirst(inst.GetChildInstructions(), out firstchild);
@@ -98,8 +113,6 @@ namespace CellDotNet
 			{
 				case FlowControl.Branch:
 				case FlowControl.Break:
-					if (level != 0)
-						throw new NotImplementedException("Only root branches are implemented.");
 					t = StackTypeDescription.None;
 					break;
 				case FlowControl.Call:
@@ -117,7 +130,7 @@ namespace CellDotNet
 
 						foreach (TreeInstruction param in mci.Parameters)
 						{
-							DeriveType(param, level + 1);
+							DeriveType(param, level + 1, dontRecurse);
 						}
 					}
 					break;
@@ -168,13 +181,20 @@ namespace CellDotNet
 			// (except macro codes such as ldc.i4.3).
 			StackTypeDescription t;
 
-			Type optype;
-			if (inst.Operand is Type)
-				optype = (Type)inst.Operand;
-			else if (inst.Operand is MethodVariable)
-				optype = ((MethodVariable)inst.Operand).Type;
-			else
-				optype = null;
+//			Type optype;
+//			if (inst.Operand is Type)
+//				optype = (Type)inst.Operand;
+//			else if (inst.Operand is MethodVariable)
+//			{
+//				// Stores to locals may be stores to stack variables for which no type
+//				// has been determined.
+//				if (inst.Opcode != IROpCodes.Stloc)
+//					optype = ((MethodVariable)inst.Operand).ReflectionType;
+//				else
+//					optype = null;
+//			}
+//			else
+//				optype = null;
 
 			switch (inst.Opcode.IRCode)
 			{
@@ -440,16 +460,24 @@ namespace CellDotNet
 				case IRCode.Ldloca: // ldloca
 				case IRCode.Ldloc: // ldloc
 				case IRCode.Ldarga: // ldarga
-					t = GetStackTypeDescription(optype);
+					t = ((MethodVariable) inst.Operand).StackType;
+//					t = GetStackTypeDescription(optype);
 					if (t == StackTypeDescription.None)
-						throw new NotImplementedException("Only numeric CIL types are implemented.");
+						throw new NotImplementedException("Invalid variable stack type for load instruction: None.");
 					if (inst.Opcode.IRCode == IRCode.Ldloca || inst.Opcode.IRCode == IRCode.Ldarga)
 						t = t.GetManagedPointer();
 
 					break;
 				case IRCode.Starg: // starg
 				case IRCode.Stloc: // stloc
-					t = StackTypeDescription.None;
+					{
+						// Stack variables currently (20070812) don't get their type when
+						// they are created.
+						MethodVariable var = inst.Operand as MethodVariable;
+						if (var != null && var.IsStackVariable)
+							var.SetType(inst.Left.StackType);
+						t = StackTypeDescription.None;
+					}
 					break;
 				case IRCode.Localloc: // localloc
 					throw new NotImplementedException();
@@ -475,7 +503,6 @@ namespace CellDotNet
 		{
 			Dictionary<Type, StackTypeDescription> dict = new Dictionary<Type, StackTypeDescription>();
 
-			// TODO: the typeof() token values are not what cecil returns...
 			dict.Add(typeof(bool), StackTypeDescription.Int8); // Correct?
 			dict.Add(typeof(sbyte), StackTypeDescription.Int8);
 			dict.Add(typeof(byte), StackTypeDescription.UInt8);
@@ -499,7 +526,7 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="type"></param>
 		/// <returns></returns>
-		private StackTypeDescription GetStackTypeDescription(Type type)
+		public StackTypeDescription GetStackTypeDescription(Type type)
 		{
 			Type elementtype;
 

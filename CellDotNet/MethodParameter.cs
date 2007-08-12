@@ -26,12 +26,17 @@ namespace CellDotNet
 			get { return _parameterInfo.Position; }
 		}
 
-		public override Type Type
+		public override void SetType(StackTypeDescription stackType)
+		{
+			throw new InvalidOperationException("Can't change parameter type.");
+		}
+
+		public override Type ReflectionType
 		{
 			get { return _parameterInfo.ParameterType; }
 		}
 
-		public MethodParameter(ParameterInfo parameterInfo)
+		public MethodParameter(ParameterInfo parameterInfo, StackTypeDescription stackType) : base(stackType)
 		{
 			Utilities.AssertArgumentNotNull(parameterInfo, "parameterInfo");
 			_parameterInfo = parameterInfo;
