@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using NUnit.Framework;
 
@@ -44,6 +45,27 @@ namespace CellDotNet
 			mc.GetPrologWriter().AssertNoPseudoInstructions();
 			mc.GetBodyWriter().AssertNoPseudoInstructions();
 			mc.GetEpilogWriter().AssertNoPseudoInstructions();
+		}
+
+		[Test]
+		public void TestTypeDerivingForVariableStack()
+		{
+			// This IL will must introduce a stack variable of type I4 to 
+			// hold the integer because of the branch.
+			ILWriter w = new ILWriter();
+			w.WriteOpcode(OpCodes.Ldc_I4_4);
+			w.WriteOpcode(OpCodes.Br_S);
+			w.WriteByte(1);
+			w.WriteOpcode(OpCodes.Nop);
+			w.WriteOpcode(OpCodes.Pop);
+
+			IRTreeBuilder builder = new IRTreeBuilder();
+			List<MethodVariable> vars = new List<MethodVariable>();
+			List<IRBasicBlock> blocks = builder.BuildBasicBlocks(w.CreateReader(), vars);
+			AreEqual(1, vars.Count, "Invalid variable count.");
+
+			new TypeDeriver().DeriveTypes(blocks);
+			// TODO: Check type I4.
 		}
 
 		#region Frame tests.

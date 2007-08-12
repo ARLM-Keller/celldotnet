@@ -148,8 +148,9 @@ namespace CellDotNet
 			return BuildBasicBlocks(method.Name, reader, variables, parameters);
 		}
 
-		internal List<IRBasicBlock> BuildBasicBlocks(ILReader reader, List<MethodVariable> variables, ReadOnlyCollection<MethodParameter> parameters)
+		internal List<IRBasicBlock> BuildBasicBlocks(ILReader reader, List<MethodVariable> variables)
 		{
+			ReadOnlyCollection<MethodParameter> parameters = new ReadOnlyCollection<MethodParameter>(new MethodParameter[0]);
 			return BuildBasicBlocks("methodXX", reader, variables, parameters);
 		}
 

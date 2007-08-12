@@ -202,62 +202,36 @@ namespace CellDotNet
 			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 		}
 
-//		[Test]
-//		public void TestVariableStack()
-//		{
-//			IRTreeBuilder.VariableStack stack = new IRTreeBuilder.VariableStack();
-//
-//			AreEqual(-1, stack.TopIndex);
-//
-//			// Add two.
-//			MethodVariable v1 = stack.PushTopVariable();
-//			AreEqual(0, stack.TopIndex);
-//
-//			MethodVariable v2 = stack.PushTopVariable();
-//			AreEqual(1, stack.TopIndex);
-//
-//			stack.TopIndex = 0;
-//			MethodVariable v1_perhaps = stack.PopTopVariable();
-//			AreEqual(v1, v1_perhaps);
-//			AreEqual(-1, stack.TopIndex);
-//
-//			stack.TopIndex = 1;
-//			MethodVariable v2_perhaps = stack.PopTopVariable();
-//			AreEqual(v2, v2_perhaps);
-//			AreEqual(0, stack.TopIndex);
-//		}
-
 		[Test]
-		public void TestParseUsingVariableStack()
+		public void TestParseUsingVariableStackNew()
 		{
-			MemoryStream il = new MemoryStream();
-			BinaryWriter w = new BinaryWriter(il);
+			ILWriter w = new ILWriter();
 
 			// A hard-coded version of Math.Max.
 
 			// Load "arguments".
-			w.Write((byte)OpCodes.Ldc_I4_1.Value);
-			w.Write((byte)OpCodes.Ldc_I4_5.Value);
+			w.WriteOpcode(OpCodes.Ldc_I4_1);
+			w.WriteOpcode(OpCodes.Ldc_I4_5);
 
 			// offset 2.
-			w.Write((byte)OpCodes.Ble_S.Value);
-			w.Write((byte)3);
+			w.WriteOpcode(OpCodes.Ble_S);
+			w.WriteByte(3);
 
 			// offset 4.
-			w.Write((byte)OpCodes.Ldc_I4_1.Value);
-			w.Write((byte)OpCodes.Br_S.Value);
-			w.Write((byte)1);
+			w.WriteOpcode(OpCodes.Ldc_I4_1);
+			w.WriteOpcode(OpCodes.Br_S);
+			w.WriteByte(1);
 
 			// offset 7.
-			w.Write((byte)OpCodes.Ldc_I4_5.Value);
+			w.WriteOpcode(OpCodes.Ldc_I4_5);
 
 			// offset 8.
-			w.Write((byte)OpCodes.Ret.Value);
+			w.WriteOpcode(OpCodes.Ret);
 
-			ILReader reader = new ILReader(il.ToArray());
+			ILReader reader = new ILReader(w.ToByteArray());
 			IRTreeBuilder builder = new IRTreeBuilder();
 			List<MethodVariable> variables = new List<MethodVariable>();
-			List<IRBasicBlock> blocks = builder.BuildBasicBlocks(reader, variables, new ReadOnlyCollection<MethodParameter>(new MethodParameter[] {}));
+			List<IRBasicBlock> blocks = builder.BuildBasicBlocks(reader, variables);
 
 			AreEqual(1, variables.Count);
 			AreEqual(7, reader.InstructionsRead);
@@ -270,26 +244,26 @@ namespace CellDotNet
 			IRBasicBlock.VisitTreeInstructions(
 				blocks,
 				delegate(TreeInstruction obj)
+				{
+					if (obj.Opcode.FlowControl == FlowControl.Branch ||
+						obj.Opcode.FlowControl == FlowControl.Cond_Branch)
 					{
-						if (obj.Opcode.FlowControl == FlowControl.Branch ||
-						    obj.Opcode.FlowControl == FlowControl.Cond_Branch)
-						{
-							branchcount++;
-						}
-						else if (obj.Opcode == IROpCodes.Ldloc)
-							loadcount++;
-						else if (obj.Opcode == IROpCodes.Stloc)
-							storecount++;
-						else if (obj.Opcode == IROpCodes.Ldc_I4)
-							ldccount++;
+						branchcount++;
+					}
+					else if (obj.Opcode == IROpCodes.Ldloc)
+						loadcount++;
+					else if (obj.Opcode == IROpCodes.Stloc)
+						storecount++;
+					else if (obj.Opcode == IROpCodes.Ldc_I4)
+						ldccount++;
 
-						if (obj.Opcode == IROpCodes.Br)
-						{
-							// Check that the Br branches to the inserted load.
-							IRBasicBlock target = (IRBasicBlock) obj.Operand;
-							AreEqual(IROpCodes.Ldloc, target.Roots[0].Left.Opcode);
-						}
-					});
+					if (obj.Opcode == IROpCodes.Br)
+					{
+						// Check that the Br branches to the inserted load.
+						IRBasicBlock target = (IRBasicBlock)obj.Operand;
+						AreEqual(IROpCodes.Ldloc, target.Roots[0].Left.Opcode);
+					}
+				});
 
 			new TreeDrawer().DrawMethod(blocks);
 
