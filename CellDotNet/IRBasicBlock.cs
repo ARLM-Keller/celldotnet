@@ -63,7 +63,21 @@ namespace CellDotNet
 		{
 			get 
 			{
-				return _roots[0].GetFirstInstruction().Offset;
+				return _roots[0].GetFirstInstructionWithOffset().Offset;
+			}
+		}
+
+		static public void VisitTreeInstructions(IEnumerable<IRBasicBlock> blocks, Action<TreeInstruction> action)
+		{
+			foreach (IRBasicBlock block in blocks)
+			{
+				foreach (TreeInstruction root in block.Roots)
+				{
+					foreach (TreeInstruction inst in root.IterateSubtree())
+					{
+						action(inst);
+					}
+				}
 			}
 		}
 	}

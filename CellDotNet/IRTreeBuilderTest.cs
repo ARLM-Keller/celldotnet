@@ -5,7 +5,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Text;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -91,6 +90,7 @@ namespace CellDotNet
 			MethodCompiler ci = new MethodCompiler(del.Method);
 			ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 			new TreeDrawer().DrawMethod(ci);
+			AreEqual(1, ci.Blocks.Count);
 		}
 
 		[Test]
@@ -105,6 +105,7 @@ namespace CellDotNet
 			MethodCompiler ci = new MethodCompiler(method);
 			ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 			new TreeDrawer().DrawMethod(ci);
+			AreEqual(1, ci.Blocks.Count);
 		}
 
 		[Test, Ignore("Enable when arrays are supported.")]
@@ -119,6 +120,7 @@ namespace CellDotNet
 			MethodCompiler ci = new MethodCompiler(method);
 			ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 			new TreeDrawer().DrawMethod(ci);
+			AreEqual(1, ci.Blocks.Count);
 		}
 
 		[Test, Description("Test non-trivial branching.")]
@@ -227,18 +229,49 @@ namespace CellDotNet
 			// offset 8.
 			w.Write((byte)OpCodes.Ret.Value);
 
-			IRTreeBuilder builder = new IRTreeBuilder();
 			ILReader reader = new ILReader(il.ToArray());
-//			while (reader.Read())
-//			{
-//				int i = 3;
-//			}
+			IRTreeBuilder builder = new IRTreeBuilder();
 			List<MethodVariable> variables = new List<MethodVariable>();
-			builder.BuildBasicBlocks(reader, variables, new ReadOnlyCollection<MethodParameter>(new MethodParameter[] {}));
+			List<IRBasicBlock> blocks = builder.BuildBasicBlocks(reader, variables, new ReadOnlyCollection<MethodParameter>(new MethodParameter[] {}));
 
 			AreEqual(1, variables.Count);
 			AreEqual(7, reader.InstructionsRead);
-		}
 
+			// Examine the trees a bit.
+			int branchcount = 0;
+			int loadcount = 0;
+			int storecount = 0;
+			int ldccount = 0;
+			IRBasicBlock.VisitTreeInstructions(
+				blocks,
+				delegate(TreeInstruction obj)
+					{
+						if (obj.Opcode.FlowControl == FlowControl.Branch ||
+						    obj.Opcode.FlowControl == FlowControl.Cond_Branch)
+						{
+							branchcount++;
+						}
+						else if (obj.Opcode == IROpCodes.Ldloc)
+							loadcount++;
+						else if (obj.Opcode == IROpCodes.Stloc)
+							storecount++;
+						else if (obj.Opcode == IROpCodes.Ldc_I4)
+							ldccount++;
+
+						if (obj.Opcode == IROpCodes.Br)
+						{
+							// Check that the Br branches to the inserted load.
+							IRBasicBlock target = (IRBasicBlock) obj.Operand;
+							AreEqual(IROpCodes.Ldloc, target.Roots[0].Left.Opcode);
+						}
+					});
+
+			new TreeDrawer().DrawMethod(blocks);
+
+			AreEqual(2, branchcount);
+			AreEqual(1, loadcount);
+			AreEqual(2, storecount);
+			AreEqual(4, ldccount);
+		}
 	}
 }

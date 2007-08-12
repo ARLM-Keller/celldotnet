@@ -100,16 +100,7 @@ namespace CellDotNet
 
 		public void VisitTreeInstructions(Action<TreeInstruction> action)
 		{
-			foreach (IRBasicBlock block in _blocks)
-			{
-				foreach (TreeInstruction root in block.Roots)
-				{
-					foreach (TreeInstruction inst in root.IterateSubtree())
-					{
-						action(inst);
-					}
-				}
-			}
+			IRBasicBlock.VisitTreeInstructions(Blocks, action);
 		}
 
 		private void AssertState(MethodCompileState requiredState)

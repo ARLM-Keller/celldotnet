@@ -155,5 +155,31 @@ namespace CellDotNet
 
 			return parent;
 		}
+
+		/// <summary>
+		/// Returns the first instruction in the tree that has an address.
+		/// Instructions that were not in the IL do not have an offset and therefore
+		/// cannot be targets for branches.
+		/// </summary>
+		/// <returns></returns>
+		public TreeInstruction GetFirstInstructionWithOffset()
+		{
+			TreeInstruction parent = this;
+			TreeInstruction child = null;
+
+			do
+			{
+				if (child != null)
+					parent = child;
+
+				Utilities.TryGetFirst(parent.GetChildInstructions(), out child);
+			} while (child != null && child.Offset >= 0);
+
+			if (parent.Offset < 0)
+				throw new Exception("Can't find first instruction with offset.");
+
+			return parent;
+		}
+
 	}
 }
