@@ -177,30 +177,30 @@ namespace CellDotNet
 			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 		}
 
-		[Test]
-		public void TestVariableStack()
-		{
-			IRTreeBuilder.VariableStack stack = new IRTreeBuilder.VariableStack();
-
-			AreEqual(-1, stack.TopIndex);
-
-			// Add two.
-			MethodVariable v1 = stack.PushTopVariable();
-			AreEqual(0, stack.TopIndex);
-
-			MethodVariable v2 = stack.PushTopVariable();
-			AreEqual(1, stack.TopIndex);
-
-			stack.TopIndex = 0;
-			MethodVariable v1_perhaps = stack.PopTopVariable();
-			AreEqual(v1, v1_perhaps);
-			AreEqual(-1, stack.TopIndex);
-
-			stack.TopIndex = 1;
-			MethodVariable v2_perhaps = stack.PopTopVariable();
-			AreEqual(v2, v2_perhaps);
-			AreEqual(0, stack.TopIndex);
-		}
+//		[Test]
+//		public void TestVariableStack()
+//		{
+//			IRTreeBuilder.VariableStack stack = new IRTreeBuilder.VariableStack();
+//
+//			AreEqual(-1, stack.TopIndex);
+//
+//			// Add two.
+//			MethodVariable v1 = stack.PushTopVariable();
+//			AreEqual(0, stack.TopIndex);
+//
+//			MethodVariable v2 = stack.PushTopVariable();
+//			AreEqual(1, stack.TopIndex);
+//
+//			stack.TopIndex = 0;
+//			MethodVariable v1_perhaps = stack.PopTopVariable();
+//			AreEqual(v1, v1_perhaps);
+//			AreEqual(-1, stack.TopIndex);
+//
+//			stack.TopIndex = 1;
+//			MethodVariable v2_perhaps = stack.PopTopVariable();
+//			AreEqual(v2, v2_perhaps);
+//			AreEqual(0, stack.TopIndex);
+//		}
 
 		[Test]
 		public void TestParseUsingVariableStack()
@@ -268,10 +268,10 @@ namespace CellDotNet
 
 			new TreeDrawer().DrawMethod(blocks);
 
-			AreEqual(2, branchcount);
-			AreEqual(1, loadcount);
-			AreEqual(2, storecount);
-			AreEqual(4, ldccount);
+			AreEqual(2, branchcount, "Invalid branch count.");
+			AreEqual(1, loadcount, "Invalid load count.");
+			AreEqual(2, storecount, "Invalid store count.");
+			AreEqual(4, ldccount, "Invalid load constant count.");
 		}
 	}
 }

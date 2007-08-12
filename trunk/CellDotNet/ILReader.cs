@@ -1,12 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Emit;
 
 namespace CellDotNet
 {
+	[DebuggerDisplay("{DebuggerDisplay}")]
 	class ILReader
 	{
+		private string DebuggerDisplay
+		{
+			get { return string.Format("{0} {1} ({2})", OpCode.Name, Operand, Offset); }
+		}
+
 		static object s_lock = new object();
 		static Dictionary<short, OpCode> s_reflectionmap;
 		static Dictionary<short, OpCode> GetReflectionOpCodeMap()
