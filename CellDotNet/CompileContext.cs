@@ -337,10 +337,7 @@ namespace CellDotNet
 					if (instructionsToPatch.TryGetValue(thismethodkey, out patchlist))
 					{
 						foreach (TreeInstruction inst in patchlist)
-						{
-							string methodkey = (string) inst.Operand;
-							inst.Operand = allMethods[methodkey];
-						}
+							inst.Operand = mc;
 					}
 				}
 			}

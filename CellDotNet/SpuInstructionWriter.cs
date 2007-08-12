@@ -355,6 +355,8 @@ namespace CellDotNet
 			foreach (SpuBasicBlock bb in _basicBlocks)
 			{
 				SpuInstruction inst = bb.Head;
+				if (inst == null)
+					continue;
 
 				Utilities.AssertNotNull(inst, "inst");
 
