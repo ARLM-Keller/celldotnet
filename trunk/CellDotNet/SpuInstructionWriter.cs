@@ -248,7 +248,8 @@ namespace CellDotNet
 			{
 				SpuInstruction iload = new SpuInstruction(SpuOpCode.il);
 				iload.Constant = 0;
-				iload.Rt = NextRegister();
+//				iload.Rt = NextRegister();
+				iload.Rt = HardwareRegister.GetHardwareRegister(75);
 				AddInstruction(iload);
 
 				SpuInstruction ior = new SpuInstruction(SpuOpCode.or);
