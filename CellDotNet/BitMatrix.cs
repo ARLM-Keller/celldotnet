@@ -12,19 +12,28 @@ namespace CellDotNet
 			resizeMatric(height, width);
 		}
 
+		//TODO overvej om den gamle matrice skal genbruges.
+		public void clear()
+		{
+			width = 0;
+			height = 0;
+
+			matrix = new uint[0,0];
+		}
+
 		public void add(int row, int collum)
 		{
-			if(0 <= row && row < height && 0 <= collum && collum < width)
-			{
-				int cbit = collum%32;
-				int cindex = collum/32;
+			if(0 < row && 0 < collum)
+				return;
 
-				matrix[row, cindex] |= (uint)(1 << cbit);
-			}
-			else
+			if(row >= height || collum >= width)
 			{
-				resizeMatric(row, collum);
+				resizeMatric(row+1, collum+1);
 			}
+			int cbit = collum%32;
+			int cindex = collum/32;
+
+			matrix[row, cindex] |= (uint) (1 << cbit);
 		}
 
 		public void remove(int row, int collum)

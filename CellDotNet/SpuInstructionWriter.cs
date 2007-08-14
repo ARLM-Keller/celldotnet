@@ -235,7 +235,7 @@ namespace CellDotNet
 		{
 			// set usesymbolicmove to false to generate code that will allow the
 			// simple cell test program to run (20070715)
-			bool useSymbolicMove = false;
+			bool useSymbolicMove = true;
 			if (useSymbolicMove)
 			{
 				SpuInstruction inst = new SpuInstruction(SpuOpCode.move);
@@ -406,7 +406,13 @@ namespace CellDotNet
 							throw new NotImplementedException();
 						case SpuInstructionFormat.Custom:
 							// Currently this only need to handle move.
-							tw.WriteLine("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Ra);
+							if (inst.OpCode == SpuOpCode.move)
+							{
+								tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Ra);
+							} else
+							{
+								tw.WriteLine("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Ra);
+							}
 							break;
 						default:
 							throw new Exception();
