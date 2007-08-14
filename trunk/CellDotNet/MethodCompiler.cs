@@ -327,7 +327,7 @@ namespace CellDotNet
 			AssertState(MethodCompileState.S4InstructionSelectionDone);
 
 			RegAllocGraphColloring regalloc = new RegAllocGraphColloring();
-			regalloc.Alloc(this);
+			regalloc.Alloc(SpuBasicBlocks, GetNewSpillOffset);
 
 //			SimpleRegAlloc regalloc = new SimpleRegAlloc();
 //			List<SpuInstruction> asm = _instructions.GetAsList();

@@ -18,11 +18,13 @@ namespace CellDotNet
 
 //			new SpuInitializerTest().TestInitialization();
 
-			
+			new RegAllocGraphColloringTest().LargeTest();
+
 //			GenericExperiment();
 //			return;
 
-			MyRunSPU();
+//			MyRunSPU(true);
+//			MyRunSPU2();
 
 //			RunSpu();
 //			TypeExperimenalStuff(3);
@@ -65,7 +67,36 @@ namespace CellDotNet
 		private delegate void BasicTestDelegate();
 
 
-		private static unsafe  void MyRunSPU() {
+		private static unsafe void MyRunSPU2()
+		{
+			BasicTestDelegate del = null;
+			del = delegate()
+			      	{
+			      		int* i;
+			      		i = (int*) 0x40;
+			      		*i = 34;
+			      	};
+
+			int iterations = 200;
+
+
+			long t1 = System.DateTime.Now.Ticks;
+
+			for (int i = 0; i < iterations; i++)
+			{
+				MethodBase method = del.Method;
+				MethodCompiler mc = new MethodCompiler(method);
+				mc.PerformProcessing(MethodCompileState.S5RegisterAllocationDone);
+
+				RegAllocGraphColloring.RemoveRedundantMoves(mc.SpuBasicBlocks);
+			}
+
+			long t2 = System.DateTime.Now.Ticks;
+
+			System.Console.WriteLine("Total time for {0}: {1} ms", iterations, (t2-t1)/10000);
+		}
+
+		private static unsafe  void MyRunSPU(bool debug) {
 			BasicTestDelegate del = null;
 //			del = delegate
 //			                        	{
@@ -102,32 +133,40 @@ namespace CellDotNet
 			MethodCompiler mc = new MethodCompiler(method);
 			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 
-			System.Console.WriteLine("Debug 1");
+			if (debug) System.Console.WriteLine("Debug 1");
 
-			new TreeDrawer().DrawMethod(mc);
+			if (debug) new TreeDrawer().DrawMethod(mc);
 
 			mc.PerformProcessing(MethodCompileState.S3InstructionSelectionPreparationsDone);
 
-			System.Console.WriteLine("Debug 2");
+			if (debug) System.Console.WriteLine("Debug 2");
 
 			mc.PerformProcessing(MethodCompileState.S4InstructionSelectionDone);
 			mc.GetBodyWriter().WriteStop();
 
-			System.Console.WriteLine("Debug 3");
+			if (debug) System.Console.WriteLine("Debug 3");
 
-			Console.WriteLine();
-			Console.WriteLine("Disassembly: ");
-			Console.WriteLine(mc.GetBodyWriter().Disassemble());
+			if (debug) Console.WriteLine();
+			if (debug) Console.WriteLine("Disassembly: ");
+			if (debug) Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
-			System.Console.WriteLine("Debug 4");
+			if (debug) System.Console.WriteLine("Debug 4");
 
 			mc.PerformProcessing(MethodCompileState.S5RegisterAllocationDone);
 
-			System.Console.WriteLine("Debug 5");
+			if (debug) System.Console.WriteLine("Debug 5");
 
-			Console.WriteLine();
-			Console.WriteLine("Disassembly after regalloc: ");
-			Console.WriteLine(mc.GetBodyWriter().Disassemble());
+			if (debug) Console.WriteLine();
+			if (debug) Console.WriteLine("Disassembly after regalloc: ");
+			if (debug) Console.WriteLine(mc.GetBodyWriter().Disassemble());
+
+			RegAllocGraphColloring.RemoveRedundantMoves(mc.SpuBasicBlocks);
+
+			if (debug) System.Console.WriteLine("Debug 6");
+
+			if (debug) Console.WriteLine();
+			if (debug) Console.WriteLine("Disassembly after removal of redundant moves: ");
+			if (debug) Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
 			return;
 

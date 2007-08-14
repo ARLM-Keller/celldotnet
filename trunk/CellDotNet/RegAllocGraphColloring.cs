@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace CellDotNet
@@ -10,9 +11,9 @@ namespace CellDotNet
 		// - OK det er ikke alle registre der er tilgængelig for regalloc
 		//
 
-		private MethodCompiler method;
-
 		private List<SpuBasicBlock> basicBlocks;
+
+		private NewSpillOffsetDelegate NewSpillOffset;
 
 		private int K; // antal af tilgængelige registre.
 
@@ -22,23 +23,23 @@ namespace CellDotNet
 		private Dictionary<SpuInstruction, Set<SpuInstruction>> pred = new Dictionary<SpuInstruction, Set<SpuInstruction>>();
 		private Dictionary<SpuInstruction, Set<SpuInstruction>> succ = new Dictionary<SpuInstruction, Set<SpuInstruction>>();
 
-		private Dictionary<SpuInstruction, Set<VirtualRegister>> liveIn =
-			new Dictionary<SpuInstruction, Set<VirtualRegister>>();
+		private Dictionary<SpuInstruction, BitVector> liveIn =
+			new Dictionary<SpuInstruction, BitVector>();
 
-		private Dictionary<SpuInstruction, Set<VirtualRegister>> liveOut =
-			new Dictionary<SpuInstruction, Set<VirtualRegister>>();
+		private Dictionary<SpuInstruction, BitVector> liveOut =
+			new Dictionary<SpuInstruction, BitVector>();
 
-		private Set<VirtualRegister> precolored = new Set<VirtualRegister>();
+		private BitVector precolored = new BitVector();
 
-		private LinkedList<VirtualRegister> initial = new LinkedList<VirtualRegister>();
+		private LinkedList<uint> initial = new LinkedList<uint>();
 
-		private LinkedList<VirtualRegister> simplifyWorklist = new LinkedList<VirtualRegister>();
-		private LinkedList<VirtualRegister> freezeWorklist = new LinkedList<VirtualRegister>();
-		private LinkedList<VirtualRegister> spillWorklist = new LinkedList<VirtualRegister>();
-		private Set<VirtualRegister> spilledNodes = new Set<VirtualRegister>();
-		private Set<VirtualRegister> coalescedNodes = new Set<VirtualRegister>();
-		private Set<VirtualRegister> coloredNodes = new Set<VirtualRegister>();
-		private Stack<VirtualRegister> selctStack = new Stack<VirtualRegister>();
+		private LinkedList<uint> simplifyWorklist = new LinkedList<uint>();
+		private LinkedList<uint> freezeWorklist = new LinkedList<uint>();
+		private LinkedList<uint> spillWorklist = new LinkedList<uint>();
+		private BitVector spilledNodes = new BitVector();
+		private BitVector coalescedNodes = new BitVector();
+		private BitVector coloredNodes = new BitVector();
+		private Stack<uint> selctStack = new Stack<uint>();
 
 		private Set<SpuInstruction> coalescedMoves = new Set<SpuInstruction>();
 		private Set<SpuInstruction> constrainedMoves = new Set<SpuInstruction>();
@@ -46,30 +47,42 @@ namespace CellDotNet
 		private Set<SpuInstruction> worklistMoves = new Set<SpuInstruction>();
 		private Set<SpuInstruction> activeMoves = new Set<SpuInstruction>();
 
-		private Dictionary<VirtualRegister, Set<VirtualRegister>> adjSet =
-			new Dictionary<VirtualRegister, Set<VirtualRegister>>();
+//		private Dictionary<uint, Set<uint>> adjSet =
+//			new Dictionary<uint, Set<uint>>();
 
-		private BitMatrix adjMatrix;
+		private BitMatrix adjMatrix = new BitMatrix(10,10);
 
-		private Dictionary<VirtualRegister, Set<VirtualRegister>> adjList =
-			new Dictionary<VirtualRegister, Set<VirtualRegister>>();
+//		private Dictionary<uint, BitVector> adjList =
+//			new Dictionary<uint, BitVector>();
 
-		private Dictionary<VirtualRegister, int> degree = new Dictionary<VirtualRegister, int>();
+		private Dictionary<uint, BitVector> adjList =
+			new Dictionary<uint, BitVector>();
 
-		private Dictionary<VirtualRegister, Set<SpuInstruction>> moveList =
-			new Dictionary<VirtualRegister, Set<SpuInstruction>>();
 
-		private Dictionary<VirtualRegister, VirtualRegister> alias = new Dictionary<VirtualRegister, VirtualRegister>();
-		private Dictionary<VirtualRegister, CellRegister> color = new Dictionary<VirtualRegister, CellRegister>();
+//		private Dictionary<uint, int> degree = new Dictionary<uint, int>();
+		private int[] degree;
 
-		private Dictionary<VirtualRegister, int> virtualRegisteWeight = new Dictionary<VirtualRegister, int>();
+		private Dictionary<uint, Set<SpuInstruction>> moveList =
+			new Dictionary<uint, Set<SpuInstruction>>();
+
+		private Dictionary<uint, uint> alias = new Dictionary<uint, uint>();
+		private Dictionary<uint, CellRegister> color = new Dictionary<uint, CellRegister>();
+
+		private Dictionary<uint, int> virtualRegisteWeight = new Dictionary<uint, int>();
+
+
+		//TODO hukinitialisering af intToReg og regToInt.
+		private List<VirtualRegister> intToReg = new List<VirtualRegister>();
+		private Dictionary<VirtualRegister, uint> regToInt = new Dictionary<VirtualRegister, uint>();
+
+		public delegate int NewSpillOffsetDelegate();
 
 		// TODO evt. tage kode og en delagate, der kan allokere plads i frames, som argument.
-		public void Alloc(MethodCompiler methodCompiler)
+		public void Alloc(List<SpuBasicBlock> inputBasicBlocks, NewSpillOffsetDelegate inputNewSpillOffset)
 		{
-			method = methodCompiler;
+			basicBlocks = inputBasicBlocks;
 
-			basicBlocks = method.SpuBasicBlocks;
+			NewSpillOffset = inputNewSpillOffset;
 
 //			basicBlocks = new List<SpuBasicBlock>();
 //
@@ -85,7 +98,15 @@ namespace CellDotNet
 			// f.eks. mulighed for dynamisk at angive antallet af tilgængelige registre.
 			// eller at alloc tager som argument de registre der må bruges.
 
-			precolored.AddAll(HardwareRegister.VirtualHardwareRegisters);
+//			precolored.AddAll(HardwareRegister.VirtualHardwareRegisters);
+
+			foreach (VirtualRegister register in HardwareRegister.VirtualHardwareRegisters)
+			{
+				precolored.Add(intToReg.Count);
+				regToInt[register] = (uint) intToReg.Count;
+				intToReg.Add(register);
+			}
+
 			initial = getInitialVirtualRegisters();
 			
 			do
@@ -96,9 +117,11 @@ namespace CellDotNet
 				liveIn.Clear();
 				liveOut.Clear();
 
-				degree.Clear();
+//				degree.Clear();
 
-				adjSet.Clear();
+//				adjSet.Clear();
+				adjMatrix.clear();
+
 				adjList.Clear();
 
 				moveList.Clear();
@@ -112,41 +135,63 @@ namespace CellDotNet
 						pred[inst] = new Set<SpuInstruction>();
 						succ[inst] = new Set<SpuInstruction>();
 
-						liveIn[inst] = new Set<VirtualRegister>();
-						liveOut[inst] = new Set<VirtualRegister>();
+						liveIn[inst] = new BitVector();
+						liveOut[inst] = new BitVector();
 
-						if(inst.Ra != null)
-						{
-							adjSet[inst.Ra] = new Set<VirtualRegister>();
-							adjList[inst.Ra] = new Set<VirtualRegister>();
-							moveList[inst.Ra]  = new Set<SpuInstruction>();
-							degree[inst.Ra] = 0;
-						}
-						if (inst.Rb != null)
-						{
-							adjSet[inst.Rb] = new Set<VirtualRegister>();
-							adjList[inst.Rb] = new Set<VirtualRegister>();
-							moveList[inst.Rb] = new Set<SpuInstruction>();
-							degree[inst.Rb] = 0;
-						}
-						if (inst.Rc != null)
-						{
-							adjSet[inst.Rc] = new Set<VirtualRegister>();
-							adjList[inst.Rc] = new Set<VirtualRegister>();
-							moveList[inst.Rc] = new Set<SpuInstruction>();
-							degree[inst.Rc] = 0;
-						}
-						if (inst.Rt != null)
-						{
-							adjSet[inst.Rt] = new Set<VirtualRegister>();
-							adjList[inst.Rt] = new Set<VirtualRegister>();
-							moveList[inst.Rt] = new Set<SpuInstruction>();
-							degree[inst.Rt] = 0;
-						}
+//						if(inst.Ra != null)
+//						{
+//							adjSet[regToInt[inst.Ra]] = new Set<uint>();
+//							adjList[regToInt[inst.Ra]] = new Set<uint>();
+//							moveList[regToInt[inst.Ra]]  = new Set<SpuInstruction>();
+//							degree[regToInt[inst.Ra]] = 0;
+//						}
+//						if (inst.Rb != null)
+//						{
+//							adjSet[regToInt[inst.Rb]] = new Set<uint>();
+//							adjList[regToInt[inst.Rb]] = new Set<uint>();
+//							moveList[regToInt[inst.Rb]] = new Set<SpuInstruction>();
+//							degree[regToInt[inst.Rb]] = 0;
+//						}
+//						if (inst.Rc != null)
+//						{
+//							adjSet[regToInt[inst.Rc]] = new Set<uint>();
+//							adjList[regToInt[inst.Rc]] = new Set<uint>();
+//							moveList[regToInt[inst.Rc]] = new Set<SpuInstruction>();
+//							degree[regToInt[inst.Rc]] = 0;
+//						}
+//						if (inst.Rt != null)
+//						{
+//							adjSet[regToInt[inst.Rt]] = new Set<uint>();
+//							adjList[regToInt[inst.Rt]] = new Set<uint>();
+//							moveList[regToInt[inst.Rt]] = new Set<SpuInstruction>();
+//							degree[regToInt[inst.Rt]] = 0;
+//						}
+
 						inst = inst.Next;
 					}
 				}
 
+				int maxRegNum = 0;
+
+				foreach (uint r in initial)
+				{
+//					adjSet[r] = new Set<uint>();
+					adjList[r] = new BitVector();
+					moveList[r] = new Set<SpuInstruction>();
+//					degree[r] = 0;
+					maxRegNum = (int)r > maxRegNum ? (int) r : maxRegNum;
+				}
+
+				foreach (int r in precolored)
+				{
+//					adjSet[r] = new Set<uint>();
+					adjList[(uint) r] = new BitVector();
+					moveList[(uint) r] = new Set<SpuInstruction>();
+//					degree[(uint) r] = 0;
+					maxRegNum = r > maxRegNum ? r : maxRegNum;
+				}
+
+				degree = new int[maxRegNum+1];
 
 				simplifyWorklist.Clear();
 				freezeWorklist.Clear();
@@ -168,7 +213,7 @@ namespace CellDotNet
 				
 				foreach (VirtualRegister register in HardwareRegister.VirtualHardwareRegisters)
 				{
-					color[register] = register.Register;
+					color[regToInt[register]] = register.Register;
 				}
 
 				LivenessAnalysis();
@@ -188,7 +233,8 @@ namespace CellDotNet
 				} while (simplifyWorklist.Count != 0 || worklistMoves.Count != 0 || freezeWorklist.Count != 0 ||
 				         spillWorklist.Count != 0);
 				AssignColors();
-				redoAlloc = spilledNodes.Count != 0;
+//				redoAlloc = spilledNodes.Count != 0;
+				redoAlloc = !spilledNodes.IsCountZero();
 				if (redoAlloc)
 					RewriteProgram();
 			} while (redoAlloc);
@@ -204,23 +250,58 @@ namespace CellDotNet
 
 				while (inst != null)
 				{
+//					if (inst.Ra != null)
+//						inst.Ra.Register = color[regToInt[inst.Ra]];
+//					if (inst.Rb != null)
+//						inst.Rb.Register = color[regToInt[inst.Rb]];
+//					if (inst.Rc != null)
+//						inst.Rc.Register = color[regToInt[inst.Rc]];
+//					if (inst.Rt != null)
+//						inst.Rt.Register = color[regToInt[inst.Rt]];
+
 					if (inst.Ra != null)
-						inst.Ra.Register = color[inst.Ra];
+						inst.Ra = intToReg[(int)color[regToInt[inst.Ra]]];
 					if (inst.Rb != null)
-						inst.Rb.Register = color[inst.Rb];
+						inst.Rb = intToReg[(int)color[regToInt[inst.Rb]]];
 					if (inst.Rc != null)
-						inst.Rc.Register = color[inst.Rc];
+						inst.Rc = intToReg[(int)color[regToInt[inst.Rc]]];
 					if (inst.Rt != null)
-						inst.Rt.Register = color[inst.Rt];
+						inst.Rt = intToReg[(int)color[regToInt[inst.Rt]]];
 
 					inst = inst.Next;
 				}
 			}
 		}
 
-		private LinkedList<VirtualRegister> getInitialVirtualRegisters()
+		public static void RemoveRedundantMoves(List<SpuBasicBlock> basicBlocks)
 		{
-			Set<VirtualRegister> result = new Set<VirtualRegister>();
+			foreach (SpuBasicBlock block in basicBlocks)
+			{
+				SpuInstruction inst = block.Head;
+
+				while (inst != null)
+				{
+					if(inst.OpCode == SpuOpCode.move && inst.Ra == inst.Rt)
+					{
+						if(inst.Prev != null)
+						{
+							inst.Prev.Next = inst.Next;
+						}
+						else
+						{
+							block.Head = inst.Next;
+						}
+						if (inst.Next != null)
+							inst.Next.Prev = inst.Prev;
+					}
+					inst = inst.Next;
+				}
+			}
+		}
+
+		private LinkedList<uint> getInitialVirtualRegisters()
+		{
+			BitVector result = new BitVector();
 
 			foreach (SpuBasicBlock block in basicBlocks)
 			{
@@ -229,23 +310,43 @@ namespace CellDotNet
 				while(inst != null)
 				{
 					if (inst.Ra != null && !inst.Ra.IsRegisterSet)
-						result.Add(inst.Ra);
+					{
+						regToInt[inst.Ra] = (uint)intToReg.Count;
+						intToReg.Add(inst.Ra);
+
+						result.Add((int) regToInt[inst.Ra]);
+					}
 					if (inst.Rb != null && !inst.Rb.IsRegisterSet)
-						result.Add(inst.Rb);
+					{
+						regToInt[inst.Rb] = (uint)intToReg.Count;
+						intToReg.Add(inst.Rb);
+
+						result.Add((int)regToInt[inst.Rb]);
+					}
 					if (inst.Rc != null && !inst.Rc.IsRegisterSet)
-						result.Add(inst.Rc);
+					{
+						regToInt[inst.Rc] = (uint)intToReg.Count;
+						intToReg.Add(inst.Rc);
+
+						result.Add((int)regToInt[inst.Rc]);
+					}
 					if (inst.Rt != null && !inst.Rt.IsRegisterSet)
-						result.Add(inst.Rt);
+					{
+						regToInt[inst.Rt] = (uint)intToReg.Count;
+						intToReg.Add(inst.Rt);
+
+						result.Add((int)regToInt[inst.Rt]);
+					}
 
 					inst = inst.Next;
 				}
 			}
 
-			LinkedList<VirtualRegister> listResult = new LinkedList<VirtualRegister>();
+			LinkedList<uint> listResult = new LinkedList<uint>();
 
-			foreach (VirtualRegister register in result)
+			foreach (int register in result)
 			{
-				listResult.AddLast(register);
+				listResult.AddLast((uint) register);
 			}
 
 			return listResult;
@@ -299,8 +400,8 @@ namespace CellDotNet
 			foreach (SpuBasicBlock bb in basicBlocks)
 				for (SpuInstruction inst = bb.Head; inst != null; inst = inst.Next)
 				{
-					liveIn[inst] = new Set<VirtualRegister>();
-					liveOut[inst] = new Set<VirtualRegister>();
+					liveIn[inst] = new BitVector();
+					liveOut[inst] = new BitVector();
 				}
 
 			// Iterates until nochanges.
@@ -330,21 +431,24 @@ namespace CellDotNet
 
 					for (SpuInstruction inst = lastinst; inst != null; inst = inst.Prev)
 					{
-						Set<VirtualRegister> oldLiveIn = new Set<VirtualRegister>();
+						BitVector oldLiveIn = new BitVector();
 						oldLiveIn.AddAll(liveIn[inst]);
 
-						Set<VirtualRegister> oldLiveOut = new Set<VirtualRegister>();
+						BitVector oldLiveOut = new BitVector();
 						oldLiveOut.AddAll(liveOut[inst]);
 
-						liveOut[inst] = new Set<VirtualRegister>();
+						liveOut[inst] = new BitVector();
 						foreach (SpuInstruction s in succ[inst])
 							liveOut[inst].AddAll(liveIn[s]);
-						
-						liveIn[inst] = new Set<VirtualRegister>();
+
+						liveIn[inst] = new BitVector();
 						liveIn[inst].AddAll(liveOut[inst]);
 						if (inst.Def != null)
-							liveIn[inst].Remove(inst.Def);
-						liveIn[inst].AddAll(inst.Use);
+							liveIn[inst].Remove((int) regToInt[inst.Def]);
+//						liveIn[inst].AddAll(inst.Use);
+						foreach (VirtualRegister register in inst.Use)
+							liveIn[inst].Add((int) regToInt[register]);
+
 
 						if (!reIterate)
 							reIterate |= !oldLiveIn.Equals(liveIn[inst]) || !oldLiveOut.Equals(liveOut[inst]);
@@ -359,40 +463,47 @@ namespace CellDotNet
 			{
 				for (SpuInstruction inst = bb.Head; inst != null; inst = inst.Next)
 				{
-					Set<VirtualRegister> live = new Set<VirtualRegister>();
+					BitVector live = new BitVector();
 					live.AddAll(liveOut[inst]);
 					if (inst.OpCode != null && inst.OpCode == SpuOpCode.move)
 					{
-						live.RemoveAll(inst.Use);
-						moveList[inst.Def].Add(inst);
-						moveList[inst.Use[0]].Add(inst); // Move instruction only have one use register.
+//						live.RemoveAll(inst.Use);
+						foreach (VirtualRegister register in inst.Use)
+							live.Remove((int) regToInt[register]);
+
+						moveList[regToInt[inst.Def]].Add(inst);
+						moveList[regToInt[inst.Use[0]]].Add(inst); // Move instruction only have one use register.
 						worklistMoves.Add(inst);
 					}
 					if (inst.Def != null)
 					{
-						live.Add(inst.Def);
-						foreach (VirtualRegister l in live)
-							AddEdge(l, inst.Def);
+						live.Add((int) regToInt[inst.Def]);
+						foreach (int l in live)
+							AddEdge((uint) l, regToInt[inst.Def]);
 					}
 				}
 			}
 		}
 
-		private void AddEdge(VirtualRegister from, VirtualRegister to)
+		private void AddEdge(uint from, uint to)
 		{
-			if (!adjSet[from].Contains(to) && from != to)
-			{
-				adjSet[from].Add(to);
-				adjSet[to].Add(from);
-
-				if (!precolored.Contains(from))
+//			if (!adjSet[from].Contains(to) && from != to)
+			if (!adjMatrix.contains((int) from, (int) to) && from != to)
 				{
-					adjList[from].Add(to);
+//				adjSet[from].Add(to);
+//				adjSet[to].Add(from);
+
+				adjMatrix.add((int) from, (int) to);
+				adjMatrix.add((int) to, (int) from);
+
+				if (!precolored.Contains((int) from))
+				{
+					adjList[from].Add((int) to);
 					degree[from]++;
 				}
-				if (!precolored.Contains(to))
+				if (!precolored.Contains((int) to))
 				{
-					adjList[to].Add(from);
+					adjList[to].Add((int) from);
 					degree[to]++;
 				}
 			}
@@ -400,7 +511,7 @@ namespace CellDotNet
 
 		private void MakeWorklist()
 		{
-			foreach (VirtualRegister r in initial)
+			foreach (uint r in initial)
 			{
 				if (degree[r] >= K)
 					spillWorklist.AddLast(r);
@@ -411,16 +522,16 @@ namespace CellDotNet
 			}
 		}
 
-		private Set<VirtualRegister> Adjacent(VirtualRegister r)
+		private BitVector Adjacent(uint r)
 		{
-			Set<VirtualRegister> result = new Set<VirtualRegister>();
+			BitVector result = new BitVector();
 			result.AddAll(adjList[r]);
 			result.RemoveAll(selctStack);
 			result.RemoveAll(coalescedNodes);
 			return result;
 		}
 
-		private Set<SpuInstruction> NodeMoves(VirtualRegister r)
+		private Set<SpuInstruction> NodeMoves(uint r)
 		{
 			Set<SpuInstruction> result = new Set<SpuInstruction>();
 			foreach (SpuInstruction i in moveList[r])
@@ -433,30 +544,30 @@ namespace CellDotNet
 			return result;
 		}
 
-		private bool MoveRelated(VirtualRegister r)
+		private bool MoveRelated(uint r)
 		{
 			return NodeMoves(r).Count != 0;
 		}
 
 		private void Simplify()
 		{
-			VirtualRegister r = simplifyWorklist.First.Value;
+			uint r = simplifyWorklist.First.Value;
 			simplifyWorklist.RemoveFirst();
 			selctStack.Push(r);
-			foreach (VirtualRegister ar in Adjacent(r))
+			foreach (int ar in Adjacent(r))
 			{
-				DecrementDegree(ar);
+				DecrementDegree((uint) ar);
 			}
 		}
 
-		private void DecrementDegree(VirtualRegister r)
+		private void DecrementDegree(uint r)
 		{
 			int d = degree[r];
 			degree[r] = d - 1;
 			if (d == K)
 			{
-				Set<VirtualRegister> a = Adjacent(r);
-				a.Add(r);
+				BitVector a = Adjacent(r);
+				a.Add((int) r);
 				EnableMoves(a);
 				spillWorklist.Remove(r); //TODO ikke optimalt på LinkedList
 				if (MoveRelated(r))
@@ -466,13 +577,13 @@ namespace CellDotNet
 			}
 		}
 
-		private void EnableMoves(IEnumerable<VirtualRegister> rlist)
+		private void EnableMoves(BitVector rlist)
 		{
-			foreach (VirtualRegister r in rlist)
-				EnableMove(r);
+			foreach (int r in rlist)
+				EnableMove((uint) r);
 		}
 
-		private void EnableMove(VirtualRegister r)
+		private void EnableMove(uint r)
 		{
 			foreach (SpuInstruction i in NodeMoves(r))
 				if (activeMoves.Contains(i))
@@ -482,38 +593,39 @@ namespace CellDotNet
 				}
 		}
 
-		private void AddWorkList(VirtualRegister r)
+		private void AddWorkList(uint r)
 		{
-			if (!precolored.Contains(r) && !MoveRelated(r) && degree[r] < K)
+			if (!precolored.Contains((int) r) && !MoveRelated(r) && degree[r] < K)
 			{
 				freezeWorklist.Remove(r); //TODO Not optimal for LinkedList.
 				simplifyWorklist.AddLast(r);
 			}
 		}
 
-		private bool OK(VirtualRegister t, VirtualRegister r)
+		private bool OK(uint t, uint r)
 		{
-			return degree[t] < K || precolored.Contains(t) || adjSet[t].Contains(r);
+//			return degree[t] < K || precolored.Contains(t) || adjSet[t].Contains(r);
+			return degree[t] < K || precolored.Contains((int) t) || adjMatrix.contains((int) t, (int) r);
 		}
 
-		private bool Conservative(IEnumerable<VirtualRegister> rlist)
+		private bool Conservative(BitVector rlist)
 		{
 			int k = 0;
-			foreach (VirtualRegister r in rlist)
-				if (degree[r] >= K) k++;
+			foreach (int r in rlist)
+				if (degree[(uint) r] >= K) k++;
 			return k < K;
 		}
 
 		private void Coalesce()
 		{
 			SpuInstruction move = worklistMoves.getItem();
-			VirtualRegister x = GetAlias(move.Use[0]);
-			VirtualRegister y = GetAlias(move.Def);
+			uint x = GetAlias(regToInt[move.Use[0]]);
+			uint y = GetAlias(regToInt[move.Def]);
 
-			VirtualRegister u;
-			VirtualRegister v;
+			uint u;
+			uint v;
 
-			if (precolored.Contains(y))
+			if (precolored.Contains((int) y))
 			{
 				u = y;
 				v = x;
@@ -530,14 +642,15 @@ namespace CellDotNet
 				coalescedMoves.Add(move);
 				AddWorkList(u);
 			}
-			else if (precolored.Contains(v) || adjSet[u].Contains(v))
+//			else if (precolored.Contains(v) || adjSet[u].Contains(v))
+			else if (precolored.Contains((int) v) || adjMatrix.contains((int) u, (int) v))
 			{
 				constrainedMoves.Add(move);
 				AddWorkList(u);
 				AddWorkList(v);
 			}
-			else if (precolored.Contains(u) && OKHelper(u, v) ||
-			         !precolored.Contains(u) && ConservativeHelper(Adjacent(u), Adjacent(v)))
+			else if (precolored.Contains((int) u) && OKHelper(u, v) ||
+			         !precolored.Contains((int) u) && ConservativeHelper(Adjacent(u), Adjacent(v)))
 			{
 				coalescedMoves.Add(move);
 				Combine(u, v);
@@ -546,37 +659,37 @@ namespace CellDotNet
 			else activeMoves.Add(move);
 		}
 
-		private bool ConservativeHelper(IEnumerable<VirtualRegister> adjU, IEnumerable<VirtualRegister> adjV)
+		private bool ConservativeHelper(BitVector adjU, BitVector adjV)
 		{
-			Set<VirtualRegister> set = new Set<VirtualRegister>();
+			BitVector set = new BitVector();
 			set.AddAll(adjU);
 			set.AddAll(adjV);
 			return Conservative(set);
 		}
 
-		private bool OKHelper(VirtualRegister u, VirtualRegister v)
+		private bool OKHelper(uint u, uint v)
 		{
-			foreach (VirtualRegister r in Adjacent(v))
-				if (OK(r, u)) return true;
+			foreach (int r in Adjacent(v))
+				if (OK((uint) r, u)) return true;
 
 			return false;
 		}
 
-		private void Combine(VirtualRegister u, VirtualRegister v)
+		private void Combine(uint u, uint v)
 		{
 			if (freezeWorklist.Contains(v)) //TODO LinkedList not optimal.
 				freezeWorklist.Remove(v); //TODO LinkedList not optimal.
 			else
 				spillWorklist.Remove(v);
 
-			coalescedNodes.Add(v);
+			coalescedNodes.Add((int) v);
 			alias[v] = u;
 			moveList[u].AddAll(moveList[v]);
 			EnableMove(v);
-			foreach (VirtualRegister t in Adjacent(v))
+			foreach (int t in Adjacent(v))
 			{
-				AddEdge(t, u);
-				DecrementDegree(t);
+				AddEdge((uint) t, u);
+				DecrementDegree((uint) t);
 			}
 			if (degree[u] >= K && freezeWorklist.Contains(u))
 			{
@@ -585,9 +698,9 @@ namespace CellDotNet
 			}
 		}
 
-		private VirtualRegister GetAlias(VirtualRegister r)
+		private uint GetAlias(uint r)
 		{
-			if (coalescedNodes.Contains(r))
+			if (coalescedNodes.Contains((int) r))
 				return GetAlias(alias[r]);
 			else
 				return r;
@@ -595,20 +708,20 @@ namespace CellDotNet
 
 		private void Freeze()
 		{
-			VirtualRegister u = freezeWorklist.First.Value;
+			uint u = freezeWorklist.First.Value;
 			freezeWorklist.RemoveFirst();
 			simplifyWorklist.AddLast(u);
 			FreezeMoves(u);
 		}
 
-		private void FreezeMoves(VirtualRegister u)
+		private void FreezeMoves(uint u)
 		{
 			foreach (SpuInstruction move in NodeMoves(u))
 			{
-				VirtualRegister x = move.Def;
-				VirtualRegister y = move.Use[0];
+				uint x = regToInt[move.Def];
+				uint y = regToInt[move.Use[0]];
 
-				VirtualRegister v;
+				uint v;
 				if (GetAlias(y) == GetAlias(u))
 					v = GetAlias(x);
 				else
@@ -629,9 +742,10 @@ namespace CellDotNet
 		{
 			// TODO Bedre måde at vælge m på, se p. 239.
 
-			VirtualRegister m = null;
+			uint m = 0;
+			bool found = false;
 
-			foreach (VirtualRegister register in spillWorklist)
+			foreach (uint register in spillWorklist)
 			{
 				int weight;
 
@@ -639,9 +753,14 @@ namespace CellDotNet
 				{
 					m = register;
 					spillWorklist.Remove(register);
+					found = true;
 					break;
 				}
+			}
 
+			if(!found)
+			{
+				throw new Exception("Not able to spill.");
 			}
 
 //			VirtualRegister m = spillWorklist.First.Value;
@@ -654,43 +773,45 @@ namespace CellDotNet
 		{
 			while (selctStack.Count > 0)
 			{
-				VirtualRegister n = selctStack.Pop();
+				uint n = selctStack.Pop();
 
-				Set<CellRegister> okColors = new Set<CellRegister>();
+				Set<CellRegister> okColors = new Set<CellRegister>(HardwareRegister.getCallerSavesCellRegisters().Length + HardwareRegister.getCalleeSavesCellRegisters().Length);
 				okColors.AddAll(HardwareRegister.getCallerSavesCellRegisters());
 				okColors.AddAll(HardwareRegister.getCalleeSavesCellRegisters());
 
-				foreach (VirtualRegister w in adjList[n])
+				foreach (int w in adjList[n])
 				{
-					VirtualRegister a = GetAlias(w);
+					uint a = GetAlias((uint) w);
 
-					if (coloredNodes.Contains(a) || precolored.Contains(a))
+					if (coloredNodes.Contains((int) a) || precolored.Contains((int) a))
 						okColors.Remove(color[a]);
 				}
 				if (okColors.Count <= 0)
 				{
-					spilledNodes.Add(n);
+					spilledNodes.Add((int) n);
 				}
 				else
 				{
-					coloredNodes.Add(n);
+					coloredNodes.Add((int) n);
 					CellRegister c = okColors.getItem();
 					color[n] = c;
 				}
 				
 			}
 
-			foreach (VirtualRegister n in coalescedNodes)
+			foreach (int n in coalescedNodes)
 			{
-				color[n] = color[GetAlias(n)];
+				color[(uint) n] = color[GetAlias((uint) n)];
 			}
 		}
 
 		private void RewriteProgram()
 		{
-			Set<VirtualRegister> newTemps = new Set<VirtualRegister>();
-			foreach (VirtualRegister v in spilledNodes)
+			Set<uint> newTemps = new Set<uint>();
+			foreach (int vint in spilledNodes)
 			{
+				VirtualRegister v = intToReg[vint];
+
 				foreach (SpuBasicBlock basicBlock in basicBlocks)
 				{
 					SpuInstruction prevInst = null;
@@ -700,15 +821,19 @@ namespace CellDotNet
 						if (inst.Def == v)
 						{
 							VirtualRegister vt = new VirtualRegister();
-							virtualRegisteWeight[vt] = int.MaxValue;
-							newTemps.Add(vt);
+
+							regToInt[vt] = (uint)intToReg.Count;
+							intToReg.Add(vt);
+
+							virtualRegisteWeight[regToInt[vt]] = int.MaxValue;
+							newTemps.Add(regToInt[vt]);
 
 							inst.Rt = vt;
 
 							SpuInstruction stor = new SpuInstruction(SpuOpCode.stqd);
 
 							stor.Rt = vt;
-							stor.Constant = method.GetNewSpillOffset();
+							stor.Constant = NewSpillOffset();
 							stor.Ra = HardwareRegister.SP;
 
 							SpuInstruction next = inst.Next;
@@ -723,8 +848,12 @@ namespace CellDotNet
 						else if (inst.Ra == v || inst.Rb == v || inst.Rc == v || inst.Rt == v)
 						{
 							VirtualRegister vt = new VirtualRegister();
-							virtualRegisteWeight[vt] = int.MaxValue;
-							newTemps.Add(vt);
+
+							regToInt[vt] = (uint)intToReg.Count;
+							intToReg.Add(vt);
+
+							virtualRegisteWeight[regToInt[vt]] = int.MaxValue;
+							newTemps.Add(regToInt[vt]);
 
 							// Det antages at et register kun kan bruges en gang i en instruktion.
 							if (inst.Ra == v)
@@ -739,7 +868,7 @@ namespace CellDotNet
 							SpuInstruction load = new SpuInstruction(SpuOpCode.lqd);
 
 							load.Rt = vt;
-							load.Constant = method.GetNewSpillOffset();
+							load.Constant = NewSpillOffset();
 							load.Ra = HardwareRegister.SP;
 
 							if (prevInst != null)

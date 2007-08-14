@@ -10,6 +10,16 @@ namespace CellDotNet
 	{
 		Dictionary<T, bool> dict = new Dictionary<T, bool>();
 
+		public Set()
+		{
+			
+		}
+
+		public Set(int capacity)
+		{
+			dict = new Dictionary<T, bool>(capacity);
+		}
+
 		public void Add(T item)
 		{
 			dict[item] = true;
@@ -35,10 +45,9 @@ namespace CellDotNet
 
 		public void RemoveAll(Set<T> set)
 		{
-			foreach (T item in set)
-			{
-				Remove(item);
-			}
+			if (set != null)
+				foreach (T item in set)
+					Remove(item);
 		}
 
 		public void Clear()
