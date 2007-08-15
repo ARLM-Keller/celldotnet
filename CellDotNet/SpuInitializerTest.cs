@@ -39,6 +39,9 @@ namespace CellDotNet
 
 //			code[0] = new SpuInstruction(SpuOpCode.stop).emit();
 
+			if (!SpeContext.HasSpeHardware)
+				return;
+
 			// Run
 			using (SpeContext ctx = new SpeContext())
 			{
