@@ -5,28 +5,31 @@ using NUnit.Framework;
 namespace CellDotNet
 {
 	[TestFixture]
-	public class SpuInitializerTest
+	public class SpuInitializerTest : UnitTest
 	{
 		[Test]
 		public void TestInitialization()
 		{
+			const int magicnum = 0xfefefe;
+
 			// The code to run just returns.
 			SpuManualRoutine routine = new SpuManualRoutine();
 			routine.Writer.BeginNewBasicBlock();
-			routine.Writer.WriteLoadI4(HardwareRegister.GetHardwareRegister(45), 235);
-//			routine.Writer.WriteStop();
+			routine.Writer.WriteLoadI4(HardwareRegister.GetHardwareRegister(3), magicnum);
 			routine.Writer.WriteBi(HardwareRegister.LR);
 			routine.Offset = 512;
 
 			Console.WriteLine("init test");
 
+			RegisterSizedObject returnLocation = new RegisterSizedObject();
+			returnLocation.Offset = 1024;
+
 			int[] code = new int[1000];
 			{
 				// Initialization.
-				SpuInitializer initializer = new SpuInitializer(routine, null);
+				SpuInitializer initializer = new SpuInitializer(routine, returnLocation);
 				initializer.Offset = 0;
 				initializer.PerformAddressPatching();
-//				List<SpuInstruction> list = initializer._writer.GetAsList();
 				int[] initCode = initializer.Emit();
 				Buffer.BlockCopy(initCode, 0, code, initializer.Offset, initCode.Length * 4);
 			}
@@ -37,8 +40,6 @@ namespace CellDotNet
 				Buffer.BlockCopy(routineCode, 0, code, routine.Offset, routineCode.Length * 4);
 			}
 
-//			code[0] = new SpuInstruction(SpuOpCode.stop).emit();
-
 			if (!SpeContext.HasSpeHardware)
 				return;
 
@@ -46,7 +47,12 @@ namespace CellDotNet
 			using (SpeContext ctx = new SpeContext())
 			{
 				ctx.LoadProgram(code);
-				ctx.Run();
+
+				int rc = ctx.Run();
+				AreEqual(0, rc);
+
+				int retval = ctx.DmaGetInt32((LocalStorageAddress) returnLocation.Offset);
+				AreEqual(magicnum, retval);
 			}
 		}
 	}
