@@ -120,5 +120,18 @@ namespace CellDotNet
 			else
 				IsTrue(SpeContext.HasSpeHardware);
 		}
+
+		[Test, Explicit]
+		public void TestGetSpeControlArea()
+		{
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			using (SpeContext spe = new SpeContext())
+			{
+				SpeControlArea area = spe.GetControlArea();
+				AreEqual((uint)0, area.SPU_NPC);
+			}
+		}
 	}
 }
