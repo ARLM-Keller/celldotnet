@@ -13,9 +13,9 @@ namespace CellDotNet
 			// The code to run just returns.
 			SpuManualRoutine routine = new SpuManualRoutine();
 			routine.Writer.BeginNewBasicBlock();
-//			routine.Writer.WriteLoadI4(HardwareRegister.GetHardwareRegister(45), 235);
-			routine.Writer.WriteStop();
-//			routine.Writer.WriteBi(HardwareRegister.LR);
+			routine.Writer.WriteLoadI4(HardwareRegister.GetHardwareRegister(45), 235);
+//			routine.Writer.WriteStop();
+			routine.Writer.WriteBi(HardwareRegister.LR);
 			routine.Offset = 512;
 
 			Console.WriteLine("init test");

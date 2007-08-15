@@ -72,22 +72,20 @@ namespace CellDotNet
 	[Serializable]
 	public class LibSpeException : Exception
 	{
-		private static Type s_stdlib;
-
-		static LibSpeException()
-		{
-			//  /usr/lib/mono/gac/Mono.Posix/2.0.0.0__0738eb9f132ed756/Mono.Posix.dll
-			Assembly ass = Assembly.LoadFrom("/usr/lib/mono/gac/Mono.Posix/2.0.0.0__0738eb9f132ed756/Mono.Posix.dll");
-			s_stdlib = ass.GetType("Mono.Unix.Native.Stdlib");
-		}
-
 		static string GetErrorMessage()
 		{
-			return "";
-//			return " code: " + s_stdlib.GetMethod("GetLastError").Invoke(null, null);
+			// Hmm, I guess the error code could be overwritten by this check if
+			// HasSpeHardware hasn't been used before...
+			if (SpeContext.HasSpeHardware)
+			{
+				object ec = SpeContext.GetErrorCode();
+				return " code: " + (ec != null ? ec : "(null)");
+			}
+			else
+				return " code: (no SPE hardware is available)";
 		}
 
-		public LibSpeException() { }
+		public LibSpeException() : base(GetErrorMessage()) { }
 		public LibSpeException(string message) : base(message + GetErrorMessage()) { }
 		public LibSpeException(string message, Exception inner) : base(message + GetErrorMessage(), inner) { }
 		protected LibSpeException(
