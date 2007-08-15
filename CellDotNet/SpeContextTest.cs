@@ -59,6 +59,12 @@ namespace CellDotNet
 			Console.WriteLine("Disassembly after regalloc: ");
 			Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
+			mc.PerformProcessing(MethodCompileState.S6RemoveRedundantMoves);
+
+			Console.WriteLine();
+			Console.WriteLine("Disassembly after remove of redundant moves: ");
+			Console.WriteLine(mc.GetBodyWriter().Disassemble());
+
 			int[] bincode = SpuInstruction.emit(mc.GetBodyWriter().GetAsList());
 
 			if (!SpeContext.HasSpeHardware)
@@ -68,6 +74,12 @@ namespace CellDotNet
 			{
 				ctx.LoadProgram(bincode);
 
+<<<<<<< .mine
+			if (ls[0x40 / 4] != 34)
+			{
+				Console.WriteLine("øv");
+				Console.WriteLine("Value: {0}", ls[0x40 / 4]);
+=======
 				ctx.Run();
 				int[] ls = ctx.GetCopyOffLocalStorage();
 
@@ -78,6 +90,7 @@ namespace CellDotNet
 				}
 				else
 					Console.WriteLine("Selvfølgelig :)");
+>>>>>>> .r119
 			}
 		}
 

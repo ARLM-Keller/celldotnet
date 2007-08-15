@@ -23,13 +23,14 @@ namespace CellDotNet
 		S3InstructionSelectionPreparationsDone,
 		S4InstructionSelectionDone,
 		S5RegisterAllocationDone,
-		S6PrologAndEpilogDone,
+		S6RemoveRedundantMoves,
+		S7PrologAndEpilogDone,
 		/// <summary>
 		/// At this point the only changes that must be done to the code
 		/// is address changes.
 		/// </summary>
-		S7AddressPatchingDone,
-		S8Complete
+		S8AddressPatchingDone,
+		S9Complete
 	}
 
 	/// <summary>
@@ -307,15 +308,18 @@ namespace CellDotNet
 			if (State < MethodCompileState.S5RegisterAllocationDone && targetState >= MethodCompileState.S5RegisterAllocationDone)
 				PerformRegisterAllocation();
 
-			if (State < MethodCompileState.S6PrologAndEpilogDone && targetState >= MethodCompileState.S6PrologAndEpilogDone)
+			if (State < MethodCompileState.S6RemoveRedundantMoves && targetState >= MethodCompileState.S6RemoveRedundantMoves)
+				PerformRemoveRedundantMoves();
+
+			if (State < MethodCompileState.S7PrologAndEpilogDone && targetState >= MethodCompileState.S7PrologAndEpilogDone)
 				PerformPrologAndEpilogGeneration();
 
-			if (State < MethodCompileState.S7AddressPatchingDone && targetState >= MethodCompileState.S7AddressPatchingDone)
+			if (State < MethodCompileState.S8AddressPatchingDone && targetState >= MethodCompileState.S8AddressPatchingDone)
 				PerformAddressPatching();
 
-			if (targetState >= MethodCompileState.S8Complete)
+			if (targetState >= MethodCompileState.S9Complete)
 			{
-				if (targetState <= MethodCompileState.S8Complete) 
+				if (targetState <= MethodCompileState.S9Complete) 
 					throw new NotImplementedException("Target state: " + targetState);
 				else 
 					throw new ArgumentException("Invalid state: " + targetState, "targetState");
@@ -334,6 +338,15 @@ namespace CellDotNet
 //			regalloc.alloc(asm, 16);
 
 			State = MethodCompileState.S5RegisterAllocationDone;
+		}
+
+		private void PerformRemoveRedundantMoves()
+		{
+			AssertState(MethodCompileState.S5RegisterAllocationDone);
+
+			RegAllocGraphColloring.RemoveRedundantMoves(SpuBasicBlocks);
+
+			State = MethodCompileState.S6RemoveRedundantMoves;
 		}
 
 		private int _nextSpillOffset = 3; // Start by pointing to start of Local Variable Space.
@@ -362,7 +375,7 @@ namespace CellDotNet
 			_epilog.BeginNewBasicBlock();
 			WriteEpilog(_epilog);
 
-			_state = MethodCompileState.S6PrologAndEpilogDone;
+			_state = MethodCompileState.S7PrologAndEpilogDone;
 		}
 
 		/// <summary>
@@ -443,7 +456,7 @@ namespace CellDotNet
 		/// </summary>
 		public override void PerformAddressPatching()
 		{
-			AssertState(MethodCompileState.S6PrologAndEpilogDone);
+			AssertState(MethodCompileState.S7PrologAndEpilogDone);
 
 			// Iterate bbs, instructions to determine bb offsets and collect branch instructions,
 			// so that the branch instructions afterwards can be patched with the bb addresses.
@@ -460,7 +473,7 @@ namespace CellDotNet
 			PerformAddressPatching(bblist, _epilog.BasicBlocks[0]);
 
 
-			State = MethodCompileState.S7AddressPatchingDone;
+			State = MethodCompileState.S8AddressPatchingDone;
 		}
 
 		private SpuInstructionWriter _instructions;

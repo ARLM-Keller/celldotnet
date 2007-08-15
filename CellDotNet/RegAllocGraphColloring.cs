@@ -39,7 +39,8 @@ namespace CellDotNet
 		private BitVector spilledNodes = new BitVector();
 		private BitVector coalescedNodes = new BitVector();
 		private BitVector coloredNodes = new BitVector();
-		private Stack<uint> selctStack = new Stack<uint>();
+		private Stack<uint> selectStack = new Stack<uint>();
+		private BitVector selectStackBitVector = new BitVector();
 
 		private Set<SpuInstruction> coalescedMoves = new Set<SpuInstruction>();
 		private Set<SpuInstruction> constrainedMoves = new Set<SpuInstruction>();
@@ -199,7 +200,8 @@ namespace CellDotNet
 				spilledNodes.Clear();
 				coalescedNodes.Clear();
 				coloredNodes.Clear();
-				selctStack.Clear();
+				selectStack.Clear();
+				selectStackBitVector.Clear();
 
 				coalescedMoves.Clear();
 				constrainedMoves.Clear();
@@ -526,7 +528,7 @@ namespace CellDotNet
 		{
 			BitVector result = new BitVector();
 			result.AddAll(adjList[r]);
-			result.RemoveAll(selctStack);
+			result.RemoveAll(selectStackBitVector);
 			result.RemoveAll(coalescedNodes);
 			return result;
 		}
@@ -553,7 +555,8 @@ namespace CellDotNet
 		{
 			uint r = simplifyWorklist.First.Value;
 			simplifyWorklist.RemoveFirst();
-			selctStack.Push(r);
+			selectStack.Push(r);
+			selectStackBitVector.Add((int) r);
 			foreach (int ar in Adjacent(r))
 			{
 				DecrementDegree((uint) ar);
@@ -771,9 +774,10 @@ namespace CellDotNet
 
 		private void AssignColors()
 		{
-			while (selctStack.Count > 0)
+			while (selectStack.Count > 0)
 			{
-				uint n = selctStack.Pop();
+				uint n = selectStack.Pop();
+				selectStackBitVector.Remove((int) n);
 
 				Set<CellRegister> okColors = new Set<CellRegister>(HardwareRegister.getCallerSavesCellRegisters().Length + HardwareRegister.getCalleeSavesCellRegisters().Length);
 				okColors.AddAll(HardwareRegister.getCallerSavesCellRegisters());

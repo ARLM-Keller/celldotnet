@@ -84,6 +84,14 @@ namespace CellDotNet
 					Remove(i);
 		}
 
+		public void RemoveAll(BitVector v)
+		{
+			for (int i = 0; i < vector.Length && i < v.vector.Length; i++)
+			{
+				vector[i] &= ~v.vector[i];
+			}
+		}
+
 		public bool Contains(int elementnr)
 		{
 			if(elementnr < 0)
