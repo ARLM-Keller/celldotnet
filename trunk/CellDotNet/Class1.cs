@@ -14,11 +14,11 @@ namespace CellDotNet
 
 //			new SpeContextTest().TestGetPutInt32();
 
-//			new SpeContextTest().TestFirstCellProgram();
+			new SpeContextTest().TestFirstCellProgram();
 
 //			new SpuInitializerTest().TestInitialization();
 
-			new RegAllocGraphColloringTest().LargeTest();
+//			new RegAllocGraphColloringTest().LargeTest();
 
 //			GenericExperiment();
 //			return;
@@ -80,7 +80,7 @@ namespace CellDotNet
 			int iterations = 200;
 
 
-			long t1 = System.DateTime.Now.Ticks;
+			long t1 = DateTime.Now.Ticks;
 
 			for (int i = 0; i < iterations; i++)
 			{
@@ -91,9 +91,9 @@ namespace CellDotNet
 				RegAllocGraphColloring.RemoveRedundantMoves(mc.SpuBasicBlocks);
 			}
 
-			long t2 = System.DateTime.Now.Ticks;
+			long t2 = DateTime.Now.Ticks;
 
-			System.Console.WriteLine("Total time for {0}: {1} ms", iterations, (t2-t1)/10000);
+			Console.WriteLine("Total time for {0}: {1} ms", iterations, (t2-t1)/10000);
 		}
 
 		private static unsafe  void MyRunSPU(bool debug) {

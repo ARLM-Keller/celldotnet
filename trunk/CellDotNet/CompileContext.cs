@@ -113,7 +113,7 @@ namespace CellDotNet
 			{
 				if (o is MethodCompiler)
 				{
-					((MethodCompiler) o).PerformProcessing(MethodCompileState.S6PrologAndEpilogDone);
+					((MethodCompiler) o).PerformProcessing(MethodCompileState.S7PrologAndEpilogDone);
 				}
 
 				o.Offset = lsOffset;
@@ -134,7 +134,7 @@ namespace CellDotNet
 			foreach (ObjectWithAddress owa in GetAllObjects())
 			{
 				if (owa is MethodCompiler)
-					((MethodCompiler) owa).PerformProcessing(MethodCompileState.S7AddressPatchingDone);
+					((MethodCompiler) owa).PerformProcessing(MethodCompileState.S8AddressPatchingDone);
 				else if (owa is SpuRoutine)
 					((SpuRoutine) owa).PerformAddressPatching();
 			}

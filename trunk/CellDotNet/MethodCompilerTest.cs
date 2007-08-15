@@ -30,7 +30,7 @@ namespace CellDotNet
 
 
 			MethodCompiler mc = new MethodCompiler(del.Method);
-			mc.PerformProcessing(MethodCompileState.S7AddressPatchingDone);
+			mc.PerformProcessing(MethodCompileState.S8AddressPatchingDone);
 
 
 			Console.WriteLine("Disassembly - prolog:");
