@@ -74,23 +74,14 @@ namespace CellDotNet
 			{
 				ctx.LoadProgram(bincode);
 
-<<<<<<< .mine
-			if (ls[0x40 / 4] != 34)
-			{
-				Console.WriteLine("øv");
-				Console.WriteLine("Value: {0}", ls[0x40 / 4]);
-=======
 				ctx.Run();
 				int[] ls = ctx.GetCopyOffLocalStorage();
 
 				if (ls[0x40 / 4] != 34)
 				{
 					Console.WriteLine("øv");
-					Console.WriteLine("Value: {0}", ls[0xff0 / 4]);
+					Console.WriteLine("Value: {0}", ls[0x40/4]);
 				}
-				else
-					Console.WriteLine("Selvfølgelig :)");
->>>>>>> .r119
 			}
 		}
 
