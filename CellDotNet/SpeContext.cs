@@ -13,17 +13,17 @@ namespace CellDotNet
 		private const uint SPE_TAG_ANY = 2;
 		private const uint SPE_TAG_IMMEDIATE = 3;
 
-		/*
-		 * // Doesn't seem to work with mono yet.
-		class SpeHandle : CriticalHandle
+/*
+		class SpeHandle : SafeHandle
 		{
-			public SpeHandle() : base(IntPtr.Zero)
+			public SpeHandle() : base(IntPtr.Zero, true)
 			{
+				// Nothing.
 			}
 
 			protected override bool ReleaseHandle()
 			{
-				return spe_context_destroy(this) == 0;
+				return UnsafeNativeMethods.spe_context_destroy(this) == 0;
 			}
 
 			public override bool IsInvalid
@@ -31,8 +31,35 @@ namespace CellDotNet
 				get { return handle == IntPtr.Zero; }
 			}
 		}
-		private SpeHandle _handle;
-		*/
+//		private SpeHandle _handle;
+*/
+		static object s_lock = new object();
+
+		private static bool? s_hasSpeHardware;
+		public static bool HasSpeHardware
+		{
+			get
+			{
+				lock (s_lock)
+				{
+					if (s_hasSpeHardware == null)
+					{
+						try
+						{
+							UnsafeNativeMethods.spe_fake_method();
+							s_hasSpeHardware = true;
+						}
+						catch (DllNotFoundException)
+						{
+							s_hasSpeHardware = false;
+						}
+					}
+				}
+
+				return s_hasSpeHardware.Value;
+			}
+		}
+
 		private IntPtr _handle;
 
 		private int _localStorageSize = 16*1024;
@@ -261,6 +288,13 @@ namespace CellDotNet
 
 			[DllImport("libspe2")]
 			public static extern int spe_mfcio_tag_status_read(IntPtr spe, uint mask, uint behavior, ref uint tag_status);
+
+			/// <summary>
+			/// Simply used to determine whether we have access to SPE hardware.
+			/// </summary>
+			/// <returns></returns>
+			[DllImport("libspe2")]
+			public static extern int spe_fake_method();
 		}
 
 		public void Dispose()

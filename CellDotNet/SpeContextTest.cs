@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Threading;
 using NUnit.Framework;
@@ -82,6 +83,17 @@ namespace CellDotNet
 				int readvalue = ctx.DmaGetInt32((LocalStorageAddress) 32);
 				AreEqual(33000, readvalue);
 			}
+		}
+
+		[Test]
+		public void TestHasSpe()
+		{
+			// For this test we assume that a windows machine does not have spe hw,
+			// and that anything else has spe hw.
+			if (Path.DirectorySeparatorChar == '\\')
+				IsFalse(SpeContext.HasSpeHardware);
+			else
+				IsTrue(SpeContext.HasSpeHardware);
 		}
 	}
 }

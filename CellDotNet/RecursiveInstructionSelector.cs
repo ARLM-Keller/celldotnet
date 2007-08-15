@@ -178,20 +178,21 @@ namespace CellDotNet
 				case IRCode.Switch:
 					break;
 				case IRCode.Ldind_I1:
-					break;
 				case IRCode.Ldind_U1:
 					break;
 				case IRCode.Ldind_I2:
-					break;
 				case IRCode.Ldind_U2:
 					break;
-				case IRCode.Ldind_I4:
-					break;
-				case IRCode.Ldind_U4:
-					break;
-				case IRCode.Ldind_I8:
-					break;
 				case IRCode.Ldind_I:
+				case IRCode.Ldind_I4:
+				case IRCode.Ldind_U4:
+					{
+						VirtualRegister ptr = vrleft;
+
+						// Asssume (at least for now - 20070815) that the address is qw-aligned.
+						return _writer.WriteLqd(ptr, 0);
+					}
+				case IRCode.Ldind_I8:
 					break;
 				case IRCode.Ldind_R4:
 					break;
@@ -209,7 +210,7 @@ namespace CellDotNet
 					{
 						if (lefttype.IndirectionLevel != 1)
 							throw new InvalidILTreeException("Invalid level of indirection for stind. Stack type: " + lefttype);
-						VirtualRegister ptr = GetVirtualRegister(inst.Left);
+						VirtualRegister ptr = GetMethodVariableRegister(inst.Left);
 
 						VirtualRegister loadedvalue = _writer.WriteLqd(ptr, 0);
 						VirtualRegister mask = _writer.WriteCwd(ptr, 0);
@@ -564,7 +565,7 @@ namespace CellDotNet
 			_branchInstructions.Add(new KeyValuePair<SpuInstruction, IRBasicBlock>(_writer.LastInstruction, target));
 		}
 
-		private VirtualRegister GetVirtualRegister(TreeInstruction inst)
+		private VirtualRegister GetMethodVariableRegister(TreeInstruction inst)
 		{
 			if (!(inst.Operand is MethodVariable))
 				throw new InvalidOperationException();
