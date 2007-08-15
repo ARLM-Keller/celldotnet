@@ -115,6 +115,10 @@ namespace CellDotNet
 			CompileContext cc = new CompileContext(getter.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 			int[] code = cc.GetEmittedCode();
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
 			using (SpeContext ctx = new SpeContext())
 			{
 				ctx.LoadProgram(code);
