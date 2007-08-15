@@ -13,13 +13,17 @@ namespace CellDotNet
 		[Test]
 		public void SpeSimpleDMATest()
 		{
-			SpeContext ctxt = new SpeContext();
-			ctxt.LoadProgram(new int[] { 13 });
+			if (!SpeContext.HasSpeHardware)
+				return;
+			using (SpeContext ctxt = new SpeContext())
+			{
+				ctxt.LoadProgram(new int[] { 13 });
 
-			int[] lsa = ctxt.GetCopyOffLocalStorage();
+				int[] lsa = ctxt.GetCopyOffLocalStorage();
 
-			if (lsa[0] != 13)
-				Assert.Fail("DMA error.");
+				if (lsa[0] != 13)
+					Assert.Fail("DMA error.");
+			}
 		}
 
 		private delegate void BasicTestDelegate();
@@ -57,24 +61,32 @@ namespace CellDotNet
 
 			int[] bincode = SpuInstruction.emit(mc.GetBodyWriter().GetAsList());
 
-			SpeContext ctx = new SpeContext();
-			ctx.LoadProgram(bincode);
+			if (!SpeContext.HasSpeHardware)
+				return;
 
-			ctx.Run();
-			int[] ls = ctx.GetCopyOffLocalStorage();
-
-			if (ls[0x40 / 4] != 34)
+			using (SpeContext ctx = new SpeContext())
 			{
-				Console.WriteLine("øv");
-				Console.WriteLine("Value: {0}", ls[0xff0 / 4]);
+				ctx.LoadProgram(bincode);
+
+				ctx.Run();
+				int[] ls = ctx.GetCopyOffLocalStorage();
+
+				if (ls[0x40 / 4] != 34)
+				{
+					Console.WriteLine("øv");
+					Console.WriteLine("Value: {0}", ls[0xff0 / 4]);
+				}
+				else
+					Console.WriteLine("Selvfølgelig :)");
 			}
-			else
-				Console.WriteLine("Selvfølgelig :)");
 		}
 
 		[Test]
 		public void TestGetPutInt32()
 		{
+			if (!SpeContext.HasSpeHardware)
+				return;
+
 			using (SpeContext ctx = new SpeContext())
 			{
 				ctx.DmaPut((LocalStorageAddress) 32, 33000);

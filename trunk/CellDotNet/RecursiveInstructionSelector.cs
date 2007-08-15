@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
 
 namespace CellDotNet
 {
@@ -15,10 +16,14 @@ namespace CellDotNet
 		private List<KeyValuePair<SpuInstruction, IRBasicBlock>> _branchInstructions;
 		private Dictionary<IRBasicBlock, SpuBasicBlock> _spubasicblocks;
 
+		private List<IROpCode> _unimplementedOpCodes;
+
 		public void GenerateCode(MethodCompiler mc, SpuInstructionWriter writer)
 		{
 			_writer = writer;
 			_method = mc;
+
+			_unimplementedOpCodes = new List<IROpCode>();
 			
 			// These two are used to patch up branch instructions after instruction selection.
 			_branchInstructions = new List<KeyValuePair<SpuInstruction, IRBasicBlock>>();
@@ -34,6 +39,20 @@ namespace CellDotNet
 				{
 					GenerateCode(root);
 				}
+			}
+
+			if (_unimplementedOpCodes.Count > 0)
+			{
+				string msg = string.Format(
+					"Instruction selection encountered {0} IR instructions " + 
+					"which are not currently supported, or their operand types are not supported.\r\n" + 
+					"The instructions are:\r\n", _unimplementedOpCodes.Count);
+
+				List<string> ocnames = _unimplementedOpCodes.ConvertAll<string>(
+					delegate(IROpCode input) { return input.Name; });
+				msg += string.Join(", ", ocnames.ToArray()) + ".";
+
+				throw new NotImplementedException(msg);
 			}
 
 			foreach (KeyValuePair<SpuInstruction, IRBasicBlock> pair in _branchInstructions)
@@ -549,7 +568,8 @@ namespace CellDotNet
 					throw new InvalidILTreeException("Invalid opcode: " + ilcode);
 			}
 
-			throw new ILNotImplementedException(inst);
+			_unimplementedOpCodes.Add(inst.Opcode);
+			return new VirtualRegister(-1);
 		}
 
 		private void WriteUnconditionalBranch(SpuOpCode branchopcode, IRBasicBlock target)
