@@ -36,7 +36,7 @@ namespace CellDotNet
 			prolog.WriteStqd(HardwareRegister.LR, HardwareRegister.SP, 1);
 
 			// Establish new SP.
-			prolog.WriteSfi(HardwareRegister.SP, HardwareRegister.SP, -frameSlots*16);
+			prolog.WriteAi(HardwareRegister.SP, HardwareRegister.SP, -frameSlots*16);
 
 			// Store SP at new frame's Back Chain.
 			prolog.WriteStqd(HardwareRegister.SP, HardwareRegister.SP, 0);
