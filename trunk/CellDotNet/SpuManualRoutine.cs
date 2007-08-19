@@ -34,7 +34,7 @@ namespace CellDotNet
 //				if (_isPatchingDone)
 //					throw new InvalidOperationException("This routine has been patched.");
 				return _writer;
-			}
+		}
 		}
 
 		public override int Size
@@ -60,16 +60,17 @@ namespace CellDotNet
 		{
 			if (_isPatchingDone)
 			{
-				if (_omitEpilog)
+			if (_omitEpilog)
 					PerformAddressPatching(_writer.BasicBlocks, null);
-				else
-				{
-					SpuAbiUtilities.WriteEpilog(_writer);
-					PerformAddressPatching(_writer.BasicBlocks, Writer.CurrentBlock);
-				}
+			else
+			{
+				Writer.BeginNewBasicBlock();
+				SpuAbiUtilities.WriteEpilog(Writer);
+				PerformAddressPatching(Writer.BasicBlocks, Writer.CurrentBlock);
 			}
+		}
 
 			_isPatchingDone = true;
-		}
+	}
 	}
 }
