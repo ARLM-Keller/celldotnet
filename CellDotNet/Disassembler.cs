@@ -16,7 +16,7 @@ namespace CellDotNet
 		{
 			List<ObjectWithAddress> olist = new List<ObjectWithAddress>(objects);
 
-			// Lay out ordered by ID.
+			// Lay out ordered by offset.
 			olist.Sort(delegate(ObjectWithAddress x, ObjectWithAddress y)
 				{ return x.Offset - y.Offset; });
 
@@ -32,10 +32,10 @@ namespace CellDotNet
 			}
 
 			// Write address and size of non-routines.
-			writer.WriteLine("; Data:");
+			writer.WriteLine("# Data:");
 			foreach (ObjectWithAddress o in nonRoutines)
 			{
-				writer.WriteLine("; object offset: {0:x4}, size: {1:x4}.", o.Offset, o.Size);
+				writer.WriteLine("# object offset: {0:x6}, size: {1:x6}.", o.Offset, o.Size);
 			}
 
 			writer.WriteLine();
@@ -43,8 +43,8 @@ namespace CellDotNet
 			writer.WriteLine();
 
 			// Disassemble routines.
-			writer.WriteLine("; *****************************");
-			writer.WriteLine("; Routines:");
+			writer.WriteLine("# *****************************");
+			writer.WriteLine("# Routines:");
 			foreach (ObjectWithAddress o in olist)
 			{
 				SpuRoutine r = o as SpuRoutine;
@@ -52,19 +52,19 @@ namespace CellDotNet
 					continue;
 
 				writer.WriteLine();
-				writer.WriteLine("; Routine offset: {0:x4}, size: {1:x4}.", r.Offset, r.Size);
+				writer.WriteLine("# Routine offset: {0:x6}, size: {1:x6}.", r.Offset, r.Size);
 				int newoffset = DisassembleInstructions(r.GetInstructions(), r.Offset, writer);
 
 				if (newoffset != r.Offset + r.Size)
 					throw new Exception(string.Format(
 						"Offset after disassembly does not match with the object size. " + 
-						"Expected new offset: {0:x4}; actual new offset: {1:x4}", 
+						"Expected new offset: {0:x6}; actual new offset: {1:x6}", 
 						r.Offset + r.Size, newoffset));
 
 			}
 		}
 
-		public static int DisassembleInstructions(IEnumerable<SpuInstruction> instructions, int startOffset, TextWriter tw)
+		internal static int DisassembleInstructions(IEnumerable<SpuInstruction> instructions, int startOffset, TextWriter tw)
 		{
 			int offset = startOffset;
 
