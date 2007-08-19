@@ -10,7 +10,7 @@ namespace CellDotNet
 		[Test]
 		public void TestInitialization()
 		{
-			const int magicnum = 0xfefefe;
+			const int magicnum = 0x3654ff;
 
 			// The code to run just returns.
 			SpuManualRoutine routine = new SpuManualRoutine(true);
@@ -59,3 +59,5 @@ namespace CellDotNet
 		}
 	}
 }
+
+

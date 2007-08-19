@@ -35,11 +35,13 @@ namespace CellDotNet
 			// Save LR in caller's frame.
 			prolog.WriteStqd(HardwareRegister.LR, HardwareRegister.SP, 1);
 
+			prolog.WriteMove(HardwareRegister.SP, HardwareRegister.GetVirtualHardwareRegister((CellRegister)75));
+
 			// Establish new SP.
 			prolog.WriteAi(HardwareRegister.SP, HardwareRegister.SP, -frameSlots*16);
 
 			// Store SP at new frame's Back Chain.
-			prolog.WriteStqd(HardwareRegister.SP, HardwareRegister.SP, 0);
+			prolog.WriteStqd(HardwareRegister.GetVirtualHardwareRegister((CellRegister)75), HardwareRegister.SP, 0);
 		}
 	}
 }
