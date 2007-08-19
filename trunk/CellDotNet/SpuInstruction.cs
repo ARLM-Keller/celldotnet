@@ -226,7 +226,7 @@ namespace CellDotNet
 				case SpuInstructionFormat.None:
 					throw new Exception("Err.");
 				case SpuInstructionFormat.RR1:
-					return _opcode.OpCode | ((int) _rt.Register << 7);
+					return _opcode.OpCode | ((int) _ra.Register << 7);
 				case SpuInstructionFormat.RR2:
 				case SpuInstructionFormat.RR:
 						return _opcode.OpCode | ((int) _rb.Register << 14) | ((int) _ra.Register << 7) | (int) _rt.Register;
@@ -276,5 +276,15 @@ namespace CellDotNet
 
 			return bincode.ToArray();
 		}
+
+    	public IEnumerable<SpuInstruction> GetEnumerable()
+    	{
+    		SpuInstruction current = this;
+    		do
+    		{
+    			yield return current;
+    			current = current.Next;
+    		} while (current != null);
+    	}
     }
 }

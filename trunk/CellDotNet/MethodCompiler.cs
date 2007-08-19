@@ -471,5 +471,19 @@ namespace CellDotNet
 
 			return combined;
 		}
+
+
+		public override IEnumerable<SpuInstruction> GetInstructions()
+		{
+			if (State < MethodCompileState.S8AddressPatchingDone)
+				throw new InvalidOperationException();
+
+			List<SpuInstruction> list = new List<SpuInstruction>();
+			list.AddRange(GetPrologWriter().GetAsList());
+			list.AddRange(GetBodyWriter().GetAsList());
+			list.AddRange(GetEpilogWriter().GetAsList());
+
+			return list;
+		}
 	}
 }

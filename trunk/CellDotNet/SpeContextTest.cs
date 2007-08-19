@@ -139,5 +139,41 @@ namespace CellDotNet
 				AreEqual((uint)0, area.SPU_NPC);
 			}
 		}
+
+		[Test]
+		public void TestIntReturn()
+		{
+			const int magicNumber = 40;
+			IntReturnDelegate del = delegate { return magicNumber; };
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+			new Disassembler().Disassemble(cc, Console.Out);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			using (SpeContext ctx = new SpeContext())
+			{
+				int[] code = cc.GetEmittedCode();
+				ctx.LoadProgram(code);
+				int rc = ctx.Run();
+				AreEqual(0, rc);
+
+				int retval = ctx.DmaGetValue<int>(cc.ReturnValueAddress);
+				AreEqual(magicNumber, retval);
+			}
+		}
+
+		private delegate int IntReturnDelegate();
+
+		[Test]
+		public void TestDelegateRun_IntReturn()
+		{
+			IntReturnDelegate del = delegate { return 40; };
+			IntReturnDelegate del2 = CompileContext.CreateSpeDelegate(del);
+
+			int retval = del2();
+			AreEqual(40, retval);
+		}
 	}
 }

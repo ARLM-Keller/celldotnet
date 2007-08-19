@@ -47,6 +47,8 @@
     <Compile Include="CalleeSavesStoreRoutine.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="CompileContextTest.cs" />
+    <Compile Include="Disassembler.cs" />
+    <Compile Include="DisassemblerTest.cs" />
     <Compile Include="FlowGraph.cs" />
     <Compile Include="Graph.cs" />
     <Compile Include="GraphTest.cs" />
