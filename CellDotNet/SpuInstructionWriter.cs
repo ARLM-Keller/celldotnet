@@ -37,11 +37,8 @@ namespace CellDotNet
 			{
 				SpuInstruction inst = bb.Head;
 
-				while (inst != null)
-				{
-					list.Add(inst);
-					inst = inst.Next;
-				}
+				if (inst != null)
+					list.AddRange(inst.GetEnumerable());
 			}
 
 			return list;
@@ -361,67 +358,7 @@ namespace CellDotNet
 
 				Utilities.AssertNotNull(inst, "inst");
 
-				do
-				{
-					tw.Write("{0:x4}: ", offset);
-					switch (inst.OpCode.Format)
-					{
-						case SpuInstructionFormat.None:
-							throw new Exception();
-						case SpuInstructionFormat.RR:
-							tw.Write("{0} {1}, {2}, {3}", inst.OpCode.Name, inst.Rt, inst.Ra, inst.Rb);
-							break;
-						case SpuInstructionFormat.RR2:
-							tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Ra);
-							break;
-						case SpuInstructionFormat.RR1:
-							tw.Write("{0} {1}", inst.OpCode.Name, inst.Ra);
-							break;
-						case SpuInstructionFormat.RRR:
-							tw.Write("{0} {1}, {2}, {3}, {4}", inst.OpCode.Name, inst.Rt, inst.Ra, inst.Rb, inst.Rc);
-							break;
-						case SpuInstructionFormat.RI7:
-						case SpuInstructionFormat.RI8:
-							tw.Write("{0} {1}, {2}, {3}", inst.OpCode.Name, inst.Rt, inst.Ra, inst.Constant);
-							break;
-						case SpuInstructionFormat.RI10:
-							tw.Write("{0} {1}, {3}({2})", inst.OpCode.Name, inst.Rt, inst.Ra, inst.Constant);
-							break;
-						case SpuInstructionFormat.RI16:
-							tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Constant);
-							break;
-						case SpuInstructionFormat.RI16NoRegs:
-							tw.Write("{0} {1}", inst.OpCode.Name, inst.Constant);
-							break;
-						case SpuInstructionFormat.RI18:
-							tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Constant);
-							break;
-						case SpuInstructionFormat.WEIRD:
-							if (inst.OpCode == SpuOpCode.stop)
-							{
-								tw.Write(inst.OpCode.Name);
-								break;
-							}
-
-							throw new NotImplementedException();
-						case SpuInstructionFormat.Custom:
-							// Currently this only need to handle move.
-							if (inst.OpCode == SpuOpCode.move)
-							{
-								tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Ra);
-							} else
-							{
-								tw.WriteLine("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Ra);
-							}
-							break;
-						default:
-							throw new Exception();
-					}
-					tw.WriteLine();
-
-					offset += 4;
-					inst = inst.Next;
-				} while (inst != null);
+				offset = Disassembler.DisassembleInstructions(inst.GetEnumerable(), offset, tw);
 			}
 		}
 

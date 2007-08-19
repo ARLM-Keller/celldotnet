@@ -19,8 +19,6 @@ namespace CellDotNet
 			routine.Writer.WriteBi(HardwareRegister.LR);
 			routine.Offset = 512;
 
-			Console.WriteLine("init test");
-
 			RegisterSizedObject returnLocation = new RegisterSizedObject();
 			returnLocation.Offset = 1024;
 

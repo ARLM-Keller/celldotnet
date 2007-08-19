@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace CellDotNet
 {
@@ -14,6 +15,10 @@ namespace CellDotNet
 	class SpuManualRoutine : SpuRoutine
 	{
 		private bool _omitEpilog = false;
+		/// <summary>
+		/// Is set to true when the routine should no longer be written to.
+		/// </summary>
+		private bool _isPatchingDone;
 
 		public SpuManualRoutine(bool omitEpilog)
 		{
@@ -24,7 +29,12 @@ namespace CellDotNet
 		private SpuInstructionWriter _writer;
 		public SpuInstructionWriter Writer
 		{
-			get { return _writer; }
+			get
+			{
+//				if (_isPatchingDone)
+//					throw new InvalidOperationException("This routine has been patched.");
+				return _writer;
+			}
 		}
 
 		public override int Size
@@ -38,15 +48,28 @@ namespace CellDotNet
 			return bodybin;
 		}
 
+		public override IEnumerable<SpuInstruction> GetInstructions()
+		{
+			if (!_isPatchingDone)
+				throw new InvalidOperationException();
+
+			return _writer.GetAsList();
+		}
+
 		public override void PerformAddressPatching()
 		{
-			if (_omitEpilog)
-				PerformAddressPatching(Writer.BasicBlocks, null);
-			else
+			if (_isPatchingDone)
 			{
-				SpuAbiUtilities.WriteEpilog(Writer);
-				PerformAddressPatching(Writer.BasicBlocks, Writer.CurrentBlock);
+				if (_omitEpilog)
+					PerformAddressPatching(_writer.BasicBlocks, null);
+				else
+				{
+					SpuAbiUtilities.WriteEpilog(_writer);
+					PerformAddressPatching(_writer.BasicBlocks, Writer.CurrentBlock);
+				}
 			}
+
+			_isPatchingDone = true;
 		}
 	}
 }

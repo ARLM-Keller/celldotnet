@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace CellDotNet
 {
@@ -4196,34 +4195,11 @@ namespace CellDotNet
 		/// <summary>
 		/// Branch Indirect
 		/// </summary>
-		public VirtualRegister WriteBi()
+		public VirtualRegister WriteBi(VirtualRegister ra)
 		{
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.bi);
-			inst.Rt = NextRegister();
-			AddInstruction(inst);
-			return inst.Rt;
-
-		}
-
-		/// <summary>
-		/// Branch Indirect
-		/// </summary>
-		public void WriteBi(VirtualRegister rt)
-		{
-			SpuInstruction inst = new SpuInstruction(SpuOpCode.bi);
-			AssertRegisterNotNull(rt, "rt");
-			inst.Rt = rt;
-			AddInstruction(inst);
-
-		}
-
-		/// <summary>
-		/// Interrupt Return
-		/// </summary>
-		public VirtualRegister WriteIret()
-		{
-			SpuInstruction inst = new SpuInstruction(SpuOpCode.iret);
-			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AssertRegisterNotNull(ra, "ra");
 			AddInstruction(inst);
 			return inst.Rt;
 
@@ -4232,12 +4208,13 @@ namespace CellDotNet
 		/// <summary>
 		/// Interrupt Return
 		/// </summary>
-		public void WriteIret(VirtualRegister rt)
+		public VirtualRegister WriteIret(VirtualRegister ra)
 		{
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.iret);
-			AssertRegisterNotNull(rt, "rt");
-			inst.Rt = rt;
+			inst.Ra = ra;
+			AssertRegisterNotNull(ra, "ra");
 			AddInstruction(inst);
+			return inst.Rt;
 
 		}
 
@@ -5522,24 +5499,13 @@ namespace CellDotNet
 		/// <summary>
 		/// Floating-Point Status and Control Register Read
 		/// </summary>
-		public VirtualRegister WriteFscrrd()
+		public VirtualRegister WriteFscrrd(VirtualRegister ra)
 		{
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.fscrrd);
-			inst.Rt = NextRegister();
+			inst.Ra = ra;
+			AssertRegisterNotNull(ra, "ra");
 			AddInstruction(inst);
 			return inst.Rt;
-
-		}
-
-		/// <summary>
-		/// Floating-Point Status and Control Register Read
-		/// </summary>
-		public void WriteFscrrd(VirtualRegister rt)
-		{
-			SpuInstruction inst = new SpuInstruction(SpuOpCode.fscrrd);
-			AssertRegisterNotNull(rt, "rt");
-			inst.Rt = rt;
-			AddInstruction(inst);
 
 		}
 

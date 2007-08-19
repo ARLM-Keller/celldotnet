@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace CellDotNet
 {
@@ -15,12 +14,14 @@ namespace CellDotNet
 
 		public int GetInstructionCount()
 		{
+			if (Head == null)
+				return 0;
+
 			int c = 0;
-			SpuInstruction inst = Head;
-			while (inst != null)
+			foreach (SpuInstruction inst in Head.GetEnumerable())
 			{
 				c++;
-				inst = inst.Next;
+				Utilities.PretendVariableIsUsed(inst);
 			}
 
 			return c;

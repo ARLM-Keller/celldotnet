@@ -58,6 +58,11 @@ namespace CellDotNet
 			private set { _state = value; }
 		}
 
+		public LocalStorageAddress ReturnValueAddress
+		{
+			get { return (LocalStorageAddress) _returnValueLocation.Offset; }
+		}
+
 		public void PerformProcessing(CompileContextState targetState)
 		{
 			if (State >= targetState)
@@ -93,7 +98,7 @@ namespace CellDotNet
 			AssertState(CompileContextState.S3InstructionSelectionDone);
 
 			foreach (MethodCompiler mc in Methods.Values)
-				mc.PerformProcessing(MethodCompileState.S5RegisterAllocationDone);
+				mc.PerformProcessing(MethodCompileState.S6RemoveRedundantMoves);
 
 			State = CompileContextState.S4RegisterAllocationDone;
 		}
@@ -206,6 +211,14 @@ namespace CellDotNet
 			return all;
 		}
 
+		internal IEnumerable<ObjectWithAddress> GetAllObjectsForDisassembly()
+		{
+			if (State < CompileContextState.S6AddressPatchingDone)
+				throw new InvalidOperationException("Address patching has not yet been performed.");
+
+			return GetAllObjects();
+		}
+
 		private void PerformCodeEmission()
 		{
 			AssertState(CompileContextState.S6AddressPatchingDone);
@@ -213,7 +226,7 @@ namespace CellDotNet
 			_emittedCode = new int[_totalCodeSize];
 			foreach (ObjectWithAddress owa in GetAllObjects())
 			{
-				/// Non-routine objects don't need to be consulted, since they get an address
+				/// Non-routine objects don't need to be consulted, since they simply get an address
 				/// and currently can't be initialized.
 				SpuRoutine routine = owa as SpuRoutine;
 				if (routine == null)
@@ -363,5 +376,45 @@ namespace CellDotNet
 			State = CompileContextState.S3InstructionSelectionDone;
 		}
 
+
+		/// <summary>
+		/// Wraps the specified delegate in a new delegate of the same type;
+		/// the returned delegate will execute the delegate on an SPE.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="delegateToWrap"></param>
+		/// <returns></returns>
+		public static T CreateSpeDelegate<T>(T delegateToWrap) where T : class
+		{
+			Utilities.AssertArgumentNotNull(delegateToWrap, "delegateToWrap");
+			if (!(delegateToWrap is Delegate))
+				throw new ArgumentException("Argument is not a delegate.");
+
+			Delegate del = delegateToWrap as Delegate;
+			MethodInfo method = del.Method;
+			CompileContext cc = new CompileContext(method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+
+			throw new Exception();
+		}
+
+		public static void AssertAllValueTypeFields(Type t)
+		{
+			if (!t.IsValueType)
+				throw new ArgumentException("Type " + t.FullName + " is not a value type.");
+
+			foreach (FieldInfo field in t.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+			{
+				Type ft = field.FieldType;
+
+				if (!ft.IsValueType)
+					throw new ArgumentException("Field " + field.Name + " of type " + t.FullName + " is not a value type.");
+
+				// Check recursively if it's a struct.
+				if (Type.GetTypeCode(ft) == TypeCode.Object)
+					AssertAllValueTypeFields(ft);
+			}
+		}
 	}
 }

@@ -10,6 +10,7 @@ namespace CellDotNet
 	class SpuInitializer : SpuRoutine
 	{
 		public SpuInstructionWriter _writer = new SpuInstructionWriter();
+		private bool _isPatched;
 
 		/// <summary>
 		/// The argument is of type <see cref="ObjectWithAddress"/> so that testing doesn't
@@ -57,6 +58,16 @@ namespace CellDotNet
 		public override void PerformAddressPatching()
 		{
 			PerformAddressPatching(_writer.BasicBlocks, null);
+			_isPatched = true;
+		}
+
+
+		public override IEnumerable<SpuInstruction> GetInstructions()
+		{
+			if (!_isPatched)
+				throw new InvalidOperationException();
+
+			return _writer.GetAsList();
 		}
 	}
 }

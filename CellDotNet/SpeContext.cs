@@ -643,7 +643,7 @@ namespace CellDotNet
 			get
 			{
 				throw new NotImplementedException();
-				// TODO: This is not a correct decoding.
+				// xTODO: This is not a correct decoding.
 //				return _value & 0xff;
 			}
 		}

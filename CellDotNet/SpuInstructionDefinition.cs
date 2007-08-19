@@ -221,7 +221,7 @@ namespace CellDotNet
 					_registerUsage = SpuOpCodeRegisterUsage.Rt | SpuOpCodeRegisterUsage.Ra;
 					break;
 				case SpuInstructionFormat.RR1:
-					_registerUsage = SpuOpCodeRegisterUsage.Rt;
+					_registerUsage = SpuOpCodeRegisterUsage.Ra;
 					break;
 				case SpuInstructionFormat.RRR:
 					_registerUsage = SpuOpCodeRegisterUsage.Rt | SpuOpCodeRegisterUsage.Ra | SpuOpCodeRegisterUsage.Rb | SpuOpCodeRegisterUsage.Rc;

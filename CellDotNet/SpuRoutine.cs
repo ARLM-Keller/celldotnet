@@ -22,6 +22,21 @@ namespace CellDotNet
 		/// </summary>
 		public abstract void PerformAddressPatching();
 
+
+		/// <summary>
+		/// Returns an enumerator for the routine, if possible.
+		/// <para>
+		/// This is supposed to be used for disassembly, so it should only be called once
+		/// the routine is done and has been patched.
+		/// </para>
+		/// </summary>
+		/// <returns></returns>
+		/// <exception cref="InvalidOperationException">If the routine does not support this operation.</exception>
+		public virtual IEnumerable<SpuInstruction> GetInstructions()
+		{
+			throw new InvalidOperationException();
+		}
+
 		/// <summary>
 		/// Replaces <see cref="SpuBasicBlock"/> and <see cref="ObjectWithAddress"/> operands 
 		/// stored within the instructions with their numeric offsets.
