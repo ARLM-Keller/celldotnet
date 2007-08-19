@@ -399,14 +399,7 @@ namespace CellDotNet
 			// First/topmost caller-saves register caller SP slot offset.
 //			int first_GRSA_slot_offset = -(RASA_slots + 1);
 
-			// Save LR in caller's frame.
-			prolog.WriteStqd(HardwareRegister.LR, HardwareRegister.SP, 1);
-
-			// Establish new SP.
-			prolog.WriteSfi(HardwareRegister.SP, HardwareRegister.SP, -frameSlots*16);
-
-			// Store SP at new frame's Back Chain.
-			prolog.WriteStqd(HardwareRegister.SP, HardwareRegister.SP, 0);
+			SpuAbiUtilities.WriteProlog(frameSlots, prolog);
 		}
 
 		/// <summary>
