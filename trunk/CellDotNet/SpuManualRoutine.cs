@@ -13,9 +13,12 @@ namespace CellDotNet
 	/// </summary>
 	class SpuManualRoutine : SpuRoutine
 	{
-		public SpuManualRoutine()
+		private bool _omitEpilog = false;
+
+		public SpuManualRoutine(bool omitEpilog)
 		{
 			_writer = new SpuInstructionWriter();
+			_omitEpilog = omitEpilog;
 		}
 
 		private SpuInstructionWriter _writer;
@@ -37,7 +40,13 @@ namespace CellDotNet
 
 		public override void PerformAddressPatching()
 		{
-			PerformAddressPatching(Writer.BasicBlocks, null);
+			if (_omitEpilog)
+				PerformAddressPatching(Writer.BasicBlocks, null);
+			else
+			{
+				SpuAbiUtilities.WriteEpilog(Writer);
+				PerformAddressPatching(Writer.BasicBlocks, Writer.CurrentBlock);
+			}
 		}
 	}
 }

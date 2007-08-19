@@ -548,10 +548,10 @@ namespace CellDotNet
 
 		private long ReadInt64()
 		{
-			int num3 = (((_il[_readoffset + 0]) | (_il[_readoffset + 1] << 8)) | (_il[_readoffset + 2] << 0x10)) | (_il[_readoffset + 3] << 0x18);
-			int num4 = (((_il[_readoffset + 4]) | (_il[_readoffset + 5] << 8)) | (_il[_readoffset + 6] << 0x10)) | (_il[_readoffset + 7] << 0x18);
+			long num3 = (((_il[_readoffset + 0]) | (_il[_readoffset + 1] << 8)) | (_il[_readoffset + 2] << 0x10)) | (_il[_readoffset + 3] << 0x18);
+			long num4 = (((_il[_readoffset + 4]) | (_il[_readoffset + 5] << 8)) | (_il[_readoffset + 6] << 0x10)) | (_il[_readoffset + 7] << 0x18);
 			_readoffset += 8;
-			return num3 | ((long)num4 << 0x20);
+			return num3 | (num4 << 0x20);
 		}
 
 		/// <summary>

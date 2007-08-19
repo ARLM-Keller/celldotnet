@@ -80,7 +80,7 @@ namespace CellDotNet
 			{
 				SpuBasicBlock targetbb = branchpair.Value.JumpTarget;
 
-				int relativebranchbytes = branchpair.Key - targetbb.Offset;
+				int relativebranchbytes = targetbb.Offset - branchpair.Key;
 				// Branch offset operands don't use the last two bytes, since all
 				// instructions are 4-byte aligned.
 				branchpair.Value.Constant = relativebranchbytes >> 2;

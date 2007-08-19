@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
+using System.Collections.ObjectModel;
 
 namespace CellDotNet
 {
@@ -11,17 +10,25 @@ namespace CellDotNet
 	class RecursiveInstructionSelector
 	{
 		private SpuInstructionWriter _writer;
-		private MethodCompiler _method;
+//		private MethodCompiler _method;
+		private List<IRBasicBlock> _basicBlocks;
+
+		private ReadOnlyCollection<MethodParameter> _parameters;
 
 		private List<KeyValuePair<SpuInstruction, IRBasicBlock>> _branchInstructions;
 		private Dictionary<IRBasicBlock, SpuBasicBlock> _spubasicblocks;
 
 		private List<IROpCode> _unimplementedOpCodes;
 
-		public void GenerateCode(MethodCompiler mc, SpuInstructionWriter writer)
+
+		//  public void GenerateCode(MethodCompiler mc, SpuInstructionWriter writer)
+		public void GenerateCode(List<IRBasicBlock> basicBlocks, ReadOnlyCollection<MethodParameter> parameters, SpuInstructionWriter writer)
 		{
 			_writer = writer;
-			_method = mc;
+//			_method = mc;
+			_basicBlocks = basicBlocks;
+
+			_parameters = parameters;
 
 			_unimplementedOpCodes = new List<IROpCode>();
 			
@@ -31,7 +38,7 @@ namespace CellDotNet
 
 			WriteFirstBasicBlock();
 
-			foreach (IRBasicBlock bb in mc.Blocks)
+			foreach (IRBasicBlock bb in _basicBlocks)
 			{
 				_writer.BeginNewBasicBlock();
 				_spubasicblocks.Add(bb, _writer.CurrentBlock);
@@ -73,15 +80,15 @@ namespace CellDotNet
 		{
 			const int FirstArgumentRegister = 3;
 
-			if (_method.Parameters.Count > 72)
+			if (_parameters.Count > 72)
 				throw new NotSupportedException("More than 72 arguments is not supported.");
-			if (_method.Parameters.Count == 0)
+			if (_parameters.Count == 0)
 				return;
 
 			_writer.BeginNewBasicBlock();
-			for (int i = 0; i < _method.Parameters.Count; i++)
+			for (int i = 0; i < _parameters.Count; i++)
 			{
-				MethodParameter parameter = _method.Parameters[i];
+				MethodParameter parameter = _parameters[i];
 
 				VirtualRegister dest = HardwareRegister.GetHardwareRegister(FirstArgumentRegister + i);
 
@@ -585,7 +592,7 @@ namespace CellDotNet
 			_branchInstructions.Add(new KeyValuePair<SpuInstruction, IRBasicBlock>(_writer.LastInstruction, target));
 		}
 
-		private VirtualRegister GetMethodVariableRegister(TreeInstruction inst)
+		private static VirtualRegister GetMethodVariableRegister(TreeInstruction inst)
 		{
 			if (!(inst.Operand is MethodVariable))
 				throw new InvalidOperationException();

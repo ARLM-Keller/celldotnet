@@ -9,28 +9,35 @@ namespace CellDotNet
 		// - OK få plads på stakken til spilled variabler
 		// - mere optimal brug af lister(brug ikke LinkedList i forbindelse med contains)
 		// - OK det er ikke alle registre der er tilgængelig for regalloc
-		//
+		// - Register nummer counter.
 
 		private List<SpuBasicBlock> basicBlocks;
 
 		private NewSpillOffsetDelegate NewSpillOffset;
+
+		private int maxInstNr = 0; // note første inst har nr = 1
 
 		private int K; // antal af tilgængelige registre.
 
 //		private Dictionary<Node, SpuBasicBlock> nodeToBlockDic = new Dictionary<Node, SpuBasicBlock>();
 //		private Dictionary<Node, SpuInstruction> nodeToInstDic = new Dictionary<Node, SpuInstruction>();
 
-		private Dictionary<SpuInstruction, Set<SpuInstruction>> pred = new Dictionary<SpuInstruction, Set<SpuInstruction>>();
-		private Dictionary<SpuInstruction, Set<SpuInstruction>> succ = new Dictionary<SpuInstruction, Set<SpuInstruction>>();
+		private BitVector[] pred;
+		private BitVector[] succ;
 
-		private Dictionary<SpuInstruction, BitVector> liveIn =
-			new Dictionary<SpuInstruction, BitVector>();
+//		private Dictionary<SpuInstruction, Set<SpuInstruction>> pred = new Dictionary<SpuInstruction, Set<SpuInstruction>>();
+//		private Dictionary<SpuInstruction, Set<SpuInstruction>> succ = new Dictionary<SpuInstruction, Set<SpuInstruction>>();
 
-		private Dictionary<SpuInstruction, BitVector> liveOut =
-			new Dictionary<SpuInstruction, BitVector>();
+		private BitVector[] liveIn;
+		private BitVector[] liveOut;
+
+//		private Dictionary<SpuInstruction, BitVector> liveIn =
+//			new Dictionary<SpuInstruction, BitVector>();
+//
+//		private Dictionary<SpuInstruction, BitVector> liveOut =
+//			new Dictionary<SpuInstruction, BitVector>();
 
 		private BitVector precolored = new BitVector();
-
 		private LinkedList<uint> initial = new LinkedList<uint>();
 
 		private LinkedList<uint> simplifyWorklist = new LinkedList<uint>();
@@ -42,11 +49,17 @@ namespace CellDotNet
 		private Stack<uint> selectStack = new Stack<uint>();
 		private BitVector selectStackBitVector = new BitVector();
 
-		private Set<SpuInstruction> coalescedMoves = new Set<SpuInstruction>();
-		private Set<SpuInstruction> constrainedMoves = new Set<SpuInstruction>();
-		private Set<SpuInstruction> frozenMoves = new Set<SpuInstruction>();
-		private Set<SpuInstruction> worklistMoves = new Set<SpuInstruction>();
-		private Set<SpuInstruction> activeMoves = new Set<SpuInstruction>();
+		private BitVector coalescedMoves = new BitVector();
+		private BitVector constrainedMoves = new BitVector();
+		private BitVector frozenMoves = new BitVector();
+		private BitVector worklistMoves = new BitVector();
+		private BitVector activeMoves = new BitVector();
+
+//		private Set<SpuInstruction> coalescedMoves = new Set<SpuInstruction>();
+//		private Set<SpuInstruction> constrainedMoves = new Set<SpuInstruction>();
+//		private Set<SpuInstruction> frozenMoves = new Set<SpuInstruction>();
+//		private Set<SpuInstruction> worklistMoves = new Set<SpuInstruction>();
+//		private Set<SpuInstruction> activeMoves = new Set<SpuInstruction>();
 
 //		private Dictionary<uint, Set<uint>> adjSet =
 //			new Dictionary<uint, Set<uint>>();
@@ -56,25 +69,33 @@ namespace CellDotNet
 //		private Dictionary<uint, BitVector> adjList =
 //			new Dictionary<uint, BitVector>();
 
-		private Dictionary<uint, BitVector> adjList =
-			new Dictionary<uint, BitVector>();
-
+		private BitVector[] adjList;
 
 //		private Dictionary<uint, int> degree = new Dictionary<uint, int>();
 		private int[] degree;
 
-		private Dictionary<uint, Set<SpuInstruction>> moveList =
-			new Dictionary<uint, Set<SpuInstruction>>();
-
-		private Dictionary<uint, uint> alias = new Dictionary<uint, uint>();
-		private Dictionary<uint, CellRegister> color = new Dictionary<uint, CellRegister>();
-
-		private Dictionary<uint, int> virtualRegisteWeight = new Dictionary<uint, int>();
+		private BitVector[] moveList;
 
 
-		//TODO hukinitialisering af intToReg og regToInt.
+//		private Dictionary<uint, Set<SpuInstruction>> moveList =
+//			new Dictionary<uint, Set<SpuInstruction>>();
+
+		private CellRegister[] color;
+//		private Dictionary<uint, CellRegister> color = new Dictionary<uint, CellRegister>();
+
+//		private Dictionary<uint, uint> alias = new Dictionary<uint, uint>();
+		private uint[] alias;
+
+		// maps from virtual reg to weight
+//		private Dictionary<uint, int> virtualRegisteWeight = new Dictionary<uint, int>();
+		private int[] virtualRegisteWeight;
+
+
 		private List<VirtualRegister> intToReg = new List<VirtualRegister>();
 		private Dictionary<VirtualRegister, uint> regToInt = new Dictionary<VirtualRegister, uint>();
+
+		private List<SpuInstruction> intToSpuInst = new List<SpuInstruction>(); //TODO init
+		private Dictionary<SpuInstruction, int> spuinstToInt = new Dictionary<SpuInstruction, int>(); // TODO init
 
 		public delegate int NewSpillOffsetDelegate();
 
@@ -112,61 +133,42 @@ namespace CellDotNet
 			
 			do
 			{
-				pred.Clear();
-				succ.Clear();
+				maxInstNr = 0;
 
-				liveIn.Clear();
-				liveOut.Clear();
+				foreach (SpuBasicBlock block in basicBlocks)
+					for (SpuInstruction inst = block.Head; inst != null; inst = inst.Next)
+					{
+						maxInstNr++;
+						intToSpuInst.Add(inst);
+						spuinstToInt[inst] = maxInstNr-1;
+					}
+
+
+				pred = new BitVector[maxInstNr];
+				succ = new BitVector[maxInstNr];
+
+				liveIn = new BitVector[maxInstNr];
+				liveOut = new BitVector[maxInstNr];
 
 //				degree.Clear();
 
 //				adjSet.Clear();
 				adjMatrix.clear();
 
-				adjList.Clear();
-
-				moveList.Clear();
-
+				int instNr = 0;
 				foreach (SpuBasicBlock block in basicBlocks)
 				{
 					SpuInstruction inst = block.Head;
 
 					while (inst != null)
 					{
-						pred[inst] = new Set<SpuInstruction>();
-						succ[inst] = new Set<SpuInstruction>();
+						instNr++;
 
-						liveIn[inst] = new BitVector();
-						liveOut[inst] = new BitVector();
+						pred[instNr-1] = new BitVector();
+						succ[instNr-1] = new BitVector();
 
-//						if(inst.Ra != null)
-//						{
-//							adjSet[regToInt[inst.Ra]] = new Set<uint>();
-//							adjList[regToInt[inst.Ra]] = new Set<uint>();
-//							moveList[regToInt[inst.Ra]]  = new Set<SpuInstruction>();
-//							degree[regToInt[inst.Ra]] = 0;
-//						}
-//						if (inst.Rb != null)
-//						{
-//							adjSet[regToInt[inst.Rb]] = new Set<uint>();
-//							adjList[regToInt[inst.Rb]] = new Set<uint>();
-//							moveList[regToInt[inst.Rb]] = new Set<SpuInstruction>();
-//							degree[regToInt[inst.Rb]] = 0;
-//						}
-//						if (inst.Rc != null)
-//						{
-//							adjSet[regToInt[inst.Rc]] = new Set<uint>();
-//							adjList[regToInt[inst.Rc]] = new Set<uint>();
-//							moveList[regToInt[inst.Rc]] = new Set<SpuInstruction>();
-//							degree[regToInt[inst.Rc]] = 0;
-//						}
-//						if (inst.Rt != null)
-//						{
-//							adjSet[regToInt[inst.Rt]] = new Set<uint>();
-//							adjList[regToInt[inst.Rt]] = new Set<uint>();
-//							moveList[regToInt[inst.Rt]] = new Set<SpuInstruction>();
-//							degree[regToInt[inst.Rt]] = 0;
-//						}
+						liveIn[instNr-1] = new BitVector();
+						liveOut[instNr-1] = new BitVector();
 
 						inst = inst.Next;
 					}
@@ -176,23 +178,36 @@ namespace CellDotNet
 
 				foreach (uint r in initial)
 				{
-//					adjSet[r] = new Set<uint>();
-					adjList[r] = new BitVector();
-					moveList[r] = new Set<SpuInstruction>();
-//					degree[r] = 0;
-					maxRegNum = (int)r > maxRegNum ? (int) r : maxRegNum;
+					maxRegNum = (int) r > maxRegNum ? (int) r : maxRegNum;
 				}
 
 				foreach (int r in precolored)
 				{
-//					adjSet[r] = new Set<uint>();
-					adjList[(uint) r] = new BitVector();
-					moveList[(uint) r] = new Set<SpuInstruction>();
-//					degree[(uint) r] = 0;
 					maxRegNum = r > maxRegNum ? r : maxRegNum;
 				}
 
+				moveList = new BitVector[maxRegNum + 1];
+				adjList = new BitVector[maxRegNum + 1];
+
+				foreach (uint r in initial)
+				{
+					adjList[r] = new BitVector();
+					moveList[r] = new BitVector();
+				}
+
+				foreach (int r in precolored)
+				{
+					adjList[(uint) r] = new BitVector();
+					moveList[(uint)r] = new BitVector();
+				}
+
 				degree = new int[maxRegNum+1];
+
+				color = new CellRegister[maxRegNum + 1];
+
+				virtualRegisteWeight = new int[maxRegNum+1];
+
+				alias = new uint[maxRegNum+1];
 
 				simplifyWorklist.Clear();
 				freezeWorklist.Clear();
@@ -209,10 +224,6 @@ namespace CellDotNet
 				worklistMoves.Clear();
 				activeMoves.Clear();
 
-				alias.Clear();
-
-				color.Clear();
-				
 				foreach (VirtualRegister register in HardwareRegister.VirtualHardwareRegisters)
 				{
 					color[regToInt[register]] = register.Register;
@@ -283,18 +294,52 @@ namespace CellDotNet
 
 				while (inst != null)
 				{
-					if(inst.OpCode == SpuOpCode.move && inst.Ra == inst.Rt)
+					if(inst.OpCode == SpuOpCode.move)
 					{
-						if(inst.Prev != null)
+						if (inst.Ra == inst.Rt)
 						{
-							inst.Prev.Next = inst.Next;
+							if (inst.Prev != null)
+							{
+								inst.Prev.Next = inst.Next;
+							}
+							else
+							{
+								block.Head = inst.Next;
+							}
+							if (inst.Next != null)
+								inst.Next.Prev = inst.Prev;
 						}
 						else
 						{
-							block.Head = inst.Next;
+							SpuInstruction inst1 = new SpuInstruction(SpuOpCode.il);
+							inst1.Rt = new VirtualRegister();
+							inst1.Constant = 0;
+
+							SpuInstruction inst2 = new SpuInstruction(SpuOpCode.or);
+							inst2.Rt = inst.Def;
+							inst2.Ra = inst.Use[0];
+							inst2.Rb = inst1.Rt;
+
+							inst1.Next = inst2;
+							inst2.Prev = inst1;
+
+							inst1.Prev = inst.Prev;
+							inst2.Next = inst.Next;
+
+							if (inst.Prev != null)
+							{
+								inst.Prev.Next = inst1;
+							}
+							else
+							{
+								block.Head = inst1;
+							}
+
+							if(inst.Next != null)
+							{
+								inst.Next.Prev = inst2;
+							}
 						}
-						if (inst.Next != null)
-							inst.Next.Prev = inst.Prev;
 					}
 					inst = inst.Next;
 				}
@@ -360,12 +405,35 @@ namespace CellDotNet
 			Dictionary<SpuBasicBlock, LinkedList<SpuInstruction>> jumpSources =
 				new Dictionary<SpuBasicBlock, LinkedList<SpuInstruction>>();
 
-			SpuInstruction predecessor = null;
 
 			foreach (SpuBasicBlock bb in basicBlocks)
 				jumpSources[bb] = new LinkedList<SpuInstruction>();
 
+			SpuInstruction predecessor = null;
+
 			// Building predecessore og successor
+//			foreach (SpuBasicBlock bb in basicBlocks)
+//			{
+//				SpuInstruction inst = bb.Head;
+//
+//				jumpTargets[bb] = inst;
+//
+//				while (inst != null)
+//				{
+//					if (predecessor != null)
+//					{
+//						succ[predecessor].Add(inst);
+//						pred[inst].Add(predecessor);
+//					}
+//					if (inst.JumpTarget != null)
+//						jumpSources[inst.JumpTarget].AddLast(inst);
+//					predecessor = inst;
+//					inst = inst.Next;
+//				}
+//			}
+
+			int instNr = 0;
+
 			foreach (SpuBasicBlock bb in basicBlocks)
 			{
 				SpuInstruction inst = bb.Head;
@@ -376,13 +444,14 @@ namespace CellDotNet
 				{
 					if (predecessor != null)
 					{
-						succ[predecessor].Add(inst);
-						pred[inst].Add(predecessor);
+						succ[instNr-1].Add(instNr);
+						pred[instNr].Add(instNr-1);
 					}
 					if (inst.JumpTarget != null)
 						jumpSources[inst.JumpTarget].AddLast(inst);
 					predecessor = inst;
 					inst = inst.Next;
+					instNr++;
 				}
 			}
 
@@ -390,21 +459,30 @@ namespace CellDotNet
 			foreach (SpuBasicBlock bb in jumpTargets.Keys)
 			{
 				SpuInstruction i = jumpTargets[bb];
+				int iNr = spuinstToInt[i];
 				foreach (SpuInstruction s in jumpSources[bb])
 				{
-					succ[s].Add(i);
-					pred[i].Add(s);
+					int sNr = spuinstToInt[s];
+					succ[sNr].Add(iNr);
+					pred[iNr].Add(sNr);
 				}
 			}
 
 			// Calculate live info.
 			// Initialize liveIn and liveOut.
-			foreach (SpuBasicBlock bb in basicBlocks)
-				for (SpuInstruction inst = bb.Head; inst != null; inst = inst.Next)
-				{
-					liveIn[inst] = new BitVector();
-					liveOut[inst] = new BitVector();
-				}
+//			foreach (SpuBasicBlock bb in basicBlocks)
+//				for (SpuInstruction inst = bb.Head; inst != null; inst = inst.Next)
+//				{
+//					liveIn[inst] = new BitVector();
+//					liveOut[inst] = new BitVector();
+//				}
+
+			for(int i=0; i < maxInstNr; i++)
+			{
+				liveIn[i] = new BitVector();
+				liveOut[i] = new BitVector();
+			}
+
 
 			// Iterates until nochanges.
 			bool reIterate;
@@ -424,65 +502,123 @@ namespace CellDotNet
 //
 //				oldLiveOut = liveOut;
 //				oldLiveIn = liveIn;
-				for(int i = basicBlocks.Count-1; i >= 0; i--)
+
+
+
+//				for(int i = basicBlocks.Count-1; i >= 0; i--)
+//				{
+//					SpuBasicBlock bb = basicBlocks[i];
+//					SpuInstruction lastinst = null;
+//					for (SpuInstruction inst = bb.Head; inst != null; inst = inst.Next)
+//						lastinst = inst;
+//
+//					for (SpuInstruction inst = lastinst; inst != null; inst = inst.Prev)
+//					{
+//						BitVector oldLiveIn = new BitVector();
+//						oldLiveIn.AddAll(liveIn[inst]);
+//
+//						BitVector oldLiveOut = new BitVector();
+//						oldLiveOut.AddAll(liveOut[inst]);
+//
+//						liveOut[inst] = new BitVector();
+//						foreach (SpuInstruction s in succ[inst])
+//							liveOut[inst].AddAll(liveIn[s]);
+//
+//						liveIn[inst] = new BitVector();
+//						liveIn[inst].AddAll(liveOut[inst]);
+//						if (inst.Def != null)
+//							liveIn[inst].Remove((int) regToInt[inst.Def]);
+////						liveIn[inst].AddAll(inst.Use);
+//						foreach (VirtualRegister register in inst.Use)
+//							liveIn[inst].Add((int) regToInt[register]);
+//
+//
+//						if (!reIterate)
+//							reIterate |= !oldLiveIn.Equals(liveIn[inst]) || !oldLiveOut.Equals(liveOut[inst]);
+//					}
+//				}
+
+				for(int i = maxInstNr-1; i >= 0; i--)
 				{
-					SpuBasicBlock bb = basicBlocks[i];
-					SpuInstruction lastinst = null;
-					for (SpuInstruction inst = bb.Head; inst != null; inst = inst.Next)
-						lastinst = inst;
+					BitVector oldLiveIn = new BitVector();
+					oldLiveIn.AddAll(liveIn[i]);
 
-					for (SpuInstruction inst = lastinst; inst != null; inst = inst.Prev)
-					{
-						BitVector oldLiveIn = new BitVector();
-						oldLiveIn.AddAll(liveIn[inst]);
+					BitVector oldLiveOut = new BitVector();
+					oldLiveOut.AddAll(liveOut[i]);
 
-						BitVector oldLiveOut = new BitVector();
-						oldLiveOut.AddAll(liveOut[inst]);
+					liveOut[i] = new BitVector();
+					foreach (int s in succ[i])
+						liveOut[i].AddAll(liveIn[s]);
 
-						liveOut[inst] = new BitVector();
-						foreach (SpuInstruction s in succ[inst])
-							liveOut[inst].AddAll(liveIn[s]);
+					liveIn[i] = new BitVector();
+					liveIn[i].AddAll(liveOut[i]);
 
-						liveIn[inst] = new BitVector();
-						liveIn[inst].AddAll(liveOut[inst]);
-						if (inst.Def != null)
-							liveIn[inst].Remove((int) regToInt[inst.Def]);
-//						liveIn[inst].AddAll(inst.Use);
-						foreach (VirtualRegister register in inst.Use)
-							liveIn[inst].Add((int) regToInt[register]);
+					SpuInstruction inst = intToSpuInst[i];
+
+					if (inst.Def != null)
+						liveIn[i].Remove((int)regToInt[inst.Def]);
+					//						liveIn[inst].AddAll(inst.Use);
+					foreach (VirtualRegister register in inst.Use)
+						liveIn[i].Add((int)regToInt[register]);
 
 
-						if (!reIterate)
-							reIterate |= !oldLiveIn.Equals(liveIn[inst]) || !oldLiveOut.Equals(liveOut[inst]);
-					}
+					if (!reIterate)
+						reIterate |= !oldLiveIn.Equals(liveIn[i]) || !oldLiveOut.Equals(liveOut[i]);
 				}
+
 			} while (reIterate);
 		}
 
 		private void Build()
 		{
-			foreach (SpuBasicBlock bb in basicBlocks)
-			{
-				for (SpuInstruction inst = bb.Head; inst != null; inst = inst.Next)
-				{
-					BitVector live = new BitVector();
-					live.AddAll(liveOut[inst]);
-					if (inst.OpCode != null && inst.OpCode == SpuOpCode.move)
-					{
-//						live.RemoveAll(inst.Use);
-						foreach (VirtualRegister register in inst.Use)
-							live.Remove((int) regToInt[register]);
+//			foreach (SpuBasicBlock bb in basicBlocks)
+//			{
+//				for (SpuInstruction inst = bb.Head; inst != null; inst = inst.Next)
+//				{
+//					BitVector live = new BitVector();
+//					live.AddAll(liveOut[inst]);
+//					if (inst.OpCode != null && inst.OpCode == SpuOpCode.move)
+//					{
+////						live.RemoveAll(inst.Use);
+//						foreach (VirtualRegister register in inst.Use)
+//							live.Remove((int) regToInt[register]);
+//
+//						moveList[regToInt[inst.Def]].Add(inst);
+//						moveList[regToInt[inst.Use[0]]].Add(inst); // Move instruction only have one use register.
+//						worklistMoves.Add(inst);
+//					}
+//					if (inst.Def != null)
+//					{
+//						live.Add((int) regToInt[inst.Def]);
+//						foreach (int l in live)
+//							AddEdge((uint) l, regToInt[inst.Def]);
+//					}
+//				}
+//			}
 
-						moveList[regToInt[inst.Def]].Add(inst);
-						moveList[regToInt[inst.Use[0]]].Add(inst); // Move instruction only have one use register.
-						worklistMoves.Add(inst);
-					}
-					if (inst.Def != null)
-					{
-						live.Add((int) regToInt[inst.Def]);
-						foreach (int l in live)
-							AddEdge((uint) l, regToInt[inst.Def]);
-					}
+
+			for (int i = 0; i < maxInstNr; i++)
+			{
+				BitVector live = new BitVector();
+				live.AddAll(liveOut[i]);
+
+				SpuInstruction inst = intToSpuInst[i];
+
+				if (inst.OpCode != null && inst.OpCode == SpuOpCode.move)
+				{
+					//						live.RemoveAll(inst.Use);
+					foreach (VirtualRegister register in inst.Use)
+						live.Remove((int) regToInt[register]);
+
+					moveList[regToInt[inst.Def]].Add(i);
+					moveList[regToInt[inst.Use[0]]].Add(i); // Move instruction only have one use register.
+					worklistMoves.Add(i);
+				}
+				if (inst.Def != null)
+				{
+					live.Add((int) regToInt[inst.Def]);
+					foreach (int l in live)
+						AddEdge((uint) l, regToInt[inst.Def]);
 				}
 			}
 		}
@@ -533,22 +669,17 @@ namespace CellDotNet
 			return result;
 		}
 
-		private Set<SpuInstruction> NodeMoves(uint r)
+		private BitVector	NodeMoves(uint r)
 		{
-			Set<SpuInstruction> result = new Set<SpuInstruction>();
-			foreach (SpuInstruction i in moveList[r])
-			{
-				if (activeMoves.Contains(i) || worklistMoves.Contains(i))
-				{
-					result.Add(i);
-				}
-			}
+			BitVector result = (activeMoves | worklistMoves);
+			result.And(moveList[r]);
 			return result;
 		}
 
 		private bool MoveRelated(uint r)
 		{
-			return NodeMoves(r).Count != 0;
+//			return NodeMoves(r).Count != 0;
+			return !NodeMoves(r).IsCountZero();
 		}
 
 		private void Simplify()
@@ -583,12 +714,12 @@ namespace CellDotNet
 		private void EnableMoves(BitVector rlist)
 		{
 			foreach (int r in rlist)
-				EnableMove((uint) r);
+				EnableMoveOptimized((uint)r);
 		}
 
 		private void EnableMove(uint r)
 		{
-			foreach (SpuInstruction i in NodeMoves(r))
+			foreach (int i in NodeMoves(r))
 				if (activeMoves.Contains(i))
 				{
 					activeMoves.Remove(i);
@@ -596,6 +727,27 @@ namespace CellDotNet
 				}
 		}
 
+		private void EnableMoveOptimized(uint r)
+		{
+			// First optimized implementation
+//			BitVector v = NodeMoves(r);
+//			v.And(activeMoves);
+//			activeMoves.RemoveAll(v);
+//			worklistMoves.AddAll(v);
+
+			//Second optimized implementation.
+			activeMoves.RemoveAllAnd(moveList[r], worklistMoves);
+			worklistMoves.AddAllAnd(activeMoves, moveList[r]);
+
+			//Original implementation
+//			foreach (int i in NodeMoves(r))
+//				if (activeMoves.Contains(i))
+//				{
+//					activeMoves.Remove(i);
+//					worklistMoves.Add(i);
+//				}
+		}
+		
 		private void AddWorkList(uint r)
 		{
 			if (!precolored.Contains((int) r) && !MoveRelated(r) && degree[r] < K)
@@ -621,9 +773,15 @@ namespace CellDotNet
 
 		private void Coalesce()
 		{
-			SpuInstruction move = worklistMoves.getItem();
-			uint x = GetAlias(regToInt[move.Use[0]]);
-			uint y = GetAlias(regToInt[move.Def]);
+			if (worklistMoves.IsCountZero())
+				throw new Exception(); // Burde ikke forekomme.
+
+			int move = (int) worklistMoves.getItem();
+
+			SpuInstruction moveInst = intToSpuInst[move];
+
+			uint x = GetAlias(regToInt[moveInst.Use[0]]);
+			uint y = GetAlias(regToInt[moveInst.Def]);
 
 			uint u;
 			uint v;
@@ -688,7 +846,7 @@ namespace CellDotNet
 			coalescedNodes.Add((int) v);
 			alias[v] = u;
 			moveList[u].AddAll(moveList[v]);
-			EnableMove(v);
+			EnableMoveOptimized(v);
 			foreach (int t in Adjacent(v))
 			{
 				AddEdge((uint) t, u);
@@ -719,10 +877,12 @@ namespace CellDotNet
 
 		private void FreezeMoves(uint u)
 		{
-			foreach (SpuInstruction move in NodeMoves(u))
+			foreach (int move in NodeMoves(u))
 			{
-				uint x = regToInt[move.Def];
-				uint y = regToInt[move.Use[0]];
+				SpuInstruction moveInst = intToSpuInst[move];
+
+				uint x = regToInt[moveInst.Def];
+				uint y = regToInt[moveInst.Use[0]];
 
 				uint v;
 				if (GetAlias(y) == GetAlias(u))
@@ -750,9 +910,7 @@ namespace CellDotNet
 
 			foreach (uint register in spillWorklist)
 			{
-				int weight;
-
-				if (!virtualRegisteWeight.TryGetValue(register, out weight) || weight < 100)
+				if (virtualRegisteWeight[register] < 100)
 				{
 					m = register;
 					spillWorklist.Remove(register);
@@ -774,21 +932,35 @@ namespace CellDotNet
 
 		private void AssignColors()
 		{
+			BitVector initOkColors = new BitVector(HardwareRegister.getCallerSavesCellRegisters().Length + HardwareRegister.getCalleeSavesCellRegisters().Length);
+
+			foreach (CellRegister register in HardwareRegister.getCallerSavesCellRegisters())
+			{
+				initOkColors.Add((int)register);
+			}
+
+			foreach (CellRegister register in HardwareRegister.getCalleeSavesCellRegisters())
+			{
+				initOkColors.Add((int)register);
+			}
+
 			while (selectStack.Count > 0)
 			{
 				uint n = selectStack.Pop();
 				selectStackBitVector.Remove((int) n);
 
-				Set<CellRegister> okColors = new Set<CellRegister>(HardwareRegister.getCallerSavesCellRegisters().Length + HardwareRegister.getCalleeSavesCellRegisters().Length);
-				okColors.AddAll(HardwareRegister.getCallerSavesCellRegisters());
-				okColors.AddAll(HardwareRegister.getCalleeSavesCellRegisters());
+//				Set<CellRegister> okColors = new Set<CellRegister>(HardwareRegister.getCallerSavesCellRegisters().Length + HardwareRegister.getCalleeSavesCellRegisters().Length);
+//				okColors.AddAll(HardwareRegister.getCallerSavesCellRegisters());
+//				okColors.AddAll(HardwareRegister.getCalleeSavesCellRegisters());
+
+				BitVector okColors = new BitVector(initOkColors);
 
 				foreach (int w in adjList[n])
 				{
 					uint a = GetAlias((uint) w);
 
 					if (coloredNodes.Contains((int) a) || precolored.Contains((int) a))
-						okColors.Remove(color[a]);
+						okColors.Remove((int)color[a]);
 				}
 				if (okColors.Count <= 0)
 				{
@@ -797,10 +969,9 @@ namespace CellDotNet
 				else
 				{
 					coloredNodes.Add((int) n);
-					CellRegister c = okColors.getItem();
+					CellRegister c = (CellRegister) okColors.getItem();
 					color[n] = c;
 				}
-				
 			}
 
 			foreach (int n in coalescedNodes)
@@ -859,14 +1030,13 @@ namespace CellDotNet
 							virtualRegisteWeight[regToInt[vt]] = int.MaxValue;
 							newTemps.Add(regToInt[vt]);
 
-							// Det antages at et register kun kan bruges en gang i en instruktion.
 							if (inst.Ra == v)
 								inst.Ra = vt;
-							else if (inst.Rb == v)
+							if (inst.Rb == v)
 								inst.Rb = vt;
-							else if (inst.Rc == v)
+							if (inst.Rc == v)
 								inst.Rc = vt;
-							else if (inst.Rt == v)
+							if (inst.Rt == v)
 								inst.Rt = vt;
 
 							SpuInstruction load = new SpuInstruction(SpuOpCode.lqd);

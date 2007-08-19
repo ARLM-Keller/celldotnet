@@ -19,6 +19,13 @@ namespace CellDotNet
 			Resize(capacity);
 		}
 
+		public BitVector(BitVector v)
+		{
+			Resize(v.size);
+
+			Buffer.BlockCopy(v.vector, 0, vector, 0, v.vector.Length*4);
+		}
+
 		public void Clear()
 		{
 			size = 0;
@@ -94,26 +101,22 @@ namespace CellDotNet
 
 		public bool Contains(int elementnr)
 		{
-			if(elementnr < 0)
-				throw new ArgumentOutOfRangeException();
-
-			if (elementnr >= size)
+			if (elementnr >= vector.Length*32)
 				return false;
 
-			int index = elementnr/32;
-			int bit = elementnr%32;
-
-			return ((vector[index] >> bit) & 1) != 0;
-			
+			return ((vector[elementnr / 32] >> elementnr % 32) & 1) != 0;
 		}
 
-		public int Count()
+		public int Count
 		{
-			int count=0;
-			for(int i = 0; i < vector.Length; i++)
-				for(int b = 0; b < 32 ; b++)
-					count += ((vector[i] >> b) & 1) != 0 ? 1 : 0;
-			return count;
+			get
+			{
+				int count = 0;
+				for (int i = 0; i < vector.Length; i++)
+					for (int b = 0; b < 32; b++)
+						count += ((vector[i] >> b) & 1) != 0 ? 1 : 0;
+				return count;
+			}
 		}
 
 		public bool IsCountZero()
@@ -141,24 +144,106 @@ namespace CellDotNet
 			vector = newVector;
 		}
 
-		override public bool Equals(Object o)
+//		override public bool Equals(Object o)
+//		{
+//			if (!(o is BitVector))
+//				return false;
+//
+//			BitVector bv = (BitVector)o;
+//
+//			if (vector.Length != bv.vector.Length)
+//				return false;
+//
+//			for (int i = 0; i < vector.Length; i++)
+//				if (vector[i] != bv.vector[i])
+//					return false;
+//			return true;
+//		}
+
+		public uint getItem()
 		{
-			if (!(o is BitVector))
-				return false;
+			int element = 0;
+			while (element < size && ((vector[element / 32] >> (element % 32)) & 1) == 0)
+			{
+				element++;
+			}
 
-			BitVector bv = (BitVector)o;
+			return element < size ? (uint) element : uint.MaxValue;
+		}
 
-			if (vector.Length != bv.vector.Length)
-				return false;
+		public void And(BitVector v)
+		{
+			int min = vector.Length < v.vector.Length ? vector.Length : v.vector.Length;
 
-			for (int i = 0; i < vector.Length; i++)
-				if (vector[i] != bv.vector[i])
+			for (int i = 0; i < min; i++)
+				vector[i] &= v.vector[i];
+
+			for (int i = min; i < vector.Length; i++)
+			{
+				vector[i] = 0;
+			}
+		}
+
+		// AddAll(v1 & v2)
+		public void AddAllAnd(BitVector v1, BitVector v2)
+		{
+			int minLength = Math.Min(v1.vector.Length, v2.vector.Length);
+
+			if(minLength > vector.Length)
+				Resize(minLength*32);
+
+			for (int i = 0; i < minLength; i++)
+				vector[i] |= (v1.vector[i] & v2.vector[i]);
+		}
+
+		// RemoveAll(v1 & v2)
+		public void RemoveAllAnd(BitVector v1, BitVector v2)
+		{
+			int minLength = Math.Min(v1.vector.Length, v2.vector.Length);
+			minLength = Math.Min(minLength, vector.Length);
+
+			for (int i = 0; i < minLength; i++)
+				vector[i] &= ~(v2.vector[i] & v2.vector[i]);
+		}
+
+		public static BitVector operator &(BitVector v1, BitVector v2)
+		{
+			BitVector vmin = v1.size < v2.size ? v1 : v2;
+			BitVector vmax = v1.size > v2.size ? v1 : v2;
+
+			BitVector result = new BitVector(vmin);
+			for (int i = 0; i < result.vector.Length; i++)
+				result.vector[i] &= vmax.vector[i];
+
+			return result;
+		}
+
+		public static BitVector operator |(BitVector v1, BitVector v2)
+		{
+			BitVector vmin = v1.size < v2.size ? v1 : v2;
+			BitVector vmax = v1.size > v2.size ? v1 : v2;
+
+			BitVector result = new BitVector(vmax);
+			result.AddAll(vmin);
+
+			return result;
+		}
+
+		public bool Equals(BitVector v)
+		{
+			int min = Math.Min(vector.Length, v.vector.Length);
+			int max = Math.Max(vector.Length, v.vector.Length);
+
+			uint[] vmax = vector.Length == max ? vector : v.vector;
+
+			for (int i = 0; i < min; i++)
+				if (vector[i] != v.vector[i])
+					return false;
+			for (int i = min; i < max; i++)
+				if (vmax[i] != 0)
 					return false;
 			return true;
 		}
-
-
-
 
 		IEnumerator<int> IEnumerable<int>.GetEnumerator()
 		{
@@ -183,14 +268,33 @@ namespace CellDotNet
 
 			public bool MoveNext()
 			{
-//				while (++element < vector.size && !vector.Contains(element))
-//				{
-//				}
-				while (++element < vector.size && ((vector.vector[element/32] >> (element%32)) & 1) == 0)
+				while (++element % 32 != 0 && ((vector.vector[element / 32] >> (element % 32)) & 1) == 0)
 				{
+					
+				}
+				if (element % 32 != 0)
+					return true;
+
+				for(int i = element/32; i< vector.vector.Length; i++)
+				{
+					if(vector.vector[i] != 0)
+					{
+						element = i*32;
+						while (((vector.vector[i] >> (element % 32)) & 1) == 0)
+						{
+							element++;
+						}
+						return true;
+					}
 				}
 
-				return element < vector.size;
+				return false;
+
+//				while (++element < vector.size && ((vector.vector[element/32] >> (element%32)) & 1) == 0)
+//				{
+//				}
+//
+//				return element < vector.size;
 			}
 
 			public void Reset()
