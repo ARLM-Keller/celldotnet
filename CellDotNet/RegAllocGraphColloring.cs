@@ -312,7 +312,7 @@ namespace CellDotNet
 						else
 						{
 							SpuInstruction inst1 = new SpuInstruction(SpuOpCode.il);
-							inst1.Rt = new VirtualRegister();
+							inst1.Rt = HardwareRegister.GetHardwareRegister(79);
 							inst1.Constant = 0;
 
 							SpuInstruction inst2 = new SpuInstruction(SpuOpCode.or);

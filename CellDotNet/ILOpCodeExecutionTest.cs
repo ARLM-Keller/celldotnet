@@ -76,9 +76,6 @@ namespace CellDotNet
 			Console.WriteLine("Disasemble spumethod:");
 			Console.WriteLine(spum.Writer.Disassemble());
 
-
-
-
 			int[] initcode = spuinit.Emit();
 			int[] methodcode = spum.Emit();
 
