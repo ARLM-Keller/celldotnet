@@ -58,19 +58,18 @@ namespace CellDotNet
 
 		public override void PerformAddressPatching()
 		{
-			if (_isPatchingDone)
+			if (!_isPatchingDone)
 			{
-			if (_omitEpilog)
+				if (_omitEpilog)
 					PerformAddressPatching(_writer.BasicBlocks, null);
-			else
-			{
-				Writer.BeginNewBasicBlock();
-				SpuAbiUtilities.WriteEpilog(Writer);
-				PerformAddressPatching(Writer.BasicBlocks, Writer.CurrentBlock);
+				else
+				{
+					Writer.BeginNewBasicBlock();
+					SpuAbiUtilities.WriteEpilog(Writer);
+					PerformAddressPatching(Writer.BasicBlocks, Writer.CurrentBlock);
+				}
 			}
-		}
-
 			_isPatchingDone = true;
-	}
+		}
 	}
 }
