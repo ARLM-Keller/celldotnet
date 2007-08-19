@@ -29,5 +29,17 @@ namespace CellDotNet
 			// Return.
 			epilog.WriteBi(HardwareRegister.LR);
 		}
+
+		public static void WriteProlog(int frameSlots, SpuInstructionWriter prolog)
+		{
+			// Save LR in caller's frame.
+			prolog.WriteStqd(HardwareRegister.LR, HardwareRegister.SP, 1);
+
+			// Establish new SP.
+			prolog.WriteSfi(HardwareRegister.SP, HardwareRegister.SP, -frameSlots*16);
+
+			// Store SP at new frame's Back Chain.
+			prolog.WriteStqd(HardwareRegister.SP, HardwareRegister.SP, 0);
+		}
 	}
 }
