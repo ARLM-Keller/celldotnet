@@ -234,9 +234,9 @@ namespace CellDotNet
 					break;
 				case IRCode.Stind_I4:
 					{
-						if (lefttype.IndirectionLevel != 1)
+						if (lefttype.IndirectionLevel != 1 && lefttype != StackTypeDescription.NativeInt)
 							throw new InvalidILTreeException("Invalid level of indirection for stind. Stack type: " + lefttype);
-						VirtualRegister ptr = GetMethodVariableRegister(inst.Left);
+						VirtualRegister ptr = vrleft;
 
 						VirtualRegister loadedvalue = _writer.WriteLqd(ptr, 0);
 						VirtualRegister mask = _writer.WriteCwd(ptr, 0);

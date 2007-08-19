@@ -9,7 +9,7 @@ namespace CellDotNet
 	/// </summary>
 	class SpuInitializer : SpuRoutine
 	{
-		public SpuInstructionWriter _writer = new SpuInstructionWriter();
+		private SpuInstructionWriter _writer = new SpuInstructionWriter();
 		private bool _isPatched;
 
 		/// <summary>
@@ -23,7 +23,7 @@ namespace CellDotNet
 			_writer.BeginNewBasicBlock();
 
 			// Initialize stack pointer to two qwords below ls top.
-			_writer.WriteLoadI4(HardwareRegister.SP, 0x4ffff - 0x20);
+			_writer.WriteLoadI4(HardwareRegister.SP, 0x40000 - 0x20);
 
 			// Store zero to Back Chain.
 			VirtualRegister zeroreg = HardwareRegister.GetHardwareRegister(75);

@@ -10,7 +10,7 @@ namespace CellDotNet
 	{
 		static public void Main(string[] args)
 		{
-			Trace.Listeners.Add(new ConsoleTraceListener());
+//			Trace.Listeners.Add(new ConsoleTraceListener());
 
 //			new SpeContextTest().TestPutGetInt32();
 
@@ -18,11 +18,13 @@ namespace CellDotNet
 
 //			new SpuInitializerTest().TestInitialization();
 
-//			new RegAllocGraphColloringTest().LargeTest();
+			new RegAllocGraphColloringTest().LargeTest();
 
 //			new SpeContextTest().TestPutGetFloat();
 
-			new ILOpCodeExecutionTest().Test_Ret();
+//			new ILOpCodeExecutionTest().Test_Add_I4();
+
+//			new SpuInitializerTest().TestFun();
 
 //			new SpuInitializerTest().TestInitialization();
 
