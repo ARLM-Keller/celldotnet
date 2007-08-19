@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace CellDotNet
 {
@@ -9,12 +8,15 @@ namespace CellDotNet
         // TODO Registre allokatoren bør arbejde på hele metoden.
         // returnere true hvis der forekommer spill(indtilvidre håndteres spill ikke!)
         // regnum, er altallet af registre som register allokatoren ikke bruger.
-        public bool alloc(MethodCompiler method)
+
+//		List<SpuBasicBlock> inputBasicBlocks, NewSpillOffsetDelegate inputNewSpillOffset
+//		public bool alloc(MethodCompiler method)
+		public bool alloc(List<SpuBasicBlock> spuBasicBlocks)
         {
 			List<SpuInstruction> code = new List<SpuInstruction>();
 			// TODO genarate codelist from method.
 
-        	foreach (SpuBasicBlock block in method.SpuBasicBlocks)
+			foreach (SpuBasicBlock block in spuBasicBlocks)
         	{
         		SpuInstruction inst = block.Head;
 				while(inst != null)

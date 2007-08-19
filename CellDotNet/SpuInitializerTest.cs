@@ -13,7 +13,7 @@ namespace CellDotNet
 			const int magicnum = 0xfefefe;
 
 			// The code to run just returns.
-			SpuManualRoutine routine = new SpuManualRoutine();
+			SpuManualRoutine routine = new SpuManualRoutine(true);
 			routine.Writer.BeginNewBasicBlock();
 			routine.Writer.WriteLoadI4(HardwareRegister.GetHardwareRegister(3), magicnum);
 			routine.Writer.WriteBi(HardwareRegister.LR);
@@ -51,8 +51,12 @@ namespace CellDotNet
 				int rc = ctx.Run();
 				AreEqual(0, rc);
 
-				int retval = ctx.DmaGetInt32((LocalStorageAddress) returnLocation.Offset);
-				AreEqual(magicnum, retval);
+				int retval1 = ctx.DmaGetValue<int>((LocalStorageAddress) returnLocation.Offset);
+
+				int retval2 = ctx.DmaGetValue<int>((LocalStorageAddress)returnLocation.Offset);
+				AreEqual(magicnum, retval1);
+				AreEqual(magicnum, retval2);
+
 			}
 		}
 	}

@@ -10,15 +10,21 @@ namespace CellDotNet
 	{
 		static public void Main(string[] args)
 		{
-//			Trace.Listeners.Add(new ConsoleTraceListener());
+			Trace.Listeners.Add(new ConsoleTraceListener());
 
-//			new SpeContextTest().TestGetPutInt32();
+//			new SpeContextTest().TestPutGetInt32();
 
-			new SpeContextTest().TestFirstCellProgram();
+//			new SpeContextTest().TestFirstCellProgram();
 
 //			new SpuInitializerTest().TestInitialization();
 
 //			new RegAllocGraphColloringTest().LargeTest();
+
+//			new SpeContextTest().TestPutGetFloat();
+
+			new ILOpCodeExecutionTest().Test_Ret();
+
+//			new SpuInitializerTest().TestInitialization();
 
 //			GenericExperiment();
 //			return;
@@ -55,7 +61,7 @@ namespace CellDotNet
 			new TreeDrawer().DrawMethod(ci);
 			RecursiveInstructionSelector writer = new RecursiveInstructionSelector();
 			SpuInstructionWriter ilist = new SpuInstructionWriter();
-			writer.GenerateCode(ci, ilist);
+			writer.GenerateCode(ci.Blocks, ci.Parameters, ilist);
 			Console.WriteLine();
 			Console.WriteLine("Disassembly: ");
 			Console.WriteLine(ilist.Disassemble());
@@ -66,6 +72,82 @@ namespace CellDotNet
 		/// </summary>
 		private delegate void BasicTestDelegate();
 
+		public static unsafe void Test1()
+		{
+			int* i;
+			i = (int*) 0x40;
+			*i = 34;
+		}
+
+		public static unsafe void Test2()
+		{
+			int* i;
+			int* j;
+
+			i = (int*) 0x40;
+			j = (int*) 0x50;
+			if (*j == 42)
+				*i = 0;
+			else
+				*i = 34;
+			*i = 34;
+		}
+
+		public static unsafe void Test3()
+		{
+			int* i;
+			int* j;
+			int* k;
+			int* l;
+			int* m;
+			int* n;
+			int* o;
+			int* p;
+
+			i = (int*) 0x40;
+			j = (int*) 0x50;
+			k = (int*) 0x60;
+			l = (int*) 0x70;
+			m = (int*) 0x80;
+			n = (int*) 0x90;
+			o = (int*) 0xa0;
+			p = (int*) 0xb0;
+
+			*i = 34;
+
+			int s = 0;
+
+			int a = *i;
+
+			s++;
+
+			int b = a*42;
+
+			s++;
+
+			int c = b + 7;
+
+			s++;
+
+			*j = b;
+			s++;
+			*k = c;
+			s++;
+
+			*m = 7*(*i);
+			s++;
+
+			*n = 56;
+			s++;
+			*o = 74;
+			s++;
+			*p = 74;
+
+
+			s++;
+
+			*l = s;
+		}
 
 		private static unsafe void MyRunSPU2()
 		{
@@ -111,74 +193,70 @@ namespace CellDotNet
 //												*i = 34;
 //			                        	};
 
-			del = delegate()
-										{
-											int a;
-											int i = 42;
-											if (true)
-												a = 1;
-											else
-												a = 2;
-										};
+//			del = Test1;
+//			del = Test2;
+			del = Test3;
 
-			del = delegate()
-							{
-								int* i;
-								i = (int*)0x40;
-								*i = 34;
-							};
 
 
 			MethodBase method = del.Method;
 			MethodCompiler mc = new MethodCompiler(method);
 			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 
-			if (debug) System.Console.WriteLine("Debug 1");
+			if (debug) Console.WriteLine("Debug 1");
 
 			if (debug) new TreeDrawer().DrawMethod(mc);
 
 			mc.PerformProcessing(MethodCompileState.S3InstructionSelectionPreparationsDone);
 
-			if (debug) System.Console.WriteLine("Debug 2");
+			if (debug) Console.WriteLine("Debug 2");
 
 			mc.PerformProcessing(MethodCompileState.S4InstructionSelectionDone);
 			mc.GetBodyWriter().WriteStop();
 
-			if (debug) System.Console.WriteLine("Debug 3");
+			if (debug) Console.WriteLine("Debug 3");
 
 			if (debug) Console.WriteLine();
 			if (debug) Console.WriteLine("Disassembly: ");
 			if (debug) Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
-			if (debug) System.Console.WriteLine("Debug 4");
+			if (debug) Console.WriteLine("Debug 4");
 
 			mc.PerformProcessing(MethodCompileState.S5RegisterAllocationDone);
 
-			if (debug) System.Console.WriteLine("Debug 5");
+			if (debug) Console.WriteLine("Debug 5");
 
 			if (debug) Console.WriteLine();
 			if (debug) Console.WriteLine("Disassembly after regalloc: ");
 			if (debug) Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
-			RegAllocGraphColloring.RemoveRedundantMoves(mc.SpuBasicBlocks);
+			mc.PerformProcessing(MethodCompileState.S6RemoveRedundantMoves);
 
-			if (debug) System.Console.WriteLine("Debug 6");
+			if (debug) Console.WriteLine("Debug 6");
 
 			if (debug) Console.WriteLine();
 			if (debug) Console.WriteLine("Disassembly after removal of redundant moves: ");
 			if (debug) Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
+			mc.PerformProcessing(MethodCompileState.S8AddressPatchingDone);
+
+			if (debug) Console.WriteLine("Debug 7");
+
+			if (debug) Console.WriteLine();
+			if (debug) Console.WriteLine("Disassembly after complete: ");
+			if (debug) Console.WriteLine(mc.GetBodyWriter().Disassemble());
+
 			return;
 
-			int[] bincode = SpuInstruction.emit(mc.GetBodyWriter().GetAsList());
-
-			SpeContext ctx = new SpeContext();
-			ctx.LoadProgram(bincode);
-
-			ctx.Run();
-			int[] ls = ctx.GetCopyOffLocalStorage();
-
-			Console.WriteLine("Value: {0}", ls[0x40 / 4]);
+//			int[] bincode = SpuInstruction.emit(mc.GetBodyWriter().GetAsList());
+//
+//			SpeContext ctx = new SpeContext();
+//			ctx.LoadProgram(bincode);
+//
+//			ctx.Run();
+//			int[] ls = ctx.GetCopyOffLocalStorage();
+//
+//			Console.WriteLine("Value: {0}", ls[0x40 / 4]);
 
 //			if (ls[0x40 / 4] != 34)
 //			{
@@ -231,7 +309,7 @@ namespace CellDotNet
 
 			RecursiveInstructionSelector writer = new RecursiveInstructionSelector();
 			SpuInstructionWriter ilist = new SpuInstructionWriter();
-			writer.GenerateCode(ci, ilist);
+			writer.GenerateCode(ci.Blocks, ci.Parameters, ilist);
 			ilist.WriteStop();
 
 			Console.WriteLine();

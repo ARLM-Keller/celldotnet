@@ -378,13 +378,14 @@ namespace CellDotNet
 		}
 
 		/// <summary>
-		/// Gets a 4-byte integer from the specified local storage address.
+		/// Gets a value type from the specified local storage address.
 		/// </summary>
 		/// <param name="lsAddress"></param>
-		public int DmaGetInt32(LocalStorageAddress lsAddress)
+		public T DmaGetValue<T>(LocalStorageAddress lsAddress) where T : struct
 		{
+			//TODO The buffer is only large enough to hold 16 bytes types.
 			byte* buf = stackalloc byte[31];
-			IntPtr ptr = (IntPtr) (((int)buf + 15) & ~15);
+			IntPtr ptr = (IntPtr)(((int)buf + 15) & ~15);
 
 			uint DMA_tag = 1;
 			spe_mfcio_put(lsAddress.Value, ptr, 16, DMA_tag, 0, 0);
@@ -394,21 +395,46 @@ namespace CellDotNet
 			if (waitresult != 0)
 				throw new LibSpeException("spe_mfcio_tag_status_read failed.");
 
-			return Marshal.ReadInt32(ptr);
+			T? val;
+
+			switch(Type.GetTypeCode(typeof(T)))
+			{
+				case TypeCode.Int32:
+					val =  Marshal.ReadInt32(ptr) as T?;
+					return val.Value;
+				case TypeCode.Single:
+					val = *((float*)ptr) as T?;
+					return val.Value;
+				default:
+					throw new NotSupportedException("Type not handled.");
+			}
 		}
 
 		/// <summary>
-		/// Puts an integer to the specified local storage address.
+		/// Puts a value type to the specified local storage address.
 		/// </summary>
 		/// <param name="lsAddress"></param>
 		/// <param name="value"></param>
-		public void DmaPut(LocalStorageAddress lsAddress, int value)
+		public void DmaPutValue<T>(LocalStorageAddress lsAddress, T value) where T : struct
 		{
 			uint DMA_tag = 1;
+			//TODO The buffer is only large enough to hold 16 bytes types.
 			byte* buf = stackalloc byte[31];
 			IntPtr ptr = (IntPtr)(((int)buf + 15) & ~15);
 
-			Marshal.WriteInt32(ptr, value);
+			switch (Type.GetTypeCode(typeof(T)))
+			{
+				case TypeCode.Int32:
+					int i = (value as int?).Value;
+					*((int*) ptr) = i;
+					break;
+				case TypeCode.Single:
+					float f = (value as float?).Value;
+					*((float*)ptr) = f;
+					break;
+				default:
+					throw new NotSupportedException("Type not handled.");
+			}
 
 			spe_mfcio_get(lsAddress.Value, ptr, 16, DMA_tag, 0, 0);
 
@@ -417,6 +443,7 @@ namespace CellDotNet
 			if (waitresult != 0)
 				throw new LibSpeException("spe_mfcio_tag_status_read failed.");
 		}
+
 
 		public int[] GetCopyOffLocalStorage()
 		{

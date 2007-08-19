@@ -50,6 +50,7 @@
     <Compile Include="FlowGraph.cs" />
     <Compile Include="Graph.cs" />
     <Compile Include="GraphTest.cs" />
+    <Compile Include="ILOpCodeExecutionTest.cs" />
     <Compile Include="ILReader.cs" />
     <Compile Include="ILReaderTest.cs" />
     <Compile Include="ILWriter.cs" />

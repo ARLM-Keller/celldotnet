@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Threading;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -86,20 +84,37 @@ namespace CellDotNet
 		}
 
 		[Test]
-		public void TestGetPutInt32()
+		public void TestPutGetInt32()
 		{
 			if (!SpeContext.HasSpeHardware)
 				return;
 
 			using (SpeContext ctx = new SpeContext())
 			{
-				ctx.DmaPut((LocalStorageAddress) 32, 33000);
-				ctx.DmaPut((LocalStorageAddress) 64, 34000);
+				ctx.DmaPutValue((LocalStorageAddress) 32, 33000);
+				ctx.DmaPutValue((LocalStorageAddress) 64, 34000);
 
-				int readvalue = ctx.DmaGetInt32((LocalStorageAddress) 32);
+				int readvalue = ctx.DmaGetValue<int>((LocalStorageAddress) 32);
 				AreEqual(33000, readvalue);
 			}
 		}
+
+		[Test]
+		public void TestPutGetFloat()
+		{
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			using (SpeContext ctx = new SpeContext())
+			{
+				ctx.DmaPutValue((LocalStorageAddress)32, 33000f);
+				ctx.DmaPutValue((LocalStorageAddress)64, 34000f);
+
+				float readvalue = ctx.DmaGetValue<float>((LocalStorageAddress)32);
+				AreEqual(33000f, readvalue);
+			}
+		}
+
 
 		[Test]
 		public void TestHasSpe()

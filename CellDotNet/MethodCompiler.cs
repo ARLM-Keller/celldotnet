@@ -246,7 +246,8 @@ namespace CellDotNet
 
 			// Generate the body.
 			RecursiveInstructionSelector selector = new RecursiveInstructionSelector();
-			selector.GenerateCode(this, _instructions);
+//			selector.GenerateCode(this, _instructions);
+			selector.GenerateCode(this.Blocks, Parameters, _instructions);
 
 			// Move callee saves temps back to physical regs.
 			_instructions.BeginNewBasicBlock();
@@ -365,7 +366,7 @@ namespace CellDotNet
 
 		private void PerformPrologAndEpilogGeneration()
 		{
-			Utilities.Assert(State == MethodCompileState.S5RegisterAllocationDone, "Invalid state: " + State);
+			Utilities.Assert(State == MethodCompileState.S6RemoveRedundantMoves, "Invalid state: " + State);
 
 			_prolog = new SpuInstructionWriter();
 			_prolog.BeginNewBasicBlock();
@@ -373,7 +374,7 @@ namespace CellDotNet
 
 			_epilog = new SpuInstructionWriter();
 			_epilog.BeginNewBasicBlock();
-			WriteEpilog(_epilog);
+			SpuAbiUtilities.WriteEpilog(_epilog);
 
 			_state = MethodCompileState.S7PrologAndEpilogDone;
 		}
@@ -406,27 +407,6 @@ namespace CellDotNet
 
 			// Store SP at new frame's Back Chain.
 			prolog.WriteStqd(HardwareRegister.SP, HardwareRegister.SP, 0);
-		}
-
-		/// <summary>
-		/// Writes inner epilog.
-		/// </summary>
-		/// <param name="epilog"></param>
-		private void WriteEpilog(SpuInstructionWriter epilog)
-		{
-			// Assume that the code that wants to return has placed the return value in the correct
-			// registers (R3+).
-
-			// Restore old SP.
-			epilog.WriteLqd(HardwareRegister.SP, HardwareRegister.SP, 0);
-
-			// TODO: Restore caller-saves.
-
-			// Restore old LR from callers frame.
-			epilog.WriteLqd(HardwareRegister.LR, HardwareRegister.SP, 1);
-
-			// Return.
-			epilog.WriteBi(HardwareRegister.LR);
 		}
 
 		/// <summary>

@@ -9,5 +9,25 @@ namespace CellDotNet
 	/// </summary>
 	class SpuAbiUtilities
 	{
+		/// <summary>
+		/// Writes inner epilog.
+		/// </summary>
+		/// <param name="epilog"></param>
+		public static void WriteEpilog(SpuInstructionWriter epilog)
+		{
+			// Assume that the code that wants to return has placed the return value in the correct
+			// registers (R3+).
+
+			// Restore old SP.
+			epilog.WriteLqd(HardwareRegister.SP, HardwareRegister.SP, 0);
+
+			// TODO: Restore caller-saves.
+
+			// Restore old LR from callers frame.
+			epilog.WriteLqd(HardwareRegister.LR, HardwareRegister.SP, 1);
+
+			// Return.
+			epilog.WriteBi(HardwareRegister.LR);
+		}
 	}
 }
