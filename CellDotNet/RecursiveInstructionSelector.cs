@@ -502,7 +502,8 @@ namespace CellDotNet
 							return _writer.WriteCeqb(vrleft, vrright);
 						case CliType.Int32:
 						case CliType.UInt32:
-							return _writer.WriteCeq(vrleft, vrright);
+							VirtualRegister val = _writer.WriteCeq(vrleft, vrright);
+							return _writer.WriteAndi(val, 1);
 						case CliType.Int16:
 						case CliType.UInt16:
 							return _writer.WriteCeqh(vrleft, vrright);
@@ -518,7 +519,8 @@ namespace CellDotNet
 						case CliType.NativeUInt:
 						case CliType.Int32:
 						case CliType.UInt32:
-							return _writer.WriteCgt(vrleft, vrright);
+							VirtualRegister val = _writer.WriteCgt(vrleft, vrright);
+							return _writer.WriteAndi(val, 1);
 					}
 					break;
 				case IRCode.Cgt_Un:

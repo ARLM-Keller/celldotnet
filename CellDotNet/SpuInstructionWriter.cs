@@ -243,17 +243,18 @@ namespace CellDotNet
 			}
 			else
 			{
-				SpuInstruction iload = new SpuInstruction(SpuOpCode.il);
-				iload.Constant = 0;
-//				iload.Rt = NextRegister();
-				iload.Rt = HardwareRegister.GetHardwareRegister(75);
-				AddInstruction(iload);
-
-				SpuInstruction ior = new SpuInstruction(SpuOpCode.or);
-				ior.Ra = iload.Rt;
-				ior.Rb = src;
-				ior.Rt = dest;
-				AddInstruction(ior);
+				WriteOri(dest, src, 0);
+//				SpuInstruction iload = new SpuInstruction(SpuOpCode.il);
+//				iload.Constant = 0;
+////				iload.Rt = NextRegister();
+//				iload.Rt = HardwareRegister.GetHardwareRegister(75);
+//				AddInstruction(iload);
+//
+//				SpuInstruction ior = new SpuInstruction(SpuOpCode.or);
+//				ior.Ra = iload.Rt;
+//				ior.Rb = src;
+//				ior.Rt = dest;
+//				AddInstruction(ior);
 			}
 		}
 

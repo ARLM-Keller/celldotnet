@@ -18,11 +18,11 @@ namespace CellDotNet
 
 //			new SpuInitializerTest().TestInitialization();
 
-			new RegAllocGraphColloringTest().LargeTest();
+//			new RegAllocGraphColloringTest().LargeTest();
 
 //			new SpeContextTest().TestPutGetFloat();
 
-//			new ILOpCodeExecutionTest().Test_Add_I4();
+			new ILOpCodeExecutionTest().Test_Ceq_I4();
 
 //			new SpuInitializerTest().TestFun();
 

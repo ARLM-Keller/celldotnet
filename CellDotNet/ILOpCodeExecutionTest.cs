@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Reflection.Emit;
 using NUnit.Framework;
 
@@ -50,15 +49,43 @@ namespace CellDotNet
 		[Test]
 		public void Test_Mul_I4()
 		{
+			InstTest(OpCodes.Mul, 5, 3, 15);
+		}
+
+		[Test]
+		public void Test_Ceq_I4()
+		{
+			InstTest(OpCodes.Ceq, 5, 3, 0);
+			InstTest(OpCodes.Ceq, 5, 5, 1);
+		}
+
+		[Test]
+		public void Test_Cgt_I4()
+		{
+			InstTest(OpCodes.Cgt, 5, 3, 1);
+			InstTest(OpCodes.Cgt, 5, 5, 0);
+			InstTest(OpCodes.Cgt, 5, 7, 0);
+		}
+
+		public void InstTest(OpCode opcode, int i1, int i2, int exp)
+		{
 			ILWriter w = new ILWriter();
 
-			w.WriteOpcode(OpCodes.Ldc_I4_7);
-			w.WriteOpcode(OpCodes.Ldc_I4_3);
-			w.WriteOpcode(OpCodes.Mul);
+			w.WriteOpcode(OpCodes.Ldc_I4);
+			w.WriteInt32(i1);
+			w.WriteOpcode(OpCodes.Ldc_I4);
+			w.WriteInt32(i2);
+			w.WriteOpcode(opcode);
 			w.WriteOpcode(OpCodes.Ret);
 
-			Execution(w, 21);
+			ILReader r = w.CreateReader();
+			Console.WriteLine("Testing " + opcode.Name);
+			while (r.Read())
+				Console.WriteLine("{0} {1}", r.OpCode.Name, r.Operand);
+
+			Execution(w, exp);
 		}
+
 
 		private static void Execution<T>(ILWriter ilcode, T expetedValue) where T : struct
 		{
