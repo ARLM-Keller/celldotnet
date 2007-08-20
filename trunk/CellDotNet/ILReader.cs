@@ -139,24 +139,30 @@ namespace CellDotNet
 //				return true;
 //			}
 
-			byte b = _il[_readoffset];
-			_readoffset++;
 			short ocval;
-			OpCode srOpcode;
-			if (b == 0xFE)
+			if (_readoffset + 1 < _il.Length)
 			{
-				ocval = (short)((b << 8) | _il[_readoffset]);
-				srOpcode = _ocmap[ocval];
-				if (srOpcode.OpCodeType == OpCodeType.Prefix)
-					throw new NotImplementedException("Prefix opcodes are not implemented. Used prefix is: " + srOpcode.Name + ".");
-
-				_readoffset++;
+				if (_il[_readoffset + 1] == 0xfe)
+				{
+					ocval = (short) (_il[_readoffset] | (_il[_readoffset + 1] << 8));
+					_readoffset += 2;
+				}
+				else
+				{
+					ocval = _il[_readoffset];
+					_readoffset += 1;
+				}
 			}
 			else
 			{
-				ocval = b;
-				srOpcode = _ocmap[ocval];
+				ocval = _il[_readoffset];
+				_readoffset += 1;
 			}
+			
+			OpCode srOpcode;
+			srOpcode = _ocmap[ocval];
+			if (srOpcode.OpCodeType == OpCodeType.Prefix)
+				throw new NotImplementedException("Prefix opcodes are not implemented. Used prefix is: " + srOpcode.Name + ".");
 
 			ReadInstructionArguments(srOpcode);
 			RemoveMacro(ref srOpcode);

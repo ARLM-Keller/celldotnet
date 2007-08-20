@@ -311,6 +311,7 @@ namespace CellDotNet
 						}
 						else
 						{
+							//TODO brug Ori som move
 							SpuInstruction inst1 = new SpuInstruction(SpuOpCode.il);
 							inst1.Rt = HardwareRegister.GetHardwareRegister(79);
 							inst1.Constant = 0;

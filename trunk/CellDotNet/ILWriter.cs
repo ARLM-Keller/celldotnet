@@ -23,7 +23,7 @@ namespace CellDotNet
 
 		public void WriteOpcode(OpCode opcode)
 		{
-			if ((opcode.Value >> 8) == 0xfe)
+			if (((opcode.Value >> 8) & 0xff) == 0xfe)
 				_writer.Write(opcode.Value);
 			else
 				_writer.Write((byte)opcode.Value);
@@ -32,6 +32,11 @@ namespace CellDotNet
 		public void WriteByte(int byteValue)
 		{
 			_writer.Write((byte)byteValue);
+		}
+
+		public void WriteInt32(int i)
+		{
+			_writer.Write(i);
 		}
 
 		public byte[] ToByteArray()
