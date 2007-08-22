@@ -128,7 +128,7 @@ namespace CellDotNet
 
 		#endregion
 
-		#region enum SpeStopReason
+		#region enum SpeStopReason ad SpeProblemArea
 
 		/// <summary>
 		/// Used by <see cref="SpeStopInfo"/> to specify a stop reason.
@@ -183,7 +183,6 @@ namespace CellDotNet
 			SPE_CALLBACK_ERROR = 6,
 		}
 
-		#endregion
 
 		/// <summary>
 		/// Different spe problem areas that can be retrieved if the context is created 
@@ -197,6 +196,38 @@ namespace CellDotNet
 			SPE_SIG_NOTIFY_1_AREA = 3,
 			SPE_SIG_NOTIFY_2_AREA = 4
 		};
+
+		#endregion
+
+		#region errno
+
+		private static ErrorCodeDelegate s_errorCodeGetter;
+		private delegate object ErrorCodeDelegate();
+
+		/// <summary>
+		/// Used to get the errno that libspe sets.
+		/// </summary>
+		public static object GetErrorCode()
+		{
+			if (!HasSpeHardware)
+				throw new InvalidOperationException();
+
+			if (s_errorCodeGetter == null)
+			{
+				//  /usr/lib/mono/gac/Mono.Posix/2.0.0.0__0738eb9f132ed756/Mono.Posix.dll
+				Assembly ass = Assembly.LoadFrom("/usr/lib/mono/gac/Mono.Posix/2.0.0.0__0738eb9f132ed756/Mono.Posix.dll");
+				Type s_stdlib = ass.GetType("Mono.Unix.Native.Stdlib");
+				MethodInfo method = s_stdlib.GetMethod("GetLastError");
+
+				s_errorCodeGetter = (ErrorCodeDelegate)Delegate.CreateDelegate(
+							typeof(ErrorCodeDelegate), method);
+			}
+
+			return s_errorCodeGetter();
+		}
+
+		#endregion
+
 
 /*
 		class SpeHandle : SafeHandle
@@ -258,34 +289,6 @@ namespace CellDotNet
 			get { return _localStorageSize; }
 		}
 
-		#region errno
-
-		private static ErrorCodeDelegate s_errorCodeGetter;
-		private delegate object ErrorCodeDelegate();
-
-		/// <summary>
-		/// Used to get the errno that libspe sets.
-		/// </summary>
-		public static object GetErrorCode()
-		{
-			if (!HasSpeHardware)
-				throw new InvalidOperationException();
-
-			if (s_errorCodeGetter == null)
-			{
-				//  /usr/lib/mono/gac/Mono.Posix/2.0.0.0__0738eb9f132ed756/Mono.Posix.dll
-				Assembly ass = Assembly.LoadFrom("/usr/lib/mono/gac/Mono.Posix/2.0.0.0__0738eb9f132ed756/Mono.Posix.dll");
-				Type s_stdlib = ass.GetType("Mono.Unix.Native.Stdlib");
-				MethodInfo method = s_stdlib.GetMethod("GetLastError");
-
-				s_errorCodeGetter = (ErrorCodeDelegate) Delegate.CreateDelegate(
-                        	typeof (ErrorCodeDelegate), method);
-			}
-
-			return s_errorCodeGetter();
-		}
-
-		#endregion
 
 
 		enum SpeContextCreateFlags
@@ -335,7 +338,7 @@ namespace CellDotNet
 			if (_handle == IntPtr.Zero || _handle == null)
 				throw new Exception();
 
-//			_localStorageSize = spe_ls_size_get(_handle);
+//			_localStorageSize = UnsafeNativeMethods.spe_ls_size_get(_handle);
 
 			Console.WriteLine("localStorageSize: {0}", _localStorageSize);
 			
@@ -350,7 +353,7 @@ namespace CellDotNet
 			{
 				dataBufMain = Marshal.AllocHGlobal(code.Length*4 + 32);
 
-				IntPtr dataBuf = (IntPtr)(((int)dataBufMain + 15) & ~0xf);
+				IntPtr dataBuf = (IntPtr) Utilities.Align16((int)dataBufMain);
 
 				Marshal.Copy(code, 0, dataBuf, code.Length);
 
@@ -376,6 +379,33 @@ namespace CellDotNet
 					Marshal.FreeHGlobal(dataBufMain);
 			}
 		}
+
+		private object DmaGetValue(StackTypeDescription datatype, LocalStorageAddress lsAddress)
+		{
+			switch (datatype.CliType)
+			{
+				case CliType.Int32:
+				case CliType.UInt32:
+					return DmaGetValue<int>(lsAddress);
+				case CliType.None:
+				case CliType.Int8:
+				case CliType.UInt8:
+				case CliType.Int16:
+				case CliType.UInt16:
+				case CliType.Int64:
+				case CliType.UInt64:
+				case CliType.NativeInt:
+				case CliType.NativeUInt:
+				case CliType.Float32:
+				case CliType.Float64:
+				case CliType.ValueType:
+				case CliType.ObjectType:
+				case CliType.ManagedPointer:
+				default:
+					throw new NotSupportedException("Data type is not supported: " + datatype);
+			}
+		}
+
 
 		/// <summary>
 		/// Gets a value type from the specified local storage address.
@@ -457,7 +487,7 @@ namespace CellDotNet
 
 				uint DMA_tag = 2;
 
-				spe_mfcio_put(0, dataBuf, (uint) LocalStorageSize, DMA_tag, 0, 0);
+				spe_mfcio_put(0, dataBuf, LocalStorageSize, DMA_tag, 0, 0);
 
 				Console.WriteLine("Waiting for DMA to finish.");
 
@@ -492,6 +522,59 @@ namespace CellDotNet
 			return rc;
 		}
 
+		public object RunProgram(Delegate delegateToRun, params object[] arguments)
+		{
+			CompileContext cc = new CompileContext(delegateToRun.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+			int[] code = cc.GetEmittedCode();
+
+			// Prepare arguments.
+			if (cc.EntryPoint.Parameters.Count != arguments.Length)
+				throw new ArgumentException(string.Format("Invalid number of arguments in array; expected {0}, got {1}.",
+				                                          cc.EntryPoint.Parameters.Count, arguments.Length));
+			Utilities.Assert(cc.ArgumentArea.Size == arguments.Length * 16, "cc.ArgumentArea.Size == arguments.Length * 16");
+
+			for (int i = 0; i < cc.EntryPoint.Parameters.Count; i++)
+			{
+				object val = arguments[i];
+				int baseAreaIndex = cc.ArgumentArea.Offset + i*16;
+
+				StackTypeDescription reqType = cc.EntryPoint.Parameters[i].StackType;
+				switch (reqType.CliBasicType)
+				{
+					case CliBasicType.Integer:
+						{
+							// Big endian assumed.
+							long val2 = Convert.ToInt64(val);
+							code[baseAreaIndex] = (int) (val2 >> 32);
+							code[baseAreaIndex] = (int) val2;
+						}
+						break;
+					case CliBasicType.Floating:
+					case CliBasicType.None:
+					case CliBasicType.Valuetype:
+					case CliBasicType.ObjectType:
+					case CliBasicType.NativeInt:
+					default:
+						throw new NotSupportedException("Invalid parameter data type: " + reqType);
+				}
+			}
+
+			// Run and load.
+			LoadProgram(code);
+			Run();
+
+
+			// Get return value.
+			object retval = null;
+			if (cc.EntryPoint.ReturnType != StackTypeDescription.None)
+			{
+				retval = DmaGetValue(cc.EntryPoint.ReturnType, cc.ReturnValueAddress);
+			}
+
+			return retval;
+		}
+
 		public SpeControlArea GetControlArea()
 		{
 			IntPtr ptr = GetProblemState(SpeProblemArea.SPE_MSSYNC_AREA);
@@ -520,11 +603,11 @@ namespace CellDotNet
 		private void spe_mfcio_get(int lsa, IntPtr ea, int size, uint tag, uint tid, uint rid)
 		{
 			// Seems like 16 bytes is the smallest transfer unit that works...
-			if ((size <= 0) || (size % 16) != 0)
+			if ((size <= 0) || Utilities.IsQuadwordMultiplum(size))
 				throw new ArgumentException("Size is not a positive multiplum of 16 bytes.");
-			if ((lsa % 16) != 0)
+			if (Utilities.IsQuadwordAligned(lsa))
 				throw new ArgumentException("Not 16-byte aligned LSA.");
-			if (((long)ea % 16) != 0)
+			if (Utilities.IsQuadwordAligned(ea))
 				throw new ArgumentException("Not 16-byte aligned EA.");
 
 			Trace.WriteLine(string.Format("Starting DMA: spe_mfcio_get: EA: {0:x8}, LSA: {1:x6}, size: {2:x6}", (int)ea, lsa, size));
@@ -543,18 +626,18 @@ namespace CellDotNet
 		/// <param name="tag"></param>
 		/// <param name="tid"></param>
 		/// <param name="rid"></param>
-		private void spe_mfcio_put(int lsa, IntPtr ea, uint size, uint tag, uint tid, uint rid)
+		private void spe_mfcio_put(int lsa, IntPtr ea, int size, uint tag, uint tid, uint rid)
 		{
 			// Seems like 16 bytes is the smallest transfer unit that works...
-			if ((size <= 0) || (size % 16) != 0)
+			if ((size <= 0) || Utilities.IsQuadwordMultiplum(size))
 				throw new ArgumentException("Size is not a positive multiplum of 16 bytes.");
-			if ((lsa % 16) != 0)
+			if (Utilities.IsQuadwordAligned(lsa))
 				throw new ArgumentException("Not 16-byte aligned LSA.");
-			if (((long)ea % 16) != 0)
+			if (Utilities.IsQuadwordAligned(ea))
 				throw new ArgumentException("Not 16-byte aligned EA.");
 
 			Trace.WriteLine(string.Format("Starting DMA: spe_mfcio_put: EA: {0:x8}, LSA: {1:x6}, size: {2:x6}", (int)ea, lsa, size));
-			int loadresult = UnsafeNativeMethods.spe_mfcio_put(_handle, (uint)lsa, ea, size, tag, tid, rid);
+			int loadresult = UnsafeNativeMethods.spe_mfcio_put(_handle, (uint)lsa, ea, (uint)size, tag, tid, rid);
 
 			if (loadresult != 0)
 				throw new LibSpeException("spe_mfcio_put failed.");

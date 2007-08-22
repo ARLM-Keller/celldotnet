@@ -43,6 +43,8 @@ namespace CellDotNet
 		public CompileContext(MethodBase entryPoint)
 		{
 			State = CompileContextState.S1Initial;
+			if (!entryPoint.IsStatic)
+				throw new ArgumentException("Only static methods are supported.");
 
 			_entryMethod = entryPoint;
 		}
@@ -52,15 +54,31 @@ namespace CellDotNet
 		/// <summary>
 		/// The least common state for all referenced methods.
 		/// </summary>
-		public CompileContextState State
+		internal CompileContextState State
 		{
 			get { return _state; }
 			private set { _state = value; }
 		}
 
-		public LocalStorageAddress ReturnValueAddress
+		/// <summary>
+		/// The LS address where the return value from <see cref="EntryPoint"/> (if any)
+		/// will be placed after the method returns.
+		/// </summary>
+		internal LocalStorageAddress ReturnValueAddress
 		{
 			get { return (LocalStorageAddress) _returnValueLocation.Offset; }
+		}
+
+		/// <summary>
+		/// The area where arguments for the entry point is to be put.
+		/// </summary>
+		internal DataObject ArgumentArea
+		{
+			get
+			{
+				AssertState(CompileContextState.S8Complete);
+				return _argumentArea;
+			}
 		}
 
 		public void PerformProcessing(CompileContextState targetState)
@@ -151,6 +169,7 @@ namespace CellDotNet
 		private List<SpuRoutine> _spuRoutines;
 		private RegisterSizedObject _returnValueLocation;
 		private int[] _emittedCode;
+		private DataObject _argumentArea;
 
 		public int[] GetEmittedCode()
 		{
@@ -181,7 +200,10 @@ namespace CellDotNet
 				throw new InvalidOperationException();
 
 			// This one is not a routine, but it's convenient to initialize it here.
-			_returnValueLocation = new RegisterSizedObject();
+			if (EntryPoint.ReturnType != StackTypeDescription.None)
+				_returnValueLocation = new RegisterSizedObject();
+
+			_argumentArea = DataObject.QuadWords(EntryPoint.Parameters.Count);
 
 			_spuRoutines = new List<SpuRoutine>();
 			SpuInitializer init = new SpuInitializer(EntryPoint, _returnValueLocation);
@@ -206,7 +228,9 @@ namespace CellDotNet
 				all.Add(mc);
 
 			// Data at the end.
-			all.Add(_returnValueLocation);
+			if (_returnValueLocation != null)
+				all.Add(_returnValueLocation);
+			all.Add(_argumentArea);
 
 			return all;
 		}
@@ -396,7 +420,7 @@ namespace CellDotNet
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 
-			throw new Exception();
+			throw new NotImplementedException();
 		}
 
 		public static void AssertAllValueTypeFields(Type t)

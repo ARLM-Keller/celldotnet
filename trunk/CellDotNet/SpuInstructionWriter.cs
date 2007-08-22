@@ -365,23 +365,21 @@ namespace CellDotNet
 
 		public void AssertNoPseudoInstructions()
 		{
-			int bbindex = 0;
+			int bbindex = -1;
 			foreach (SpuBasicBlock bb in _basicBlocks)
 			{
-				SpuInstruction inst = bb.Head;
-				int instnum = 0;
+				bbindex++;
+				if (bb.Head == null)
+					continue;
 
-				while (inst != null)
+				int instnum = 0;
+				foreach (SpuInstruction inst in bb.Head.GetEnumerable())
 				{
 					if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.Pseudo) != SpuOpCodeSpecialFeatures.None)
 						throw new Exception("Error at basic block " + bbindex + ", instruction " + instnum + ": Pseudo instruction \"" + inst.OpCode.Name + "\" found.");
 
-
-					inst = inst.Next;
 					instnum++;
 				}
-
-				bbindex++;
 			}
 		}
 	}

@@ -87,7 +87,16 @@ namespace CellDotNet
 
 		public override int Size
 		{
-			get { return GetSpuInstructionCount()*4; }
+			get
+			{
+				AssertMinimumState(MethodCompileState.S7PrologAndEpilogDone);
+				return GetSpuInstructionCount()*4;
+			}
+		}
+
+		public StackTypeDescription ReturnType
+		{
+			get { return _returnType; }
 		}
 
 		public MethodCompiler(MethodBase method)
@@ -96,13 +105,20 @@ namespace CellDotNet
 			State = MethodCompileState.S1Initial;
 
 			PerformIRTreeConstruction();
-//			new TypeDeriver().DeriveTypes(Blocks);
 		}
 
 		public void VisitTreeInstructions(Action<TreeInstruction> action)
 		{
 			IRBasicBlock.VisitTreeInstructions(Blocks, action);
 		}
+
+		private void AssertMinimumState(MethodCompileState requiredState)
+		{
+			if (State < requiredState)
+				throw new InvalidOperationException(string.Format("Operation is invalid for the current state. " +
+					"Current state: {0}; required minimum state: {1}.", State, requiredState));
+		}
+
 
 		private void AssertState(MethodCompileState requiredState)
 		{
@@ -145,6 +161,12 @@ namespace CellDotNet
 			}
 			_variables = new ReadOnlyCollection<MethodVariable>(varlist);
 			_variablesMutable = varlist;
+
+			if (_methodBase is MethodInfo)
+			{
+				MethodInfo mi = (MethodInfo) _methodBase;
+				_returnType = typederiver.GetStackTypeDescription(mi.ReturnType);
+			}
 
 
 			ILReader reader = new ILReader(_methodBase);
@@ -450,6 +472,7 @@ namespace CellDotNet
 		}
 
 		private SpuInstructionWriter _instructions;
+		private StackTypeDescription _returnType;
 
 		public override int[] Emit()
 		{

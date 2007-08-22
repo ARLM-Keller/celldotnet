@@ -79,11 +79,6 @@ namespace CellDotNet
 			w.WriteOpcode(opcode);
 			w.WriteOpcode(OpCodes.Ret);
 
-//			ILReader r = w.CreateReader();
-//			Console.WriteLine("Testing " + opcode.Name);
-//			while (r.Read())
-//				Console.WriteLine("{0} {1}", r.OpCode.Name, r.Operand);
-
 			Execution(w, exp);
 		}
 
@@ -104,16 +99,18 @@ namespace CellDotNet
 			catch (ILParseException)
 			{
 				// Dump readable IL.
+				StringWriter sw = new StringWriter();
+				sw.WriteLine("Parsed IL:");
 				try
 				{
 					ILReader r = ilcode.CreateReader();
 					while (r.Read())
-						Console.WriteLine("{0:x4}: {1} {2}", r.Offset, r.OpCode.Name, r.Operand);
+						sw.WriteLine("{0:x4}: {1} {2}", r.Offset, r.OpCode.Name, r.Operand);
 				}
 				catch (ILParseException) { }
 
 				// Dump bytes.
-				StringWriter sw = new StringWriter();
+				sw.WriteLine("IL bytes:");
 				byte[] il = ilcode.ToByteArray();
 				for (int offset = 0; offset < il.Length; offset++)
 				{
@@ -126,7 +123,6 @@ namespace CellDotNet
 
 					sw.Write(" " + il[offset].ToString("x2"));
 				}
-				Console.WriteLine("IL:");
 				Console.WriteLine(sw.GetStringBuilder());
 
 				throw;
