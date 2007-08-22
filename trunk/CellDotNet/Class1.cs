@@ -16,8 +16,8 @@ namespace CellDotNet
 
 //			new SpeContextTest().TestFirstCellProgram();
 
-//			new ILOpCodeExecutionTest().Test_Ret();
-			new SpeContextTest().TestReturnInt32_Manual();
+			new ILOpCodeExecutionTest().Test_Br();
+//			new SpeContextTest().TestReturnInt32_Manual();
 
 //			new RegAllocGraphColloringTest().LargeTest();
 
