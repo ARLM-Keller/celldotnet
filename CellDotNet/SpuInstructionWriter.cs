@@ -230,9 +230,13 @@ namespace CellDotNet
 		/// <param name="dest"></param>
 		public void WriteMove(VirtualRegister src, VirtualRegister dest)
 		{
+			Utilities.AssertArgumentNotNull(src, "src");
+			Utilities.AssertArgumentNotNull(dest, "dest");
+
 			// TODO brug Ori som generel move instruktion.
 			// set usesymbolicmove to false to generate code that will allow the
 			// simple cell test program to run (20070715)
+
 			bool useSymbolicMove = true;
 			if (useSymbolicMove)
 			{

@@ -384,26 +384,29 @@ namespace CellDotNet
 		{
 			switch (datatype.CliType)
 			{
-				case CliType.Int32:
-				case CliType.UInt32:
-					return DmaGetValue<int>(lsAddress);
 				case CliType.None:
 				case CliType.Int8:
 				case CliType.UInt8:
 				case CliType.Int16:
 				case CliType.UInt16:
+					break;
+				case CliType.Int32:
+				case CliType.UInt32:
+					return DmaGetValue<int>(lsAddress);
 				case CliType.Int64:
 				case CliType.UInt64:
 				case CliType.NativeInt:
 				case CliType.NativeUInt:
+					break;
 				case CliType.Float32:
+					return DmaGetValue<float>(lsAddress);
 				case CliType.Float64:
 				case CliType.ValueType:
 				case CliType.ObjectType:
 				case CliType.ManagedPointer:
-				default:
-					throw new NotSupportedException("Data type is not supported: " + datatype);
+					break;
 			}
+			throw new NotSupportedException("Data type is not supported: " + datatype);
 		}
 
 
