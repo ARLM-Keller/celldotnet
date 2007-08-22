@@ -235,7 +235,7 @@ namespace CellDotNet
 				case IRCode.Stind_I4:
 					{
 						if (lefttype.IndirectionLevel != 1 && lefttype != StackTypeDescription.NativeInt)
-							throw new InvalidILTreeException("Invalid level of indirection for stind. Stack type: " + lefttype);
+							throw new InvalidIRTreeException("Invalid level of indirection for stind. Stack type: " + lefttype);
 						VirtualRegister ptr = vrleft;
 
 						VirtualRegister loadedvalue = _writer.WriteLqd(ptr, 0);
@@ -574,7 +574,7 @@ namespace CellDotNet
 				case IRCode.Readonly:
 					break;
 				default:
-					throw new InvalidILTreeException("Invalid opcode: " + ilcode);
+					throw new InvalidIRTreeException("Invalid opcode: " + ilcode);
 			}
 
 			_unimplementedOpCodes.Add(inst.Opcode);

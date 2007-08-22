@@ -127,7 +127,7 @@ namespace CellDotNet
 					t = StackTypeDescription.None;
 					break;
 				default:
-					throw new ILException("Invalid FlowControl: " + inst.Opcode.FlowControl);
+					throw new ILSemanticErrorException("Invalid FlowControl: " + inst.Opcode.FlowControl);
 			}
 
 
@@ -428,7 +428,7 @@ namespace CellDotNet
 				case IRCode.Readonly: // readonly.
 					throw new NotImplementedException();
 				default:
-					throw new ILException();
+					throw new ILSemanticErrorException();
 			}
 
 			return t;

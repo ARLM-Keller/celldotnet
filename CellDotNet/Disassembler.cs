@@ -6,6 +6,20 @@ namespace CellDotNet
 {
 	class Disassembler
 	{
+		public static void DisassembleToConsole(CompileContext compileContext)
+		{
+			StringWriter sw = new StringWriter();
+
+			try
+			{
+				new Disassembler().Disassemble(compileContext, sw);
+			}
+			finally
+			{
+				Console.Write(sw.GetStringBuilder());
+			}
+		}
+
 		public void Disassemble(CompileContext compileContext, TextWriter writer)
 		{
 			IEnumerable<ObjectWithAddress> objects = compileContext.GetAllObjectsForDisassembly();

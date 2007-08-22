@@ -234,7 +234,7 @@ namespace CellDotNet
 							// CLI: "The evaluation stack for the current method must be empty except for the value to be returned."
 							if (TotalStackSize > 1)
 							{
-								throw new ILException(string.Format(
+								throw new ILSemanticErrorException(string.Format(
 								                      	"Stack.Count = {0} > 1 for VarPop opcode {1} in method {2} at offset {3:x4} ??",
 								                      	TotalStackSize, reader.OpCode.Name, methodName, reader.Offset));
 							}
@@ -248,7 +248,7 @@ namespace CellDotNet
 							// Build a method call from the stack.
 							MethodBase mr = (MethodBase) reader.Operand;
 							if (TotalStackSize < mr.GetParameters().Length)
-								throw new ILException("Too few parameters on stack.");
+								throw new ILSemanticErrorException("Too few parameters on stack.");
 
 							int hasThisExtraParam = ((int) (mr.CallingConvention & CallingConventions.HasThis) != 0 && 
 							                         reader.OpCode != IROpCodes.Newobj) ? 1 : 0;
@@ -277,7 +277,7 @@ namespace CellDotNet
 						break;
 					case PopBehavior.Pop3:
 						if (reader.OpCode.StackBehaviourPush != StackBehaviour.Push0)
-							throw new ILException("Pop3 with a push != 0?");
+							throw new ILSemanticErrorException("Pop3 with a push != 0?");
 						throw new NotImplementedException();
 					default:
 						if (popbehavior != PopBehavior.Pop0)

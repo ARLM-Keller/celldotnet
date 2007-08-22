@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
+using System.Runtime.Serialization;
 
 namespace CellDotNet
 {
 	[Serializable]
-	public class ILException : Exception
+	public class ILSemanticErrorException : Exception
 	{
 		//
 		// For guidelines regarding the creation of new exception types, see
@@ -15,24 +14,44 @@ namespace CellDotNet
 		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
 		//
 
-		public ILException() { }
-		public ILException(string message) : base(message) { }
-		public ILException(string message, Exception inner) : base(message, inner) { }
-		protected ILException(
-		  System.Runtime.Serialization.SerializationInfo info,
-		  System.Runtime.Serialization.StreamingContext context)
+		public ILSemanticErrorException() { }
+		public ILSemanticErrorException(string message) : base(message) { }
+		public ILSemanticErrorException(string message, Exception inner) : base(message, inner) { }
+		protected ILSemanticErrorException(
+		  SerializationInfo info,
+		  StreamingContext context)
+			: base(info, context) { }
+	}
+
+
+	[Serializable]
+	public class ILParseException : Exception
+	{
+		//
+		// For guidelines regarding the creation of new exception types, see
+		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
+		// and
+		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
+		//
+
+		public ILParseException() { }
+		public ILParseException(string message) : base(message) { }
+		public ILParseException(string message, Exception inner) : base(message, inner) { }
+		protected ILParseException(
+		  SerializationInfo info,
+		  StreamingContext context)
 			: base(info, context) { }
 	}
 
 	[Serializable]
-	public class InvalidILTreeException : Exception
+	public class InvalidIRTreeException : Exception
 	{
-		public InvalidILTreeException() { }
-		public InvalidILTreeException(string message) : base(message) { }
-		public InvalidILTreeException(string message, Exception inner) : base(message, inner) { }
-		protected InvalidILTreeException(
-		  System.Runtime.Serialization.SerializationInfo info,
-		  System.Runtime.Serialization.StreamingContext context)
+		public InvalidIRTreeException() { }
+		public InvalidIRTreeException(string message) : base(message) { }
+		public InvalidIRTreeException(string message, Exception inner) : base(message, inner) { }
+		protected InvalidIRTreeException(
+		  SerializationInfo info,
+		  StreamingContext context)
 			: base(info, context) { }
 	}
 
@@ -49,8 +68,8 @@ namespace CellDotNet
 		public ILNotImplementedException(IRCode ilcode) : this(ilcode.ToString()) { }
 
 		protected ILNotImplementedException(
-		  System.Runtime.Serialization.SerializationInfo info,
-		  System.Runtime.Serialization.StreamingContext context)
+		  SerializationInfo info,
+		  StreamingContext context)
 			: base(info, context) { }
 	}
 
@@ -63,8 +82,8 @@ namespace CellDotNet
 		public BadSpuInstructionException(string message) : base(message) { }
 		public BadSpuInstructionException(string message, Exception inner) : base(message, inner) { }
 		protected BadSpuInstructionException(
-		  System.Runtime.Serialization.SerializationInfo info,
-		  System.Runtime.Serialization.StreamingContext context)
+		  SerializationInfo info,
+		  StreamingContext context)
 			: base(info, context) { }
 	}
 
@@ -89,8 +108,8 @@ namespace CellDotNet
 		public LibSpeException(string message) : base(message + GetErrorMessage()) { }
 		public LibSpeException(string message, Exception inner) : base(message + GetErrorMessage(), inner) { }
 		protected LibSpeException(
-		  System.Runtime.Serialization.SerializationInfo info,
-		  System.Runtime.Serialization.StreamingContext context)
+		  SerializationInfo info,
+		  StreamingContext context)
 			: base(info, context) { }
 	}
 }
