@@ -21,8 +21,7 @@ namespace CellDotNet
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S6AddressPatchingDone);
 
-			Disassembler da = new Disassembler();
-			da.Disassemble(cc, Console.Out);
+			Disassembler.DisassembleToConsole(cc);
 		}
 	}
 }

@@ -147,7 +147,7 @@ namespace CellDotNet
 			IntReturnDelegate del = delegate { return magicNumber; };
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
-			new Disassembler().Disassemble(cc, Console.Out);
+			Disassembler.DisassembleToConsole(cc);
 
 			if (!SpeContext.HasSpeHardware)
 				return;

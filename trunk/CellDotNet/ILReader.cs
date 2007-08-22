@@ -139,19 +139,12 @@ namespace CellDotNet
 //				return true;
 //			}
 
-			short ocval;
-			if (_readoffset + 1 < _il.Length)
+			ushort ocval;
+			if (_il[_readoffset] == 0xfe)
 			{
-				if (_il[_readoffset + 1] == 0xfe)
-				{
-					ocval = (short) (_il[_readoffset] | (_il[_readoffset + 1] << 8));
-					_readoffset += 2;
-				}
-				else
-				{
-					ocval = _il[_readoffset];
-					_readoffset += 1;
-				}
+				Utilities.Assert(_readoffset + 1 < _il.Length, "_readoffset + 1 < _il.Length");
+				ocval = (ushort) ((_il[_readoffset] << 8 ) | _il[_readoffset + 1]);
+				_readoffset += 2;
 			}
 			else
 			{
@@ -160,13 +153,27 @@ namespace CellDotNet
 			}
 			
 			OpCode srOpcode;
-			srOpcode = _ocmap[ocval];
+			try
+			{
+				srOpcode = _ocmap[(short)ocval];
+			}
+			catch (KeyNotFoundException)
+			{
+				throw new ILParseException(
+					string.Format("Opcode bytes {0:x4} from IL offset {1:x6} does not exist in the opcode map. This indicates invalid IL or a bug in this class.", ocval, Offset));
+			}
 			if (srOpcode.OpCodeType == OpCodeType.Prefix)
 				throw new NotImplementedException("Prefix opcodes are not implemented. Used prefix is: " + srOpcode.Name + ".");
 
-			ReadInstructionArguments(srOpcode);
-			RemoveMacro(ref srOpcode);
-
+			try
+			{
+				ReadInstructionArguments(srOpcode);
+				RemoveMacro(ref srOpcode);
+			}
+			catch (Exception e)
+			{
+				throw new ILParseException(string.Format("An error occurred while reading IL starting at offset {0:x4}.", Offset), e);
+			}
 
 			IROpCode ircode;
 			if (!_irmap.TryGetValue(srOpcode.Value, out ircode))
@@ -294,7 +301,7 @@ namespace CellDotNet
 					_operand = ReadSingle();
 					break;
 				default:
-					throw new ILException("Unknown operand type: " + srOpcode.OperandType);
+					throw new ILSemanticErrorException("Unknown operand type: " + srOpcode.OperandType);
 			}
 		}
 

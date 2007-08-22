@@ -13,6 +13,32 @@ namespace CellDotNet
 	public class ILReaderTest : UnitTest
 	{
 		[Test]
+		public void TestParseFEImmediate()
+		{
+
+			ILWriter writer = new ILWriter();
+			writer.WriteOpcode(OpCodes.Ldc_I4);
+			writer.WriteInt32(0xfe);
+
+			ILReader r = writer.CreateReader();
+
+			int count = 0;
+			bool sawldc = false;
+			while (r.Read())
+			{
+				if (r.OpCode == IROpCodes.Ldc_I4)
+				{
+					sawldc = true;
+					AreEqual(0xfe, (int)r.Operand);
+				}
+
+				Assert.Less(count, 2);
+			}
+
+			IsTrue(sawldc);
+		}
+
+		[Test]
 		public void BasicParseTest()
 		{
 			int sharedvar = 100;
@@ -31,10 +57,14 @@ namespace CellDotNet
 
 			ILReader r = new ILReader(del.Method);
 			int icount = 0;
+			List<string> history = new List<string>();
 			while (r.Read())
 			{
 				if (icount > 100)
 					throw new Exception("Too many instructions.");
+
+				// For debugging.
+				history.Add(string.Format("{0:x4} {1}", r.Offset, r.OpCode.Name));
 
 				icount++;
 			}
