@@ -183,7 +183,25 @@ namespace CellDotNet
 			}
 		}
 
+		[Test]
+		public void TestRunProgram_ReturnSingle()
+		{
+			const float magicNumber = float.NaN;
+			SingleReturnDelegate del = delegate { return magicNumber; };
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			using (SpeContext ctx = new SpeContext())
+			{
+				object retval = ctx.RunProgram(del);
+				AreEqual(typeof(float), retval.GetType());
+				AreEqual(magicNumber, (float)retval);
+			}
+		}
+
 		private delegate int IntReturnDelegate();
+		private delegate float SingleReturnDelegate();
 
 		[Test, Ignore("Enable when delegate wrapper is supported.")]
 		public void TestDelegateRun_IntReturn()

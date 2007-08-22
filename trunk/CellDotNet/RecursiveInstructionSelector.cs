@@ -96,6 +96,11 @@ namespace CellDotNet
 			}
 		}
 
+		static private unsafe uint ReinterpretAsUInt(float f)
+		{
+			return *((uint*) &f);
+		}
+
 		private VirtualRegister GenerateCode(TreeInstruction inst)
 		{
 			VirtualRegister vrleft = null, vrright = null;
@@ -132,7 +137,12 @@ namespace CellDotNet
 				case IRCode.Ldc_I8:
 					break;
 				case IRCode.Ldc_R4:
-					break;
+					{
+						uint val = ReinterpretAsUInt((float) inst.Operand);
+						VirtualRegister reg = _writer.WriteIlhu((int) ((val >> 16) & 0xffff));
+						_writer.WriteIohl(reg, (int) (val & 0xffff));
+						return reg;
+					}
 				case IRCode.Ldc_R8:
 					break;
 				case IRCode.Dup:
