@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 
 namespace CellDotNet
 {
@@ -58,11 +59,6 @@ namespace CellDotNet
 			return first;
 		}
 
-		public static int Align16(int value)
-		{
-			return (value + 15) & ~0xf;
-		}
-
 		/// <summary>
 		/// You can use this one to make resharper think that a variable is used so that it won't
 		/// show a warning. Can be handy when the variable isn't used for anything but debugging.
@@ -75,19 +71,63 @@ namespace CellDotNet
 			
 		}
 
+		public static int Align16(int value)
+		{
+			return (value + 15) & ~0xf;
+		}
+
+		public static bool IsQuadwordAligned(LocalStorageAddress lsa)
+		{
+			return IsQuadwordAligned(lsa.Value);
+		}
+
 		public static bool IsQuadwordAligned(int lsa)
 		{
-			return (lsa % 16) != 0;
+			return (lsa % 16) == 0;
 		}
 
 		public static bool IsQuadwordAligned(IntPtr ea)
 		{
-			return ((long)ea % 16) != 0;
+			return ((long)ea % 16) == 0;
 		}
 
 		public static bool IsQuadwordMultiplum(int bytecount)
 		{
-			return (bytecount % 16) != 0;
+			return (bytecount % 16) == 0;
+		}
+
+		static public void DumpMemory(SpeContext context, LocalStorageAddress lsa, int bytecount, TextWriter writer)
+		{
+			AssertArgument(IsQuadwordAligned(lsa), "IsQuadwordAligned(lsa): " + lsa.Value.ToString("x6"));
+
+			int[] mem = context.GetCopyOffLocalStorage();
+			if (lsa.Value + bytecount > mem.Length * 4)
+				throw new ArgumentException("Memory out of range.");
+			DumpMemory(mem, lsa.Value / 4, lsa, bytecount, writer);
+		}
+
+		static public void DumpMemory(int[] memDump, int arrayOffset, LocalStorageAddress arrayOffsetAddress, int bytecount, TextWriter writer)
+		{
+			int bytesPerLine = 16;
+			for (int i = 0; i < Math.Min(memDump.Length, bytecount / 4); i++)
+			{
+				int address = arrayOffsetAddress.Value + i*4;
+				if (address % bytesPerLine == 0)
+				{
+					if (i > 0)
+						writer.WriteLine();
+
+					writer.Write("{0:x6}: ", address);
+				}
+				else if (address % 8 == 0)
+					writer.Write(" ");
+				else if (address % 4 == 0)
+					writer.Write(" ");
+
+				uint val = (uint)memDump[i];
+				writer.Write(" {0:x2} {1:x2} {2:x2} {3:x2}", val >> 0x18, (val >> 0x10) & 0xff, (val >> 8) & 0xff, val & 0xff);
+			}
+			writer.WriteLine();
 		}
 	}
 }

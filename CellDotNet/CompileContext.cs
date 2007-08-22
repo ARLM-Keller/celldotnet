@@ -218,7 +218,7 @@ namespace CellDotNet
 		/// optionally patching, including initialization and <see cref="RegisterSizedObject"/> objects.
 		/// </summary>
 		/// <returns></returns>
-		private IEnumerable<ObjectWithAddress> GetAllObjects()
+		private List<ObjectWithAddress> GetAllObjects()
 		{
 			List<ObjectWithAddress> all = new List<ObjectWithAddress>();
 			// SPU routines go first, since we start execution at address 0.
@@ -247,21 +247,16 @@ namespace CellDotNet
 		{
 			AssertState(CompileContextState.S6AddressPatchingDone);
 
-			_emittedCode = new int[_totalCodeSize];
-			foreach (ObjectWithAddress owa in GetAllObjects())
+			_emittedCode = new int[Utilities.Align16(_totalCodeSize) / 4];
+			List<ObjectWithAddress> objects = GetAllObjects();
+			List<SpuRoutine> routines = new List<SpuRoutine>();
+			foreach (ObjectWithAddress o in objects)
 			{
-				/// Non-routine objects don't need to be consulted, since they simply get an address
-				/// and currently can't be initialized.
-				SpuRoutine routine = owa as SpuRoutine;
-				if (routine == null)
-					continue;
-
-				int[] code = routine.Emit();
-				Buffer.BlockCopy(code, 0, _emittedCode, routine.Offset, code.Length);
+				SpuRoutine routine = o as SpuRoutine;
+				if (routine != null)
+					routines.Add(routine);
 			}
-
-			// TODO: Do something with the code.
-
+			ILOpCodeExecutionTest.CopyCode(_emittedCode, routines);
 			State = CompileContextState.S7CodeEmitted;
 		}
 

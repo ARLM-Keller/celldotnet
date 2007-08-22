@@ -350,8 +350,6 @@ namespace CellDotNet
 
 		public void WriteDivU(VirtualRegister dividend, VirtualRegister divisor, VirtualRegister quotient, VirtualRegister remainder)
 		{
-			SpuInstruction brreturn;
-
 			WriteIl(remainder, 0);
 			WriteIl(quotient, 0);
 

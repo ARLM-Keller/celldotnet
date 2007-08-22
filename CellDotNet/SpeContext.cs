@@ -603,11 +603,11 @@ namespace CellDotNet
 		private void spe_mfcio_get(int lsa, IntPtr ea, int size, uint tag, uint tid, uint rid)
 		{
 			// Seems like 16 bytes is the smallest transfer unit that works...
-			if ((size <= 0) || Utilities.IsQuadwordMultiplum(size))
+			if ((size <= 0) || !Utilities.IsQuadwordMultiplum(size))
 				throw new ArgumentException("Size is not a positive multiplum of 16 bytes.");
-			if (Utilities.IsQuadwordAligned(lsa))
+			if (!Utilities.IsQuadwordAligned(lsa))
 				throw new ArgumentException("Not 16-byte aligned LSA.");
-			if (Utilities.IsQuadwordAligned(ea))
+			if (!Utilities.IsQuadwordAligned(ea))
 				throw new ArgumentException("Not 16-byte aligned EA.");
 
 			Trace.WriteLine(string.Format("Starting DMA: spe_mfcio_get: EA: {0:x8}, LSA: {1:x6}, size: {2:x6}", (int)ea, lsa, size));
@@ -629,11 +629,11 @@ namespace CellDotNet
 		private void spe_mfcio_put(int lsa, IntPtr ea, int size, uint tag, uint tid, uint rid)
 		{
 			// Seems like 16 bytes is the smallest transfer unit that works...
-			if ((size <= 0) || Utilities.IsQuadwordMultiplum(size))
+			if ((size <= 0) || !Utilities.IsQuadwordMultiplum(size))
 				throw new ArgumentException("Size is not a positive multiplum of 16 bytes.");
-			if (Utilities.IsQuadwordAligned(lsa))
+			if (!Utilities.IsQuadwordAligned(lsa))
 				throw new ArgumentException("Not 16-byte aligned LSA.");
-			if (Utilities.IsQuadwordAligned(ea))
+			if (!Utilities.IsQuadwordAligned(ea))
 				throw new ArgumentException("Not 16-byte aligned EA.");
 
 			Trace.WriteLine(string.Format("Starting DMA: spe_mfcio_put: EA: {0:x8}, LSA: {1:x6}, size: {2:x6}", (int)ea, lsa, size));

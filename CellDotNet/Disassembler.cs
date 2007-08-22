@@ -8,11 +8,16 @@ namespace CellDotNet
 	{
 		public static void DisassembleToConsole(CompileContext compileContext)
 		{
+			DisassembleToConsole(compileContext.GetAllObjectsForDisassembly());
+		}
+
+		public static void DisassembleToConsole(IEnumerable<ObjectWithAddress> objects)
+		{
 			StringWriter sw = new StringWriter();
 
 			try
 			{
-				new Disassembler().Disassemble(compileContext, sw);
+				new Disassembler().Disassemble(objects, sw);
 			}
 			finally
 			{
@@ -49,7 +54,7 @@ namespace CellDotNet
 			writer.WriteLine("# Data:");
 			foreach (ObjectWithAddress o in nonRoutines)
 			{
-				writer.WriteLine("# object offset: {0:x6}, size: {1:x6}.", o.Offset, o.Size);
+				writer.WriteLine("# object offset: {0:x6}, size: {1:x6}, type: {2}.", o.Offset, o.Size, o.GetType().Name);
 			}
 
 			writer.WriteLine();
@@ -66,7 +71,7 @@ namespace CellDotNet
 					continue;
 
 				writer.WriteLine();
-				writer.WriteLine("# Routine offset: {0:x6}, size: {1:x6}.", r.Offset, r.Size);
+				writer.WriteLine("# Routine offset: {0:x6}, size: {1:x6}, type: {2}.", r.Offset, r.Size, r.GetType().Name);
 				int newoffset = DisassembleInstructions(r.GetInstructions(), r.Offset, writer);
 
 				if (newoffset != r.Offset + r.Size)
