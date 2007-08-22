@@ -141,7 +141,7 @@ namespace CellDotNet
 		}
 
 		[Test]
-		public void TestIntReturn()
+		public void TestReturnInt32_Manual()
 		{
 			const int magicNumber = 40;
 			IntReturnDelegate del = delegate { return magicNumber; };
@@ -154,13 +154,40 @@ namespace CellDotNet
 
 			using (SpeContext ctx = new SpeContext())
 			{
+				Console.WriteLine("Mem initially:");
+				Utilities.DumpMemory(ctx, (LocalStorageAddress)0, 0x70, Console.Out);
+
 				int[] code = cc.GetEmittedCode();
+				Console.WriteLine("Code:");
+				Utilities.DumpMemory(code, 0, (LocalStorageAddress)0, code.Length * 4, Console.Out);
 				ctx.LoadProgram(code);
 				int rc = ctx.Run();
+
+				Console.WriteLine("Memory after execution:");
+				Utilities.DumpMemory(ctx, (LocalStorageAddress) 0, 0x80, Console.Out);
+				Console.WriteLine();
+
 				AreEqual(0, rc);
 
 				int retval = ctx.DmaGetValue<int>(cc.ReturnValueAddress);
 				AreEqual(magicNumber, retval);
+			}
+		}
+
+		[Test]
+		public void TestReturnInt32()
+		{
+			const int magicNumber = 40;
+			IntReturnDelegate del = delegate { return magicNumber; };
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			using (SpeContext ctx = new SpeContext())
+			{
+				object retval = ctx.RunProgram(del);
+				AreEqual(typeof(int), retval.GetType());
+				AreEqual(magicNumber, (int)retval);
 			}
 		}
 

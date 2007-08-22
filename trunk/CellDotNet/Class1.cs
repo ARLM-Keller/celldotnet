@@ -10,14 +10,14 @@ namespace CellDotNet
 	{
 		static public void Main(string[] args)
 		{
-//			Trace.Listeners.Add(new ConsoleTraceListener());
+			Trace.Listeners.Add(new ConsoleTraceListener());
 
 //			new SpeContextTest().TestPutGetInt32();
 
 //			new SpeContextTest().TestFirstCellProgram();
 
-			new SpuInitializerTest().TestInitialization();
-			return;
+//			new ILOpCodeExecutionTest().Test_Ret();
+			new SpeContextTest().TestReturnInt32_Manual();
 
 //			new RegAllocGraphColloringTest().LargeTest();
 
@@ -25,7 +25,7 @@ namespace CellDotNet
 
 //			new ILOpCodeExecutionTest().Test_Ceq_I4();
 
-			new ILOpCodeExecutionTest().Test_Div_Un();
+//			new ILOpCodeExecutionTest().Test_Div_Un();
 
 //			new SpuInitializerTest().TestFun();
 

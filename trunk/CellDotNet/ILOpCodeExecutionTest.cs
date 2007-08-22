@@ -178,17 +178,18 @@ namespace CellDotNet
 			spuinit.Offset = 0;
 			spuinit.PerformAddressPatching();
 
-			int[] initcode = spuinit.Emit();
-			int[] methodcode = spum.Emit();
 
-			Assert.Less(initcode.Length * 4, 1025, "SpuInitializer code is to large", null);
+//			Assert.Less(initcode.Length * 4, 1025, "SpuInitializer code is to large", null);
 
-			int[] code = new int[1024/4 + methodcode.Length];
+			int[] code = new int[1024];
 
-			new Disassembler().Disassemble(new ObjectWithAddress[] { spuinit, spum }, Console.Out);
+			CopyCode(code, new SpuRoutine[] { spuinit, spum });
+			Disassembler.DisassembleToConsole(new ObjectWithAddress[] { spuinit, spum, returnAddressObject });
 
-			Buffer.BlockCopy(initcode, 0, code, 0, initcode.Length*4);
-			Buffer.BlockCopy(methodcode, 0, code, 1024, methodcode.Length*4);
+//			int[] initcode = spuinit.Emit();
+//			int[] methodcode = spum.Emit();
+//			Buffer.BlockCopy(initcode, 0, code, 0, initcode.Length*4);
+//			Buffer.BlockCopy(methodcode, 0, code, 1024, methodcode.Length*4);
 
 			if (!SpeContext.HasSpeHardware)
 				return;
@@ -201,6 +202,31 @@ namespace CellDotNet
 				T returnValue = ctx.DmaGetValue<T>((LocalStorageAddress) returnAddressObject.Offset);
 
 				AreEqual(expetedValue, returnValue, "SPU delegate execution returned a wrong value.");
+			}
+		}
+
+		static internal void CopyCode(int[] targetBuffer, ICollection<SpuRoutine> objects)
+		{
+			Set<int> usedOffsets = new Set<int>();
+
+			foreach (SpuRoutine routine in objects)
+			{
+				int[] code = routine.Emit();
+
+				try
+				{
+					Utilities.Assert(routine.Offset >= 0, "routine.Offset >= 0");
+					Utilities.Assert(code.Length == routine.Size / 4, string.Format("code.Length == routine.Size * 4. code.Length: {0:x4}, routine.Size: {1:x4}", code.Length, routine.Size));
+					Utilities.Assert(!usedOffsets.Contains(routine.Offset), "!usedOffsets.Contains(routine.Offset). Offset: " + routine.Offset.ToString("x6"));
+					usedOffsets.Add(routine.Offset);
+
+					Buffer.BlockCopy(code, 0, targetBuffer, routine.Offset, routine.Size);
+				}
+				catch (Exception e)
+				{
+					throw new BadCodeLayoutException(e.Message, e);
+				}
+
 			}
 		}
 	}

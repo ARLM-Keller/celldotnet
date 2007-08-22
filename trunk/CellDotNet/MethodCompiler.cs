@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -367,6 +368,9 @@ namespace CellDotNet
 		{
 			AssertState(MethodCompileState.S5RegisterAllocationDone);
 
+			StackTrace st = new StackTrace();
+			Console.WriteLine("RemoveRedundantMoves called. Stack:");
+			Console.WriteLine(st);
 			RegAllocGraphColloring.RemoveRedundantMoves(SpuBasicBlocks);
 
 			State = MethodCompileState.S6RemoveRedundantMoves;
