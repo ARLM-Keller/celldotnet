@@ -96,6 +96,11 @@ namespace CellDotNet
 			return (bytecount % 16) == 0;
 		}
 
+		static public void CopyCode(int[] src, int srcOffset, int[] dest, int destOffset, int count)
+		{
+			Buffer.BlockCopy(src, srcOffset*4, dest, destOffset*4, count*4);
+		}
+
 		static public void DumpMemory(SpeContext context, LocalStorageAddress lsa, int bytecount, TextWriter writer)
 		{
 			AssertArgument(IsQuadwordAligned(lsa), "IsQuadwordAligned(lsa): " + lsa.Value.ToString("x6"));

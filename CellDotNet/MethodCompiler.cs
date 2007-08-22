@@ -496,9 +496,9 @@ namespace CellDotNet
 			}
 
 			int[] combined = new int[prologbin.Length + bodybin.Length + epilogbin.Length];
-			Buffer.BlockCopy(prologbin, 0, combined, 0, prologbin.Length);
-			Buffer.BlockCopy(bodybin, 0, combined, prologbin.Length, bodybin.Length);
-			Buffer.BlockCopy(epilogbin, 0, combined, prologbin.Length + bodybin.Length, epilogbin.Length);
+			Utilities.CopyCode(prologbin, 0, combined, 0, prologbin.Length);
+			Utilities.CopyCode(bodybin, 0, combined, prologbin.Length, bodybin.Length);
+			Utilities.CopyCode(epilogbin, 0, combined, prologbin.Length + bodybin.Length, epilogbin.Length);
 
 			return combined;
 		}
