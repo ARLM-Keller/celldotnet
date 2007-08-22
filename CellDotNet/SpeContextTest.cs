@@ -166,7 +166,7 @@ namespace CellDotNet
 
 		private delegate int IntReturnDelegate();
 
-		[Test]
+		[Test, Ignore("Enable when delegate wrapper is supported.")]
 		public void TestDelegateRun_IntReturn()
 		{
 			IntReturnDelegate del = delegate { return 40; };

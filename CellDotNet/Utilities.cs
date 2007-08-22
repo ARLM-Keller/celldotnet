@@ -74,5 +74,20 @@ namespace CellDotNet
 		{
 			
 		}
+
+		public static bool IsQuadwordAligned(int lsa)
+		{
+			return (lsa % 16) != 0;
+		}
+
+		public static bool IsQuadwordAligned(IntPtr ea)
+		{
+			return ((long)ea % 16) != 0;
+		}
+
+		public static bool IsQuadwordMultiplum(int bytecount)
+		{
+			return (bytecount % 16) != 0;
+		}
 	}
 }

@@ -22,7 +22,7 @@
     <Position X="5.5" Y="3" Width="2.5" />
     <TypeIdentifier>
       <FileName>SpuRoutine.cs</FileName>
-      <HashCode>AAAAAAAAAAACAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAACAAAAAAAAABAAAAAAAAAAAAAAAAAAAgA=</HashCode>
     </TypeIdentifier>
   </Class>
   <Class Name="CellDotNet.CalleeSavesStoreRoutine" Collapsed="true">
@@ -36,21 +36,28 @@
     <Position X="4.5" Y="5" Width="1.5" />
     <TypeIdentifier>
       <FileName>MethodCompiler.cs</FileName>
-      <HashCode>BAAEABAAIEAmrAUAAIBQCDJgAAoJEAMwEIQAhgCMAMA=</HashCode>
+      <HashCode>BAAEABAAIEAGpAEAAIBQCBJAAgIBEAM4AYQABgCMAsA=</HashCode>
     </TypeIdentifier>
   </Class>
   <Class Name="CellDotNet.SpuInitializer" Collapsed="true">
     <Position X="6.75" Y="5" Width="1.5" />
     <TypeIdentifier>
       <FileName>SpuInitializer.cs</FileName>
-      <HashCode>AAAAAAAAAAACgAAAAAAAABAAAAAAAAAAAAAAAAAAAIA=</HashCode>
+      <HashCode>AAAAAAAAAAACgAAEAAAAABAAAAAAAAAAAAAAAAAAAoA=</HashCode>
     </TypeIdentifier>
   </Class>
   <Class Name="CellDotNet.SpuManualRoutine" Collapsed="true">
     <Position X="9" Y="5" Width="1.5" />
     <TypeIdentifier>
       <FileName>SpuManualRoutine.cs</FileName>
-      <HashCode>AAAAAAAAAAACgAAAAAAAABAAAAAAAAAAAAAAAAEAAIA=</HashCode>
+      <HashCode>AAAAABAAAAACgAAAAAAAABAAAAAAAAAAEAAAAAEAAoA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CellDotNet.DataObject" Collapsed="true">
+    <Position X="0.75" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>DataObject.cs</FileName>
+      <HashCode>AAAAAAAAAAAAgAAAAAAAAAAAAgAAAAAAAAAAAAIAAAA=</HashCode>
     </TypeIdentifier>
   </Class>
 </ClassDiagram>

@@ -16,7 +16,8 @@ namespace CellDotNet
 
 //			new SpeContextTest().TestFirstCellProgram();
 
-//			new SpuInitializerTest().TestInitialization();
+			new SpuInitializerTest().TestInitialization();
+			return;
 
 //			new RegAllocGraphColloringTest().LargeTest();
 

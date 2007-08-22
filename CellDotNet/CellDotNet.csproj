@@ -37,8 +37,7 @@
       <HintPath>..\..\..\..\..\Program Files\NUnit 2.4\bin\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithms.cs" />
@@ -47,6 +46,7 @@
     <Compile Include="CalleeSavesStoreRoutine.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="CompileContextTest.cs" />
+    <Compile Include="DataObject.cs" />
     <Compile Include="Disassembler.cs" />
     <Compile Include="DisassemblerTest.cs" />
     <Compile Include="FlowGraph.cs" />
