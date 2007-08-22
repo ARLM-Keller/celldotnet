@@ -654,6 +654,12 @@ namespace CellDotNet
 		public static readonly SpuOpCode stop =
 				new SpuOpCode("stop", "Stop and Signal", SpuInstructionFormat.WEIRD, "00000000000");
 
+		public static readonly SpuOpCode lnop =
+			new SpuOpCode("lnop", "No Operation (Load)", SpuInstructionFormat.WEIRD, "00000000001");
+
+		public static readonly SpuOpCode nop =
+			new SpuOpCode("nop", "No Operation (Execute)", SpuInstructionFormat.WEIRD, "01000000001");
+
 		// *****************************************
 		// Pseudo instructions.
 

@@ -295,16 +295,53 @@ namespace CellDotNet
 				case IRCode.Div:
 					break;
 				case IRCode.Div_Un:
+// TODO FIXME
+//					VirtualRegister result = new VirtualRegister();
+//					_writer.WriteDivU(vrleft, vrright, result, new VirtualRegister());
+//					return result;
 					break;
 				case IRCode.Rem:
 					break;
 				case IRCode.Rem_Un:
 					break;
 				case IRCode.And:
+					switch (lefttype.CliType)
+					{
+						case CliType.Int32:
+						case CliType.UInt32:
+						case CliType.NativeInt:
+						case CliType.NativeUInt:
+							return _writer.WriteAnd(vrleft, vrright);
+						case CliType.Int64:
+						case CliType.UInt64:
+							break;
+					}
 					break;
 				case IRCode.Or:
+					switch (lefttype.CliType)
+					{
+						case CliType.Int32:
+						case CliType.UInt32:
+						case CliType.NativeInt:
+						case CliType.NativeUInt:
+							return _writer.WriteOr(vrleft, vrright);
+						case CliType.Int64:
+						case CliType.UInt64:
+							break;
+					}
 					break;
 				case IRCode.Xor:
+					switch (lefttype.CliType)
+					{
+						case CliType.Int32:
+						case CliType.UInt32:
+						case CliType.NativeInt:
+						case CliType.NativeUInt:
+							return _writer.WriteXor(vrleft, vrright);
+						case CliType.Int64:
+						case CliType.UInt64:
+							break;
+					}
 					break;
 				case IRCode.Shl:
 					break;
@@ -592,6 +629,14 @@ namespace CellDotNet
 			_writer.WriteBranch(branchopcode);
 			_writer.LastInstruction.Rt = conditionregister;
 			_branchInstructions.Add(new KeyValuePair<SpuInstruction, IRBasicBlock>(_writer.LastInstruction, target));
+		}
+
+		private void WriteConditionalBranch(SpuOpCode branchopcode, VirtualRegister conditionregister, SpuBasicBlock target)
+		{
+			_writer.WriteBranch(branchopcode);
+			_writer.LastInstruction.Rt = conditionregister;
+			_writer.LastInstruction.JumpTarget = target;
+//			_branchInstructions.Add(new KeyValuePair<SpuInstruction, IRBasicBlock>(_writer.LastInstruction, target));
 		}
 
 		private static VirtualRegister GetMethodVariableRegister(TreeInstruction inst)

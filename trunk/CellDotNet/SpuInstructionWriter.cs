@@ -230,6 +230,7 @@ namespace CellDotNet
 		/// <param name="dest"></param>
 		public void WriteMove(VirtualRegister src, VirtualRegister dest)
 		{
+			// TODO brug Ori som generel move instruktion.
 			// set usesymbolicmove to false to generate code that will allow the
 			// simple cell test program to run (20070715)
 			bool useSymbolicMove = true;
@@ -310,6 +311,7 @@ namespace CellDotNet
 		/// <returns></returns>
 		public void WriteLoadI4(VirtualRegister rt, int i)
 		{
+			// TODO overvej hvordan dette virker i forbindelse med signed extendet shifting.
 			if (i >> 16 == 0)
 			{
 				WriteIl(rt, i);
@@ -334,6 +336,205 @@ namespace CellDotNet
 			return rt;
 		}
 
+		public void WriteNop()
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.nop);
+			AddInstruction(inst);
+		}
+
+		public void WriteLnop()
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.lnop);
+			AddInstruction(inst);
+		}
+
+		public void WriteDivU(VirtualRegister dividend, VirtualRegister divisor, VirtualRegister quotient, VirtualRegister remainder)
+		{
+			SpuInstruction brreturn;
+
+			WriteIl(remainder, 0);
+			WriteIl(quotient, 0);
+
+			//if(divisor == 0) return;
+			WriteBranch(SpuOpCode.brz);
+			LastInstruction.Rt = divisor;
+			SpuInstruction br1 = LastInstruction; // TODO Skal brance til slutningen af divisionen.
+
+//			if (divisor > dividend) {remainder = dividend; return;}
+			VirtualRegister rr1 = new VirtualRegister();
+			WriteClgt(rr1, divisor, dividend);
+			WriteBranch(SpuOpCode.brz);
+			LastInstruction.Rt = rr1;
+			SpuInstruction br2 = LastInstruction; // brancher til efter if sætningen.
+			WriteMove(dividend, remainder);
+			WriteBranch(SpuOpCode.br);
+			SpuInstruction br3 = LastInstruction; // TODO brancher til slutningen af divsion
+
+			BeginNewBasicBlock();
+
+			br2.JumpTarget = CurrentBlock;
+
+			// if (divisor == dividend) {quotient = 1; return;}
+			VirtualRegister rr2 = new VirtualRegister();
+			WriteCeq(rr1, divisor, dividend);
+			WriteBranch(SpuOpCode.brz);
+			LastInstruction.Rt = rr1;
+			SpuInstruction br4 = LastInstruction; // TODO brancher til efter if sætningen.
+			WriteIl(quotient, 1);
+			WriteBranch(SpuOpCode.br);
+			SpuInstruction br5 = LastInstruction; // TODO brancher til slutningen af divsion
+
+			BeginNewBasicBlock();
+
+			br4.JumpTarget = CurrentBlock;
+
+			VirtualRegister numBit = new VirtualRegister();
+			WriteIl(numBit, 32);
+
+			BeginNewBasicBlock();
+
+			VirtualRegister bit = new VirtualRegister();
+			VirtualRegister d = new VirtualRegister();
+
+
+			//while (divisor > remainder){bit = (dividend & 0x80000000) >> 31;remainder = (remainder << 1) | bit;d = dividend;dividend = dividend << 1;num_bits--;}
+			VirtualRegister rr3 = new VirtualRegister();
+			WriteClgt(rr3, divisor, remainder);
+			WriteBranch(SpuOpCode.brz);
+			LastInstruction.Rt = rr3;
+			SpuInstruction br6 = LastInstruction; // TODO Branch til slutningen af while
+			// while body
+			//bit = (dividend & 0x80000000)
+
+			int tmp;
+			unchecked
+			{
+				tmp = (int) 0x80000000;
+			}
+			WriteLoadI4(bit, tmp);
+
+			WriteAnd(bit, dividend, bit);
+
+			//bit = bit >> 31
+			WriteRotmi(bit, bit, 33);
+
+			// remainder = (remainder << 1) | bit
+			WriteShli(remainder, remainder, 1);
+			WriteOr(remainder, remainder, bit);
+
+			// d = dividend
+			WriteMove(dividend, d);
+
+			//dividend = dividend << 1
+			WriteShli(dividend, dividend, 1);
+
+			//num_bits--
+			WriteAi(numBit, numBit, -1);
+
+			WriteBranch(SpuOpCode.br);
+			LastInstruction.JumpTarget = CurrentBlock;
+			//End of while loop
+
+			BeginNewBasicBlock();
+			br6.JumpTarget = CurrentBlock;
+
+			//  dividend = d;remainder = remainder >> 1;num_bits++;
+			WriteMove(d, dividend);
+			WriteRotmi(remainder, remainder, -63);
+			WriteAi(numBit, numBit, 1);
+
+			//for (i = 0; i < num_bits; i++){
+			//	bit = (dividend & 0x80000000) >> 31;remainder = (remainder << 1) | bit;
+			//	t = remainder - divisor;q = !((t & 0x80000000) >> 31);
+			//	dividend = dividend << 1;quotient = (quotient << 1) | q;
+			//	if (q){remainder = t;}}
+
+			VirtualRegister i = new VirtualRegister();
+			VirtualRegister rr6 = new VirtualRegister();
+			WriteCgt(rr6, numBit, i);
+			WriteBranch(SpuOpCode.brz);
+			SpuInstruction br7 = LastInstruction; // TODO branche til egter for løkken.
+			br7.Rt = rr6;
+			//bit = (dividend & 0x80000000)
+			unchecked
+			{
+				tmp = (int)0x80000000;
+			}
+			WriteLoadI4(bit, tmp);
+			WriteAnd(bit, dividend, bit);
+
+			//bit = bit >> 31
+			WriteRotmi(bit, bit, 33);
+			
+			//remainder = (remainder << 1) | bit
+			WriteShli(remainder, remainder, 1);
+			WriteOr(remainder, remainder, bit);
+
+			// t = remainder - divisor 
+			VirtualRegister t = new VirtualRegister();
+			WriteSf(t, divisor, remainder);
+
+			//q = !((t & 0x80000000) >> 31)
+			VirtualRegister q = new VirtualRegister();
+			unchecked
+			{
+				tmp = (int)0x80000000;
+			}
+			WriteLoadI4(q, tmp);
+
+			WriteAnd(q, t, q);
+
+			WriteRotmi(q, q, 33);
+
+			WriteCeqi(q, q, 0);
+
+			// TODO FIXME q er 0 efter Ceqi selvom q var 0 før.
+
+//			VirtualRegister tmpvr1 = new VirtualRegister();
+//			WriteIl(tmpvr1, 0);
+//			VirtualRegister tmpvr2 = new VirtualRegister();
+//			WriteMove(q, tmpvr2);
+//			WriteCeq(q, tmpvr1, tmpvr2);
+
+			WriteAndi(q, q, 1);
+
+			//dividend = dividend << 1
+			WriteShli(dividend, dividend, 1);
+
+			//quotient = (quotient << 1) | q
+			WriteShli(quotient, quotient, 1);
+			WriteOr(quotient, quotient, q);
+
+			//if (q) { remainder = t; }
+			WriteBranch(SpuOpCode.brz);
+			SpuInstruction br8 = LastInstruction; // TODO brancher til slutningen af divisionen.
+			br8.Rt = q;
+			br8.JumpTarget = CurrentBlock;
+			WriteMove(t, remainder);
+
+			WriteBranch(SpuOpCode.br);
+			LastInstruction.JumpTarget = CurrentBlock;
+			// End for
+
+			BeginNewBasicBlock();
+
+			br1.JumpTarget = CurrentBlock;
+			br3.JumpTarget = CurrentBlock;
+			br5.JumpTarget = CurrentBlock;
+			br7.JumpTarget = CurrentBlock;
+
+//			//			VirtualRegister tempreg = new VirtualRegister();
+//			//			WriteIl(tempreg, 13);
+//			WriteMove(q, quotient); //DEBUG
+//			WriteBranch(SpuOpCode.br); //DEBUG
+//			brreturn = LastInstruction; //DEBUG
+//
+//
+//
+//			
+//
+//			brreturn.JumpTarget = CurrentBlock;
+		}
 
 		/// <summary>
 		/// Returns the instructions that are currently in the writer as assembly code.

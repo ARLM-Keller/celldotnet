@@ -23,7 +23,9 @@ namespace CellDotNet
 
 //			new SpeContextTest().TestPutGetFloat();
 
-			new ILOpCodeExecutionTest().Test_Ceq_I4();
+//			new ILOpCodeExecutionTest().Test_Ceq_I4();
+
+			new ILOpCodeExecutionTest().Test_Div_Un();
 
 //			new SpuInitializerTest().TestFun();
 

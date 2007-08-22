@@ -54,6 +54,25 @@ namespace CellDotNet
 		}
 
 		[Test]
+		public void Test_And()
+		{
+			InstTest(OpCodes.And, 0x0f0, 0xf00, 0x000);
+			InstTest(OpCodes.And, 0x0ff, 0xff0, 0x0f0);
+		}
+
+		[Test]
+		public void Test_Or()
+		{
+			InstTest(OpCodes.Or, 0xf00, 0x0f0, 0xff0);
+		}
+
+		[Test]
+		public void Test_Xor()
+		{
+			InstTest(OpCodes.Xor, 0xff0, 0x0f0, 0xf00);
+		}
+		
+		[Test]
 		public void Test_Ceq_I4()
 		{
 			InstTest(OpCodes.Ceq, 5, 3, 0);
@@ -66,6 +85,14 @@ namespace CellDotNet
 			InstTest(OpCodes.Cgt, 5, 3, 1);
 			InstTest(OpCodes.Cgt, 5, 5, 0);
 			InstTest(OpCodes.Cgt, 5, 7, 0);
+		}
+
+		[Test]
+		public void Test_Div_Un()
+		{
+			InstTest(OpCodes.Div_Un, 16, 4, 4);
+//			InstTest(OpCodes.Div_Un, 16, 5, 3);
+//			InstTest(OpCodes.Div_Un, 2, 7, 0);
 		}
 
 		public void InstTest(OpCode opcode, int i1, int i2, int exp)
@@ -157,6 +184,8 @@ namespace CellDotNet
 			Assert.Less(initcode.Length * 4, 1025, "SpuInitializer code is to large", null);
 
 			int[] code = new int[1024/4 + methodcode.Length];
+
+			new Disassembler().Disassemble(new ObjectWithAddress[] { spuinit, spum }, Console.Out);
 
 			Buffer.BlockCopy(initcode, 0, code, 0, initcode.Length*4);
 			Buffer.BlockCopy(methodcode, 0, code, 1024, methodcode.Length*4);
