@@ -24,8 +24,8 @@ namespace CellDotNet
 		S3InstructionSelectionPreparationsDone,
 		S4InstructionSelectionDone,
 		S5RegisterAllocationDone,
-		S6RemoveRedundantMoves,
-		S7PrologAndEpilogDone,
+		S6PrologAndEpilogDone,
+		S7RemoveRedundantMoves,
 		/// <summary>
 		/// At this point the only changes that must be done to the code
 		/// is address changes.
@@ -90,7 +90,7 @@ namespace CellDotNet
 		{
 			get
 			{
-				AssertMinimumState(MethodCompileState.S7PrologAndEpilogDone);
+				AssertMinimumState(MethodCompileState.S6PrologAndEpilogDone);
 				return GetSpuInstructionCount()*4;
 			}
 		}
@@ -332,11 +332,11 @@ namespace CellDotNet
 			if (State < MethodCompileState.S5RegisterAllocationDone && targetState >= MethodCompileState.S5RegisterAllocationDone)
 				PerformRegisterAllocation();
 
-			if (State < MethodCompileState.S6RemoveRedundantMoves && targetState >= MethodCompileState.S6RemoveRedundantMoves)
-				PerformRemoveRedundantMoves();
-
-			if (State < MethodCompileState.S7PrologAndEpilogDone && targetState >= MethodCompileState.S7PrologAndEpilogDone)
+			if (State < MethodCompileState.S6PrologAndEpilogDone && targetState >= MethodCompileState.S6PrologAndEpilogDone)
 				PerformPrologAndEpilogGeneration();
+
+			if (State < MethodCompileState.S7RemoveRedundantMoves && targetState >= MethodCompileState.S7RemoveRedundantMoves)
+				PerformRemoveRedundantMoves();
 
 			if (State < MethodCompileState.S8AddressPatchingDone && targetState >= MethodCompileState.S8AddressPatchingDone)
 				PerformAddressPatching();
@@ -352,7 +352,7 @@ namespace CellDotNet
 
 		private void PerformRegisterAllocation()
 		{
-			AssertState(MethodCompileState.S4InstructionSelectionDone);
+			AssertState(MethodCompileState.S5RegisterAllocationDone - 1);
 
 			RegAllocGraphColloring regalloc = new RegAllocGraphColloring();
 			regalloc.Alloc(SpuBasicBlocks, GetNewSpillOffset);
@@ -366,14 +366,13 @@ namespace CellDotNet
 
 		private void PerformRemoveRedundantMoves()
 		{
-			AssertState(MethodCompileState.S5RegisterAllocationDone);
+			AssertState(MethodCompileState.S7RemoveRedundantMoves - 1);
 
-			StackTrace st = new StackTrace();
-			Console.WriteLine("RemoveRedundantMoves called. Stack:");
-			Console.WriteLine(st);
+			RegAllocGraphColloring.RemoveRedundantMoves(_prolog.BasicBlocks);
 			RegAllocGraphColloring.RemoveRedundantMoves(SpuBasicBlocks);
+			RegAllocGraphColloring.RemoveRedundantMoves(_epilog.BasicBlocks);
 
-			State = MethodCompileState.S6RemoveRedundantMoves;
+			State = MethodCompileState.S7RemoveRedundantMoves;
 		}
 
 		private int _nextSpillOffset = 3; // Start by pointing to start of Local Variable Space.
@@ -392,7 +391,7 @@ namespace CellDotNet
 
 		private void PerformPrologAndEpilogGeneration()
 		{
-			Utilities.Assert(State == MethodCompileState.S6RemoveRedundantMoves, "Invalid state: " + State);
+			AssertState(MethodCompileState.S6PrologAndEpilogDone - 1);
 
 			_prolog = new SpuInstructionWriter();
 			_prolog.BeginNewBasicBlock();
@@ -402,7 +401,7 @@ namespace CellDotNet
 			_epilog.BeginNewBasicBlock();
 			SpuAbiUtilities.WriteEpilog(_epilog);
 
-			_state = MethodCompileState.S7PrologAndEpilogDone;
+			_state = MethodCompileState.S6PrologAndEpilogDone;
 		}
 
 		/// <summary>
@@ -455,7 +454,7 @@ namespace CellDotNet
 		/// </summary>
 		public override void PerformAddressPatching()
 		{
-			AssertState(MethodCompileState.S7PrologAndEpilogDone);
+			AssertState(MethodCompileState.S8AddressPatchingDone - 1);
 
 			// Iterate bbs, instructions to determine bb offsets and collect branch instructions,
 			// so that the branch instructions afterwards can be patched with the bb addresses.
@@ -480,9 +479,21 @@ namespace CellDotNet
 
 		public override int[] Emit()
 		{
-			int[] prologbin = SpuInstruction.emit(GetPrologWriter().GetAsList());
-			int[] bodybin = SpuInstruction.emit(GetBodyWriter().GetAsList());
-			int[] epilogbin = SpuInstruction.emit(GetEpilogWriter().GetAsList());
+			int[] prologbin;
+			int[] bodybin;
+			int[] epilogbin;
+
+			try
+			{
+				prologbin = SpuInstruction.emit(GetPrologWriter().GetAsList());
+				bodybin = SpuInstruction.emit(GetBodyWriter().GetAsList());
+				epilogbin = SpuInstruction.emit(GetEpilogWriter().GetAsList());
+			}
+			catch (BadSpuInstructionException e)
+			{
+				throw new BadSpuInstructionException(
+					string.Format("An error occurred during emit for method {0}.", _methodBase.Name), e);
+			}
 
 			int[] combined = new int[prologbin.Length + bodybin.Length + epilogbin.Length];
 			Buffer.BlockCopy(prologbin, 0, combined, 0, prologbin.Length);
@@ -491,7 +502,6 @@ namespace CellDotNet
 
 			return combined;
 		}
-
 
 		public override IEnumerable<SpuInstruction> GetInstructions()
 		{

@@ -116,7 +116,7 @@ namespace CellDotNet
 			AssertState(CompileContextState.S3InstructionSelectionDone);
 
 			foreach (MethodCompiler mc in Methods.Values)
-				mc.PerformProcessing(MethodCompileState.S6RemoveRedundantMoves);
+				mc.PerformProcessing(MethodCompileState.S7RemoveRedundantMoves);
 
 			State = CompileContextState.S4RegisterAllocationDone;
 		}
@@ -136,7 +136,7 @@ namespace CellDotNet
 			{
 				if (o is MethodCompiler)
 				{
-					((MethodCompiler) o).PerformProcessing(MethodCompileState.S7PrologAndEpilogDone);
+					((MethodCompiler) o).PerformProcessing(MethodCompileState.S6PrologAndEpilogDone);
 				}
 
 				o.Offset = lsOffset;
