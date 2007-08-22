@@ -155,72 +155,8 @@ namespace CellDotNet
 			}
 		}
 
-
-
         public int emit()
         {
-			// Old implementation
-
-/*
-			HardwareRegister reg3 = (_rc != null) ? _rc.Location as HardwareRegister : null;
-			HardwareRegister reg2 = (_rb != null) ? _rb.Location as HardwareRegister : null;
-			HardwareRegister reg1 = (_ra != null) ? _ra.Location as HardwareRegister : null;
-			HardwareRegister dest = (_rt != null) ? _rt.Location as HardwareRegister : null;
-
-
-            switch (_opcode.Format)
-            {
-                case SpuInstructionFormat.None:
-                    throw new Exception("Err.");
-				case SpuInstructionFormat.RR1:
-					if (dest == null) // ra
-						throw new BadSpuInstructionException(this);
-            		return _opcode.OpCode | (dest.Register << 7);
-				case SpuInstructionFormat.RR2:
-                case SpuInstructionFormat.RR:
-                    if (reg1 != null && reg2 != null && dest != null)
-                        return _opcode.OpCode | (reg2.Register << 14) | (reg1.Register << 7) | dest.Register;
-                    else
-						throw CreateEmitException();
-				case SpuInstructionFormat.RRR:
-                    if (reg1 != null && reg2 != null && reg3 != null && dest != null)
-                        return _opcode.OpCode | (dest.Register << 21) | (reg2.Register << 14) | (reg1.Register << 7) | reg3.Register;
-                    else
-						throw CreateEmitException();
-				case SpuInstructionFormat.RI7:
-                    if (reg1 != null && dest != null)
-                        return _opcode.OpCode | ((_constant & 0x7F) << 14) | (reg1.Register << 7) | dest.Register;
-                    else
-						throw CreateEmitException();
-				case SpuInstructionFormat.RI10: 
-                    if (reg1 != null && dest != null)
-                        return _opcode.OpCode | ((_constant & 0x3ff) << 14) | (reg1.Register << 7) | dest.Register;
-                    else
-						throw CreateEmitException();
-				case SpuInstructionFormat.RI16:
-					if (dest != null)
-						return _opcode.OpCode | ((_constant & 0xffff) << 7) | dest.Register;
-					else
-						throw CreateEmitException();
-				case SpuInstructionFormat.RI16NoRegs:
-                        return _opcode.OpCode | ((_constant & 0xffff) << 7) | 0;
-                case SpuInstructionFormat.RI18:
-                    if (reg1 != null && dest != null)
-                        return _opcode.OpCode | ((_constant & 0x3ffff) << 7) | dest.Register;
-                    else
-						throw CreateEmitException();
-				case SpuInstructionFormat.RI8:
-                    if (reg1 != null && dest != null)
-                        return _opcode.OpCode | ((_constant & 0xff) << 14) | (reg1.Register << 7) | dest.Register;
-                    else
-						throw CreateEmitException();
-				case SpuInstructionFormat.WEIRD:
-            		return _opcode.OpCode | _constant;
-			}
- */
-
-			// New switch
- 
 			switch (_opcode.Format)
 			{
 				case SpuInstructionFormat.None:
@@ -246,9 +182,9 @@ namespace CellDotNet
 					return _opcode.OpCode | ((_constant & 0xff) << 14) | ((int)_ra.Register << 7) | (int)_rt.Register;
 				case SpuInstructionFormat.WEIRD:
 					return _opcode.OpCode | _constant;
+				default:
+					throw new BadSpuInstructionException(string.Format("Invalid SPU opcode instruction format '{0}'; instruction name '{1}'.", _opcode.Format, _opcode.Name));
 			}
-
-            return 0;
         }
 
 		private BadSpuInstructionException CreateEmitException()

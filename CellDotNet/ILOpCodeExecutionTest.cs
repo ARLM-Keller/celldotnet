@@ -172,24 +172,17 @@ namespace CellDotNet
 			RegAllocGraphColloring.RemoveRedundantMoves(spum.Writer.BasicBlocks);
 
 			spum.Offset = 1024;
+			// This also creates an epilog.
 			spum.PerformAddressPatching();
 
 			SpuInitializer spuinit = new SpuInitializer(spum, returnAddressObject);
 			spuinit.Offset = 0;
 			spuinit.PerformAddressPatching();
 
-
-//			Assert.Less(initcode.Length * 4, 1025, "SpuInitializer code is to large", null);
-
 			int[] code = new int[1024];
-
 			CopyCode(code, new SpuRoutine[] { spuinit, spum });
-			Disassembler.DisassembleToConsole(new ObjectWithAddress[] { spuinit, spum, returnAddressObject });
 
-//			int[] initcode = spuinit.Emit();
-//			int[] methodcode = spum.Emit();
-//			Buffer.BlockCopy(initcode, 0, code, 0, initcode.Length*4);
-//			Buffer.BlockCopy(methodcode, 0, code, 1024, methodcode.Length*4);
+			Disassembler.DisassembleToConsole(new ObjectWithAddress[] { spuinit, spum, returnAddressObject });
 
 			if (!SpeContext.HasSpeHardware)
 				return;

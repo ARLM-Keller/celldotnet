@@ -235,7 +235,7 @@ namespace CellDotNet
 			if (debug) Console.WriteLine("Disassembly after regalloc: ");
 			if (debug) Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
-			mc.PerformProcessing(MethodCompileState.S6RemoveRedundantMoves);
+			mc.PerformProcessing(MethodCompileState.S7RemoveRedundantMoves);
 
 			if (debug) Console.WriteLine("Debug 6");
 

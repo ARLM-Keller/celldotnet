@@ -57,7 +57,7 @@ namespace CellDotNet
 			Console.WriteLine("Disassembly after regalloc: ");
 			Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
-			mc.PerformProcessing(MethodCompileState.S6RemoveRedundantMoves);
+			mc.PerformProcessing(MethodCompileState.S7RemoveRedundantMoves);
 
 			Console.WriteLine();
 			Console.WriteLine("Disassembly after remove of redundant moves: ");
@@ -149,6 +149,8 @@ namespace CellDotNet
 			cc.PerformProcessing(CompileContextState.S8Complete);
 			Disassembler.DisassembleToConsole(cc);
 
+			int[] code = cc.GetEmittedCode();
+
 			if (!SpeContext.HasSpeHardware)
 				return;
 
@@ -157,7 +159,6 @@ namespace CellDotNet
 				Console.WriteLine("Mem initially:");
 				Utilities.DumpMemory(ctx, (LocalStorageAddress)0, 0x70, Console.Out);
 
-				int[] code = cc.GetEmittedCode();
 				Console.WriteLine("Code:");
 				Utilities.DumpMemory(code, 0, (LocalStorageAddress)0, code.Length * 4, Console.Out);
 				ctx.LoadProgram(code);
