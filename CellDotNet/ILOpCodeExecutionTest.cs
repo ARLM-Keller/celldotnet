@@ -21,6 +21,223 @@ namespace CellDotNet
 			Execution(w, 7);
 		}
 
+		// NOTE: this function requires short form branch instruction as argument.
+		public void ConditionalBranchTest(OpCode opcode, int i1, int i2, bool branch)
+		{
+			ILWriter w = new ILWriter();
+
+			w.WriteOpcode(OpCodes.Ldc_I4);
+			w.WriteInt32(i1);
+			w.WriteOpcode(OpCodes.Ldc_I4);
+			w.WriteInt32(i2);
+			w.WriteOpcode(opcode);
+			w.WriteByte(3);
+
+			w.WriteOpcode(OpCodes.Ldc_I4_1);
+
+			w.WriteOpcode(OpCodes.Br_S);
+			w.WriteByte(1);
+
+			w.WriteOpcode(OpCodes.Ldc_I4_2);
+
+			w.WriteOpcode(OpCodes.Ret);
+
+			if(branch)
+				Execution(w, 2);
+			else
+				Execution(w, 1);
+		}
+
+		[Test]
+		public void Test_Br()
+		{
+			ILWriter w = new ILWriter();
+
+			w.WriteOpcode(OpCodes.Br_S);
+			w.WriteByte(3);
+
+			w.WriteOpcode(OpCodes.Ldc_I4_1);
+
+			w.WriteOpcode(OpCodes.Br_S);
+			w.WriteByte(1);
+
+			w.WriteOpcode(OpCodes.Ldc_I4_2);
+			
+			w.WriteOpcode(OpCodes.Ret);
+
+			Execution(w, 2);
+		}
+
+		[Test]
+		public void Test_Brtrue()
+		{
+			ILWriter w = new ILWriter();
+
+			w.WriteOpcode(OpCodes.Ldc_I4_1);
+			w.WriteOpcode(OpCodes.Ldc_I4_1);
+
+			w.WriteOpcode(OpCodes.Ceq);
+
+			w.WriteOpcode(OpCodes.Brtrue_S);
+			w.WriteByte(3);
+
+			w.WriteOpcode(OpCodes.Ldc_I4_1);
+
+			w.WriteOpcode(OpCodes.Br_S);
+			w.WriteByte(1);
+
+			w.WriteOpcode(OpCodes.Ldc_I4_2);
+
+			w.WriteOpcode(OpCodes.Ret);
+
+			Execution(w, 2);
+
+			w = new ILWriter();
+
+			w.WriteOpcode(OpCodes.Ldc_I4_1);
+			w.WriteOpcode(OpCodes.Ldc_I4_2);
+
+			w.WriteOpcode(OpCodes.Ceq);
+
+			w.WriteOpcode(OpCodes.Brtrue_S);
+			w.WriteByte(3);
+
+			w.WriteOpcode(OpCodes.Ldc_I4_1);
+
+			w.WriteOpcode(OpCodes.Br_S);
+			w.WriteByte(1);
+
+			w.WriteOpcode(OpCodes.Ldc_I4_2);
+
+			w.WriteOpcode(OpCodes.Ret);
+
+			Execution(w, 1);
+		}
+
+		[Test]
+		public void Test_Brfalse()
+		{
+			ILWriter w = new ILWriter();
+
+			w.WriteOpcode(OpCodes.Ldc_I4_1);
+			w.WriteOpcode(OpCodes.Ldc_I4_1);
+
+			w.WriteOpcode(OpCodes.Ceq);
+
+			w.WriteOpcode(OpCodes.Brfalse_S);
+			w.WriteByte(3);
+
+			w.WriteOpcode(OpCodes.Ldc_I4_1);
+
+			w.WriteOpcode(OpCodes.Br_S);
+			w.WriteByte(1);
+
+			w.WriteOpcode(OpCodes.Ldc_I4_2);
+
+			w.WriteOpcode(OpCodes.Ret);
+
+			Execution(w, 1);
+
+			w = new ILWriter();
+
+			w.WriteOpcode(OpCodes.Ldc_I4_1);
+			w.WriteOpcode(OpCodes.Ldc_I4_2);
+
+			w.WriteOpcode(OpCodes.Ceq);
+
+			w.WriteOpcode(OpCodes.Brfalse_S);
+			w.WriteByte(3);
+
+			w.WriteOpcode(OpCodes.Ldc_I4_1);
+
+			w.WriteOpcode(OpCodes.Br_S);
+			w.WriteByte(1);
+
+			w.WriteOpcode(OpCodes.Ldc_I4_2);
+
+			w.WriteOpcode(OpCodes.Ret);
+
+			Execution(w, 2);
+		}
+
+		[Test]
+		public void Test_Beq()
+		{
+			ConditionalBranchTest(OpCodes.Beq_S, 2, 2, true);
+			ConditionalBranchTest(OpCodes.Beq_S, 5, 2, false);
+		}
+
+		[Test]
+		public void Test_Bne_Un()
+		{
+			ConditionalBranchTest(OpCodes.Bne_Un_S, 2, 2, false);
+			ConditionalBranchTest(OpCodes.Bne_Un_S, 5, 2, true);
+		}
+
+		[Test]
+		public void Test_Bge()
+		{
+			ConditionalBranchTest(OpCodes.Bge_S, 5, 2, true);
+			ConditionalBranchTest(OpCodes.Bge_S, 5, 5, true);
+			ConditionalBranchTest(OpCodes.Bge_S, 2, 5, false);
+		}
+
+		[Test]
+		public void Test_Bgt()
+		{
+			ConditionalBranchTest(OpCodes.Bgt_S, 5, 2, true);
+			ConditionalBranchTest(OpCodes.Bgt_S, 5, 5, false);
+			ConditionalBranchTest(OpCodes.Bgt_S, 2, 5, false);
+		}
+
+		[Test]
+		public void Test_Ble()
+		{
+			ConditionalBranchTest(OpCodes.Ble_S, 5, 2, false);
+			ConditionalBranchTest(OpCodes.Ble_S, 5, 5, true);
+			ConditionalBranchTest(OpCodes.Ble_S, 2, 5, true);
+		}
+
+		[Test]
+		public void Test_Blt()
+		{
+			ConditionalBranchTest(OpCodes.Blt_S, 5, 2, false);
+			ConditionalBranchTest(OpCodes.Blt_S, 5, 5, false);
+			ConditionalBranchTest(OpCodes.Blt_S, 2, 5, true);
+		}
+
+		[Test]
+		public void Test_Bge_Un()
+		{
+			ConditionalBranchTest(OpCodes.Bge_Un_S, 5, 2, true);
+			ConditionalBranchTest(OpCodes.Bge_Un_S, 5, 5, true);
+			ConditionalBranchTest(OpCodes.Bge_Un_S, 2, 5, false);
+		}
+
+		[Test]
+		public void Test_Bgt_Un()
+		{
+			ConditionalBranchTest(OpCodes.Bgt_Un_S, 5, 2, true);
+			ConditionalBranchTest(OpCodes.Bgt_Un_S, 5, 5, false);
+			ConditionalBranchTest(OpCodes.Bgt_Un_S, 2, 5, false);
+		}
+
+		[Test]
+		public void Test_Ble_Un()
+		{
+			ConditionalBranchTest(OpCodes.Ble_Un_S, 5, 2, false);
+			ConditionalBranchTest(OpCodes.Ble_Un_S, 5, 5, true);
+			ConditionalBranchTest(OpCodes.Ble_Un_S, 2, 5, true);
+		}
+
+		[Test]
+		public void Test_Blt_Un()
+		{
+			ConditionalBranchTest(OpCodes.Blt_Un_S, 5, 2, false);
+			ConditionalBranchTest(OpCodes.Blt_Un_S, 5, 5, false);
+			ConditionalBranchTest(OpCodes.Blt_Un_S, 2, 5, true);
+		}
+
 		[Test]
 		public void Test_Add_I4()
 		{
@@ -155,6 +372,13 @@ namespace CellDotNet
 				throw;
 			}
 
+			foreach (MethodVariable var in vars)
+			{
+				var.VirtualRegister = new VirtualRegister();
+			}
+
+			new TreeDrawer().DrawMethod(basicBlocks);
+
 			RecursiveInstructionSelector sel = new RecursiveInstructionSelector();
 
 			ReadOnlyCollection<MethodParameter> par = new ReadOnlyCollection<MethodParameter>(new List<MethodParameter>());
@@ -166,10 +390,19 @@ namespace CellDotNet
 
 			sel.GenerateCode(basicBlocks, par, spum.Writer);
 
+			Console.WriteLine(spum.Writer.Disassemble());
+
+//			new Disassembler().Disassemble(new ObjectWithAddress[] {spum}, Console.Out);
+
 			// TODO Det håndteres muligvis ikke virtuelle moves i SimpleRegAlloc.
 			new SimpleRegAlloc().alloc(spum.Writer.BasicBlocks);
 
+//			new Disassembler().Disassemble(new ObjectWithAddress[] { spum }, Console.Out);
+			Console.WriteLine(spum.Writer.Disassemble());
+
 			RegAllocGraphColloring.RemoveRedundantMoves(spum.Writer.BasicBlocks);
+
+			Console.WriteLine(spum.Writer.Disassemble());
 
 			spum.Offset = 1024;
 			// This also creates an epilog.
