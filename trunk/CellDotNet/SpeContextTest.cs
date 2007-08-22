@@ -141,7 +141,7 @@ namespace CellDotNet
 		}
 
 		[Test]
-		public void TestReturnInt32_Manual()
+		public void TestRunProgram_ReturnInt32_Manual()
 		{
 			const int magicNumber = 40;
 			IntReturnDelegate del = delegate { return magicNumber; };
@@ -167,7 +167,7 @@ namespace CellDotNet
 		}
 
 		[Test]
-		public void TestReturnInt32()
+		public void TestRunProgram_ReturnInt32()
 		{
 			const int magicNumber = 40;
 			IntReturnDelegate del = delegate { return magicNumber; };
