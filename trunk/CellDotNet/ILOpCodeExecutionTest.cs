@@ -413,7 +413,7 @@ namespace CellDotNet
 			spuinit.PerformAddressPatching();
 
 			int[] code = new int[1024];
-			CopyCode(code, new SpuRoutine[] { spuinit, spum });
+			CompileContext.CopyCode(code, new SpuRoutine[] { spuinit, spum });
 
 			Disassembler.DisassembleToConsole(new ObjectWithAddress[] { spuinit, spum, returnAddressObject });
 
@@ -428,31 +428,6 @@ namespace CellDotNet
 				T returnValue = ctx.DmaGetValue<T>((LocalStorageAddress) returnAddressObject.Offset);
 
 				AreEqual(expetedValue, returnValue, "SPU delegate execution returned a wrong value.");
-			}
-		}
-
-		static internal void CopyCode(int[] targetBuffer, ICollection<SpuRoutine> objects)
-		{
-			Set<int> usedOffsets = new Set<int>();
-
-			foreach (SpuRoutine routine in objects)
-			{
-				int[] code = routine.Emit();
-
-				try
-				{
-					Utilities.Assert(routine.Offset >= 0, "routine.Offset >= 0");
-					Utilities.Assert(code.Length == routine.Size / 4, string.Format("code.Length == routine.Size * 4. code.Length: {0:x4}, routine.Size: {1:x4}", code.Length, routine.Size));
-					Utilities.Assert(!usedOffsets.Contains(routine.Offset), "!usedOffsets.Contains(routine.Offset). Offset: " + routine.Offset.ToString("x6"));
-					usedOffsets.Add(routine.Offset);
-
-					Buffer.BlockCopy(code, 0, targetBuffer, routine.Offset, routine.Size);
-				}
-				catch (Exception e)
-				{
-					throw new BadCodeLayoutException(e.Message, e);
-				}
-
 			}
 		}
 	}

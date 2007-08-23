@@ -71,6 +71,11 @@ namespace CellDotNet
 			
 		}
 
+		public static IntPtr Align16(IntPtr value)
+		{
+			return (IntPtr) (((long)value + 15) & ~0xf);
+		}
+
 		public static int Align16(int value)
 		{
 			return (value + 15) & ~0xf;
