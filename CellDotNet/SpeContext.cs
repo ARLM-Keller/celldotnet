@@ -380,7 +380,7 @@ namespace CellDotNet
 			}
 		}
 
-		private object DmaGetValue(StackTypeDescription datatype, LocalStorageAddress lsAddress)
+		public object DmaGetValue(StackTypeDescription datatype, LocalStorageAddress lsAddress)
 		{
 			switch (datatype.CliType)
 			{
@@ -416,9 +416,8 @@ namespace CellDotNet
 		/// <param name="lsAddress"></param>
 		public T DmaGetValue<T>(LocalStorageAddress lsAddress) where T : struct
 		{
-			//TODO The buffer is only large enough to hold 16 bytes types.
 			byte* buf = stackalloc byte[31];
-			IntPtr ptr = (IntPtr)(((int)buf + 15) & ~15);
+			IntPtr ptr = Utilities.Align16((IntPtr) buf);
 
 			uint DMA_tag = 1;
 			spe_mfcio_put(lsAddress.Value, ptr, 16, DMA_tag, 0, 0);
@@ -428,12 +427,11 @@ namespace CellDotNet
 			if (waitresult != 0)
 				throw new LibSpeException("spe_mfcio_tag_status_read failed.");
 
-			T? val;
-
 			switch(Type.GetTypeCode(typeof(T)))
 			{
 				case TypeCode.Int32:
-					val =  Marshal.ReadInt32(ptr) as T?;
+					T? val;
+					val = Marshal.ReadInt32(ptr) as T?;
 					return val.Value;
 				case TypeCode.Single:
 					val = *((float*)ptr) as T?;
@@ -443,30 +441,24 @@ namespace CellDotNet
 			}
 		}
 
-		/// <summary>
-		/// Puts a value type to the specified local storage address.
-		/// </summary>
-		/// <param name="lsAddress"></param>
-		/// <param name="value"></param>
-		public void DmaPutValue<T>(LocalStorageAddress lsAddress, T value) where T : struct
+		public void DmaPutValue(LocalStorageAddress lsAddress, ValueType value)
 		{
 			uint DMA_tag = 1;
-			//TODO The buffer is only large enough to hold 16 bytes types.
 			byte* buf = stackalloc byte[31];
-			IntPtr ptr = (IntPtr)(((int)buf + 15) & ~15);
+			IntPtr ptr = Utilities.Align16((IntPtr)buf);
 
-			switch (Type.GetTypeCode(typeof(T)))
+			switch (Type.GetTypeCode(value.GetType()))
 			{
 				case TypeCode.Int32:
 					int i = (value as int?).Value;
-					*((int*) ptr) = i;
+					*((int*)ptr) = i;
 					break;
 				case TypeCode.Single:
 					float f = (value as float?).Value;
 					*((float*)ptr) = f;
 					break;
 				default:
-					throw new NotSupportedException("Type not handled.");
+					throw new NotSupportedException("Argument type " + value.GetType().Name + " not supported.");
 			}
 
 			spe_mfcio_get(lsAddress.Value, ptr, 16, DMA_tag, 0, 0);
@@ -477,6 +469,15 @@ namespace CellDotNet
 				throw new LibSpeException("spe_mfcio_tag_status_read failed.");
 		}
 
+		/// <summary>
+		/// Puts a value type to the specified local storage address.
+		/// </summary>
+		/// <param name="lsAddress"></param>
+		/// <param name="value"></param>
+		public void DmaPutValue<T>(LocalStorageAddress lsAddress, T value) where T : struct
+		{
+			DmaPutValue(lsAddress, value);
+		}
 
 		public int[] GetCopyOffLocalStorage()
 		{
@@ -531,42 +532,15 @@ namespace CellDotNet
 			cc.PerformProcessing(CompileContextState.S8Complete);
 			int[] code = cc.GetEmittedCode();
 
-			// Prepare arguments.
-			if (cc.EntryPoint.Parameters.Count != arguments.Length)
-				throw new ArgumentException(string.Format("Invalid number of arguments in array; expected {0}, got {1}.",
-				                                          cc.EntryPoint.Parameters.Count, arguments.Length));
-			Utilities.Assert(cc.ArgumentArea.Size == arguments.Length * 16, "cc.ArgumentArea.Size == arguments.Length * 16");
+			return RunProgram(cc, code, arguments);
+		}
 
-			for (int i = 0; i < cc.EntryPoint.Parameters.Count; i++)
-			{
-				object val = arguments[i];
-				int baseAreaIndex = cc.ArgumentArea.Offset + i*16;
-
-				StackTypeDescription reqType = cc.EntryPoint.Parameters[i].StackType;
-				switch (reqType.CliBasicType)
-				{
-					case CliBasicType.Integer:
-						{
-							// Big endian assumed.
-							long val2 = Convert.ToInt64(val);
-							code[baseAreaIndex] = (int) (val2 >> 32);
-							code[baseAreaIndex] = (int) val2;
-						}
-						break;
-					case CliBasicType.Floating:
-					case CliBasicType.None:
-					case CliBasicType.Valuetype:
-					case CliBasicType.ObjectType:
-					case CliBasicType.NativeInt:
-					default:
-						throw new NotSupportedException("Invalid parameter data type: " + reqType);
-				}
-			}
-
+		internal object RunProgram(CompileContext cc, int[] code, params object[] arguments)
+		{
 			// Run and load.
 			LoadProgram(code);
+			LoadArguments(cc, arguments);
 			Run();
-
 
 			// Get return value.
 			object retval = null;
@@ -576,6 +550,26 @@ namespace CellDotNet
 			}
 
 			return retval;
+		}
+
+		/// <summary>
+		/// Call this after <see cref="LoadProgram"/>!
+		/// </summary>
+		/// <param name="cc"></param>
+		/// <param name="arguments"></param>
+		public void LoadArguments(CompileContext cc, object[] arguments)
+		{
+			if (cc.EntryPoint.Parameters.Count != arguments.Length)
+				throw new ArgumentException(string.Format("Invalid number of arguments in array; expected {0}, got {1}.",
+				                                          cc.EntryPoint.Parameters.Count, arguments.Length));
+			Utilities.Assert(cc.ArgumentArea.Size == arguments.Length * 16, "cc.ArgumentArea.Size == arguments.Length * 16");
+
+			for (int i = 0; i < cc.EntryPoint.Parameters.Count; i++)
+			{
+				object val = arguments[i];
+				LocalStorageAddress argAddress = (LocalStorageAddress)cc.ArgumentArea.Offset + i*16;
+				DmaPutValue(argAddress, (ValueType) val);
+			}
 		}
 
 		public SpeControlArea GetControlArea()
