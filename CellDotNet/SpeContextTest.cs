@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Reflection.Emit;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -203,14 +205,105 @@ namespace CellDotNet
 		private delegate int IntReturnDelegate();
 		private delegate float SingleReturnDelegate();
 
-		[Test, Ignore("Enable when delegate wrapper is supported.")]
+		[Test]
 		public void TestDelegateRun_IntReturn()
 		{
 			IntReturnDelegate del = delegate { return 40; };
-			IntReturnDelegate del2 = CompileContext.CreateSpeDelegate(del);
+			IntReturnDelegate del2 = CreateSpeDelegate(del);
 
 			int retval = del2();
 			AreEqual(40, retval);
+		}
+
+
+		/// <summary>
+		/// Wraps the specified delegate in a new delegate of the same type;
+		/// the returned delegate will execute the delegate on an SPE.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="delegateToWrap"></param>
+		/// <returns></returns>
+		private static T CreateSpeDelegate<T>(T delegateToWrap) where T : class
+		{
+			Utilities.AssertArgumentNotNull(delegateToWrap, "delegateToWrap");
+			if (!(delegateToWrap is Delegate))
+				throw new ArgumentException("Argument is not a delegate.");
+
+			Delegate del = delegateToWrap as Delegate;
+			MethodInfo method = del.Method;
+
+			// This should problably only be done here during unit test,
+			// since it will also be done when the wrapper delegate is returned.
+			CompileContext cc = new CompileContext(method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			List<Type> paramtypes = new List<Type>();
+			foreach (ParameterInfo parameter in method.GetParameters())
+				paramtypes.Add(parameter.ParameterType);
+
+
+			DynamicMethod dm = new DynamicMethod(method.Name + "-spewrapper", 
+method.ReturnType, paramtypes.ToArray(), typeof(SpeContextTest));
+			ILGenerator ilgen = dm.GetILGenerator();
+
+			/// body:
+			/// 1: create object[] til args.
+			/// 2: gem array i local.
+			/// 3: for hver arg:
+			///    load array fra local
+			///    load param indeks
+			///    gem i array.
+			/// -  Der er på nuværende tidspunkt intet på stakken.
+			/// 4: load entry method token as token on stack.
+			/// 5: Load array onto stack.
+			/// 6: Call static work method.
+			/// 7a: Hvis delegate har ikke-void-returtype: ret.
+			/// 7b: Hvis delegate har void-returtype: pop, ret.
+
+			// Create object[].
+			LocalBuilder arr = ilgen.DeclareLocal(typeof (object[]));
+			ilgen.Emit(OpCodes.Ldc_I4, paramtypes.Count);
+			ilgen.Emit(OpCodes.Newarr, typeof(object));
+			// Save array in local.
+			ilgen.Emit(OpCodes.Stloc, arr);
+
+			// Save delegate args in array.
+			for (int i = 0; i < paramtypes.Count; i++)
+			{
+				ilgen.Emit(OpCodes.Ldloc, arr);
+
+				ilgen.Emit(OpCodes.Ldc_I4, i);
+				ilgen.Emit(OpCodes.Conv_I);
+
+				ilgen.Emit(OpCodes.Ldarg, i);
+				ilgen.Emit(OpCodes.Box, paramtypes[i]);
+
+				ilgen.Emit(OpCodes.Stelem, typeof (object));
+			}
+
+			// Load entry method as token on stack.
+			ilgen.Emit(OpCodes.Ldc_I4, method);
+
+			// Call work method.
+			ilgen.Emit(OpCodes.Ldloc, arr);
+			MethodInfo workmethod = typeof(SpeContextTest).GetMethod("SpeDelegateWrapperExecute", BindingFlags.NonPublic | BindingFlags.Static);
+			ilgen.EmitCall(OpCodes.Call, workmethod, null);
+			if (method.ReturnType == typeof(void))
+				ilgen.Emit(OpCodes.Pop);
+			ilgen.Emit(OpCodes.Ret);
+
+			Delegate wrapperDel = dm.CreateDelegate(del.GetType());
+			T typedWrapperDel = wrapperDel as T;
+			Utilities.AssertNotNull(typedWrapperDel, "typedWrapperDel");
+
+			return typedWrapperDel;
+		}
+
+		private static object SpeDelegateWrapperExecute(int methodtoken, params object[] args)
+		{
+			MethodBase targetMethod = typeof (SpeContextTest).Module.ResolveMethod(methodtoken);
+			throw new Exception("the delegate made it!!");
+			
 		}
 	}
 }

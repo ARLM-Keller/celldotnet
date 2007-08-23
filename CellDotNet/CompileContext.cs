@@ -397,29 +397,6 @@ namespace CellDotNet
 			State = CompileContextState.S3InstructionSelectionDone;
 		}
 
-
-		/// <summary>
-		/// Wraps the specified delegate in a new delegate of the same type;
-		/// the returned delegate will execute the delegate on an SPE.
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <param name="delegateToWrap"></param>
-		/// <returns></returns>
-		public static T CreateSpeDelegate<T>(T delegateToWrap) where T : class
-		{
-			Utilities.AssertArgumentNotNull(delegateToWrap, "delegateToWrap");
-			if (!(delegateToWrap is Delegate))
-				throw new ArgumentException("Argument is not a delegate.");
-
-			Delegate del = delegateToWrap as Delegate;
-			MethodInfo method = del.Method;
-			CompileContext cc = new CompileContext(method);
-			cc.PerformProcessing(CompileContextState.S8Complete);
-
-
-			throw new NotImplementedException();
-		}
-
 		public static void AssertAllValueTypeFields(Type t)
 		{
 			if (!t.IsValueType)
