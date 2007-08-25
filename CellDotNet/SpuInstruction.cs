@@ -164,8 +164,9 @@ namespace CellDotNet
 				case SpuInstructionFormat.RR1:
 					return _opcode.OpCode | ((int) _ra.Register << 7);
 				case SpuInstructionFormat.RR2:
+					return _opcode.OpCode | ((_constant & 0x7F) << 14) | ((int)_ra.Register << 7) | (int)_rt.Register;
 				case SpuInstructionFormat.RR:
-						return _opcode.OpCode | ((int) _rb.Register << 14) | ((int) _ra.Register << 7) | (int) _rt.Register;
+					return _opcode.OpCode | ((int) _rb.Register << 14) | ((int) _ra.Register << 7) | (int) _rt.Register;
 				case SpuInstructionFormat.RRR:
 					return _opcode.OpCode | ((int) _rt.Register << 21) | ((int) _rb.Register << 14) | ((int) _ra.Register << 7) | (int) _rc.Register;
 				case SpuInstructionFormat.RI7:

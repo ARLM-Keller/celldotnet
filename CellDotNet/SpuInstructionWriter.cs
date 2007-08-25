@@ -340,6 +340,48 @@ namespace CellDotNet
 			return rt;
 		}
 
+		/// <summary>
+		/// Pseudo instruction to load the address of an object into a rgister.
+		/// No other registers are used.
+		/// </summary>
+		/// <param name="rt"></param>
+		/// <param name="owa"></param>
+		/// <returns></returns>
+		public void WriteLoadAddress(VirtualRegister rt, ObjectWithAddress owa)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ilhu);
+			inst.Constant = 0;
+			inst.Rt = rt;
+			AddInstruction(inst);
+
+			inst = new SpuInstruction(SpuOpCode.iohl);
+			inst.ObjectWithAddress = owa;
+			inst.Rt = rt;
+			AddInstruction(inst);
+		}
+
+		/// <summary>
+		/// Pseudo instruction to load the address of an object into a rgister.
+		/// </summary>
+		/// <param name="owa"></param>
+		/// <returns></returns>
+		public VirtualRegister WriteLoadAddress(ObjectWithAddress owa)
+		{
+			VirtualRegister rt = new VirtualRegister();
+
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.ilhu);
+			inst.Constant = 0;
+			inst.Rt = rt;
+			AddInstruction(inst);
+
+			inst = new SpuInstruction(SpuOpCode.iohl);
+			inst.ObjectWithAddress = owa;
+			inst.Rt = rt;
+			AddInstruction(inst);
+
+			return rt;
+		}
+		
 		public void WriteNop()
 		{
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.nop);

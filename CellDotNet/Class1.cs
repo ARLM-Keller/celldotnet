@@ -11,27 +11,26 @@ namespace CellDotNet
 	{
 		static public void Main(string[] args)
 		{
-
-			new SpeContextTest().TestPutGetInt32();
-			return;
-
 //			StackTypeDescription std = new StackTypeDescription();
-			Trace.Listeners.Add(new ConsoleTraceListener());
+//			c1 c1 = new c1();
+//			Console.WriteLine("size: " + Marshal.SizeOf(typeof(StackTypeDescription)));
+//			return;
+//			Trace.Listeners.Add(new ConsoleTraceListener());
 
 //			new SpeContextTest().TestPutGetInt32();
 
 //			new SpeContextTest().TestFirstCellProgram();
 
-			new ILOpCodeExecutionTest().Test_Br();
-//			new SpeContextTest().TestReturnInt32_Manual();
-
+//			new ILOpCodeExecutionTest().Test_Br();
+//			new SpeContextTest().TestRunProgram_ReturnInt32_Manual();
+//
 //			new RegAllocGraphColloringTest().LargeTest();
 
 //			new SpeContextTest().TestPutGetFloat();
 
 //			new ILOpCodeExecutionTest().Test_Ceq_I4();
 
-//			new ILOpCodeExecutionTest().Test_Div_Un();
+			new ILOpCodeExecutionTest().TestAcquireThreeMethodsExternal();
 
 //			new SpuInitializerTest().TestFun();
 
@@ -169,6 +168,8 @@ namespace CellDotNet
 			      		i = (int*) 0x40;
 			      		*i = 34;
 			      	};
+
+
 
 			int iterations = 200;
 

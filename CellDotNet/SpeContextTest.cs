@@ -159,6 +159,8 @@ namespace CellDotNet
 			{
 				ctx.LoadProgram(code);
 
+				Utilities.DumpMemory(ctx, (LocalStorageAddress)0, 0x70, Console.Out);
+
 				int rc = ctx.Run();
 				AreEqual(0, rc);
 
