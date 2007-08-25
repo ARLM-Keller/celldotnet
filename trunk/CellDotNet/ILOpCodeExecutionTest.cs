@@ -10,57 +10,31 @@ namespace CellDotNet
 	[TestFixture]
 	public class ILOpCodeExecutionTest : UnitTest
 	{
-		private static int MethodCallerExternal()
-		{
-			return Math.Max(4, 99);
-		}
-
 		delegate int SimpleDelegate();
-		delegate int Delegatetmp(int a, int b);
 
 		[Test]
-		public void TestAcquireThreeMethodsExternal()
+		public void Test_Call()
 		{
-			SimpleDelegate del1 = MethodCallerExternal;
+			SimpleDelegate del1 = delegate() { return Math.Max(4, 99); };
 
-			Delegatetmp del3 = Math.Max;
+			CompileContext cc = new CompileContext(del1.Method);
 
-			CompileContext cc1 = new CompileContext(del1.Method);
-			CompileContext cc2 = new CompileContext(del3.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			cc1.PerformProcessing(CompileContextState.S8Complete);
-			cc2.PerformProcessing(CompileContextState.S8Complete);
-
-			Disassembler.DisassembleToConsole(cc1);
-			Disassembler.DisassembleToConsole(cc2);
-
-			int[] code = cc1.GetEmittedCode();
+			int[] code = cc.GetEmittedCode();
 
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			int result = 0;
-
 			using (SpeContext ctx = new SpeContext())
 			{
-//				result = (int) ctx.RunProgram(del3, new object[] {35, 2});
-//
-//
-//				ctx.LoadProgram(code);
-//				ctx.Run();
-//
-//				T returnValue = ctx.DmaGetValue<T>((LocalStorageAddress)returnAddressObject.Offset);
-//
-//				AreEqual(expetedValue, returnValue, "SPU delegate execution returned a wrong value.");
-//
+				ctx.LoadProgram(code);
+				ctx.Run();
 
+				int returnValue = ctx.DmaGetValue<int>(cc.ReturnValueAddress);
+
+				AreEqual(99, returnValue, "Function call returned a wrong value.");
 			}
-
-
-//			result = del2();
-//			result = del3(35,2);
-
-//			Assert.AreEqual(99, result);
 		}
 
 		[Test]

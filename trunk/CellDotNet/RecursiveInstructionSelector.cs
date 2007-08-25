@@ -180,11 +180,11 @@ namespace CellDotNet
 
 						// Move parameters into hardware registers.
 						for (int i = 0; i < target.Parameters.Count; i++)
-							_writer.WriteMove(childregs[i], HardwareRegister.GetHardwareArgumentRegister(i+3)); // starter fra reg3
+							_writer.WriteMove(childregs[i], HardwareRegister.GetHardwareArgumentRegister(i));
 
-						VirtualRegister r = _writer.WriteLoadAddress(target);
+//						VirtualRegister r = _writer.WriteLoadAddress(target);
 
-						_writer.WriteBisl(HardwareRegister.LR, r);
+						_writer.WriteBrsl(target);
 
 						if (inst.StackType != StackTypeDescription.None)
 							return HardwareRegister.GetHardwareRegister(3);

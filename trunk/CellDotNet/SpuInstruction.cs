@@ -111,6 +111,9 @@ namespace CellDotNet
     	{
     		get
     		{
+				if (_opcode == SpuOpCode.brsl)
+					return new List<VirtualRegister>(HardwareRegister.CallerSavesVirtualRegisters);
+
     			List<VirtualRegister> use = new List<VirtualRegister>();
 				if (Ra != null) use.Add(_ra);
 				if (Rb != null) use.Add(_rb);
