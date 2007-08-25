@@ -338,7 +338,8 @@ namespace CellDotNet
 					t = StackTypeDescription.NativeUInt;
 					break;
 				case IRCode.Ldelema: // ldelema
-					throw new NotImplementedException();
+					t = ((StackTypeDescription) inst.Operand).GetManagedPointer();
+					break;
 				case IRCode.Ldelem_I1: // ldelem.i1
 					t = StackTypeDescription.Int8;
 					break;
