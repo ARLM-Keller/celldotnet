@@ -19,6 +19,7 @@ namespace CellDotNet
 		/// <param name="initialMethod"></param>
 		/// <param name="returnValueLocation">The location where the return value should be placed. Null is ok.</param>
 		public SpuInitializer(ObjectWithAddress initialMethod, RegisterSizedObject returnValueLocation)
+			: base("SpeInitializer")
 		{
 			_writer.BeginNewBasicBlock();
 

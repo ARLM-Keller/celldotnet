@@ -51,10 +51,18 @@ namespace CellDotNet
 			}
 
 			// Write address and size of non-routines.
+			writer.WriteLine("# *****************************");
 			writer.WriteLine("# Data:");
+			bool isFirst = true;
 			foreach (ObjectWithAddress o in nonRoutines)
 			{
-				writer.WriteLine("# object offset: {0:x6}, size: {1:x6}, type: {2}.", o.Offset, o.Size, o.GetType().Name);
+				if (!isFirst)
+					writer.WriteLine();
+
+				writer.WriteLine("# Name: {3}\r\n# Offset: {0:x6}, size: {1:x6}, type: {2}.",
+					o.Offset, o.Size, o.GetType().Name, !string.IsNullOrEmpty(o.Name) ? o.Name : "(none)");
+
+				isFirst = false;
 			}
 
 			writer.WriteLine();
@@ -71,7 +79,8 @@ namespace CellDotNet
 					continue;
 
 				writer.WriteLine();
-				writer.WriteLine("# Routine offset: {0:x6}, size: {1:x6}, type: {2}.", r.Offset, r.Size, r.GetType().Name);
+				writer.WriteLine("# Name: {3}\r\n# Offset: {0:x6}, size: {1:x6}, type: {2}.",
+					r.Offset, r.Size, r.GetType().Name, !string.IsNullOrEmpty(o.Name) ? o.Name : "(none)");
 				int newoffset = DisassembleInstructions(r.GetInstructions(), r.Offset, writer);
 
 				if (newoffset != r.Offset + r.Size)

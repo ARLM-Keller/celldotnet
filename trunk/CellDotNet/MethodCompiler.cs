@@ -62,6 +62,10 @@ namespace CellDotNet
 			get { return _blocks; }
 		}
 
+		public override string Name
+		{
+			get { return _methodBase.Name; }
+		}
 
 		private MethodBase _methodBase;
 
