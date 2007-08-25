@@ -13,6 +13,23 @@ namespace CellDotNet
 	abstract class ObjectWithAddress
 	{
 		private int _offset = -1;
+		private string _name;
+
+
+		public virtual string Name
+		{
+			get { return _name ?? ""; }
+		}
+
+
+		protected ObjectWithAddress()
+		{
+		}
+
+		protected ObjectWithAddress(string name)
+		{
+			_name = name;
+		}
 
 		/// <summary>
 		/// Byte offset of the basic block relative to the start of the compilation set.

@@ -10,6 +10,15 @@ namespace CellDotNet
 	/// </summary>
 	class RegisterSizedObject : ObjectWithAddress
 	{
+		public RegisterSizedObject(string name)
+			: base(name)
+		{
+		}
+
+		public RegisterSizedObject()
+		{
+		}
+
 		public override int Size
 		{
 			get { return 16; }

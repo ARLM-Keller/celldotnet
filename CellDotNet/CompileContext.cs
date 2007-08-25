@@ -203,7 +203,7 @@ namespace CellDotNet
 
 			// This one is not a routine, but it's convenient to initialize it here.
 			if (EntryPoint.ReturnType != StackTypeDescription.None)
-				_returnValueLocation = new RegisterSizedObject();
+				_returnValueLocation = new RegisterSizedObject("ReturnValueLocation");
 
 			_argumentArea = DataObject.QuadWords(EntryPoint.Parameters.Count);
 

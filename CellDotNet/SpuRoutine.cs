@@ -8,6 +8,14 @@ namespace CellDotNet
 	/// </summary>
 	abstract class SpuRoutine : ObjectWithAddress
 	{
+		protected SpuRoutine()
+		{
+		}
+
+		protected SpuRoutine(string name) : base(name)
+		{
+		}
+
 		/// <summary>
 		/// Implementations of this method should return the emitted binary code.
 		/// </summary>
