@@ -329,9 +329,11 @@ namespace CellDotNet
 				case IRCode.Box: // box
 					throw new NotImplementedException();
 				case IRCode.Newarr: // newarr
-					//					t = GetStackTypeDescription(optype);
-					//					t = new StackTypeDescription(new TypeDescription());
-					throw new NotImplementedException();
+					{
+						StackTypeDescription elementtype = (StackTypeDescription) inst.Operand;
+						t = elementtype.GetArrayType();
+						break;
+					}
 				case IRCode.Ldlen: // ldlen
 					t = StackTypeDescription.NativeUInt;
 					break;
@@ -465,24 +467,34 @@ namespace CellDotNet
 		/// <returns></returns>
 		public StackTypeDescription GetStackTypeDescription(Type type)
 		{
-			Type elementtype;
+			Type realtype;
 
 			if (type.IsByRef || type.IsPointer)
 			{
-				elementtype = type.GetElementType();
+				realtype = type.GetElementType();
 			}
 			else
-				elementtype = type;
+				realtype = type;
 
 
 			StackTypeDescription std;
-			if (elementtype.IsPrimitive)
+			if (realtype.IsPrimitive)
 			{
-				std = s_metadataCilTypes[elementtype];
+				std = s_metadataCilTypes[realtype];
+			}
+			else if (realtype.IsArray)
+			{
+				Type elementtype = realtype.GetElementType();
+
+				if (realtype.GetArrayRank() != 1 || !elementtype.IsValueType || !elementtype.IsPrimitive)
+					throw new NotSupportedException("Only 1D primitive value type arrays are supported.");
+
+				StackTypeDescription elementstd = s_metadataCilTypes[elementtype];
+				return elementstd.GetArrayType();
 			}
 			else
 			{
-				TypeDescription td = GetTypeDescription(elementtype);
+				TypeDescription td = GetTypeDescription(realtype);
 				std = new StackTypeDescription(td);
 			}
 

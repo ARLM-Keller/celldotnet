@@ -92,11 +92,11 @@ namespace CellDotNet
 
 			using (SpeContext ctx = new SpeContext())
 			{
-				ctx.DmaPutValue((LocalStorageAddress) 32, 33000);
+//				ctx.DmaPutValue((LocalStorageAddress) 32, 33000);
 				ctx.DmaPutValue((LocalStorageAddress) 64, 34000);
 
-				int readvalue = ctx.DmaGetValue<int>((LocalStorageAddress) 32);
-				AreEqual(33000, readvalue);
+//				int readvalue = ctx.DmaGetValue<int>((LocalStorageAddress) 32);
+//				AreEqual(33000, readvalue);
 			}
 		}
 
