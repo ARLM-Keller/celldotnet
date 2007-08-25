@@ -96,6 +96,8 @@ namespace CellDotNet
 			if (method == null)
 				throw new ArgumentNullException("method");
 
+			Utilities.PretendVariableIsUsed(DebuggerDisplay);
+
 			_method = method;
 			_body = method.GetMethodBody();
 			Initialize(method.GetMethodBody().GetILAsByteArray());
@@ -308,12 +310,14 @@ namespace CellDotNet
 		private unsafe float ReadSingle()
 		{
 			int i = ReadInt32();
+			Utilities.PretendVariableIsUsed(i);
 			return *(((float*)&i));
 		}
 
 		private unsafe double ReadDouble()
 		{
 			long i = ReadInt64();
+			Utilities.PretendVariableIsUsed(i);
 			return *(((double*)&i));
 		}
 

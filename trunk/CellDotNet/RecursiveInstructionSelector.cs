@@ -110,6 +110,7 @@ namespace CellDotNet
 			foreach (TreeInstruction child in inst.GetChildInstructions())
 			{
 				VirtualRegister reg = GenerateCode(child);
+				Utilities.AssertNotNull(reg, "GenerateCode childreg is null.");
 				childregs.Add(reg);
 			}
 			if (childregs.Count >= 1)
@@ -119,8 +120,23 @@ namespace CellDotNet
 					vrright = childregs[1];
 			}
 
-//			// For the compare instructions.
-//			bool orderedCompare = true;
+
+			// Assert that vrleft and vrright are not null if the opcode requires them not to be.
+			switch (inst.Opcode.GetPopBehavior())
+			{
+				case PopBehavior.Pop0:
+					Utilities.Assert(vrleft == null && vrright == null, "vrleft == null && vrright == null");
+					break;
+				case PopBehavior.Pop1:
+					Utilities.Assert(vrleft != null && vrright == null, "vrleft != null && vrright == null");
+					break;
+				case PopBehavior.Pop2:
+					Utilities.Assert(vrleft != null && vrright != null, "vrleft == null && vrright == null");
+					break;
+				case PopBehavior.Pop3:
+					throw new InvalidIRTreeException("PopBehavior.Pop3");
+			}
+
 
 			IRCode ilcode = inst.Opcode.IRCode;
 			StackTypeDescription lefttype = inst.Left != null ? inst.Left.StackType : StackTypeDescription.None;
@@ -866,7 +882,7 @@ namespace CellDotNet
 				case IRCode.Ldarg:
 					{
 						// Do nothing.
-						return null;
+						return GetMethodVariableRegister(inst);
 					}
 				case IRCode.Ldarga:
 					break;
@@ -934,5 +950,4 @@ namespace CellDotNet
 			return var.VirtualRegister;
 		}
 	}
-
 }

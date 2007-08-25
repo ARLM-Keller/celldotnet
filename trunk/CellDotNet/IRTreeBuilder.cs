@@ -11,16 +11,6 @@ namespace CellDotNet
 	/// </summary>
 	class IRTreeBuilder
 	{
-		private enum PopBehavior
-		{
-			Pop0 = 0,
-			Pop1 = 1,
-			Pop2 = 2,
-			Pop3 = 3,
-			PopAll = 1000,
-			VarPop = 1001
-		}
-
 		private Dictionary<int, List<MethodVariable>> _branchTargetStackVariables = new Dictionary<int, List<MethodVariable>>();
 
 		private List<TreeInstruction> _instructionStack = new List<TreeInstruction>();
@@ -191,7 +181,7 @@ namespace CellDotNet
 				Utilities.Assert(nextForwardBranchTarget > reader.Offset, 
 					"nextForwardBranchTarget > reader.Offset");
 
-				PopBehavior popbehavior = GetPopBehavior(reader.OpCode);
+				PopBehavior popbehavior = reader.OpCode.GetPopBehavior();
 				int pushcount = GetPushCount(reader.OpCode);
 
 
@@ -411,49 +401,6 @@ namespace CellDotNet
 			}
 
 			return pushCount;
-		}
-
-		private static PopBehavior GetPopBehavior(IROpCode code)
-		{
-			PopBehavior pb;
-
-			switch (code.StackBehaviourPop)
-			{
-				case StackBehaviour.Pop0:
-					pb = PopBehavior.Pop0;
-					break;
-				case StackBehaviour.Varpop:
-					pb = PopBehavior.VarPop;
-					break;
-				case StackBehaviour.Pop1:
-				case StackBehaviour.Popi:
-				case StackBehaviour.Popref:
-					pb = PopBehavior.Pop1;
-					break;
-				case StackBehaviour.Pop1_pop1:
-				case StackBehaviour.Popi_pop1:
-				case StackBehaviour.Popi_popi:
-				case StackBehaviour.Popi_popi8:
-				case StackBehaviour.Popi_popr4:
-				case StackBehaviour.Popi_popr8:
-				case StackBehaviour.Popref_pop1:
-				case StackBehaviour.Popref_popi:
-					pb = PopBehavior.Pop2;
-					break;
-				case StackBehaviour.Popi_popi_popi:
-				case StackBehaviour.Popref_popi_pop1:
-				case StackBehaviour.Popref_popi_popi:
-				case StackBehaviour.Popref_popi_popi8:
-				case StackBehaviour.Popref_popi_popr4:
-				case StackBehaviour.Popref_popi_popr8:
-				case StackBehaviour.Popref_popi_popref:
-					pb = PopBehavior.Pop3;
-					break;
-				default:
-					throw new ArgumentOutOfRangeException("code");
-			}
-
-			return pb;
 		}
 	}
 }

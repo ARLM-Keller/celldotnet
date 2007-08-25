@@ -77,7 +77,7 @@ namespace CellDotNet
 		public CliBasicType _cliBasicType;
 		private bool _isSigned;
 		private CliNumericSize _numericSize;
-		private short _indirectionLevel;
+		private byte _indirectionLevel;
 		private bool _isManaged;
 		public TypeDescription _complexType;
 

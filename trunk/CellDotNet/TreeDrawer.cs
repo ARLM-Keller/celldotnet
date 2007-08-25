@@ -159,11 +159,23 @@ namespace CellDotNet
 			DrawMethod(ci.Blocks);
 		}
 
-		public string GetMethodDrawing(MethodCompiler ci)
+		public static string GetMethodDrawing(IRBasicBlock bb)
 		{
 			StringWriter sw = new StringWriter();
+			TreeDrawer d = new TreeDrawer();
 
-			DrawMethod(ci.MethodBase, sw, ci.Blocks);
+			d.Output = sw;
+			d.DrawTree(bb);
+
+			return sw.GetStringBuilder().ToString();
+		}
+
+		public static string GetMethodDrawing(MethodCompiler ci)
+		{
+			StringWriter sw = new StringWriter();
+			TreeDrawer d = new TreeDrawer();
+
+			d.DrawMethod(ci.MethodBase, sw, ci.Blocks);
 
 			return sw.GetStringBuilder().ToString();
 		}
