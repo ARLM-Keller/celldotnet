@@ -15,7 +15,7 @@ namespace CellDotNet
 
 		private static VirtualRegister[] _callerSavesVirtualRegisters;
 
-		public static IEnumerable<VirtualRegister> CallerSavesVirtualRegisters
+		public static VirtualRegister[] CallerSavesVirtualRegisters
 		{
 			get { return _callerSavesVirtualRegisters; }
 		}

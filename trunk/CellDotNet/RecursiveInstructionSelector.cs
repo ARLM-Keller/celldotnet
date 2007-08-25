@@ -175,11 +175,16 @@ namespace CellDotNet
 							throw new NotImplementedException("Constructors are not implemented.");
 						if (!target.MethodBase.IsStatic)
 							throw new NotImplementedException("Only static methods are implemented.");
+						if(target.Parameters.Count > HardwareRegister.CallerSavesVirtualRegisters.Length)
+							throw new NotImplementedException("No support for more than " + HardwareRegister.CallerSavesVirtualRegisters.Length + "parameters.");
 
 						// Move parameters into hardware registers.
 						for (int i = 0; i < target.Parameters.Count; i++)
-							_writer.WriteMove(childregs[i], HardwareRegister.GetHardwareArgumentRegister(i));
+							_writer.WriteMove(childregs[i], HardwareRegister.GetHardwareArgumentRegister(i+3)); // starter fra reg3
 
+						VirtualRegister r = _writer.WriteLoadAddress(target);
+
+						_writer.WriteBisl(HardwareRegister.LR, r);
 
 						if (inst.StackType != StackTypeDescription.None)
 							return HardwareRegister.GetHardwareRegister(3);
