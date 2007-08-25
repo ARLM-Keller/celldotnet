@@ -37,6 +37,7 @@
       <HintPath>..\..\..\..\..\Program Files\NUnit 2.4\bin\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
@@ -87,6 +88,7 @@
     <Compile Include="SortedLinkedList.cs" />
     <Compile Include="SpeContext.cs" />
     <Compile Include="SpeContextTest.cs" />
+    <Compile Include="SpeDelegateRunner.cs" />
     <Compile Include="SpuAbiUtilities.cs" />
     <Compile Include="SpuAbiUtilitiesTest.cs" />
     <Compile Include="SPUBasicBlock.cs" />

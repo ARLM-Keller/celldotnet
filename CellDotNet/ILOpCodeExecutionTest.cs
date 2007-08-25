@@ -342,33 +342,7 @@ namespace CellDotNet
 			}
 			catch (ILParseException)
 			{
-				// Dump readable IL.
-				StringWriter sw = new StringWriter();
-				sw.WriteLine("Parsed IL:");
-				try
-				{
-					ILReader r = ilcode.CreateReader();
-					while (r.Read())
-						sw.WriteLine("{0:x4}: {1} {2}", r.Offset, r.OpCode.Name, r.Operand);
-				}
-				catch (ILParseException) { }
-
-				// Dump bytes.
-				sw.WriteLine("IL bytes:");
-				byte[] il = ilcode.ToByteArray();
-				for (int offset = 0; offset < il.Length; offset++)
-				{
-					if (offset % 4 == 0)
-					{
-						if (offset > 0)
-							sw.WriteLine();
-						sw.Write("{0:x4}: ", offset);
-					}
-
-					sw.Write(" " + il[offset].ToString("x2"));
-				}
-				Console.WriteLine(sw.GetStringBuilder());
-
+				DumpILToConsole(ilcode);
 				throw;
 			}
 
@@ -429,6 +403,36 @@ namespace CellDotNet
 
 				AreEqual(expetedValue, returnValue, "SPU delegate execution returned a wrong value.");
 			}
+		}
+
+		private static void DumpILToConsole(ILWriter ilcode)
+		{
+			// Dump readable IL.
+			StringWriter sw = new StringWriter();
+			sw.WriteLine("Parsed IL:");
+			try
+			{
+				ILReader r = ilcode.CreateReader();
+				while (r.Read())
+					sw.WriteLine("{0:x4}: {1} {2}", r.Offset, r.OpCode.Name, r.Operand);
+			}
+			catch (ILParseException) { }
+
+			// Dump bytes.
+			sw.WriteLine("IL bytes:");
+			byte[] il = ilcode.ToByteArray();
+			for (int offset = 0; offset < il.Length; offset++)
+			{
+				if (offset % 4 == 0)
+				{
+					if (offset > 0)
+						sw.WriteLine();
+					sw.Write("{0:x4}: ", offset);
+				}
+
+				sw.Write(" " + il[offset].ToString("x2"));
+			}
+			Console.WriteLine(sw.GetStringBuilder());
 		}
 	}
 }

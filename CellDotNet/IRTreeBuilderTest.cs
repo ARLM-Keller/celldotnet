@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.InteropServices;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -108,9 +109,11 @@ namespace CellDotNet
 			AreEqual(1, ci.Blocks.Count);
 		}
 
-		[Test, Ignore("Enable when arrays are supported.")]
+		[Test]
 		public void TestParseArrayInstantiation()
 		{
+			Console.WriteLine("size: " + Marshal.SizeOf(typeof(StackTypeDescription)));
+
 			BasicTestDelegate del = delegate
 										{
 											int[] arr = new int[5];

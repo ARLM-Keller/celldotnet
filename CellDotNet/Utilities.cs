@@ -27,6 +27,12 @@ namespace CellDotNet
 				throw new Exception("An expression is null: " + expressionOrMessage);
 		}
 
+		static public void AssertNull(object arg, string expressionOrMessage)
+		{
+			if (arg != null)
+				throw new Exception("An expression is not null: " + expressionOrMessage);
+		}
+
 		static public void Assert(bool condition, string message)
 		{
 			if (!condition)
@@ -61,11 +67,12 @@ namespace CellDotNet
 
 		/// <summary>
 		/// You can use this one to make resharper think that a variable is used so that it won't
-		/// show a warning. Can be handy when the variable isn't used for anything but debugging.
+		/// show a warning. Can be handy when the variable isn't used for anything but debugging, 
+		/// or when resharpers value analysis is making a mistake.
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
 		/// <param name="var"></param>
-		[Conditional("DEBUG")]
+		[Conditional("XXXY")]
 		public static void PretendVariableIsUsed<T>(T var)
 		{
 			

@@ -60,18 +60,5 @@ namespace CellDotNet
 			AreEqual(1, cc.Methods.Count);
 			
 		}
-
-		[Test]
-		unsafe public void TestRunStaticMethodCall()
-		{
-			SimpleDelegate del = delegate
-							{
-								int* i;
-								i = (int*)30000;
-								*i = Math.Max(100, 200);
-							};
-			CompileContext cc = new CompileContext(del.Method);
-			cc.PerformProcessing(CompileContextState.S8Complete);
-		}
 	}
 }
