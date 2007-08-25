@@ -143,7 +143,6 @@ namespace CellDotNet
 			    delegate(TreeInstruction inst) { return inst.Opcode == IROpCodes.Ldelema; });
 			AreEqual(1, ldlist.Count);
 			AreEqual(1, blocks.Count);
-
 		}
 
 

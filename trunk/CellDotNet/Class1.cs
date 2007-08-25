@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace CellDotNet
@@ -11,42 +9,21 @@ namespace CellDotNet
 	{
 		static public void Main(string[] args)
 		{
-//			StackTypeDescription std = new StackTypeDescription();
-//			c1 c1 = new c1();
-//			Console.WriteLine("size: " + Marshal.SizeOf(typeof(StackTypeDescription)));
-//			return;
-//			Trace.Listeners.Add(new ConsoleTraceListener());
+			if (Environment.UserName == "kmhansen")
+			{
+				Console.WriteLine("Running RunKlaus...");
+				RunKlaus();
+			}
+			else
+			{
+				Console.WriteLine("Running RunRasmus...");
+				RunRasmus();
+			}
+		}
 
-//			new SpeContextTest().TestPutGetInt32();
-
-//			new SpeContextTest().TestFirstCellProgram();
-
-//			new ILOpCodeExecutionTest().Test_Br();
-//			new SpeContextTest().TestRunProgram_ReturnInt32_Manual();
-//
-//			new RegAllocGraphColloringTest().LargeTest();
-
-//			new SpeContextTest().TestPutGetFloat();
-
-//			new ILOpCodeExecutionTest().Test_Ceq_I4();
-
-			new ILOpCodeExecutionTest().TestAcquireThreeMethodsExternal();
-
-//			new SpuInitializerTest().TestFun();
-
-//			new SpuInitializerTest().TestInitialization();
-
-//			GenericExperiment();
-//			return;
-
-//			MyRunSPU(true);
-//			MyRunSPU2();
-
-//			RunSpu();
-//			TypeExperimenalStuff(3);
-//			new MethodCompilerTest().TestBuildTree();
-//			DoExtremelySimpleParameterCodeGen();
-			Console.WriteLine("Program done.");
+		private static void RunKlaus()
+		{
+			
 		}
 
 		private static void GenericExperiment()
@@ -458,8 +435,8 @@ namespace CellDotNet
 
 		private static void WriteDiff(int[] a1, int[] a2)
 		{
-			System.Text.StringBuilder line1 = null;
-			System.Text.StringBuilder line2 = null;
+			StringBuilder line1 = null;
+			StringBuilder line2 = null;
 			int linewrites = 0;
 			int maxlinewrits = 16;
 
@@ -515,5 +492,10 @@ namespace CellDotNet
 		}
 
 		unsafe private static void RefIntMethod(int* i) { }
+
+		private static void RunRasmus()
+		{
+
+		}
 	}
 }
