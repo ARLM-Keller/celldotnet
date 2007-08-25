@@ -20,6 +20,17 @@ namespace CellDotNet
 
 		private List<IROpCode> _unimplementedOpCodes;
 
+		private SpecialSpeObjects _specialSpeObjects;
+
+
+		public RecursiveInstructionSelector()
+		{
+		}
+
+		public RecursiveInstructionSelector(SpecialSpeObjects specialSpeObjects)
+		{
+			_specialSpeObjects = specialSpeObjects;
+		}
 
 		//  public void GenerateCode(MethodCompiler mc, SpuInstructionWriter writer)
 		public void GenerateCode(List<IRBasicBlock> basicBlocks, ReadOnlyCollection<MethodParameter> parameters, SpuInstructionWriter writer)

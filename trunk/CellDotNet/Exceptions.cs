@@ -131,4 +131,64 @@ namespace CellDotNet
 		  StreamingContext context)
 			: base(info, context) { }
 	}
+
+
+	[Serializable]
+	public class SpeExecutionException : Exception
+	{
+		//
+		// For guidelines regarding the creation of new exception types, see
+		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
+		// and
+		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
+		//
+
+		public SpeExecutionException() { }
+		public SpeExecutionException(string message) : base(message) { }
+		public SpeExecutionException(string message, Exception inner) : base(message, inner) { }
+		protected SpeExecutionException(
+		  SerializationInfo info,
+		  StreamingContext context)
+			: base(info, context) { }
+	}
+
+
+	[Serializable]
+	public class SpeOutOfMemoryException : SpeExecutionException
+	{
+		//
+		// For guidelines regarding the creation of new exception types, see
+		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
+		// and
+		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
+		//
+
+		public SpeOutOfMemoryException() { }
+		public SpeOutOfMemoryException(string message) : base(message) { }
+		public SpeOutOfMemoryException(string message, Exception inner) : base(message, inner) { }
+		protected SpeOutOfMemoryException(
+		  SerializationInfo info,
+		  StreamingContext context)
+			: base(info, context) { }
+	}
+
+
+	[Serializable]
+	public class SpeStackOverflowException : SpeExecutionException
+	{
+		//
+		// For guidelines regarding the creation of new exception types, see
+		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
+		// and
+		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
+		//
+
+		public SpeStackOverflowException() { }
+		public SpeStackOverflowException(string message) : base(message) { }
+		public SpeStackOverflowException(string message, Exception inner) : base(message, inner) { }
+		protected SpeStackOverflowException(
+		  SerializationInfo info,
+		  StreamingContext context)
+			: base(info, context) { }
+	}
 }

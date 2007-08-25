@@ -354,7 +354,7 @@ namespace CellDotNet
 
 			//            Buffer.BlockCopy(myspucode, 0, ctx.LocalS myspycode.Length, );
 			// copy code to spu...
-			int r = ctx.Run();
+			ctx.Run();
 //			Console.WriteLine("ctx.Run(): {0}", r);
 
 //			int[] ls3 = ctx.GetCopyOffLocalStorage();
@@ -496,7 +496,7 @@ namespace CellDotNet
 
 		private static void RunRasmus()
 		{
-
+			new SpeContextTest().TestError_OutOfMemoryException();
 	}
 	}
 }

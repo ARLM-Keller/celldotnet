@@ -44,9 +44,16 @@ namespace CellDotNet
 		[StructLayout(LayoutKind.Explicit)]
 		struct SpeStopInfo
 		{
-			[FieldOffset(0)] public SpeStopReason StopReason;
-			[FieldOffset(4)] public long Result;
-			[FieldOffset(12)] public int SpuStatus;
+			[FieldOffset(0)] private SpeStopReason StopReason;
+			[FieldOffset(4)] private long Result;
+			[FieldOffset(12)] private int SpuStatus;
+
+
+			public override string ToString()
+			{
+				return string.Format("stopreason: {0}; result: {1:x8}; status: {2:x8}",
+				                     StopReason, Result, SpuStatus);
+			}
 
 			/// <summary>
 			/// Exit code returned by the SPE program in the range 0..255. 
@@ -74,13 +81,13 @@ namespace CellDotNet
 			/// Signal codes 0x0001-0x1FFF are user-defined signals. 
 			/// This convention determines the mapping to the respective fields in stopinfo.
 			/// </summary>
-			public int SignalCode
+			public SpuStopCode SignalCode
 			{
 				get
 				{
-					if (StopReason != SpeStopReason.SPE_STOP_AND_SIGNAL)
+					if (StopReason != SpeStopReason.SPE_EXIT && StopReason != SpeStopReason.SPE_STOP_AND_SIGNAL)
 						throw new InvalidOperationException();
-					return (int)Result;
+					return (SpuStopCode) ((int)Result | 0x2000);
 				}
 			}
 
@@ -476,7 +483,7 @@ namespace CellDotNet
 		/// <param name="value"></param>
 		public void DmaPutValue<T>(LocalStorageAddress lsAddress, T value) where T : struct
 		{
-			DmaPutValue(lsAddress, value);
+			DmaPutValue(lsAddress, (ValueType) value);
 		}
 
 		public int[] GetCopyOffLocalStorage()
@@ -515,7 +522,7 @@ namespace CellDotNet
 			}
 		}
 
-		public int Run()
+		public void Run()
 		{
 			uint entry = 0;
 			SpeStopInfo stopinfo = new SpeStopInfo();
@@ -523,7 +530,20 @@ namespace CellDotNet
 			int rc = UnsafeNativeMethods.spe_context_run(_handle, ref entry, 0, IntPtr.Zero, IntPtr.Zero, ref stopinfo);
 			if (rc < 0)
 				throw new LibSpeException("spe_context_run failed. Return code:" + rc);
-			return rc;
+
+			switch (stopinfo.SignalCode)
+			{
+				case SpuStopCode.None:
+				case SpuStopCode.ExitSuccess:
+				case SpuStopCode.ExitFailure:
+					return;
+				case SpuStopCode.OutOfMemory:
+					throw new SpeOutOfMemoryException();
+				case SpuStopCode.StackOverflow:
+					throw new SpeStackOverflowException();
+				default:
+					throw new SpeExecutionException("An error occurred during execution. The error code is: " + (SpuStopCode)stopinfo.SignalCode);
+			}
 		}
 
 		public object RunProgram(Delegate delegateToRun, params object[] arguments)

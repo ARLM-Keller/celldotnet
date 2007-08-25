@@ -34,20 +34,33 @@ namespace CellDotNet
 		public void Disassemble(IEnumerable<ObjectWithAddress> objects, TextWriter writer)
 		{
 			List<ObjectWithAddress> olist = new List<ObjectWithAddress>(objects);
+			List<string> layoutErrorMsg = new List<string>();
 
 			// Lay out ordered by offset.
 			olist.Sort(delegate(ObjectWithAddress x, ObjectWithAddress y)
 				{ return x.Offset - y.Offset; });
 
-			Dictionary<int, ObjectWithAddress> dict = new Dictionary<int, ObjectWithAddress>();
+			Dictionary<int, ObjectWithAddress> addressConflictDetector = new Dictionary<int, ObjectWithAddress>();
 
-			// Build address map.
+			// Detected address conflicts and identify data objects.
 			List<ObjectWithAddress> nonRoutines = new List<ObjectWithAddress>();
 			foreach (ObjectWithAddress o in olist)
 			{
-				dict.Add(o.Offset, o);
 				if (!(o is SpuRoutine))
 					nonRoutines.Add(o);
+
+				if (o.Size == 0)
+					continue;
+
+				try
+				{
+					addressConflictDetector.Add(o.Offset, o);
+				}
+				catch (ArgumentException)
+				{
+					layoutErrorMsg.Add(string.Format("Multiple objects are assigned to the same address. Address: {0:x6}, object 1: {1}, object 2: {2}.", 
+					                               o.Offset, o.Name, addressConflictDetector[o.Offset].Name));
+				}
 			}
 
 			// Write address and size of non-routines.
@@ -90,6 +103,9 @@ namespace CellDotNet
 						r.Offset + r.Size, newoffset));
 
 			}
+
+			if (layoutErrorMsg.Count != 0)
+				throw new BadCodeLayoutException("One or more layout errors were detected:\r\n" + string.Join("\r\n", layoutErrorMsg.ToArray()));
 		}
 
 		internal static int DisassembleInstructions(IEnumerable<SpuInstruction> instructions, int startOffset, TextWriter tw)
