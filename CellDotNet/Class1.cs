@@ -23,7 +23,8 @@ namespace CellDotNet
 
 		private static void RunKlaus()
 		{
-			
+			new ILOpCodeExecutionTest().Test_Call();
+			Console.WriteLine("Running RunKlaus done.");
 		}
 
 		private static void GenericExperiment()
@@ -496,6 +497,6 @@ namespace CellDotNet
 		private static void RunRasmus()
 		{
 
-		}
+	}
 	}
 }

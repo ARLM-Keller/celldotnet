@@ -360,6 +360,14 @@ namespace CellDotNet
 			AddInstruction(inst);
 		}
 
+		public void WriteBrsl(ObjectWithAddress owa)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.brsl);
+			inst.ObjectWithAddress = owa;
+			inst.Rt = HardwareRegister.LR;
+			AddInstruction(inst);
+		}
+
 		/// <summary>
 		/// Pseudo instruction to load the address of an object into a rgister.
 		/// </summary>

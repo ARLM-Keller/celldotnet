@@ -204,5 +204,16 @@ namespace CellDotNet
 				DrawTree(block);
 			}
 		}
+
+		public void DrawMethods(CompileContext cc)
+		{
+			foreach (String key in cc.Methods.Keys)
+			{
+				Console.WriteLine();
+				Console.WriteLine(key);
+
+				DrawMethod(cc.Methods[key]);
+			}
+		}
 	}
 }
