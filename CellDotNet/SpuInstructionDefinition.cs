@@ -128,6 +128,29 @@ namespace CellDotNet
 	}
 
 	/// <summary>
+	/// See the Linux ABI for details.
+	/// </summary>
+	enum SpuStopCode
+	{
+		None = 0,
+
+		// Reserved ranges - custom runtime codes.
+		OutOfMemory = 0x2010,
+
+		// Reserved ranges - standard codes.
+		/// <summary>
+		/// Don't use this for app codes.
+		/// </summary>
+		ExitFailure = 0x2000,
+		/// <summary>
+		/// Don't use this for app codes.
+		/// </summary>
+		ExitSuccess = 0x2001,
+		StackOverflow = 0x3FFE,
+		DebuggerBreakpoint = 0x3FFF,
+	}
+
+	/// <summary>
 	/// SPU instruction definitions as taken from the 
 	/// "Synergistic Processor Unit Instruction Set Architecture" version 1.2
 	/// </summary>

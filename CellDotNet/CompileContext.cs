@@ -24,6 +24,7 @@ namespace CellDotNet
 	{
 		private MethodCompiler _entryPoint;
 		private Dictionary<string, MethodCompiler> _methods = new Dictionary<string, MethodCompiler>();
+		SpecialSpeObjects _specialSpeObjects = new SpecialSpeObjects();
 
 		/// <summary>
 		/// The first method that is run.
@@ -233,6 +234,7 @@ namespace CellDotNet
 			if (_returnValueLocation != null)
 				all.Add(_returnValueLocation);
 			all.Add(_argumentArea);
+			all.AddRange(_specialSpeObjects.GetAll());
 
 			return all;
 		}

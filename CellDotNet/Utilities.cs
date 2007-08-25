@@ -21,6 +21,18 @@ namespace CellDotNet
 				throw new ArgumentException(message);
 		}
 
+		static public void AssertArgumentRange(bool rangeCondition, string paramName, object actualValue, string message)
+		{
+			if (!rangeCondition)
+				throw new ArgumentOutOfRangeException(paramName, actualValue, message);
+		}
+
+		static public void AssertArgumentRange(bool rangeCondition, string paramName, object actualValue)
+		{
+			if (!rangeCondition)
+				throw new ArgumentOutOfRangeException(paramName, actualValue, "The value is out of range.");
+		}
+
 		static public void AssertNotNull(object arg, string expressionOrMessage)
 		{
 			if (arg == null)

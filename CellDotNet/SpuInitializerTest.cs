@@ -46,8 +46,7 @@ namespace CellDotNet
 			{
 				ctx.LoadProgram(code);
 
-				int rc = ctx.Run();
-				AreEqual(0, rc);
+				ctx.Run();
 
 				int retval1 = ctx.DmaGetValue<int>((LocalStorageAddress) returnLocation.Offset);
 

@@ -128,6 +128,60 @@ namespace CellDotNet
 				IsTrue(SpeContext.HasSpeHardware);
 		}
 
+		[Test, ExpectedException(typeof(SpeOutOfMemoryException))]
+		public void TestError_OutOfMemoryException()
+		{
+			SpuInstructionWriter writer = new SpuInstructionWriter();
+			writer.BeginNewBasicBlock();
+			writer.WriteStop(SpuStopCode.OutOfMemory);
+			int[] code = SpuInstruction.emit(writer.GetAsList());
+
+			if (!SpeContext.HasSpeHardware)
+				throw new SpeOutOfMemoryException();
+
+			using (SpeContext sc = new SpeContext())
+			{
+				sc.LoadProgram(code);
+				sc.Run();
+			}
+		}
+
+		[Test, ExpectedException(typeof(SpeStackOverflowException))]
+		public void TestError_StackOverflowException()
+		{
+			SpuInstructionWriter writer = new SpuInstructionWriter();
+			writer.BeginNewBasicBlock();
+			writer.WriteStop(SpuStopCode.StackOverflow);
+			int[] code = SpuInstruction.emit(writer.GetAsList());
+
+			if (!SpeContext.HasSpeHardware)
+				throw new SpeStackOverflowException();
+
+			using (SpeContext sc = new SpeContext())
+			{
+				sc.LoadProgram(code);
+				sc.Run();
+			}
+		}
+
+		[Test]
+		public void TestError_None()
+		{
+			SpuInstructionWriter writer = new SpuInstructionWriter();
+			writer.BeginNewBasicBlock();
+			writer.WriteStop();
+			int[] code = SpuInstruction.emit(writer.GetAsList());
+
+			if (!SpeContext.HasSpeHardware)
+				throw new SpeStackOverflowException();
+
+			using (SpeContext sc = new SpeContext())
+			{
+				sc.LoadProgram(code);
+				sc.Run();
+			}
+		}
+
 		[Test, Explicit]
 		public void TestGetSpeControlArea()
 		{
@@ -161,8 +215,7 @@ namespace CellDotNet
 
 				Utilities.DumpMemory(ctx, (LocalStorageAddress)0, 0x70, Console.Out);
 
-				int rc = ctx.Run();
-				AreEqual(0, rc);
+				ctx.Run();
 
 				int retval = ctx.DmaGetValue<int>(cc.ReturnValueAddress);
 				AreEqual(magicNumber, retval);

@@ -86,6 +86,7 @@
     <Compile Include="SimpleRegAlloc.cs" />
     <Compile Include="SimpleRegAllocTest.cs" />
     <Compile Include="SortedLinkedList.cs" />
+    <Compile Include="SpecialSpeObjects.cs" />
     <Compile Include="SpeContext.cs" />
     <Compile Include="SpeContextTest.cs" />
     <Compile Include="SpeDelegateRunner.cs" />

@@ -306,6 +306,14 @@ namespace CellDotNet
 			AddInstruction(inst);
 		}
 
+		public void WriteStop(SpuStopCode stopCode)
+		{
+			Utilities.AssertArgumentRange(((uint)stopCode >> 14) == 0, "stopCode", stopCode);
+
+			WriteStop();
+			LastInstruction.Constant = (int) stopCode;
+		}
+
 		/// <summary>
 		/// Pseudo instruction to load the integer into the register.
 		/// No other registers are used.
