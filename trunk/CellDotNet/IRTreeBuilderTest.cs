@@ -132,6 +132,7 @@ namespace CellDotNet
 			MethodBase method = del.Method;
 
 			List<IRBasicBlock> blocks = new IRTreeBuilder().BuildBasicBlocks(method);
+			new TreeDrawer().DrawMethod(blocks);
 
 			// Check that stelem has been removed/decomposed.
 			IRBasicBlock.VisitTreeInstructions(blocks, delegate(TreeInstruction obj) { AreNotEqual(IROpCodes.Stelem, obj.Opcode); });
@@ -142,6 +143,7 @@ namespace CellDotNet
 			    delegate(TreeInstruction inst) { return inst.Opcode == IROpCodes.Ldelema; });
 			AreEqual(1, ldlist.Count);
 			AreEqual(1, blocks.Count);
+
 		}
 
 

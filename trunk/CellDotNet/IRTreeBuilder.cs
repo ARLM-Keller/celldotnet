@@ -321,12 +321,47 @@ namespace CellDotNet
 						if (reader.OpCode.StackBehaviourPush != StackBehaviour.Push0)
 							throw new ILSemanticErrorException("Pop3 with a push != 0?");
 
-						if (reader.OpCode.Name.StartsWith("stelem"))
+						// Replace stelem with ldelema and stind.
+						if (reader.OpCode.IRCode >= IRCode.Stelem_I && reader.OpCode.IRCode <= IRCode.Stelem_Ref)
 						{
-							int e = 434;
-						}
+							// stelem.* stack transition: ..., array, index, value, -> ...
+							// stelem<T> stack transition: ..., array, index, value, -> ...
 
-						throw new NotImplementedException();
+							IROpCode stindOpcode;
+
+							switch (reader.OpCode.IRCode)
+							{
+								case IRCode.Stelem_I4:
+									stindOpcode = IROpCodes.Stind_I4;
+									break;
+								case IRCode.Stelem_R4:
+									stindOpcode = IROpCodes.Stind_R4;
+									break;
+								default:
+									throw new NotSupportedException("Unsupported array opcode: " + reader.OpCode);
+							}
+
+							TreeInstruction valueInst = Pop(); // The value.
+
+							TreeInstruction ldelemachild = new TreeInstruction();
+							ldelemachild.Opcode = IROpCodes.Ldelema;
+							ldelemachild.Right = Pop(); // The index.
+							ldelemachild.Left = Pop(); // The array.
+							ldelemachild.Operand = ldelemachild.Left.StackType.GetArrayElementType();
+
+							TreeInstruction stindParent = new TreeInstruction();
+							stindParent.Opcode = stindOpcode;
+							stindParent.Left = ldelemachild;
+							stindParent.Right = valueInst;
+
+							typederiver.DeriveType(ldelemachild);
+							typederiver.DeriveType(stindParent);
+							treeinst = stindParent;
+						}
+						else
+							throw new NotImplementedException();
+
+						break;
 					default:
 						if (popbehavior != PopBehavior.Pop0)
 							throw new Exception("Invalid PopBehavior: " + popbehavior + ". Only two-argument method calls are supported.");
