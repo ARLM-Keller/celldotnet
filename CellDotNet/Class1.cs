@@ -9,16 +9,13 @@ namespace CellDotNet
 {
 	internal class Class1
 	{
-		class c1
-		{
-			private StackTypeDescription std;
-		}
 		static public void Main(string[] args)
 		{
-//			StackTypeDescription std = new StackTypeDescription();
-			c1 c1 = new c1();
-			Console.WriteLine("size: " + Marshal.SizeOf(typeof(StackTypeDescription)));
+
+			new SpeContextTest().TestPutGetInt32();
 			return;
+
+//			StackTypeDescription std = new StackTypeDescription();
 			Trace.Listeners.Add(new ConsoleTraceListener());
 
 //			new SpeContextTest().TestPutGetInt32();

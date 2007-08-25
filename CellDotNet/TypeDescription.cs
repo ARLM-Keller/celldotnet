@@ -38,9 +38,9 @@ namespace CellDotNet
 				throw new ArgumentException("Argument is a generic type.");
 
 			_reflectionType = type;
-
-			Initialize();
 		}
+
+
 
 		public TypeDescription(GenericType genericType, params StackTypeDescription[] genericParameters)
 		{
@@ -57,8 +57,6 @@ namespace CellDotNet
 
 			_genericType = genericType;
 			_genericParameters = genericParameters;
-
-			Initialize();
 		}
 
 //		/// <summary>
@@ -83,10 +81,6 @@ namespace CellDotNet
 //			get { return _arrayDimension; }
 //		}
 
-
-		private void Initialize()
-		{
-		}
 
 		private GenericType _genericType;
 		public GenericType GenericType

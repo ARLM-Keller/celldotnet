@@ -47,12 +47,6 @@ namespace CellDotNet
 			get { return _opcodeType; }
 		}
 
-		private OperandType _operandType;
-		public OperandType OperandType
-		{
-			get { return _operandType; }
-		}
-
 		private StackBehaviour _stackBehaviourPush;
 		public StackBehaviour StackBehaviourPush
 		{
@@ -85,7 +79,6 @@ namespace CellDotNet
 			_name = name;
 			_irCode = ircode;
 			_opcodeType = opcodeType;
-			_operandType = operandType;
 			_stackBehaviourPush = stackBehaviourPush;
 			_stackBehaviourPop = stackBehaviourPop;
 			_reflectionOpCode = opcode;

@@ -113,6 +113,11 @@ namespace CellDotNet
 			IRBasicBlock.VisitTreeInstructions(Blocks, action);
 		}
 
+		public IEnumerable<TreeInstruction> EnumerateTreeInstructions()
+		{
+			return IRBasicBlock.EnumerateTreeInstructions(Blocks);
+		}
+
 		private void AssertMinimumState(MethodCompileState requiredState)
 		{
 			if (State < requiredState)

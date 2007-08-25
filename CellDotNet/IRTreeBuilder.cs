@@ -140,10 +140,58 @@ namespace CellDotNet
 			return BuildBasicBlocks(method.Name, reader, variables, parameters);
 		}
 
+		/// <summary>
+		/// For debugging/unit tests.
+		/// </summary>
+		/// <param name="reader"></param>
+		/// <param name="variables"></param>
+		/// <returns></returns>
 		internal List<IRBasicBlock> BuildBasicBlocks(ILReader reader, List<MethodVariable> variables)
 		{
 			ReadOnlyCollection<MethodParameter> parameters = new ReadOnlyCollection<MethodParameter>(new MethodParameter[0]);
 			return BuildBasicBlocks("methodXX", reader, variables, parameters);
+		}
+
+		/// <summary>
+		/// For debugging/unit tests.
+		/// </summary>
+		/// <param name="method"></param>
+		/// <param name="variables">
+		/// This is really an out param that will contain the variables, including any that are created during the construction process.
+		/// </param>
+		/// <returns></returns>
+		private List<IRBasicBlock> BuildBasicBlocks(
+			MethodBase method,
+			out List<MethodVariable> variables)
+		{
+			ILReader reader = new ILReader(method);
+			List<MethodParameter> parms = new List<MethodParameter>();
+			TypeDeriver td = new TypeDeriver();
+
+			foreach (ParameterInfo pi in method.GetParameters())
+			{
+				parms.Add(new MethodParameter(pi, td.GetStackTypeDescription(pi.ParameterType)));
+			}
+
+
+			variables = new List<MethodVariable>();
+			foreach (LocalVariableInfo lvi in method.GetMethodBody().LocalVariables)
+			{
+				variables.Add(new MethodVariable(lvi, td.GetStackTypeDescription(lvi.LocalType)));
+			}
+
+			return BuildBasicBlocks(method.Name, reader, variables, new ReadOnlyCollection<MethodParameter>(parms));
+		}
+
+		/// <summary>
+		/// For debugging/unit tests.
+		/// </summary>
+		/// <param name="method"></param>
+		/// <returns></returns>
+		public List<IRBasicBlock> BuildBasicBlocks(MethodBase method)
+		{
+			List<MethodVariable> vars;
+			return BuildBasicBlocks(method, out vars);
 		}
 
 		/// <summary>
@@ -202,6 +250,10 @@ namespace CellDotNet
 				{
 					ParameterInfo pi = (ParameterInfo)reader.Operand;
 					treeinst.Operand = parameters[pi.Position];
+				}
+				else if (reader.Operand is Type)
+				{
+					treeinst.Operand = typederiver.GetStackTypeDescription((Type) reader.Operand);
 				}
 				else
 					treeinst.Operand = reader.Operand;
@@ -268,6 +320,12 @@ namespace CellDotNet
 					case PopBehavior.Pop3:
 						if (reader.OpCode.StackBehaviourPush != StackBehaviour.Push0)
 							throw new ILSemanticErrorException("Pop3 with a push != 0?");
+
+						if (reader.OpCode.Name.StartsWith("stelem"))
+						{
+							int e = 434;
+						}
+
 						throw new NotImplementedException();
 					default:
 						if (popbehavior != PopBehavior.Pop0)

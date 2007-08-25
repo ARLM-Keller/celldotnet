@@ -1,11 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Runtime.InteropServices;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -112,19 +109,41 @@ namespace CellDotNet
 		[Test]
 		public void TestParseArrayInstantiation()
 		{
-			Console.WriteLine("size: " + Marshal.SizeOf(typeof(StackTypeDescription)));
-
 			BasicTestDelegate del = delegate
-										{
-											int[] arr = new int[5];
-											int j = arr.Length;
-										};
+			                        	{
+			                        		int[] arr = new int[5];
+			                        	};
 			MethodBase method = del.Method;
 			MethodCompiler ci = new MethodCompiler(method);
 			ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 			new TreeDrawer().DrawMethod(ci);
 			AreEqual(1, ci.Blocks.Count);
 		}
+
+		[Test]
+		public void TestParseArrayLoadStore()
+		{
+			BasicTestDelegate del = delegate
+										{
+											int[] arr = new int[10];
+											int j = arr[1];
+											arr[2] = j;
+										};
+			MethodBase method = del.Method;
+
+			List<IRBasicBlock> blocks = new IRTreeBuilder().BuildBasicBlocks(method);
+
+			// Check that stelem has been removed/decomposed.
+			IRBasicBlock.VisitTreeInstructions(blocks, delegate(TreeInstruction obj) { AreNotEqual(IROpCodes.Stelem, obj.Opcode); });
+
+			// Check that there is an ldelema instruction.
+			List<TreeInstruction> ldlist = Algorithms.FindAll(
+				IRBasicBlock.EnumerateTreeInstructions(blocks),
+			    delegate(TreeInstruction inst) { return inst.Opcode == IROpCodes.Ldelema; });
+			AreEqual(1, ldlist.Count);
+			AreEqual(1, blocks.Count);
+		}
+
 
 		[Test, Description("Test non-trivial branching.")]
 		public void TestParseBranches1()

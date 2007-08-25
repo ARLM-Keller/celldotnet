@@ -67,17 +67,30 @@ namespace CellDotNet
 			}
 		}
 
+		public IEnumerable<TreeInstruction> EnumerateInstructions()
+		{
+			foreach (TreeInstruction root in Roots)
+			{
+				foreach (TreeInstruction inst in root.IterateSubtree())
+					yield return inst;
+			}
+		}
+
 		static public void VisitTreeInstructions(IEnumerable<IRBasicBlock> blocks, Action<TreeInstruction> action)
 		{
 			foreach (IRBasicBlock block in blocks)
 			{
-				foreach (TreeInstruction root in block.Roots)
-				{
-					foreach (TreeInstruction inst in root.IterateSubtree())
-					{
-						action(inst);
-					}
-				}
+				foreach (TreeInstruction inst in block.EnumerateInstructions())
+					action(inst);
+			}
+		}
+
+		public static IEnumerable<TreeInstruction> EnumerateTreeInstructions(List<IRBasicBlock> blocks)
+		{
+			foreach (IRBasicBlock block in blocks)
+			{
+				foreach (TreeInstruction inst in block.EnumerateInstructions())
+					yield return inst;
 			}
 		}
 	}

@@ -56,7 +56,7 @@ namespace CellDotNet
 	/// <para>TODO: Express non-basic types.</para>
 	/// </summary>
 	[DebuggerDisplay("{DebuggerDisplay}")]
-	struct StackTypeDescription
+	struct StackTypeDescription : IEquatable<StackTypeDescription>
 	{
 		public static readonly StackTypeDescription None = new StackTypeDescription();
 		public static readonly StackTypeDescription Int8 = new StackTypeDescription(CliBasicType.Integer, CliNumericSize.OneByte, true);
@@ -79,6 +79,7 @@ namespace CellDotNet
 		private CliNumericSize _numericSize;
 		private byte _indirectionLevel;
 		private bool _isManaged;
+		private bool _isArray;
 		public TypeDescription _complexType;
 
 		/// <summary>
@@ -95,6 +96,7 @@ namespace CellDotNet
 			_indirectionLevel = 0;
 			_isManaged = false;
 			_complexType = null;
+			_isArray = false;
 		}
 
 		/// <summary>
@@ -109,22 +111,36 @@ namespace CellDotNet
 			_indirectionLevel = 0;
 			_isManaged = false;
 			_complexType = complexType;
+			_isArray = complexType.ReflectionType.IsArray;
+
+			Utilities.PretendVariableIsUsed(DebuggerDisplay);
 		}
 
 		public CliBasicType CliBasicType
 		{
-			get { return _cliBasicType; }
+			get
+			{
+				AssertSimple();
+				return _cliBasicType;
+			}
 		}
 
 		public TypeDescription ComplexType
 		{
-			get { return _complexType; }
+			get
+			{
+				AssertSimple();
+				return _complexType;
+			}
 		}
-
 
 		public bool IsSigned
 		{
-			get { return _isSigned; }
+			get
+			{
+				AssertSimple();
+				return _isSigned;
+			}
 		}
 
 		/// <summary>
@@ -174,7 +190,7 @@ namespace CellDotNet
 
 		private string DebuggerDisplay
 		{
-			get { return "" + CliType + (IndirectionLevel > 0 ? "&" : ""); }
+			get { return ToString(); }
 		}
 
 		/// <summary>
@@ -182,7 +198,19 @@ namespace CellDotNet
 		/// </summary>
 		public CliNumericSize NumericSize
 		{
-			get { return _numericSize; }
+			get
+			{
+				AssertSimple();
+				return _numericSize;
+			}
+		}
+
+		/// <summary>
+		/// Indicates whether this is an 1D array.
+		/// </summary>
+		public bool IsArray
+		{
+			get { return _isArray; }
 		}
 
 		/// <summary>
@@ -212,9 +240,49 @@ namespace CellDotNet
 		/// <summary>
 		/// Only relevant for pointer type: Says whether the pointer is managed or unmanaged.
 		/// </summary>
-		public bool IsManaged
+		public bool IsManagedPointer
 		{
-			get { return _isManaged; }
+			get
+			{
+				Utilities.Assert(_indirectionLevel > 0, "_indirectionLevel > 0");
+				return _isManaged;
+			}
+		}
+
+		/// <summary>
+		/// Asserts that this is a simple type; that is, that this is a value type and 
+		/// not a pointer or an array.
+		/// </summary>
+		private void AssertSimple()
+		{
+			if (IsArray || IndirectionLevel > 0)
+				throw new InvalidOperationException("Invalid operation since this is not a simple type.");
+		}
+
+		/// <summary>
+		/// Returns a type that repre
+		/// </summary>
+		/// <returns></returns>
+		public StackTypeDescription GetArrayType()
+		{
+			if (_isArray)
+				throw new NotSupportedException("Arrays of arrays are not supported.");
+
+			StackTypeDescription arr = this;
+			arr._isArray = true;
+
+			return arr;
+		}
+
+		public StackTypeDescription GetArrayElementType()
+		{
+			if (!_isArray)
+				throw new InvalidOperationException("This type is not an array type.");
+
+			StackTypeDescription std = this;
+			std._isArray = false;
+
+			return std;
 		}
 
 		public StackTypeDescription GetPointer()
@@ -259,7 +327,7 @@ namespace CellDotNet
 			if (IndirectionLevel > 0)
 				throw new InvalidOperationException("Only valid for non-pointer types.");
 
-			switch (this.CliType)
+			switch (CliType)
 			{
 				case CliType.None:
 					return null;
@@ -298,7 +366,28 @@ namespace CellDotNet
 
 		public override string ToString()
 		{
-			return "" + _cliBasicType + "-" + _indirectionLevel;
+			string s;
+			if (IsArray)
+				s = GetArrayElementType().CliType.ToString();
+			else if (IndirectionLevel > 0)
+				s = DereferenceFully().CliType.ToString();
+			else
+				s = CliType.ToString();
+
+			if (IndirectionLevel > 0)
+			{
+				// I guess this is not entirely correct if you got an unmanaged pointer to
+				// a managed pointer...
+				if (IsManagedPointer)
+					s = new string('&', IndirectionLevel) + s;
+				else
+					s = new string('*', IndirectionLevel) + s;
+			}
+
+			if (IsArray)
+				s += "[]";
+
+			return s;
 		}
 
 		#region Equality stuff
@@ -310,6 +399,7 @@ namespace CellDotNet
 			       (x._indirectionLevel == y._indirectionLevel) &&
 			       (x._isManaged == y._isManaged) &&
 			       (x._isSigned == y._isSigned) &&
+				   (x._isArray == y._isArray) &&
 			       (x._numericSize == y._numericSize);
 		}
 
@@ -332,8 +422,14 @@ namespace CellDotNet
 			result = 29*result + _numericSize.GetHashCode();
 			result = 29*result + _indirectionLevel;
 			result = 29*result + _isManaged.GetHashCode();
+			result = 29*result + _isArray.GetHashCode();
 			result = 29*result + (_complexType != null ? _complexType.GetHashCode() : 0);
 			return result;
+		}
+
+		public bool Equals(StackTypeDescription other)
+		{
+			return this == other;
 		}
 
 		#endregion
