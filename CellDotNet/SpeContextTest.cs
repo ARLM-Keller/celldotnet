@@ -185,7 +185,7 @@ namespace CellDotNet
 		public void TestStackOverflow()
 		{
 			Action<int> del = Recursion;
-			Action<int> del2 = SpeDelegateRunner<Action<int>>.CreateSpeDelegate(del);
+			Action<int> del2 = SpeDelegateRunner.CreateSpeDelegate(del);
 
 			if (!SpeContext.HasSpeHardware)
 				throw new SpeStackOverflowException();
@@ -321,30 +321,30 @@ namespace CellDotNet
 
 		private static T CreateSpeDelegate<T>(T delegateToWrap) where T : class
 		{
-			return SpeUnitTestDelegateRunner<T>.CreateUnitTestSpeDelegate(delegateToWrap);
+			return SpeUnitTestDelegateRunner.CreateUnitTestSpeDelegate(delegateToWrap);
 //			return SpeDelegateRunner<T>.CreateSpeDelegate(delegateToWrap);
 		}
 
 
 		/// <summary>
 		/// This class is meant to be used in unit test: When SPE hardware is available
-		/// it will behave as <see cref="SpeDelegateRunner{T}"/>; and when not available,
+		/// it will behave as <see cref="SpeDelegateRunner"/>; and when not available,
 		/// it will simply execute the original delegate.
 		/// <para>
 		/// This allows a unit test to execute totally indifferent whether it's running with
 		/// or without SPE hardware.
 		/// </para>
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		private class SpeUnitTestDelegateRunner<T> : SpeDelegateRunner<T> where T : class
+		private class SpeUnitTestDelegateRunner : SpeDelegateRunner
 		{
-			public static T CreateUnitTestSpeDelegate(T delegateToWrap)
+			public static T CreateUnitTestSpeDelegate<T>(T delegateToWrap) where T : class
 			{
-				SpeUnitTestDelegateRunner<T> runner = new SpeUnitTestDelegateRunner<T>(delegateToWrap);
-				return runner.TypedWrapperDelegate;
+				Delegate del = delegateToWrap as Delegate;
+				SpeUnitTestDelegateRunner runner = new SpeUnitTestDelegateRunner(del);
+				return runner.WrapperDelegate as T;
 			}
 
-			private SpeUnitTestDelegateRunner(T delegateToWrap) : base(delegateToWrap)
+			private SpeUnitTestDelegateRunner(Delegate delegateToWrap) : base(delegateToWrap)
 			{
 			}
 
