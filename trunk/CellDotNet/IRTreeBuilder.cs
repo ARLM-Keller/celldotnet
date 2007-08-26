@@ -346,6 +346,7 @@ namespace CellDotNet
 							ldelemachild.Right = Pop(); // The index.
 							ldelemachild.Left = Pop(); // The array.
 							ldelemachild.Operand = ldelemachild.Left.StackType.GetArrayElementType();
+							ldelemachild.Offset = treeinst.Offset; // Assume the identity of the stelem.
 
 							TreeInstruction stindParent = new TreeInstruction();
 							stindParent.Opcode = stindOpcode;

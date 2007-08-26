@@ -743,7 +743,6 @@ namespace CellDotNet
 						VirtualRegister elementcount = vrleft;
 						VirtualRegister bytesize;
 						
-						// Plan:
 						// 1: Determine number of required bytes.
 						// 2: Verify that we've got space for the allocation.
 						// 3: Update available space counter.
@@ -811,43 +810,43 @@ namespace CellDotNet
 						return _writer.WriteA(arr, byteoffset);
 					}
 				case IRCode.Ldelem_I1:
-					break;
 				case IRCode.Ldelem_U1:
 					break;
 				case IRCode.Ldelem_I2:
-					break;
 				case IRCode.Ldelem_U2:
 					break;
 				case IRCode.Ldelem_I4:
-					break;
 				case IRCode.Ldelem_U4:
-					break;
-				case IRCode.Ldelem_I8:
-					break;
 				case IRCode.Ldelem_I:
-					break;
 				case IRCode.Ldelem_R4:
-					break;
+					{
+						VirtualRegister array = vrleft;
+						VirtualRegister index = vrright;
+
+						// Load.
+						VirtualRegister byteoffset = _writer.WriteShli(index, 2);
+						VirtualRegister quad = _writer.WriteLqx(array, byteoffset);
+
+						// Move word to preferred slot.
+						// We're going to use shlqby (Shift Left Quadword by Bytes),
+						// so we have to clear bit 27 from the byte offset.
+						VirtualRegister addrMod16 = _writer.WriteAndi(byteoffset, 0xf);
+						return _writer.WriteShlqby(quad, addrMod16);
+					}
+				case IRCode.Ldelem_I8:
 				case IRCode.Ldelem_R8:
 					break;
 				case IRCode.Ldelem_Ref:
 					break;
 				case IRCode.Stelem_I:
-					break;
 				case IRCode.Stelem_I1:
-					break;
 				case IRCode.Stelem_I2:
-					break;
 				case IRCode.Stelem_I4:
-					break;
 				case IRCode.Stelem_I8:
-					break;
 				case IRCode.Stelem_R4:
-					break;
 				case IRCode.Stelem_R8:
-					break;
 				case IRCode.Stelem_Ref:
-					break;
+					throw new InvalidIRTreeException("stelem instruction encountered.");
 //				case IRCode.Ldelem_Any:
 //					break;
 //				case IRCode.Stelem_Any:
@@ -968,7 +967,6 @@ namespace CellDotNet
 					break;
 				case IRCode.Ldarg:
 					{
-						// Do nothing.
 						return GetMethodVariableRegister(inst);
 					}
 				case IRCode.Ldarga:
