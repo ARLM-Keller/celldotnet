@@ -9,13 +9,12 @@ namespace CellDotNet
 	/// Use this class to wrap a delegate with a new delegate of the same type; the
 	/// new delegate will, when called, execute the code on an SPE.
 	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	internal class SpeDelegateRunner<T> where T : class
+	internal class SpeDelegateRunner
 	{
 		private CompileContext _compileContext;
 		private int[] _spuCode;
-		private T _typedWrapperDelegate;
-		private T _typedOriginalDelegate;
+		private Delegate _typedWrapperDelegate;
+		private Delegate _typedOriginalDelegate;
 
 
 		public CompileContext CompileContext
@@ -23,45 +22,37 @@ namespace CellDotNet
 			get { return _compileContext; }
 		}
 
-		protected T TypedWrapperDelegate
+		protected Delegate WrapperDelegate
 		{
 			get { return _typedWrapperDelegate; }
 		}
 
-		protected Delegate WrapperDelegate
-		{
-			get { return _typedWrapperDelegate as Delegate; }
-		}
-
 		protected Delegate OriginalDelegate
 		{
-			get { return _typedOriginalDelegate as Delegate; }
+			get { return _typedOriginalDelegate; }
 		}
 
-		public static T CreateSpeDelegate(T delegateToWrap)
+		public static T CreateSpeDelegate<T>(T delegateToWrap) where T : class
 		{
-			SpeDelegateRunner<T> runner = new SpeDelegateRunner<T>(delegateToWrap);
-			return runner.TypedWrapperDelegate;
+			Delegate del = delegateToWrap as Delegate;
+			SpeDelegateRunner runner = new SpeDelegateRunner(del);
+			return runner.WrapperDelegate as T;
 		}
 
 		/// <summary>
 		/// Wraps the specified delegate in a new delegate of the same type;
 		/// the returned delegate will execute the delegate on an SPE.
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
 		/// <param name="delegateToWrap"></param>
 		/// <returns></returns>
-		protected SpeDelegateRunner(T delegateToWrap)
+		protected SpeDelegateRunner(Delegate delegateToWrap)
 		{
 			Utilities.AssertArgumentNotNull(delegateToWrap, "delegateToWrap");
-			if (!(delegateToWrap is Delegate))
-				throw new ArgumentException("Argument is not a delegate.");
 
-			Delegate del = delegateToWrap as Delegate;
-			MethodInfo method = del.Method;
+			MethodInfo method = delegateToWrap.Method;
 			Compile(method);
 
-			CreateWrapperDelegate(del, method);
+			CreateWrapperDelegate(delegateToWrap, method);
 			_typedOriginalDelegate = delegateToWrap;
 		}
 
@@ -77,7 +68,7 @@ namespace CellDotNet
 			// The parameters are the same as those of the original delegate,
 			// but the "this" parameters is also mentioned explicitly here.
 			List<Type> paramtypes = new List<Type>();
-			paramtypes.Add(typeof(SpeDelegateRunner<T>));
+			paramtypes.Add(typeof(SpeDelegateRunner));
 			foreach (ParameterInfo parameter in method.GetParameters())
 				paramtypes.Add(parameter.ParameterType);
 
@@ -133,9 +124,7 @@ namespace CellDotNet
 			ilgen.Emit(OpCodes.Ret);
 
 			Delegate wrapperDel = dm.CreateDelegate(del.GetType(), this);
-			T typedWrapperDel = wrapperDel as T;
-			Utilities.AssertNotNull(typedWrapperDel, "typedWrapperDel");
-			_typedWrapperDelegate = typedWrapperDel;
+			_typedWrapperDelegate = wrapperDel;
 		}
 
 		/// <summary>

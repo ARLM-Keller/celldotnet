@@ -147,7 +147,7 @@ namespace CellDotNet
 
 		private void PerformIRTreeConstruction()
 		{
-			AssertState(MethodCompileState.S1Initial);
+			AssertState(MethodCompileState.S2TreeConstructionDone - 1);
 
 			TypeDeriver typederiver = new TypeDeriver();
 
@@ -268,7 +268,7 @@ namespace CellDotNet
 
 		private void PerformInstructionSelection()
 		{
-			AssertState(MethodCompileState.S3InstructionSelectionPreparationsDone);
+			AssertState(MethodCompileState.S4InstructionSelectionDone - 1);
 
 			_instructions = new SpuInstructionWriter();
 

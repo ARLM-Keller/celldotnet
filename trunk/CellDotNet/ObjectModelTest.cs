@@ -20,7 +20,7 @@ namespace CellDotNet
 					Utilities.PretendVariableIsUsed(arr);
 				};
 
-			SimpleDelegate del2 = SpeDelegateRunner<SimpleDelegate>.CreateSpeDelegate(del);
+			SimpleDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
 
 			if (!SpeContext.HasSpeHardware)
 				return;
@@ -38,8 +38,8 @@ namespace CellDotNet
 						return arr.Length;
 					};
 
-			IntReturnDelegate del2 = SpeDelegateRunner<IntReturnDelegate>.CreateSpeDelegate(del);
-			SpeDelegateRunner<IntReturnDelegate> t = (SpeDelegateRunner<IntReturnDelegate>)del2.Target;
+			IntReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+			SpeDelegateRunner t = (SpeDelegateRunner)del2.Target;
 			Disassembler.DisassembleToConsole(t.CompileContext);
 			if (!SpeContext.HasSpeHardware)
 				return;
@@ -58,7 +58,7 @@ namespace CellDotNet
 					return arr.Length;
 				};
 
-			IntReturnDelegate del2 = SpeDelegateRunner<IntReturnDelegate>.CreateSpeDelegate(del);
+			IntReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
 			if (!SpeContext.HasSpeHardware)
 				return;
 
@@ -79,7 +79,7 @@ namespace CellDotNet
 						arr[1] = 20;
 						return arr[0];
 					};
-			IntReturnDelegate del2 = SpeDelegateRunner<IntReturnDelegate>.CreateSpeDelegate(del);
+			IntReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
 
 			if (!SpeContext.HasSpeHardware)
 				return;
@@ -104,7 +104,7 @@ namespace CellDotNet
 					return arr1[0];
 				};
 
-			IntReturnDelegate del2 = SpeDelegateRunner<IntReturnDelegate>.CreateSpeDelegate(del);
+			IntReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
 
 			if (!SpeContext.HasSpeHardware)
 				return;
@@ -116,27 +116,23 @@ namespace CellDotNet
 		[Test]
 		public void TestArray_Int3()
 		{
-			const int MagicNumber = 0xbababa;
 			IntReturnDelegate del =
 				delegate
 				{
-					// Check that arr2 doesn't overwrite arr1.
-					int[] arr1 = new int[1];
-					arr1[0] = MagicNumber;
-					int[] arr2 = new int[1];
-					arr2[0] = 50;
+					int[] arr1 = new int[2];
+					arr1[0] = 10;
+					arr1[1] = 50;
 
-					return arr1[0];
+					return arr1[0] + arr1[1];
 				};
 
-			IntReturnDelegate del2 = SpeDelegateRunner<IntReturnDelegate>.CreateSpeDelegate(del);
+			IntReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
 
 			if (!SpeContext.HasSpeHardware)
 				return;
 
 			int retval = del2();
-			AreEqual(MagicNumber, retval);
+			AreEqual(60, retval);
 		}
-
 	}
 }
