@@ -286,6 +286,20 @@ namespace CellDotNet
 		/// This will generate an instruction that must be patched with a <see cref="SpuBasicBlock"/>.
 		/// </summary>
 		/// <param name="branchopcode"></param>
+		/// <param name="condition"></param>
+		/// <param name="target"></param>
+		public void WriteConditionalBranch(SpuOpCode branchopcode, VirtualRegister condition, ObjectWithAddress target)
+		{
+			SpuInstruction inst = new SpuInstruction(branchopcode);
+			inst.ObjectWithAddress = target;
+			inst.Rt = condition;
+			AddInstruction(inst);
+		}
+
+		/// <summary>
+		/// This will generate an instruction that must be patched with a <see cref="SpuBasicBlock"/>.
+		/// </summary>
+		/// <param name="branchopcode"></param>
 		/// <param name="target"></param>
 		public void WriteBranchAndSetLink(SpuOpCode branchopcode, ObjectWithAddress target)
 		{
@@ -293,6 +307,32 @@ namespace CellDotNet
 			inst.ObjectWithAddress = target;
 			inst.Rt = HardwareRegister.LR;
 			AddInstruction(inst);
+		}
+
+		public void WriteLoad(VirtualRegister rt, ObjectWithAddress objectToLoad)
+		{
+			AssertRegisterNotNull(rt, "rt");
+
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.lqd);
+			inst.ObjectWithAddress = objectToLoad;
+			inst.Rt = rt;
+		}
+
+		public VirtualRegister WriteLoad(ObjectWithAddress objectToLoad)
+		{
+			VirtualRegister rt = NextRegister();
+			WriteLoad(rt, objectToLoad);
+
+			return rt;
+		}
+
+		public void WriteStore(VirtualRegister rt, ObjectWithAddress target)
+		{
+			AssertRegisterNotNull(rt, "rt");
+
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.stqd);
+			inst.ObjectWithAddress = target;
+			inst.Rt = rt;
 		}
 
 		/// <summary>

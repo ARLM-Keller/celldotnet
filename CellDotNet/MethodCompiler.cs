@@ -68,7 +68,6 @@ namespace CellDotNet
 		}
 
 		private MethodBase _methodBase;
-
 		public MethodBase MethodBase
 		{
 			get { return _methodBase; }
@@ -112,9 +111,9 @@ namespace CellDotNet
 			PerformIRTreeConstruction();
 		}
 
-		public void VisitTreeInstructions(Action<TreeInstruction> action)
+		public void ForeachTreeInstruction(Action<TreeInstruction> action)
 		{
-			IRBasicBlock.VisitTreeInstructions(Blocks, action);
+			IRBasicBlock.ForeachTreeInstruction(Blocks, action);
 		}
 
 		public IEnumerable<TreeInstruction> EnumerateTreeInstructions()
@@ -135,6 +134,15 @@ namespace CellDotNet
 			if (State != requiredState)
 				throw new InvalidOperationException(string.Format("Operation is invalid for the current state. " +
 					"Current state: {0}; required state: {1}.", State, requiredState));
+		}
+
+		private SpecialSpeObjects _specialSpeObjects;
+		public void SetRuntimeSettings(SpecialSpeObjects specialSpeObjects)
+		{
+			Utilities.AssertArgumentNotNull(specialSpeObjects, "specialSpeObjects");
+			if (_specialSpeObjects != null)
+				throw new InvalidOperationException("specialSpeObjects != null");
+			_specialSpeObjects = specialSpeObjects;
 		}
 
 		#region IR tree construction
@@ -193,7 +201,7 @@ namespace CellDotNet
 		private void CheckTreeInstructionCountIsMinimum(int minimumCount)
 		{
 			int count = 0;
-			VisitTreeInstructions(delegate
+			ForeachTreeInstruction(delegate
 			{
 				count += 1;
 			});
@@ -249,7 +257,7 @@ namespace CellDotNet
 						else if (obj.Opcode.IRCode == IRCode.Ldloca)
 							((MethodVariable) obj.Operand).Escapes = true;
 					};
-			VisitTreeInstructions(action);
+			ForeachTreeInstruction(action);
 		}
 
 		#endregion
@@ -277,7 +285,7 @@ namespace CellDotNet
 			}
 
 			// Generate the body.
-			RecursiveInstructionSelector selector = new RecursiveInstructionSelector();
+			RecursiveInstructionSelector selector = new RecursiveInstructionSelector(_specialSpeObjects);
 //			selector.GenerateCode(this, _instructions);
 			selector.GenerateCode(this.Blocks, Parameters, _instructions);
 

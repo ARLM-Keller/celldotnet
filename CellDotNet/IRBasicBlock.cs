@@ -76,7 +76,7 @@ namespace CellDotNet
 			}
 		}
 
-		static public void VisitTreeInstructions(IEnumerable<IRBasicBlock> blocks, Action<TreeInstruction> action)
+		static public void ForeachTreeInstruction(IEnumerable<IRBasicBlock> blocks, Action<TreeInstruction> action)
 		{
 			foreach (IRBasicBlock block in blocks)
 			{

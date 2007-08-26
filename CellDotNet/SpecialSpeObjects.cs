@@ -13,6 +13,21 @@ namespace CellDotNet
 
 		private RegisterSizedObject _nextAllocationStartObject = new RegisterSizedObject("NextAllocationStart");
 		private RegisterSizedObject _allocatableByteCountObject = new RegisterSizedObject("AllocatableByteCount");
+		private RegisterSizedObject _stackSizeObject = new RegisterSizedObject("StackSizeObject");
+		private SpuManualRoutine _stackOverflow;
+		private SpuManualRoutine _outOfMemory;
+
+
+		public SpecialSpeObjects()
+		{
+			_stackOverflow = new SpuManualRoutine(true);
+			_stackOverflow.Writer.BeginNewBasicBlock();
+			_stackOverflow.Writer.WriteStop(SpuStopCode.StackOverflow);
+
+			_outOfMemory = new SpuManualRoutine(true);
+			_outOfMemory.Writer.BeginNewBasicBlock();
+			_outOfMemory.Writer.WriteStop(SpuStopCode.OutOfMemory);
+		}
 
 		public RegisterSizedObject NextAllocationStartObject
 		{
@@ -24,13 +39,32 @@ namespace CellDotNet
 			get { return _allocatableByteCountObject; }
 		}
 
+		public RegisterSizedObject StackSizeObject
+		{
+			get { return _stackSizeObject; }
+		}
+
+		public SpuManualRoutine StackOverflow
+		{
+			get { return _stackOverflow; }
+		}
+
+		public SpuManualRoutine OutOfMemory
+		{
+			get { return _outOfMemory; }
+		}
+
 		/// <summary>
 		/// Returns all the objects that require storage.
 		/// </summary>
 		/// <returns></returns>
 		public ObjectWithAddress[] GetAll()
 		{
-			return new ObjectWithAddress[] {NextAllocationStartObject, AllocatableByteCountObject};
+			return new ObjectWithAddress[] {
+				NextAllocationStartObject, AllocatableByteCountObject, 
+				StackSizeObject, StackOverflow, 
+				OutOfMemory, 
+			};
 		}
 
 		#endregion
@@ -59,20 +93,30 @@ namespace CellDotNet
 			}
 		}
 
-		public bool IsMemoryAllocationEnabled
+		private int _stackSize = -1;
+		public int StackSize
 		{
-			get { return _nextAllocationStart != -1; }
+			get
+			{
+				if (_stackSize == -1)
+					throw new InvalidOperationException();
+				return _stackSize;
+			}
 		}
 
-		public void SetMemoryAllocationSettings(int nextAllocationStart, int allocatableByteCount)
+		public void SetMemorySettings(int stackSize, int nextAllocationStart, int allocatableByteCount)
 		{
-			const int MaxMem = 256*1024;
+			const int MemSize = 256*1024;
 
-			Utilities.AssertArgumentRange(nextAllocationStart > 0 && nextAllocationStart < MaxMem,
+			Utilities.AssertArgumentRange(stackSize >= 0 && stackSize < MemSize, "stackSize", stackSize);
+			Utilities.AssertArgumentRange(nextAllocationStart > 0 && nextAllocationStart < MemSize,
 				"nextAllocationStart", nextAllocationStart);
-			Utilities.AssertArgumentRange(allocatableByteCount >= 0 && (nextAllocationStart + AllocatableByteCount) < MaxMem,
+			Utilities.AssertArgumentRange(allocatableByteCount >= 0 && (nextAllocationStart + allocatableByteCount) < MemSize,
 				"allocatableByteCount", allocatableByteCount);
+			Utilities.AssertArgument(nextAllocationStart + allocatableByteCount + stackSize <= MemSize,
+				"Memory settings exceeds memory size.");
 
+			_stackSize = stackSize;
 			_nextAllocationStart = nextAllocationStart;
 			_allocatableByteCount = allocatableByteCount;
 		}

@@ -378,7 +378,7 @@ namespace CellDotNet
 				var.VirtualRegister = new VirtualRegister();
 			}
 
-			new TreeDrawer().DrawMethod(basicBlocks);
+//			new TreeDrawer().DrawMethod(basicBlocks);
 
 			RecursiveInstructionSelector sel = new RecursiveInstructionSelector();
 
@@ -391,19 +391,18 @@ namespace CellDotNet
 
 			sel.GenerateCode(basicBlocks, par, spum.Writer);
 
-			Console.WriteLine(spum.Writer.Disassemble());
+//			Console.WriteLine(spum.Writer.Disassemble());
 
 //			new Disassembler().Disassemble(new ObjectWithAddress[] {spum}, Console.Out);
 
 			// TODO Det håndteres muligvis ikke virtuelle moves i SimpleRegAlloc.
 			new SimpleRegAlloc().alloc(spum.Writer.BasicBlocks);
 
-//			new Disassembler().Disassemble(new ObjectWithAddress[] { spum }, Console.Out);
-			Console.WriteLine(spum.Writer.Disassemble());
+//			Console.WriteLine(spum.Writer.Disassemble());
 
 			RegAllocGraphColloring.RemoveRedundantMoves(spum.Writer.BasicBlocks);
 
-			Console.WriteLine(spum.Writer.Disassemble());
+//			Console.WriteLine(spum.Writer.Disassemble());
 
 			spum.Offset = 1024;
 			// This also creates an epilog.
@@ -416,7 +415,7 @@ namespace CellDotNet
 			int[] code = new int[1024];
 			CompileContext.CopyCode(code, new SpuRoutine[] { spuinit, spum });
 
-			Disassembler.DisassembleToConsole(new ObjectWithAddress[] { spuinit, spum, returnAddressObject });
+//			Disassembler.DisassembleToConsole(new ObjectWithAddress[] { spuinit, spum, returnAddressObject });
 
 			if (!SpeContext.HasSpeHardware)
 				return;

@@ -207,12 +207,12 @@ namespace CellDotNet
 
 		public void DrawMethods(CompileContext cc)
 		{
-			foreach (String key in cc.Methods.Keys)
+			foreach (MethodCompiler mc in cc.Methods)
 			{
 				Console.WriteLine();
-				Console.WriteLine(key);
+				Console.WriteLine(mc);
 
-				DrawMethod(cc.Methods[key]);
+				DrawMethod(mc);
 			}
 		}
 	}

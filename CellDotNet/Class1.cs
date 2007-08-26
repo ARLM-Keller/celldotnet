@@ -496,7 +496,7 @@ namespace CellDotNet
 
 		private static void RunRasmus()
 		{
-			new SpeContextTest().TestError_OutOfMemoryException();
+			new SpeContextTest().TestStopCode_OutOfMemoryException();
 	}
 	}
 }

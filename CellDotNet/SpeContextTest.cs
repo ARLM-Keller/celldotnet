@@ -129,33 +129,26 @@ namespace CellDotNet
 		}
 
 		[Test, ExpectedException(typeof(SpeOutOfMemoryException))]
-		public void TestError_OutOfMemoryException()
+		public void TestStopCode_OutOfMemoryException()
 		{
-			SpuInstructionWriter writer = new SpuInstructionWriter();
-			writer.BeginNewBasicBlock();
-			writer.WriteStop(SpuStopCode.OutOfMemory);
-			int[] code = SpuInstruction.emit(writer.GetAsList());
-
-			if (!SpeContext.HasSpeHardware)
-				throw new SpeOutOfMemoryException();
-
-			using (SpeContext sc = new SpeContext())
-			{
-				sc.LoadProgram(code);
-				sc.Run();
-			}
+			TestError_StopCodeException<SpeOutOfMemoryException>(SpuStopCode.OutOfMemory);
 		}
 
 		[Test, ExpectedException(typeof(SpeStackOverflowException))]
-		public void TestError_StackOverflowException()
+		public void TestStopCode_StackOverflowException()
+		{
+			TestError_StopCodeException<SpeStackOverflowException>(SpuStopCode.StackOverflow);
+		}
+
+		private static void TestError_StopCodeException<T>(SpuStopCode stopcode) where T : Exception, new()
 		{
 			SpuInstructionWriter writer = new SpuInstructionWriter();
 			writer.BeginNewBasicBlock();
-			writer.WriteStop(SpuStopCode.StackOverflow);
+			writer.WriteStop(stopcode);
 			int[] code = SpuInstruction.emit(writer.GetAsList());
 
 			if (!SpeContext.HasSpeHardware)
-				throw new SpeStackOverflowException();
+				throw new T();
 
 			using (SpeContext sc = new SpeContext())
 			{
@@ -165,7 +158,7 @@ namespace CellDotNet
 		}
 
 		[Test]
-		public void TestError_None()
+		public void TestTestStopCode_None()
 		{
 			SpuInstructionWriter writer = new SpuInstructionWriter();
 			writer.BeginNewBasicBlock();
@@ -173,7 +166,7 @@ namespace CellDotNet
 			int[] code = SpuInstruction.emit(writer.GetAsList());
 
 			if (!SpeContext.HasSpeHardware)
-				throw new SpeStackOverflowException();
+				return;
 
 			using (SpeContext sc = new SpeContext())
 			{

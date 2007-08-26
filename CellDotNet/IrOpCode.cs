@@ -72,7 +72,7 @@ namespace CellDotNet
 		}
 
 
-		public IROpCode(string name, IRCode ircode, FlowControl flowControl, OpCodeType opcodeType, OperandType operandType,
+		public IROpCode(string name, IRCode ircode, FlowControl flowControl, OpCodeType opcodeType,
 						StackBehaviour stackBehaviourPush, StackBehaviour stackBehaviourPop, OpCode opcode)
 		{
 			_flowControl = flowControl;
