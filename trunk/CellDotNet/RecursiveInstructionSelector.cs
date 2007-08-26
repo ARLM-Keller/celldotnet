@@ -10,7 +10,6 @@ namespace CellDotNet
 	class RecursiveInstructionSelector
 	{
 		private SpuInstructionWriter _writer;
-//		private MethodCompiler _method;
 		private List<IRBasicBlock> _basicBlocks;
 
 		private ReadOnlyCollection<MethodParameter> _parameters;
@@ -29,14 +28,13 @@ namespace CellDotNet
 
 		public RecursiveInstructionSelector(SpecialSpeObjects specialSpeObjects)
 		{
+			Utilities.AssertArgumentNotNull(specialSpeObjects, "specialSpeObjects");
 			_specialSpeObjects = specialSpeObjects;
 		}
 
-		//  public void GenerateCode(MethodCompiler mc, SpuInstructionWriter writer)
 		public void GenerateCode(List<IRBasicBlock> basicBlocks, ReadOnlyCollection<MethodParameter> parameters, SpuInstructionWriter writer)
 		{
 			_writer = writer;
-//			_method = mc;
 			_basicBlocks = basicBlocks;
 
 			_parameters = parameters;
@@ -734,7 +732,57 @@ namespace CellDotNet
 				case IRCode.Box:
 					break;
 				case IRCode.Newarr:
-					break;
+					{
+						StackTypeDescription elementtype = (StackTypeDescription) inst.Operand;
+						VirtualRegister elementcount = vrleft;
+						VirtualRegister bytesize;
+						
+						// Plan:
+						// 1: Determine number of required bytes.
+						// 2: Verify that we've got space for the allocation.
+						// 3: Update available space counter.
+						// 4: Get address for the array.
+						// 5: Initialize array length field.
+						// 6: Update pointer for next allocation.
+
+						if (_specialSpeObjects == null)
+							throw new InvalidOperationException("_specialSpeObjects == null");
+
+
+						// Determine byte size.
+						int elementByteSize = elementtype.GetByteSize();
+						if (elementByteSize == 4)
+							bytesize = _writer.WriteShli(elementcount, 2);
+						else
+							throw new NotSupportedException("Element size of " + elementByteSize + " is not supported.");
+
+						// Subtract from available byte count.
+						{
+							VirtualRegister allocatableByteCount = _writer.WriteLoad(_specialSpeObjects.AllocatableByteCountObject);
+							_writer.WriteSf(allocatableByteCount, bytesize, allocatableByteCount);
+
+							// If there isn't enough space, then halt by branching to the OOM routine.
+							VirtualRegister isFreeSpacePositive = _writer.WriteCgti(allocatableByteCount, 0);
+							_writer.WriteConditionalBranch(SpuOpCode.brz, isFreeSpacePositive, _specialSpeObjects.OutOfMemory);
+
+							// Store new allocatable byte count.
+							_writer.WriteStore(allocatableByteCount, _specialSpeObjects.AllocatableByteCountObject);
+						}
+
+						VirtualRegister nextAllocAddress = _writer.WriteLoad(_specialSpeObjects.NextAllocationStartObject);
+						VirtualRegister array = nextAllocAddress;
+
+						// Increment the pointer for the next allocation.
+						{
+							_writer.WriteA(nextAllocAddress, nextAllocAddress, bytesize);
+							_writer.WriteStore(nextAllocAddress, _specialSpeObjects.NextAllocationStartObject);
+						}
+
+						// Initialize array length field.
+						_writer.WriteStqd(elementcount, array, -1);
+
+						return array;
+					}
 				case IRCode.Ldlen:
 					break;
 				case IRCode.Ldelema:

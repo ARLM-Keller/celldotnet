@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Reflection;
 
 namespace CellDotNet
@@ -23,8 +24,8 @@ namespace CellDotNet
 	class CompileContext
 	{
 		private MethodCompiler _entryPoint;
-		private Dictionary<string, MethodCompiler> _methods = new Dictionary<string, MethodCompiler>();
-		SpecialSpeObjects _specialSpeObjects = new SpecialSpeObjects();
+		private Dictionary<string, MethodCompiler> _methodDict = new Dictionary<string, MethodCompiler>();
+		private SpecialSpeObjects _specialSpeObjects;
 
 		/// <summary>
 		/// The first method that is run.
@@ -36,9 +37,9 @@ namespace CellDotNet
 
 		private MethodBase _entryMethod;
 
-		public Dictionary<string, MethodCompiler> Methods
+		public ICollection<MethodCompiler> Methods
 		{
-			get { return _methods; }
+			get { return _methodDict.Values; }
 		}
 
 		public CompileContext(MethodBase entryPoint)
@@ -116,9 +117,9 @@ namespace CellDotNet
 
 		private void PerformRegisterAllocation()
 		{
-			AssertState(CompileContextState.S3InstructionSelectionDone);
+			AssertState(CompileContextState.S4RegisterAllocationDone - 1);
 
-			foreach (MethodCompiler mc in Methods.Values)
+			foreach (MethodCompiler mc in Methods)
 				mc.PerformProcessing(MethodCompileState.S7RemoveRedundantMoves);
 
 			State = CompileContextState.S4RegisterAllocationDone;
@@ -131,7 +132,7 @@ namespace CellDotNet
 		/// </summary>
 		private void PerformMethodAddressDetermination()
 		{
-			AssertState(CompileContextState.S4RegisterAllocationDone);
+			AssertState(CompileContextState.S5MethodAddressesDetermined - 1);
 
 			// Start from the beginning and lay them out sequentially.
 			int lsOffset = 0;
@@ -155,7 +156,7 @@ namespace CellDotNet
 		/// </summary>
 		private void PerformAddressPatching()
 		{
-			AssertState(CompileContextState.S5MethodAddressesDetermined);
+			AssertState(CompileContextState.S6AddressPatchingDone - 1);
 
 			foreach (ObjectWithAddress owa in GetAllObjects())
 			{
@@ -206,14 +207,16 @@ namespace CellDotNet
 			if (EntryPoint.ReturnType != StackTypeDescription.None)
 				_returnValueLocation = new RegisterSizedObject("ReturnValueLocation");
 
-			_argumentArea = DataObject.QuadWords(EntryPoint.Parameters.Count);
+			_argumentArea = DataObject.FromQuadWords(EntryPoint.Parameters.Count);
 
 			_spuRoutines = new List<SpuRoutine>();
-			SpuInitializer init = new SpuInitializer(EntryPoint, _returnValueLocation);
+			_specialSpeObjects = new SpecialSpeObjects();
+			SpuInitializer init = new SpuInitializer(EntryPoint, _returnValueLocation, _specialSpeObjects.StackSizeObject);
 
 			// It's important that the initialization routine is the first one, since execution
 			// will start at address 0.
 			_spuRoutines.Add(init);
+
 		}
 
 		/// <summary>
@@ -227,19 +230,19 @@ namespace CellDotNet
 			// SPU routines go first, since we start execution at address 0.
 			foreach (SpuRoutine routine in GetSpuRoutines())
 				all.Add(routine);
-			foreach (MethodCompiler mc in Methods.Values)
+			all.AddRange(_specialSpeObjects.GetAll());
+			foreach (MethodCompiler mc in Methods)
 				all.Add(mc);
 
 			// Data at the end.
 			if (_returnValueLocation != null)
 				all.Add(_returnValueLocation);
 			all.Add(_argumentArea);
-			all.AddRange(_specialSpeObjects.GetAll());
 
 			return all;
 		}
 
-		internal IEnumerable<ObjectWithAddress> GetAllObjectsForDisassembly()
+		internal ICollection<ObjectWithAddress> GetAllObjectsForDisassembly()
 		{
 			if (State < CompileContextState.S6AddressPatchingDone)
 				throw new InvalidOperationException("Address patching has not yet been performed.");
@@ -249,7 +252,7 @@ namespace CellDotNet
 
 		private void PerformCodeEmission()
 		{
-			AssertState(CompileContextState.S6AddressPatchingDone);
+			AssertState(CompileContextState.S7CodeEmitted - 1);
 
 			_emittedCode = new int[Utilities.Align16(_totalCodeSize) / 4];
 			List<ObjectWithAddress> objects = GetAllObjects();
@@ -261,6 +264,19 @@ namespace CellDotNet
 					routines.Add(routine);
 			}
 			CopyCode(_emittedCode, routines);
+
+			// Initialize memory allocation.
+			{
+				const int TotalSpeMem = 256 * 1024;
+				const int StackSize = 8*1024;
+				int codeByteSize = _emittedCode.Length*4;
+				_specialSpeObjects.SetMemorySettings(StackSize, codeByteSize, TotalSpeMem - codeByteSize - StackSize);
+
+				// We only need to write to the preferred slot.
+				_emittedCode[_specialSpeObjects.AllocatableByteCountObject.Offset/4] = _specialSpeObjects.AllocatableByteCount;
+				_emittedCode[_specialSpeObjects.NextAllocationStartObject.Offset/4] = _specialSpeObjects.NextAllocationStart;
+			}
+
 			State = CompileContextState.S7CodeEmitted;
 		}
 
@@ -303,7 +319,7 @@ namespace CellDotNet
 		/// </summary>
 		private void PerformRecursiveMethodTreesConstruction()
 		{
-			AssertState(CompileContextState.S1Initial);
+			AssertState(CompileContextState.S2TreeConstructionDone - 1);
 
 			// Compile entry point and all any called methods.
 			Dictionary<string, MethodBase> methodsToCompile = new Dictionary<string, MethodBase>();
@@ -324,7 +340,7 @@ namespace CellDotNet
 				// Compile.
 				MethodCompiler mc = new MethodCompiler(method);
 				mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
-				Methods.Add(nextmethodkey, mc);
+				_methodDict.Add(nextmethodkey, mc);
 
 				if (isfirst)
 				{
@@ -333,7 +349,7 @@ namespace CellDotNet
 				}
 
 				// Find referenced methods.
-				mc.VisitTreeInstructions(
+				mc.ForeachTreeInstruction(
 					delegate(TreeInstruction inst)
          			{
 						MethodBase mr = inst.Operand as MethodBase;
@@ -342,7 +358,7 @@ namespace CellDotNet
 
 						string methodkey = CreateMethodRefKey(mr);
          				MethodCompiler calledMethod;
-						if (Methods.TryGetValue(methodkey, out calledMethod))
+						if (_methodDict.TryGetValue(methodkey, out calledMethod))
 						{
 							// We encountered the method before, so just use it.
 							inst.Operand = calledMethod;
@@ -389,10 +405,13 @@ namespace CellDotNet
 		/// </summary>
 		private void PerformInstructionSelection()
 		{
-			AssertState(CompileContextState.S2TreeConstructionDone);
+			AssertState(CompileContextState.S3InstructionSelectionDone - 1);
 
-			foreach (MethodCompiler mc in Methods.Values)
+			foreach (MethodCompiler mc in Methods)
+			{
+				mc.SetRuntimeSettings(_specialSpeObjects);
 				mc.PerformProcessing(MethodCompileState.S4InstructionSelectionDone);
+			}
 
 			GenerateSpuRoutines();
 

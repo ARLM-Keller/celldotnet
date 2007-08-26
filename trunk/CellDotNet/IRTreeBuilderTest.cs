@@ -135,7 +135,7 @@ namespace CellDotNet
 			new TreeDrawer().DrawMethod(blocks);
 
 			// Check that stelem has been removed/decomposed.
-			IRBasicBlock.VisitTreeInstructions(blocks, delegate(TreeInstruction obj) { AreNotEqual(IROpCodes.Stelem, obj.Opcode); });
+			IRBasicBlock.ForeachTreeInstruction(blocks, delegate(TreeInstruction obj) { AreNotEqual(IROpCodes.Stelem, obj.Opcode); });
 
 			// Check that there is an ldelema instruction.
 			List<TreeInstruction> ldlist = Algorithms.FindAll(
@@ -239,7 +239,7 @@ namespace CellDotNet
 			int loadcount = 0;
 			int storecount = 0;
 			int ldccount = 0;
-			IRBasicBlock.VisitTreeInstructions(
+			IRBasicBlock.ForeachTreeInstruction(
 				blocks,
 				delegate(TreeInstruction obj)
 				{

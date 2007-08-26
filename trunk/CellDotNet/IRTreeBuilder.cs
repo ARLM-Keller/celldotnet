@@ -81,11 +81,9 @@ namespace CellDotNet
 		}
 
 		/// <summary>
-		/// <list type="ordered">
-		/// <item>
 		/// Creates instructions to save the contents of the instruction stack to the variable
 		/// stack associated with the branch target.
-		/// </item>
+		/// <list type="ordered">
 		/// <item>Activates the variable stack.</item>
 		/// <item>Clears the instruction stack.</item>
 		/// </list>

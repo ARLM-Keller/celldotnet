@@ -295,6 +295,18 @@ namespace CellDotNet
 			return rv;
 		}
 
+		public int GetByteSize()
+		{
+			switch (CliBasicType)
+			{
+				case CliBasicType.Integer:
+				case CliBasicType.Floating:
+					return (int) NumericSize;
+				default:
+					throw new InvalidOperationException();
+			}
+		}
+
 		public StackTypeDescription Dereference()
 		{
 			if (IndirectionLevel == 0)

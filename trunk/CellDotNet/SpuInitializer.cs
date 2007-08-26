@@ -12,9 +12,8 @@ namespace CellDotNet
 		private bool _isPatched;
 
 		public SpuInitializer(ObjectWithAddress initialMethod, RegisterSizedObject returnValueLocation)
-			: this(initialMethod, null, returnValueLocation)
-		{
-		}
+			: this(initialMethod, returnValueLocation, null)
+		{ }
 
 		/// <summary>
 		/// The argument is of type <see cref="ObjectWithAddress"/> so that testing doesn't
@@ -22,40 +21,39 @@ namespace CellDotNet
 		/// but normally a method is passed.
 		/// </summary>
 		/// <param name="initialMethod"></param>
-		/// <param name="specialSpeObjects"></param>
 		/// <param name="returnValueLocation">The location where the return value should be placed. Null is ok.</param>
-		public SpuInitializer(ObjectWithAddress initialMethod, SpecialSpeObjects specialSpeObjects, RegisterSizedObject returnValueLocation)
+		/// <param name="stackSizeObject">The object that will hold the stack size. Null is ok.</param>
+		public SpuInitializer(ObjectWithAddress initialMethod, RegisterSizedObject returnValueLocation, 
+			RegisterSizedObject stackSizeObject)
 			: base("SpuInitializer")
 		{
 			_writer.BeginNewBasicBlock();
 
 			// Initialize stack pointer to two qwords below ls top.
-			_writer.WriteLoadI4(HardwareRegister.SP, 0x40000 - 0x20);
+			_writer.WriteLoadI4(HardwareRegister.SP, (256 * 1024) - 0x20);
+
+			// Initialize second word of SP with the stack size.
+			if (stackSizeObject != null)
+			{
+				VirtualRegister stackSizeReg = HardwareRegister.GetHardwareRegister(77);
+				VirtualRegister zeroValReg = HardwareRegister.GetHardwareRegister(75);
+				VirtualRegister controlReg = HardwareRegister.GetHardwareRegister(76);
+
+				// Load stack size.
+				_writer.WriteLoad(stackSizeReg, stackSizeObject);
+
+				// Merge the stack size into second word of SP.
+				_writer.WriteLoadI4(zeroValReg, 0);
+				_writer.WriteCwd(controlReg, zeroValReg, 4);
+				_writer.WriteShufb(HardwareRegister.SP, stackSizeReg, HardwareRegister.SP, controlReg);
+			}
 
 			// Store zero to Back Chain.
 			VirtualRegister zeroreg = HardwareRegister.GetHardwareRegister(75);
 			_writer.WriteLoadI4(zeroreg, 0);
 			_writer.WriteStqd(zeroreg, HardwareRegister.SP, 0);
 
-
-			// Initialize memory allocation.
-			if (specialSpeObjects != null && specialSpeObjects.IsMemoryAllocationEnabled)
-			{
-				// Initialize address of next allocation.
-				VirtualRegister nextAllocAddrReg = _writer.WriteLoadAddress(specialSpeObjects.NextAllocationStartObject);
-				VirtualRegister nextAllocValueReg = _writer.WriteLoadI4(specialSpeObjects.NextAllocationStart);
-				_writer.WriteStqd(nextAllocValueReg, nextAllocAddrReg, 0);
-
-				// Initialize number of allocatable bytes.
-				VirtualRegister allocatableBytesAddrReg = _writer.WriteLoadAddress(specialSpeObjects.AllocatableByteCountObject);
-				VirtualRegister allocatableBytesValueReg = _writer.WriteLoadI4(specialSpeObjects.AllocatableByteCount);
-				_writer.WriteStqd(allocatableBytesValueReg, allocatableBytesAddrReg, 0);
-			}
-
-
 			// Branch to method and set LR.
-			// The methode is assumed to be immediately after this code.
-//			_writer.WriteBrsl(HardwareRegister.LR, 1);
 			_writer.WriteBranchAndSetLink(SpuOpCode.brsl, initialMethod);
 
 			// At this point the method has returned.

@@ -21,7 +21,7 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="count"></param>
 		/// <returns></returns>
-		static public DataObject QuadWords(int count)
+		static public DataObject FromQuadWords(int count)
 		{
 			return new DataObject(count * 16);
 		}

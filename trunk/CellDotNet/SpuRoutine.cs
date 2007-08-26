@@ -68,9 +68,10 @@ namespace CellDotNet
 			foreach (SpuBasicBlock bb in bblist)
 			{
 				bb.Offset = curroffset;
+				if (bb.Head == null)
+					continue;
 
-				SpuInstruction inst = bb.Head;
-				while (inst != null)
+				foreach (SpuInstruction inst in bb.Head.GetEnumerable())
 				{
 					if (inst.JumpTarget != null)
 						branchlist.Add(new KeyValuePair<int, SpuInstruction>(curroffset, inst));
@@ -94,7 +95,6 @@ namespace CellDotNet
 						inst.Constant = diff >> 2; // instructions and therefore branch offsets are 4-byte aligned and the ISA uses that fact.
 					}
 
-					inst = inst.Next;
 					curroffset += 4;
 				}
 			}

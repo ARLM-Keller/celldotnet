@@ -439,7 +439,7 @@ namespace CellDotNet
 			{
 				SpuInstruction inst = bb.Head;
 
-				jumpTargets[bb] = inst;
+				jumpTargets.Add(bb, inst);
 
 				while (inst != null)
 				{
@@ -457,9 +457,11 @@ namespace CellDotNet
 			}
 
 			// Patch predecessore og successor with jump info
-			foreach (SpuBasicBlock bb in jumpTargets.Keys)
+			foreach (KeyValuePair<SpuBasicBlock, SpuInstruction> pair in jumpTargets)
 			{
-				SpuInstruction i = jumpTargets[bb];
+				SpuBasicBlock bb = pair.Key;
+				SpuInstruction i = pair.Value;
+
 				int iNr = spuinstToInt[i];
 				foreach (SpuInstruction s in jumpSources[bb])
 				{

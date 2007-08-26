@@ -60,5 +60,13 @@ namespace CellDotNet
 			AreEqual(1, cc.Methods.Count);
 			
 		}
+
+		[Test]
+		public void TestEmptyMethod()
+		{
+			SimpleDelegate del = delegate { };
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+		}
 	}
 }
