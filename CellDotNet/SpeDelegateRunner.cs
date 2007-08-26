@@ -18,6 +18,11 @@ namespace CellDotNet
 		private T _typedOriginalDelegate;
 
 
+		public CompileContext CompileContext
+		{
+			get { return _compileContext; }
+		}
+
 		protected T TypedWrapperDelegate
 		{
 			get { return _typedWrapperDelegate; }

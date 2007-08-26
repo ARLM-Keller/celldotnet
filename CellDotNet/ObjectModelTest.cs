@@ -21,6 +21,7 @@ namespace CellDotNet
 				};
 
 			SimpleDelegate del2 = SpeDelegateRunner<SimpleDelegate>.CreateSpeDelegate(del);
+
 			if (!SpeContext.HasSpeHardware)
 				return;
 
@@ -38,6 +39,8 @@ namespace CellDotNet
 					};
 
 			IntReturnDelegate del2 = SpeDelegateRunner<IntReturnDelegate>.CreateSpeDelegate(del);
+			SpeDelegateRunner<IntReturnDelegate> t = (SpeDelegateRunner<IntReturnDelegate>)del2.Target;
+			Disassembler.DisassembleToConsole(t.CompileContext);
 			if (!SpeContext.HasSpeHardware)
 				return;
 

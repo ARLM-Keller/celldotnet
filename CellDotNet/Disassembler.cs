@@ -84,7 +84,7 @@ namespace CellDotNet
 
 			// Disassemble routines.
 			writer.WriteLine("# *****************************");
-			writer.WriteLine("# Routines:");
+			writer.WriteLine("# Code:");
 			foreach (ObjectWithAddress o in olist)
 			{
 				SpuRoutine r = o as SpuRoutine;

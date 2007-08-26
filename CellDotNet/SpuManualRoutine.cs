@@ -16,7 +16,11 @@ namespace CellDotNet
 		/// </summary>
 		private bool _isPatchingDone;
 
-		public SpuManualRoutine(bool omitEpilog)
+		public SpuManualRoutine(bool omitEpilog) : this(omitEpilog, null)
+		{
+		}
+
+		public SpuManualRoutine(bool omitEpilog, string name) : base(name)
 		{
 			_writer = new SpuInstructionWriter();
 			_omitEpilog = omitEpilog;

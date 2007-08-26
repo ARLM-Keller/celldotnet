@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Reflection;
-using System.Reflection.Emit;
 
 namespace CellDotNet
 {
@@ -285,9 +283,13 @@ namespace CellDotNet
 			}
 
 			// Generate the body.
-			RecursiveInstructionSelector selector = new RecursiveInstructionSelector(_specialSpeObjects);
-//			selector.GenerateCode(this, _instructions);
-			selector.GenerateCode(this.Blocks, Parameters, _instructions);
+			RecursiveInstructionSelector selector;
+			if (_specialSpeObjects != null)
+				selector = new RecursiveInstructionSelector(_specialSpeObjects);
+			else
+				selector = new RecursiveInstructionSelector();
+
+			selector.GenerateCode(Blocks, Parameters, _instructions);
 
 			// Move callee saves temps back to physical regs.
 			_instructions.BeginNewBasicBlock();

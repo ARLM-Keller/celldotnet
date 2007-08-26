@@ -295,7 +295,7 @@ namespace CellDotNet
 			return rv;
 		}
 
-		public int GetByteSize()
+		public int GetSizeWithPadding()
 		{
 			switch (CliBasicType)
 			{

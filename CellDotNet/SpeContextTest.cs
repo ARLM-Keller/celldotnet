@@ -175,6 +175,25 @@ namespace CellDotNet
 			}
 		}
 
+		private static void Recursion(int level)
+		{
+			if (level > 0)
+				Recursion(level - 1);
+		}
+
+		[Test, ExpectedException(typeof(SpeStackOverflowException))]
+		public void TestStackOverflow()
+		{
+			Action<int> del = Recursion;
+			Action<int> del2 = SpeDelegateRunner<Action<int>>.CreateSpeDelegate(del);
+
+			if (!SpeContext.HasSpeHardware)
+				throw new SpeStackOverflowException();
+
+			// 100K of stack should do the trick.
+			del2(50000);
+		}
+
 		[Test, Explicit]
 		public void TestGetSpeControlArea()
 		{

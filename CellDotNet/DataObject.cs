@@ -9,7 +9,7 @@ namespace CellDotNet
 	/// </summary>
 	class DataObject : ObjectWithAddress
 	{
-		private DataObject(int size)
+		private DataObject(int size, string name) : base(name)
 		{
 			Utilities.AssertArgument(size >= 0, "size >= 0");
 
@@ -21,9 +21,10 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="count"></param>
 		/// <returns></returns>
-		static public DataObject FromQuadWords(int count)
+		/// <param name="name"></param>
+		static public DataObject FromQuadWords(int count, string name)
 		{
-			return new DataObject(count * 16);
+			return new DataObject(count * 16, name);
 		}
 
 		private int _size;
