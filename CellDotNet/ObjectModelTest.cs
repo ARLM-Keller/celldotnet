@@ -34,7 +34,7 @@ namespace CellDotNet
 			IntReturnDelegate del = 
 				delegate
 					{
-						int[] arr = new int[5];
+						int[] arr = new int[0];
 						return arr.Length;
 					};
 
@@ -45,11 +45,30 @@ namespace CellDotNet
 				return;
 
 			int val = del2();
-			AreEqual(5, val);
+			AreEqual(0, val);
 		}
 
 		[Test]
-		public void TestArray_IntElements()
+		public void TestArray_Length2()
+		{
+			IntReturnDelegate del =
+				delegate
+				{
+					int[] arr = new int[5];
+					return arr.Length;
+				};
+
+			IntReturnDelegate del2 = SpeDelegateRunner<IntReturnDelegate>.CreateSpeDelegate(del);
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			int val = del2();
+			AreEqual(5, val);
+		}
+
+
+		[Test]
+		public void TestArray_Int()
 		{
 			const int MagicNumber = 0xbababa;
 			IntReturnDelegate del = 
@@ -60,6 +79,30 @@ namespace CellDotNet
 						arr[1] = 20;
 						return arr[0];
 					};
+			IntReturnDelegate del2 = SpeDelegateRunner<IntReturnDelegate>.CreateSpeDelegate(del);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			int retval = del2();
+			AreEqual(MagicNumber, retval);
+		}
+
+		[Test]
+		public void TestArray_Int2()
+		{
+			const int MagicNumber = 0xbababa;
+			IntReturnDelegate del =
+				delegate
+				{
+					// Check that arr2 doesn't overwrite arr1.
+					int[] arr1 = new int[1];
+					arr1[0] = MagicNumber;
+					int[] arr2 = new int[1];
+					arr2[0] = 50;
+
+					return arr1[0];
+				};
 
 			IntReturnDelegate del2 = SpeDelegateRunner<IntReturnDelegate>.CreateSpeDelegate(del);
 
@@ -69,5 +112,31 @@ namespace CellDotNet
 			int retval = del2();
 			AreEqual(MagicNumber, retval);
 		}
+
+		[Test]
+		public void TestArray_Int3()
+		{
+			const int MagicNumber = 0xbababa;
+			IntReturnDelegate del =
+				delegate
+				{
+					// Check that arr2 doesn't overwrite arr1.
+					int[] arr1 = new int[1];
+					arr1[0] = MagicNumber;
+					int[] arr2 = new int[1];
+					arr2[0] = 50;
+
+					return arr1[0];
+				};
+
+			IntReturnDelegate del2 = SpeDelegateRunner<IntReturnDelegate>.CreateSpeDelegate(del);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			int retval = del2();
+			AreEqual(MagicNumber, retval);
+		}
+
 	}
 }

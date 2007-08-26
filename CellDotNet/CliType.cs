@@ -391,9 +391,9 @@ namespace CellDotNet
 				// I guess this is not entirely correct if you got an unmanaged pointer to
 				// a managed pointer...
 				if (IsManagedPointer)
-					s = new string('&', IndirectionLevel) + s;
+					s += new string('&', IndirectionLevel);
 				else
-					s = new string('*', IndirectionLevel) + s;
+					s += new string('*', IndirectionLevel);
 			}
 
 			if (IsArray)

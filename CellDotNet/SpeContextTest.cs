@@ -85,7 +85,7 @@ namespace CellDotNet
 		}
 
 		[Test]
-		public void TestPutGetInt32()
+		public void TestDma_PutGetInt32()
 		{
 			if (!SpeContext.HasSpeHardware)
 				return;
@@ -101,7 +101,7 @@ namespace CellDotNet
 		}
 
 		[Test]
-		public void TestPutGetFloat()
+		public void TestDma_PutGetFloat()
 		{
 			if (!SpeContext.HasSpeHardware)
 				return;
