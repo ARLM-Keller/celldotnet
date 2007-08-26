@@ -666,7 +666,13 @@ namespace CellDotNet
 				case IRCode.Conv_I2:
 					break;
 				case IRCode.Conv_I4:
-					break;
+					{
+						StackTypeDescription srctype = lefttype;
+						if (srctype.CliBasicType == CliBasicType.NativeInt)
+							return vrleft;
+
+						throw new NotSupportedException();
+					}
 				case IRCode.Conv_I8:
 					break;
 				case IRCode.Conv_R4:
@@ -750,7 +756,7 @@ namespace CellDotNet
 
 
 						// Determine byte size.
-						int elementByteSize = elementtype.GetByteSize();
+						int elementByteSize = elementtype.GetSizeWithPadding();
 						if (elementByteSize == 4)
 							bytesize = _writer.WriteShli(elementcount, 2);
 						else
@@ -784,9 +790,26 @@ namespace CellDotNet
 						return array;
 					}
 				case IRCode.Ldlen:
-					break;
+					{
+						VirtualRegister arr = vrleft;
+						// Array length is stored in the quadword just before the array.
+						return _writer.WriteLqd(arr, -1);
+					}
 				case IRCode.Ldelema:
-					break;
+					{
+						VirtualRegister arr = vrleft;
+						VirtualRegister index = vrright;
+						StackTypeDescription elementtype = (StackTypeDescription) inst.Operand;
+						int elementsize = elementtype.GetSizeWithPadding();
+
+						VirtualRegister byteoffset;
+						if (elementsize == 4)
+							byteoffset = _writer.WriteShli(index, 2);
+						else
+							throw new NotImplementedException();
+
+						return _writer.WriteA(arr, byteoffset);
+					}
 				case IRCode.Ldelem_I1:
 					break;
 				case IRCode.Ldelem_U1:

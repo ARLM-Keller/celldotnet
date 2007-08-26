@@ -176,10 +176,9 @@ namespace CellDotNet
 			} while (child != null && child.Offset >= 0);
 
 			if (parent.Offset < 0)
-				throw new Exception("Can't find first instruction with offset.");
+				throw new ILSemanticErrorException("Can't find first instruction with offset.");
 
 			return parent;
 		}
-
 	}
 }

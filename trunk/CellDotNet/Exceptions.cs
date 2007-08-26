@@ -7,13 +7,6 @@ namespace CellDotNet
 	[Serializable]
 	public class ILSemanticErrorException : Exception
 	{
-		//
-		// For guidelines regarding the creation of new exception types, see
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
-		// and
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
-		//
-
 		public ILSemanticErrorException() { }
 		public ILSemanticErrorException(string message) : base(message) { }
 		public ILSemanticErrorException(string message, Exception inner) : base(message, inner) { }
@@ -27,13 +20,6 @@ namespace CellDotNet
 	[Serializable]
 	public class ILParseException : Exception
 	{
-		//
-		// For guidelines regarding the creation of new exception types, see
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
-		// and
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
-		//
-
 		public ILParseException() { }
 		public ILParseException(string message) : base(message) { }
 		public ILParseException(string message, Exception inner) : base(message, inner) { }
@@ -91,13 +77,6 @@ namespace CellDotNet
 	[Serializable]
 	public class BadCodeLayoutException : Exception
 	{
-		//
-		// For guidelines regarding the creation of new exception types, see
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
-		// and
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
-		//
-
 		public BadCodeLayoutException() { }
 		public BadCodeLayoutException(string message) : base(message) { }
 		public BadCodeLayoutException(string message, Exception inner) : base(message, inner) { }
@@ -136,13 +115,6 @@ namespace CellDotNet
 	[Serializable]
 	public class SpeExecutionException : Exception
 	{
-		//
-		// For guidelines regarding the creation of new exception types, see
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
-		// and
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
-		//
-
 		public SpeExecutionException() { }
 		public SpeExecutionException(string message) : base(message) { }
 		public SpeExecutionException(string message, Exception inner) : base(message, inner) { }
@@ -156,13 +128,6 @@ namespace CellDotNet
 	[Serializable]
 	public class SpeOutOfMemoryException : SpeExecutionException
 	{
-		//
-		// For guidelines regarding the creation of new exception types, see
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
-		// and
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
-		//
-
 		public SpeOutOfMemoryException() { }
 		public SpeOutOfMemoryException(string message) : base(message) { }
 		public SpeOutOfMemoryException(string message, Exception inner) : base(message, inner) { }
@@ -176,13 +141,6 @@ namespace CellDotNet
 	[Serializable]
 	public class SpeStackOverflowException : SpeExecutionException
 	{
-		//
-		// For guidelines regarding the creation of new exception types, see
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
-		// and
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
-		//
-
 		public SpeStackOverflowException() { }
 		public SpeStackOverflowException(string message) : base(message) { }
 		public SpeStackOverflowException(string message, Exception inner) : base(message, inner) { }

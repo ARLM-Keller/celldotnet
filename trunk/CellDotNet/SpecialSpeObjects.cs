@@ -13,18 +13,18 @@ namespace CellDotNet
 
 		private RegisterSizedObject _nextAllocationStartObject = new RegisterSizedObject("NextAllocationStart");
 		private RegisterSizedObject _allocatableByteCountObject = new RegisterSizedObject("AllocatableByteCount");
-		private RegisterSizedObject _stackSizeObject = new RegisterSizedObject("StackSizeObject");
+		private RegisterSizedObject _stackSizeObject = new RegisterSizedObject("StackSize");
 		private SpuManualRoutine _stackOverflow;
 		private SpuManualRoutine _outOfMemory;
 
 
 		public SpecialSpeObjects()
 		{
-			_stackOverflow = new SpuManualRoutine(true);
+			_stackOverflow = new SpuManualRoutine(true, "StackOverflowHandler");
 			_stackOverflow.Writer.BeginNewBasicBlock();
 			_stackOverflow.Writer.WriteStop(SpuStopCode.StackOverflow);
 
-			_outOfMemory = new SpuManualRoutine(true);
+			_outOfMemory = new SpuManualRoutine(true, "OomHandler");
 			_outOfMemory.Writer.BeginNewBasicBlock();
 			_outOfMemory.Writer.WriteStop(SpuStopCode.OutOfMemory);
 		}

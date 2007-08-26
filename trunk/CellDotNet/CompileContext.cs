@@ -207,10 +207,9 @@ namespace CellDotNet
 			if (EntryPoint.ReturnType != StackTypeDescription.None)
 				_returnValueLocation = new RegisterSizedObject("ReturnValueLocation");
 
-			_argumentArea = DataObject.FromQuadWords(EntryPoint.Parameters.Count);
+			_argumentArea = DataObject.FromQuadWords(EntryPoint.Parameters.Count, "ArgumentArea");
 
 			_spuRoutines = new List<SpuRoutine>();
-			_specialSpeObjects = new SpecialSpeObjects();
 			SpuInitializer init = new SpuInitializer(EntryPoint, _returnValueLocation, _specialSpeObjects.StackSizeObject);
 
 			// It's important that the initialization routine is the first one, since execution
@@ -406,6 +405,8 @@ namespace CellDotNet
 		private void PerformInstructionSelection()
 		{
 			AssertState(CompileContextState.S3InstructionSelectionDone - 1);
+
+			_specialSpeObjects = new SpecialSpeObjects();
 
 			foreach (MethodCompiler mc in Methods)
 			{
