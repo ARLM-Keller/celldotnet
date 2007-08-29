@@ -23,7 +23,7 @@ namespace CellDotNet
 
 		private static void RunKlaus()
 		{
-			new ILOpCodeExecutionTest().Test_Call();
+			new ILOpCodeExecutionTest().TestRefArgumentTest();
 			Console.WriteLine("Running RunKlaus done.");
 		}
 
