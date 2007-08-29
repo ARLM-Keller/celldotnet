@@ -496,7 +496,13 @@ namespace CellDotNet
 
 		private static void RunRasmus()
 		{
-			new SpeContextTest().TestStopCode_OutOfMemoryException();
-	}
+			Console.WriteLine("---------------------");
+			Console.WriteLine("Create:");
+			new ObjectModelTest().TestArray_Create();
+
+			Console.WriteLine("---------------------");
+			Console.WriteLine("length:");
+			new ObjectModelTest().TestArray_Length();
+		}
 	}
 }

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
+using NUnit.Framework;
 
 namespace CellDotNet
 {
@@ -13,6 +15,23 @@ namespace CellDotNet
 		{
 			if (arg == null)
 				throw new ArgumentNullException(paramName);
+		}
+
+		static public string GetUnitTestName()
+		{
+			StackTrace st = new StackTrace(1);
+			StackFrame[] frames = st.GetFrames();
+
+			foreach (StackFrame f in frames)
+			{
+				MethodBase m = f.GetMethod();
+				object[] list = m.GetCustomAttributes(typeof (TestAttribute), false);
+				if (list.Length != 0)
+				{
+					return m.Name;
+				}
+			}
+			return "";
 		}
 
 		static public void AssertArgument(bool condition, string message)
@@ -157,6 +176,21 @@ namespace CellDotNet
 				writer.Write(" {0:x2} {1:x2} {2:x2} {3:x2}", val >> 0x18, (val >> 0x10) & 0xff, (val >> 8) & 0xff, val & 0xff);
 			}
 			writer.WriteLine();
+		}
+
+		public static void WriteCodeToFile(int[] code, string filename)
+		{
+			byte[] buf = new byte[code.Length * 4];
+			Buffer.BlockCopy(code, 0, buf, 0, code.Length*4);
+			try
+			{
+				File.WriteAllBytes(filename, buf);
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("Couldn't dump code to file '" + filename + "': " + e.Message);
+				throw;
+			}
 		}
 	}
 }

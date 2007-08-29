@@ -1,0 +1,35 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+	<head>
+	<style type="text/css">
+	
+	body, td {
+		font-family: verdana;
+		font-size: 10pt;
+	}
+	
+	</style>
+		<title></title>
+	</head>
+	<body>
+	
+	<h3>Disassembly</h3>
+	<p>
+		Currently, every time a program is run, the binary image is written to a file called
+		&lt;unit test method name&gt;.bin. This file can be converted to an ELF file which
+		can then be disassembled (and debugged).
+		<br />
+		Create the following shell script which can perform the conversion:</p>
+		<pre>  #!/bin/sh
+  spu-objcopy -B spu -I binary -O elf32-spu $1.bin $1 
+</pre>
+<p>
+	Call this script with the name of the dump file without the .bin extension.</p>
+		<p>
+			To disassemble the file, calll "spu-objdump -D &lt;unit test method name&gt;".
+		</p>
+		<p>
+			&nbsp;</p>
+	
+	</body>
+</html>

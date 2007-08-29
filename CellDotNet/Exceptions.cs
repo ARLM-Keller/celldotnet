@@ -128,7 +128,7 @@ namespace CellDotNet
 	[Serializable]
 	public class SpeOutOfMemoryException : SpeExecutionException
 	{
-		public SpeOutOfMemoryException() { }
+		public SpeOutOfMemoryException() : base("All available memory on the SPE has been allocated.") { }
 		public SpeOutOfMemoryException(string message) : base(message) { }
 		public SpeOutOfMemoryException(string message, Exception inner) : base(message, inner) { }
 		protected SpeOutOfMemoryException(
@@ -141,7 +141,7 @@ namespace CellDotNet
 	[Serializable]
 	public class SpeStackOverflowException : SpeExecutionException
 	{
-		public SpeStackOverflowException() { }
+		public SpeStackOverflowException() : base("A stack overflow on the SPE has occurred.") { }
 		public SpeStackOverflowException(string message) : base(message) { }
 		public SpeStackOverflowException(string message, Exception inner) : base(message, inner) { }
 		protected SpeStackOverflowException(

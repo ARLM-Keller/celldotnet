@@ -356,6 +356,11 @@ namespace CellDotNet
 		{
 			IntPtr dataBufMain = IntPtr.Zero;
 
+			// Save a copy of the code for optional disassembly.
+			string unittestname = Utilities.GetUnitTestName();
+			if (!string.IsNullOrEmpty(unittestname))
+				Utilities.WriteCodeToFile(code, unittestname + ".bin");
+
 			try
 			{
 				dataBufMain = Marshal.AllocHGlobal(code.Length*4 + 32);
