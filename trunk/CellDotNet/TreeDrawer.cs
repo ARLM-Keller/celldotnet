@@ -67,7 +67,6 @@ namespace CellDotNet
 					Output.Write(" {0} ({1})", ((FieldInfo)inst.Operand).Name, ((FieldInfo)inst.Operand).FieldType.Name);
 				else if (inst.Operand is int && inst.Opcode.FlowControl == FlowControl.Branch || inst.Opcode.FlowControl == FlowControl.Cond_Branch)
 				{
-					// Normally this should happen for branch instructions, but we want to handle it anyway...
 					Output.Write(" " + ((int)inst.Operand).ToString("X4"));
 				}
 				else					

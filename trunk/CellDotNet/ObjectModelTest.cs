@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -20,12 +21,16 @@ namespace CellDotNet
 					Utilities.PretendVariableIsUsed(arr);
 				};
 
-			SimpleDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			del2();
+			using (SpeContext sc = new SpeContext())
+			{
+				sc.RunProgram(cc, cc.GetEmittedCode());
+			}
 		}
 
 		[Test]
@@ -35,17 +40,32 @@ namespace CellDotNet
 				delegate
 					{
 						int[] arr = new int[0];
-						return arr.Length;
+//						return arr.Length;
+						return 4;
 					};
 
-			IntReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
-			SpeDelegateRunner t = (SpeDelegateRunner)del2.Target;
-			Disassembler.DisassembleToConsole(t.CompileContext);
+//			IntReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+//			SpeDelegateRunner t = (SpeDelegateRunner)del2.Target;
+//			Disassembler.DisassembleToConsole(t.CompileContext);
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			int[] code = cc.GetEmittedCode();
+			Utilities.WriteCodeToFile(code, "dump.rawspu");
+
+			Disassembler.DisassembleToConsole(cc);
+
+
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			int val = del2();
-			AreEqual(0, val);
+			using (SpeContext sc = new SpeContext())
+			{
+				object ret = sc.RunProgram(cc, cc.GetEmittedCode());
+				AreEqual(typeof(int), ret.GetType());
+				AreEqual(0, (int) ret);
+			}
 		}
 
 		[Test]

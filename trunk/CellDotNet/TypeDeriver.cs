@@ -483,6 +483,8 @@ namespace CellDotNet
 			{
 				std = s_metadataCilTypes[realtype];
 			}
+			else if (realtype == typeof(void))
+				std = StackTypeDescription.None;
 			else if (realtype.IsArray)
 			{
 				Type elementtype = realtype.GetElementType();

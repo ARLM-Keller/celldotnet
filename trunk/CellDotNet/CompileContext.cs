@@ -273,7 +273,13 @@ namespace CellDotNet
 
 				// We only need to write to the preferred slot.
 				_emittedCode[_specialSpeObjects.AllocatableByteCountObject.Offset/4] = _specialSpeObjects.AllocatableByteCount;
+				_emittedCode[_specialSpeObjects.AllocatableByteCountObject.Offset/4+1] = _specialSpeObjects.AllocatableByteCount;
+				_emittedCode[_specialSpeObjects.AllocatableByteCountObject.Offset/4+2] = _specialSpeObjects.AllocatableByteCount;
+				_emittedCode[_specialSpeObjects.AllocatableByteCountObject.Offset/4+3] = _specialSpeObjects.AllocatableByteCount;
 				_emittedCode[_specialSpeObjects.NextAllocationStartObject.Offset/4] = _specialSpeObjects.NextAllocationStart;
+				_emittedCode[_specialSpeObjects.NextAllocationStartObject.Offset/4+1] = _specialSpeObjects.NextAllocationStart;
+				_emittedCode[_specialSpeObjects.NextAllocationStartObject.Offset/4+2] = _specialSpeObjects.NextAllocationStart;
+				_emittedCode[_specialSpeObjects.NextAllocationStartObject.Offset/4+3] = _specialSpeObjects.NextAllocationStart;
 				_emittedCode[_specialSpeObjects.StackSizeObject.Offset/4] = _specialSpeObjects.StackSize;
 			}
 
