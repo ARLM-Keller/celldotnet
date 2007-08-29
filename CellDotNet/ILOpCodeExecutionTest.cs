@@ -10,12 +10,14 @@ namespace CellDotNet
 	[TestFixture]
 	public class ILOpCodeExecutionTest : UnitTest
 	{
-		delegate int SimpleDelegate();
+		private delegate int SimpleDelegateReturn();
+
+		private delegate void SimpleDelegateRefArg(ref int a);
 
 		[Test]
 		public void Test_Call()
 		{
-			SimpleDelegate del1 = delegate() { return Math.Max(4, 99); };
+			SimpleDelegateReturn del1 = delegate() { return Math.Max(4, 99); };
 
 			CompileContext cc = new CompileContext(del1.Method);
 
@@ -337,6 +339,57 @@ namespace CellDotNet
 			InstTest(OpCodes.Div_Un, 16, 4, 4);
 //			InstTest(OpCodes.Div_Un, 16, 5, 3);
 //			InstTest(OpCodes.Div_Un, 2, 7, 0);
+		}
+
+		private static int f1()
+		{
+			int i = 5;
+			f2(ref i);
+			return i;
+		}
+
+		private static void f2(ref int a)
+		{
+			a = a + 1;
+		}
+
+
+		[Test]
+		public void TestRefArgumentTest()
+		{
+//			SimpleDelegateRefArg del2 = delegate(ref int a) { a =  a + 1; };
+//
+//			SimpleDelegateReturn del1 = delegate()
+//			                      	{
+//			                      		int i = 5;
+//										del2(ref i);
+//			                      		return i;
+//			                      	};
+			SimpleDelegateReturn del1 = f1;
+
+
+			CompileContext cc = new CompileContext(del1.Method);
+
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			new TreeDrawer().DrawMethods(cc);
+
+			Disassembler.DisassembleToConsole(cc);
+
+			int[] code = cc.GetEmittedCode();
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			using (SpeContext ctx = new SpeContext())
+			{
+				ctx.LoadProgram(code);
+				ctx.Run();
+
+				int returnValue = ctx.DmaGetValue<int>(cc.ReturnValueAddress);
+
+				AreEqual(6, returnValue, "Function call with ref argument returned a wrong value.");
+			}
 		}
 
 		public void InstTest(OpCode opcode, int i1, int i2, int exp)

@@ -22,15 +22,28 @@ namespace CellDotNet
 			get { return _localVariableInfo; }
 		}
 
+		/// <summary>
+		/// This is true if the variable was created during IR tree construction.
+		/// </summary>
 		public bool IsStackVariable
 		{
 			get { return _localVariableInfo == null; }
 		}
 
+		/// <summary>
+		/// Variable number.
+		/// </summary>
 		private int _index;
 		public virtual int Index
 		{
 			get { return _index; }
+		}
+
+		private int _stacklocation;
+		public int StackLocation
+		{
+			get { return _stacklocation; }
+			set { _stacklocation = value; }
 		}
 
 		private bool? _escapes;

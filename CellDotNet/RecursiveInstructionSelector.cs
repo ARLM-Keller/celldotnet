@@ -967,20 +967,74 @@ namespace CellDotNet
 					break;
 				case IRCode.Ldarg:
 					{
-						return GetMethodVariableRegister(inst);
+						MethodVariable var = ((MethodVariable)inst.Operand);
+						if (var.Escapes != null && var.Escapes.Value)
+						{
+							_writer.WriteLqd(var.VirtualRegister, HardwareRegister.SP, var.StackLocation);
+							return var.VirtualRegister;
+						}
+						else
+							return var.VirtualRegister;
+						// Do nothing.
+//						return GetMethodVariableRegister(inst);
 					}
 				case IRCode.Ldarga:
-					break;
+					{
+						MethodVariable var = ((MethodVariable)inst.Operand);
+						if (var.Escapes != null && var.Escapes.Value)
+						{
+							Utilities.Assert(var.StackLocation * 4 < 32*1024, "Immediated overflow");
+							VirtualRegister r = _writer.WriteIl(var.StackLocation * 16);
+							_writer.WriteA(r, HardwareRegister.SP, r);
+							return r;
+						}
+						else
+							throw new Exception("Escaping variable with no stack location.");
+					}
 				case IRCode.Starg:
-					break;
+					{
+						MethodVariable var = ((MethodVariable)inst.Operand);
+						if (var.Escapes != null && var.Escapes.Value)
+							_writer.WriteStqd(vrleft, HardwareRegister.SP, var.StackLocation);
+						else
+							_writer.WriteMove(vrleft, var.VirtualRegister);
+
+						return null;
+					}
 				case IRCode.Ldloc:
-					return ((MethodVariable) inst.Operand).VirtualRegister;
+					{
+						MethodVariable var = ((MethodVariable) inst.Operand);
+						if (var.Escapes != null && var.Escapes.Value)
+						{
+							_writer.WriteLqd(var.VirtualRegister, HardwareRegister.SP, var.StackLocation);
+							return var.VirtualRegister;
+						}
+						else
+							return var.VirtualRegister;
+					}
 				case IRCode.Ldloca:
-					break;
+					{
+						MethodVariable var = ((MethodVariable) inst.Operand);
+						if (var.Escapes != null && var.Escapes.Value)
+						{
+							Utilities.Assert(var.StackLocation * 4 < 32 * 1024, "Immediated overflow");
+							VirtualRegister r = _writer.WriteIl(var.StackLocation * 16);
+							_writer.WriteA(r, HardwareRegister.SP, r);
+							return r;
+						}
+						else
+							throw new Exception("Escaping variable with no stack location.");
+					}
 				case IRCode.Stloc:
-					VirtualRegister dest = ((MethodVariable) inst.Operand).VirtualRegister;
-					_writer.WriteMove(vrleft, dest);
-					return null;
+					{
+						MethodVariable var = ((MethodVariable) inst.Operand);
+						if (var.Escapes != null && var.Escapes.Value)
+							_writer.WriteStqd(vrleft, HardwareRegister.SP, var.StackLocation);
+						else
+							_writer.WriteMove(vrleft, var.VirtualRegister);
+
+						return null;
+					}
 				case IRCode.Localloc:
 				case IRCode.Endfilter:
 				case IRCode.Unaligned:

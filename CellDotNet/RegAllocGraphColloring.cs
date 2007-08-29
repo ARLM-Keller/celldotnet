@@ -439,8 +439,10 @@ namespace CellDotNet
 			{
 				SpuInstruction inst = bb.Head;
 
-				jumpTargets.Add(bb, inst);
-
+				if (inst != null)
+				{
+					jumpTargets.Add(bb, inst);
+				}
 				while (inst != null)
 				{
 					if (predecessor != null)

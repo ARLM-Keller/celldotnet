@@ -251,9 +251,15 @@ namespace CellDotNet
 				delegate(TreeInstruction obj)
 					{
 						if (obj.Opcode.IRCode == IRCode.Ldarga)
-							((MethodParameter)obj.Operand).Escapes = true;
+						{
+							((MethodParameter) obj.Operand).Escapes = true;
+							((MethodParameter) obj.Operand).StackLocation = GetNewSpillOffset();
+						}
 						else if (obj.Opcode.IRCode == IRCode.Ldloca)
+						{
 							((MethodVariable) obj.Operand).Escapes = true;
+							((MethodVariable) obj.Operand).StackLocation = GetNewSpillOffset();
+						}
 					};
 			ForeachTreeInstruction(action);
 		}
@@ -394,7 +400,7 @@ namespace CellDotNet
 			State = MethodCompileState.S7RemoveRedundantMoves;
 		}
 
-		private int _nextSpillOffset = 3; // Start by pointing to start of Local Variable Space.
+		private int _nextSpillOffset = 2; // Start by pointing to start of Local Variable Space.
 		/// <summary>
 		/// For the register allocator to use to get SP offsets for spilling.
 		/// </summary>
@@ -436,8 +442,8 @@ namespace CellDotNet
 			// Number of 16 byte slots in the frame.
 			int RASA_slots = 0; // Register argument save area. (vararg)
 			int GRSA_slots = 0; // General register save area. (non-volatile registers)
-			int LVS_slots = 0; // Local variable space. (escapes and spills)
 			int PLA_slots = 0; // Parameter list area. (more than 72 argument registers)
+			int LVS_slots = _nextSpillOffset - 2 - PLA_slots; // Local variable space. (escapes and spills)
 			int frameSlots = RASA_slots + GRSA_slots + LVS_slots + PLA_slots + 2;
 
 			// First/topmost caller-saves register caller SP slot offset.
