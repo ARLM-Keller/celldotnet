@@ -359,7 +359,7 @@ namespace CellDotNet
 			// Save a copy of the code for optional disassembly.
 			string unittestname = Utilities.GetUnitTestName();
 			if (!string.IsNullOrEmpty(unittestname))
-				Utilities.WriteCodeToFile(code, unittestname + ".bin");
+				Utilities.WriteAssemblyToFile(code, unittestname + ".s");
 
 			try
 			{

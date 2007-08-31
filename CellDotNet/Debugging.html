@@ -8,20 +8,41 @@
 		font-size: 10pt;
 	}
 	
+	pre.code {
+		padding-left: 20px;
+	}
+	
 	</style>
 		<title></title>
 	</head>
 	<body>
 	
 	<h3>Disassembly</h3>
+	<h4>Option 1</h4>
 	<p>
 		Currently, every time a program is run, the binary image is written to a file called
 		&lt;unit test method name&gt;.bin. This file can be converted to an ELF file which
 		can then be disassembled (and debugged).
 		<br />
 		Create the following shell script which can perform the conversion:</p>
-		<pre>  #!/bin/sh
-  spu-objcopy -B spu -I binary -O elf32-spu $1.bin $1 
+		<pre class="code">#!/bin/sh
+
+ 
+
+# Convert the raw binary file to an ELF relocatable.
+
+# At the same time, we want objcopy to call the main sumbol "main"
+
+# so that the linker knows what to start.
+
+spu-objcopy -B spu -I binary -O elf32-spu --redefine-sym _binary_$1_bin_start=main  $1.bin $1.o
+
+ 
+
+# Finish by linking it.
+
+spu-gcc $1.o -o $1
+
 </pre>
 <p>
 	Call this script with the name of the dump file without the .bin extension.</p>
@@ -30,6 +51,9 @@
 		</p>
 		<p>
 			&nbsp;</p>
+	<h4>Option 2</h4>
+	<p>Call Utilities.WriteAssemblyToFile() to dump a CompileContext to a assembler file.</p>
+	<p>This also define symbols that spu-gdb will use.</p>
 	
 	</body>
 </html>
