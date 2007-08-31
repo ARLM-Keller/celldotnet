@@ -146,7 +146,7 @@ namespace CellDotNet
 		}
 
 
-		[Test, Description("Test non-trivial branching.")]
+		[Test]
 		public void TestParseBranches1()
 		{
 			BasicTestDelegate del = delegate

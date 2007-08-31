@@ -51,8 +51,7 @@ namespace CellDotNet
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			int[] code = cc.GetEmittedCode();
-			Utilities.WriteCodeToFile(code, "dump.rawspu");
+			Utilities.WriteAssemblyToFile(cc, @"c:\temp\gen.s");
 
 			Disassembler.DisassembleToConsole(cc);
 
