@@ -38,31 +38,6 @@ namespace CellDotNet
 			return s_reflectionmap;
 		}
 
-		private static Dictionary<short, IROpCode> s_iropcodemap;
-		/// <summary>
-		/// Returns a map from the IL opcode subset that maps directly to the IR opcodes.
-		/// </summary>
-		/// <returns></returns>
-		static Dictionary<short, IROpCode> GetIROpCodeMap()
-		{
-			lock (s_lock)
-			{
-				if (s_iropcodemap == null)
-				{
-					s_iropcodemap = new Dictionary<short, IROpCode>();
-
-					FieldInfo[] fields = typeof(IROpCodes).GetFields(BindingFlags.Public | BindingFlags.Static);
-					foreach (FieldInfo field in fields)
-					{
-						IROpCode oc = (IROpCode)field.GetValue(null);
-						s_iropcodemap.Add(oc.ReflectionOpCode.Value, oc);
-					}
-				}
-			}
-
-			return s_iropcodemap;
-		}
-
 		private enum ReadState
 		{
 			None,
@@ -75,7 +50,6 @@ namespace CellDotNet
 		private byte[] _il;
 		private int _readoffset;
 		private Dictionary<short, OpCode> _ocmap = GetReflectionOpCodeMap();
-		private Dictionary<short, IROpCode> _irmap = GetIROpCodeMap();
 		private MethodBase _method;
 		private MethodBody _body;
 
@@ -177,13 +151,7 @@ namespace CellDotNet
 				throw new ILParseException(string.Format("An error occurred while reading IL starting at offset {0:x4}.", Offset), e);
 			}
 
-			IROpCode ircode;
-			if (!_irmap.TryGetValue(srOpcode.Value, out ircode))
-			{
-				throw new Exception("Can't find IR opcode for reflection opcode " + srOpcode.Name +
-									". The parsing or simplification probably wasn't performed correcly.");
-			}
-			_opcode = ircode;
+			_opcode = srOpcode;
 
 			_instructionSize = _readoffset - Offset;
 
@@ -591,8 +559,8 @@ namespace CellDotNet
 			get { return _operand; }
 		}
 
-		private IROpCode _opcode;
-		public IROpCode OpCode
+		private OpCode _opcode;
+		public OpCode OpCode
 		{
 			get { return _opcode; }
 		}

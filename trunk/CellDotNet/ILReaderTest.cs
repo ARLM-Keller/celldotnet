@@ -26,7 +26,7 @@ namespace CellDotNet
 			bool sawldc = false;
 			while (r.Read())
 			{
-				if (r.OpCode == IROpCodes.Ldc_I4)
+				if (r.OpCode == OpCodes.Ldc_I4)
 				{
 					sawldc = true;
 					AreEqual(0xfe, (int)r.Operand);
@@ -87,7 +87,7 @@ namespace CellDotNet
 
 			while (r.Read())
 			{
-				if (r.OpCode != IROpCodes.Ldc_I4)
+				if (r.OpCode != OpCodes.Ldc_I4)
 					continue;
 				int val = (int) r.Operand;
 				AreEqual(0x0a0b0c0d, val);
@@ -109,7 +109,7 @@ namespace CellDotNet
 
 			while (r.Read())
 			{
-				if (r.OpCode != IROpCodes.Ldc_I4)
+				if (r.OpCode != OpCodes.Ldc_I4)
 					continue;
 				int val = (int)r.Operand;
 				AreEqual(4, val);
@@ -131,7 +131,7 @@ namespace CellDotNet
 
 			while (r.Read())
 			{
-				if (r.OpCode != IROpCodes.Ldc_I8)
+				if (r.OpCode != OpCodes.Ldc_I8)
 					continue;
 				long val = (long)r.Operand;
 				AreEqual(0x0102030405060708L, val);
@@ -153,7 +153,7 @@ namespace CellDotNet
 
 			while (r.Read())
 			{
-				if (r.OpCode != IROpCodes.Ldstr)
+				if (r.OpCode != OpCodes.Ldstr)
 					continue;
 				string s = (string) r.Operand;
 				AreEqual("hey", s);
@@ -175,7 +175,7 @@ namespace CellDotNet
 
 			while (r.Read())
 			{
-				if (r.OpCode != IROpCodes.Ldc_R4)
+				if (r.OpCode != OpCodes.Ldc_R4)
 					continue;
 				float f = (float) r.Operand;
 				AreEqual(4.5f, f);
@@ -197,7 +197,7 @@ namespace CellDotNet
 
 			while (r.Read())
 			{
-				if (r.OpCode != IROpCodes.Ldc_R8)
+				if (r.OpCode != OpCodes.Ldc_R8)
 					continue;
 				double d = (double)r.Operand;
 				AreEqual(4.5d, d);

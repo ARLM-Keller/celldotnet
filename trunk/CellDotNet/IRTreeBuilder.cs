@@ -132,6 +132,35 @@ namespace CellDotNet
 			get { return _currentVariableStackTop + 1 + _instructionStack.Count; }
 		}
 
+		static private object s_lock = new object();
+
+		private Dictionary<short, IROpCode> _irmap = GetIROpCodeMap();
+		private static Dictionary<short, IROpCode> s_iropcodemap;
+		/// <summary>
+		/// Returns a map from the IL opcode subset that maps directly to the IR opcodes.
+		/// </summary>
+		/// <returns></returns>
+		static Dictionary<short, IROpCode> GetIROpCodeMap()
+		{
+			lock (s_lock)
+			{
+				if (s_iropcodemap == null)
+				{
+					s_iropcodemap = new Dictionary<short, IROpCode>();
+
+					FieldInfo[] fields = typeof(IROpCodes).GetFields(BindingFlags.Public | BindingFlags.Static);
+					foreach (FieldInfo field in fields)
+					{
+						IROpCode oc = (IROpCode)field.GetValue(null);
+						s_iropcodemap.Add(oc.ReflectionOpCode.Value.Value, oc);
+					}
+				}
+			}
+
+			return s_iropcodemap;
+		}
+
+
 		public List<IRBasicBlock> BuildBasicBlocks(MethodBase method, ILReader reader, 
 		                                           List<MethodVariable> variables, ReadOnlyCollection<MethodParameter> parameters)
 		{
@@ -227,12 +256,23 @@ namespace CellDotNet
 				Utilities.Assert(nextForwardBranchTarget > reader.Offset, 
 					"nextForwardBranchTarget > reader.Offset");
 
-				PopBehavior popbehavior = reader.OpCode.GetPopBehavior();
+
+
+				IROpCode ircode;
+				if (!_irmap.TryGetValue(reader.OpCode.Value, out ircode))
+				{
+					throw new Exception("Can't find IR opcode for reflection opcode " + reader.OpCode.Name +
+										". The parsing or simplification probably wasn't performed correcly.");
+				}
+
+
+
+				PopBehavior popbehavior = IROpCode.GetPopBehavior(reader.OpCode.StackBehaviourPop);
 				int pushcount = GetPushCount(reader.OpCode);
 
 
 				TreeInstruction treeinst = new TreeInstruction();
-				treeinst.Opcode = reader.OpCode;
+				treeinst.Opcode = ircode;
 				treeinst.Offset = reader.Offset;
 
 				// Replace variable and parameter references with our own types.
@@ -269,7 +309,7 @@ namespace CellDotNet
 					case PopBehavior.PopAll: // "leave"
 						throw new NotImplementedException("PopAll");
 					case PopBehavior.VarPop: // "ret", "call"
-						if (reader.OpCode == IROpCodes.Ret)
+						if (reader.OpCode == OpCodes.Ret)
 						{
 							// CLI: "The evaluation stack for the current method must be empty except for the value to be returned."
 							if (TotalStackSize > 1)
@@ -285,7 +325,7 @@ namespace CellDotNet
 						}
 						else if (reader.OpCode.FlowControl == FlowControl.Call)
 						{
-							CreateMethodCallInstruction(reader, out pushcount, out treeinst);
+							CreateMethodCallInstruction(reader, ircode, out pushcount, out treeinst);
 						}
 						else
 							throw new Exception("Unknown VarPop.");
@@ -352,7 +392,7 @@ namespace CellDotNet
 
 		private IntrinsicsManager _intrinsics = new IntrinsicsManager();
 
-		private void CreateMethodCallInstruction(ILReader reader, out int pushcount, out TreeInstruction treeinst)
+		private void CreateMethodCallInstruction(ILReader reader, IROpCode opcode, out int pushcount, out TreeInstruction treeinst)
 		{
 			// Build a method call from the stack.
 			MethodBase methodBase = (MethodBase) reader.Operand;
@@ -360,7 +400,7 @@ namespace CellDotNet
 				throw new ILSemanticErrorException("Too few parameters on stack.");
 
 			int hasThisExtraParam = ((int) (methodBase.CallingConvention & CallingConventions.HasThis) != 0 && 
-			                         reader.OpCode != IROpCodes.Newobj) ? 1 : 0;
+			                         opcode != IROpCodes.Newobj) ? 1 : 0;
 			int paramcount = methodBase.GetParameters().Length + hasThisExtraParam;
 
 			TreeInstruction[] arr = new TreeInstruction[paramcount];
@@ -381,7 +421,7 @@ namespace CellDotNet
 			}
 			else
 			{
-				mci = new MethodCallInstruction(methodBase, reader.OpCode);
+				mci = new MethodCallInstruction(methodBase, opcode);
 			}
 			mci.Offset = reader.Offset;
 			mci.Parameters.AddRange(arr);
@@ -490,7 +530,7 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="code"></param>
 		/// <returns></returns>
-		private static int GetPushCount(IROpCode code)
+		private static int GetPushCount(OpCode code)
 		{
 			int pushCount;
 

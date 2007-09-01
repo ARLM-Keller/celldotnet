@@ -266,8 +266,9 @@ namespace CellDotNet
 
 				enumcode.AppendFormat("		{0},\r\n", fi.Name);
 				opcodewriter.AppendFormat(
-					"		public static readonly IROpCode {0} = new IROpCode(\"{1}\", IRCode.{0}, FlowControl.{2}, OpCodeType.{3}, StackBehaviour.{4}, StackBehaviour.{5}, OpCodes.{6});\r\n",
-					fi.Name, oc.Name, oc.FlowControl, oc.OpCodeType, oc.StackBehaviourPush, oc.StackBehaviourPop, fi.Name);
+					"		public static readonly IROpCode {0} = new IROpCode(\"{1}\", IRCode.{0}, " +
+					"FlowControl.{2}, OpCodes.{3});\r\n",
+					fi.Name, oc.Name, oc.FlowControl, fi.Name);
 			}
 
 			enumcode.Append(@"
