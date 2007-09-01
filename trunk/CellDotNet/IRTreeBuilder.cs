@@ -285,31 +285,7 @@ namespace CellDotNet
 						}
 						else if (reader.OpCode.FlowControl == FlowControl.Call)
 						{
-							// Build a method call from the stack.
-							MethodBase mr = (MethodBase) reader.Operand;
-							if (TotalStackSize < mr.GetParameters().Length)
-								throw new ILSemanticErrorException("Too few parameters on stack.");
-
-							int hasThisExtraParam = ((int) (mr.CallingConvention & CallingConventions.HasThis) != 0 && 
-							                         reader.OpCode != IROpCodes.Newobj) ? 1 : 0;
-							int paramcount = mr.GetParameters().Length + hasThisExtraParam;
-
-							MethodCallInstruction mci = new MethodCallInstruction(mr, reader.OpCode);
-							mci.Offset = reader.Offset;
-
-							TreeInstruction[] arr = new TreeInstruction[paramcount];
-							for (int i = 0; i < paramcount; i++)
-								arr[paramcount - 1 - i] = Pop();
-
-							mci.Parameters.AddRange(arr);
-
-							MethodInfo methodinfo = mr as MethodInfo;
-							if (mr is ConstructorInfo || (methodinfo != null && methodinfo.ReturnType != typeof(void)))
-								pushcount = 1;
-							else
-								pushcount = 0;
-
-							treeinst = mci;
+							CreateMethodCallInstruction(reader, out pushcount, out treeinst);
 						}
 						else
 							throw new Exception("Unknown VarPop.");
@@ -372,6 +348,44 @@ namespace CellDotNet
 			FixBranchesAndCreateBasicBlocks(blocks, branches, variables);
 
 			return blocks;
+		}
+
+		private IntrinsicsManager _intrinsics = new IntrinsicsManager();
+
+		private void CreateMethodCallInstruction(ILReader reader, out int pushcount, out TreeInstruction treeinst)
+		{
+			// Build a method call from the stack.
+			MethodBase methodBase = (MethodBase) reader.Operand;
+			if (TotalStackSize < methodBase.GetParameters().Length)
+				throw new ILSemanticErrorException("Too few parameters on stack.");
+
+			int hasThisExtraParam = ((int) (methodBase.CallingConvention & CallingConventions.HasThis) != 0 && 
+			                         reader.OpCode != IROpCodes.Newobj) ? 1 : 0;
+			int paramcount = methodBase.GetParameters().Length + hasThisExtraParam;
+
+			TreeInstruction[] arr = new TreeInstruction[paramcount];
+			for (int i = 0; i < paramcount; i++)
+				arr[paramcount - 1 - i] = Pop();
+
+			MethodInfo methodinfo = methodBase as MethodInfo;
+			if (methodBase is ConstructorInfo || (methodinfo != null && methodinfo.ReturnType != typeof(void)))
+				pushcount = 1;
+			else
+				pushcount = 0;
+
+			SpuIntrinsicFunction intrinsic;
+			MethodCallInstruction mci;
+			if (false && methodinfo != null && _intrinsics.TryGetIntrinsic(methodinfo, out intrinsic))
+			{
+				mci = new MethodCallInstruction(intrinsic);
+			}
+			else
+			{
+				mci = new MethodCallInstruction(methodBase, reader.OpCode);
+			}
+			mci.Offset = reader.Offset;
+			mci.Parameters.AddRange(arr);
+			treeinst = mci;
 		}
 
 		private void FixBranchesAndCreateBasicBlocks(List<IRBasicBlock> blocks, List<TreeInstruction> branches, List<MethodVariable> variables)

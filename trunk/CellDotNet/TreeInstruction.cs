@@ -25,6 +25,8 @@ namespace CellDotNet
 		/// <returns></returns>
 		public virtual IEnumerable<TreeInstruction> GetChildInstructions()
 		{
+			Utilities.PretendVariableIsUsed(DebuggerDisplay);
+
 			if (Left != null)
 				yield return Left;
 			if (Right != null)
@@ -129,6 +131,7 @@ namespace CellDotNet
 				foreach (TreeInstruction instruction in IterateSubtree())
 				{
 					i++;
+					Utilities.PretendVariableIsUsed(instruction);
 				}
 				return i;
 			}

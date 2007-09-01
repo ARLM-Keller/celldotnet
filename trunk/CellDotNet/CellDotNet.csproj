@@ -50,6 +50,7 @@
     <Compile Include="DataObject.cs" />
     <Compile Include="Disassembler.cs" />
     <Compile Include="DisassemblerTest.cs" />
+    <Compile Include="Dma.cs" />
     <Compile Include="FlowGraph.cs" />
     <Compile Include="Graph.cs" />
     <Compile Include="GraphTest.cs" />
@@ -58,6 +59,8 @@
     <Compile Include="ILReaderTest.cs" />
     <Compile Include="ILWriter.cs" />
     <Compile Include="InterferenceGraph.cs" />
+    <Compile Include="IntrinsicMethodAttribute.cs" />
+    <Compile Include="IntrinsicsManager.cs" />
     <Compile Include="IRBasicBlock.cs" />
     <Compile Include="IRCode.cs" />
     <Compile Include="IROpCodes.cs" />
@@ -83,6 +86,7 @@
     <Compile Include="RegAllocGraphColloring.cs" />
     <Compile Include="RegAllocGraphColloringTest.cs" />
     <Compile Include="RegisterSizedObject.cs" />
+    <Compile Include="SpuRuntime.cs" />
     <Compile Include="SimpleLiveAnalyzer.cs" />
     <Compile Include="SimpleRegAlloc.cs" />
     <Compile Include="SimpleRegAllocTest.cs" />
@@ -105,6 +109,7 @@
     <Compile Include="SpuInstructionWriter_autogen.cs" />
     <Compile Include="SpuManualRoutine.cs" />
     <Compile Include="SpuRoutine.cs" />
+    <Compile Include="SpuRuntimeTest.cs" />
     <Compile Include="StackLocation.cs" />
     <Compile Include="StoreLocation.cs" />
     <Compile Include="TreeDrawer.cs" />
