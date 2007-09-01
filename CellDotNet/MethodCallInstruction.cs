@@ -22,16 +22,17 @@ namespace CellDotNet
 			get { return (MethodCompiler) Operand; }
 		}
 
-		public MethodCallInstruction(MethodBase _method, IROpCode _opcode)
+		public MethodCallInstruction(MethodBase method, IROpCode opcode)
 		{
-			Operand = _method;
-			Opcode = _opcode;
+			Operand = method;
+			Opcode = opcode;
 		}
 
 		public MethodCallInstruction(SpuIntrinsicFunction intrinsic)
 		{
 			Utilities.AssertArgument(intrinsic != SpuIntrinsicFunction.None, "intrinsic != SpuIntrinsicFunction.None");
 			Operand = intrinsic;
+			Opcode = IROpCodes.IntrinsicMethod;
 		}
 
 		private List<TreeInstruction> _parameters = new List<TreeInstruction>();

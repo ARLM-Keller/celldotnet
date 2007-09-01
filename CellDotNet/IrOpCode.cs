@@ -53,7 +53,7 @@ namespace CellDotNet
 			get { return _irCode; }
 		}
 
-		public IROpCode(string name, IRCode irCode, FlowControl flowControl, OpCode reflectionOpCode)
+		public IROpCode(string name, IRCode irCode, FlowControl flowControl, OpCode? reflectionOpCode)
 		{
 			_flowControl = flowControl;
 			_name = name;
