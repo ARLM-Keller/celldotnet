@@ -14,6 +14,14 @@ namespace CellDotNet
 			get { return (MethodBase) Operand; }
 		}
 
+		/// <summary>
+		/// The operand cast as a <see cref="MethodCompiler"/>.
+		/// </summary>
+		public MethodCompiler TargetMethod
+		{
+			get { return (MethodCompiler) Operand; }
+		}
+
 		public MethodCallInstruction(MethodBase _method, IROpCode _opcode)
 		{
 			Operand = _method;

@@ -505,4 +505,41 @@ namespace CellDotNet
 			new ObjectModelTest().TestArray_Length();
 		}
 	}
+
+	class MyAtt : Attribute
+	{
+		private int _id;
+
+		public int Id
+		{
+			get { return _id; }
+		}
+
+		public MyAtt(int id)
+		{
+			_id = id;
+		}
+	}
+
+	class MyDerivedAtt : MyAtt
+	{
+		public MyDerivedAtt(MyEnum id) : base((int) id)
+		{
+		}
+	}
+
+	enum MyEnum
+	{
+		None,
+		Val1,
+		Val2
+	}
+
+	class MyClass
+	{
+		[MyDerivedAtt(MyEnum.Val2)]
+		public static void MyFunc() {}
+
+
+	}
 }

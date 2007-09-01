@@ -178,7 +178,8 @@ namespace CellDotNet
 					break;
 				case IRCode.Call:
 					{
-						MethodCompiler target = (MethodCompiler) inst.Operand;
+						MethodCallInstruction callInst = (MethodCallInstruction) inst;
+						MethodCompiler target = callInst.TargetMethod;
 
 						if (target.MethodBase.IsConstructor)
 							throw new NotImplementedException("Constructors are not implemented.");
