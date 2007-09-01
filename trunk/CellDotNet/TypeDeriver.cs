@@ -86,6 +86,11 @@ namespace CellDotNet
 					{
 						MethodCallInstruction mci = (MethodCallInstruction)inst;
 
+						foreach (TreeInstruction param in mci.Parameters)
+						{
+							DeriveType(param);
+						}
+
 						MethodInfo method = mci.Method as MethodInfo; // might be a constructor.
 						// TODO: Handle void type.
 						if (method != null && method.ReturnType != typeof(void))
@@ -94,11 +99,6 @@ namespace CellDotNet
 						}
 						else
 							t = StackTypeDescription.None;
-
-						foreach (TreeInstruction param in mci.Parameters)
-						{
-							DeriveType(param);
-						}
 					}
 					break;
 				case FlowControl.Cond_Branch:

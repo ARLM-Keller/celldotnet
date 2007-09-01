@@ -196,7 +196,11 @@ namespace CellDotNet
 
 	partial class IROpCodes
 	{
-//		public static readonly IROpCode Intrinsic = new IROpCode("_intrinsic", IRCode.xx, FlowControl.Next, OpCodeType.Nternal, , , OpCodes.Xor);
+		/// <summary>
+		/// This is a custom opcode that may be used with <see cref="MethodCallInstruction"/> to
+		/// signal that the method is an intrinsic method.
+		/// </summary>
+		public static readonly IROpCode IntrinsicMethod = new IROpCode("_intrinsic_method", IRCode.Intrinsic, FlowControl.Call, null);
 	}
 
 }
