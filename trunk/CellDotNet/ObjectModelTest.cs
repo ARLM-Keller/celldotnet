@@ -51,7 +51,7 @@ namespace CellDotNet
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			Utilities.WriteAssemblyToFile(cc, @"c:\temp\gen.s");
+			cc.WriteAssemblyToFile(@"c:\temp\gen.s");
 
 			Disassembler.DisassembleToConsole(cc);
 

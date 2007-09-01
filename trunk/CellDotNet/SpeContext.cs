@@ -357,9 +357,9 @@ namespace CellDotNet
 			IntPtr dataBufMain = IntPtr.Zero;
 
 			// Save a copy of the code for optional disassembly.
-			string unittestname = Utilities.GetUnitTestName();
-			if (!string.IsNullOrEmpty(unittestname))
-				Utilities.WriteAssemblyToFile(code, unittestname + ".s");
+//			string unittestname = Utilities.GetUnitTestName();
+//			if (!string.IsNullOrEmpty(unittestname))
+//				code.WriteAssemblyToFile(unittestname + ".s");
 
 			try
 			{
@@ -462,11 +462,10 @@ namespace CellDotNet
 			switch (Type.GetTypeCode(value.GetType()))
 			{
 				case TypeCode.Int32:
-					int i = (value as int?).Value;
-					*((int*)ptr) = i;
+					*((int*)ptr) = (int)value;
 					break;
 				case TypeCode.Single:
-					float f = (value as float?).Value;
+					float f = (float) value;
 					*((float*)ptr) = f;
 					break;
 				default:

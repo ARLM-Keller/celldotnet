@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.IO;
 using System.Reflection;
+using System.Text;
 
 namespace CellDotNet
 {
@@ -253,7 +254,6 @@ namespace CellDotNet
 		{
 			AssertState(CompileContextState.S7CodeEmitted - 1);
 
-			_emittedCode = new int[Utilities.Align16(_totalCodeSize) / 4];
 			List<ObjectWithAddress> objects = GetAllObjects();
 			List<SpuRoutine> routines = new List<SpuRoutine>();
 			foreach (ObjectWithAddress o in objects)
@@ -262,6 +262,7 @@ namespace CellDotNet
 				if (routine != null)
 					routines.Add(routine);
 			}
+			_emittedCode = new int[Utilities.Align16(_totalCodeSize) / 4];
 			CopyCode(_emittedCode, routines);
 
 			// Initialize memory allocation.
@@ -466,6 +467,111 @@ namespace CellDotNet
 					throw new BadCodeLayoutException(e.Message, e);
 				}
 
+			}
+		}
+
+		/// <summary>
+		/// Writes the code to the file with instructions on how to compile it.
+		/// The executable should be ready for debugging with spu-gdb.
+		/// </summary>
+		/// <param name="filename"></param>
+		public void WriteAssemblyToFile(string filename)
+		{
+			int[] code = GetEmittedCode();
+
+			using (StreamWriter writer = new StreamWriter(filename, false, Encoding.UTF8))
+			{
+				// Write the bytes and define main (which really is the initializer).
+				writer.Write(@"
+# {0}
+# Generated on {2:G}
+# Compile this file with the following command:
+# spu-as {0} -o {1}.o && spu-gcc {1}.o -o {1}
+
+  .section "".text""
+  .globl main
+  .type main, @function
+main:
+", Path.GetFileName(filename), Path.GetFileNameWithoutExtension(filename), DateTime.Now);
+
+				List<ObjectWithAddress> symbols = new List<ObjectWithAddress>(GetAllObjectsForDisassembly());
+				symbols.Sort(delegate(ObjectWithAddress x, ObjectWithAddress y) { return x.Offset - y.Offset; });
+
+
+				int wordOffset = 0;
+				int byteOffset = 0;
+				int nextSymIndex = 0;
+				const int wordsPerLine = 4;
+				const int bytesPerLine = wordsPerLine * 4;
+				while (wordOffset < code.Length)
+				{
+					// Comment where symbols starts.
+					bool firstSymbolBlockLine = true;
+					while (nextSymIndex < symbols.Count && symbols[nextSymIndex].Offset >= byteOffset
+						&& symbols[nextSymIndex].Offset < byteOffset + bytesPerLine)
+					{
+						ObjectWithAddress symbol = symbols[nextSymIndex];
+
+						if (firstSymbolBlockLine)
+						{
+							writer.WriteLine();
+							firstSymbolBlockLine = false;
+						}
+
+						writer.Write("# {0} (0x{1:x})", symbol.Name, symbol.Offset);
+						if (symbol.Offset > byteOffset)
+							writer.Write(" (line offset 0x" + (symbol.Offset - byteOffset).ToString("x") + ")");
+
+						writer.WriteLine();
+						nextSymIndex++;
+					}
+
+					const bool useKnownToWorkByteSyntax = false;
+					if (useKnownToWorkByteSyntax)
+						writer.Write("  .byte ");
+					else
+						writer.Write("  .int ");
+					for (int i = 0; i < wordsPerLine && wordOffset + i < code.Length; i++)
+					{
+						if (i > 0)
+							writer.Write(",  ");
+						uint inst = (uint) code[wordOffset + i];
+
+						if (useKnownToWorkByteSyntax)
+						{
+							writer.Write("0x" + ((byte)(inst >> 24)).ToString("x2"));
+							writer.Write(", 0x" + ((byte)(inst >> 16)).ToString("x2"));
+							writer.Write(", 0x" + ((byte)(inst >> 8)).ToString("x2"));
+							writer.Write(", 0x" + ((byte)(inst >> 0)).ToString("x2"));
+						}
+						else 
+							writer.Write("0x" + inst.ToString("x8"));
+					}
+					writer.WriteLine();
+
+					wordOffset += wordsPerLine;
+					byteOffset = wordOffset * 4;
+				}
+				
+				writer.WriteLine();
+				writer.WriteLine();
+
+				// Write the symbol values.
+				foreach (ObjectWithAddress obj in symbols)
+				{
+					if (obj.Offset == 0)
+						continue;
+
+					// Anonymous methods contains '<' and '>' in their name.
+					string encodedname = obj.Name;
+					encodedname = encodedname.Replace("<", "").Replace('>', '$');
+
+					writer.Write(@"
+  .globl {0}
+  .type {0}, @object
+  .set {0}, main + 0x{1:x}
+", encodedname, obj.Offset);
+				}
 			}
 		}
 	}

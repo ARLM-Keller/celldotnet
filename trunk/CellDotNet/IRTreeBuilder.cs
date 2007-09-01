@@ -83,7 +83,7 @@ namespace CellDotNet
 		/// <summary>
 		/// Creates instructions to save the contents of the instruction stack to the variable
 		/// stack associated with the branch target.
-		/// <list type="ordered">
+		/// <list>
 		/// <item>Activates the variable stack.</item>
 		/// <item>Clears the instruction stack.</item>
 		/// </list>
@@ -320,42 +320,9 @@ namespace CellDotNet
 							throw new ILSemanticErrorException("Pop3 with a push != 0?");
 
 						// Replace stelem with ldelema and stind.
-						if (reader.OpCode.IRCode >= IRCode.Stelem_I && reader.OpCode.IRCode <= IRCode.Stelem_Ref)
+						if (treeinst.Opcode.IRCode >= IRCode.Stelem_I && treeinst.Opcode.IRCode <= IRCode.Stelem_Ref)
 						{
-							// stelem.* stack transition: ..., array, index, value, -> ...
-							// stelem<T> stack transition: ..., array, index, value, -> ...
-
-							IROpCode stindOpcode;
-
-							switch (reader.OpCode.IRCode)
-							{
-								case IRCode.Stelem_I4:
-									stindOpcode = IROpCodes.Stind_I4;
-									break;
-								case IRCode.Stelem_R4:
-									stindOpcode = IROpCodes.Stind_R4;
-									break;
-								default:
-									throw new NotSupportedException("Unsupported array opcode: " + reader.OpCode);
-							}
-
-							TreeInstruction valueInst = Pop(); // The value.
-
-							TreeInstruction ldelemachild = new TreeInstruction();
-							ldelemachild.Opcode = IROpCodes.Ldelema;
-							ldelemachild.Right = Pop(); // The index.
-							ldelemachild.Left = Pop(); // The array.
-							ldelemachild.Operand = ldelemachild.Left.StackType.GetArrayElementType();
-							ldelemachild.Offset = treeinst.Offset; // Assume the identity of the stelem.
-
-							TreeInstruction stindParent = new TreeInstruction();
-							stindParent.Opcode = stindOpcode;
-							stindParent.Left = ldelemachild;
-							stindParent.Right = valueInst;
-
-							typederiver.DeriveType(ldelemachild);
-							typederiver.DeriveType(stindParent);
-							treeinst = stindParent;
+							treeinst = ReplaceStoreElement(treeinst, typederiver);
 						}
 						else
 							throw new NotImplementedException();
@@ -402,7 +369,13 @@ namespace CellDotNet
 			}
 			blocks.Add(currblock);
 
-			// Fix branches.
+			FixBranchesAndCreateBasicBlocks(blocks, branches, variables);
+
+			return blocks;
+		}
+
+		private void FixBranchesAndCreateBasicBlocks(List<IRBasicBlock> blocks, List<TreeInstruction> branches, List<MethodVariable> variables)
+		{
 			// It is by definition only possible to branch to basic blocks.
 			// So we need to create these blocks.
 			Dictionary<int, IRBasicBlock> basicBlockOffsets = new Dictionary<int, IRBasicBlock>();
@@ -457,8 +430,45 @@ namespace CellDotNet
 			{
 				variables.AddRange(methodVariables);
 			}
+		}
 
-			return blocks;
+		private TreeInstruction ReplaceStoreElement(TreeInstruction treeinst, TypeDeriver typederiver)
+		{
+			// stelem.* stack transition: ..., array, index, value, -> ...
+			// stelem<T> stack transition: ..., array, index, value, -> ...
+
+			IROpCode stindOpcode;
+
+			switch (treeinst.Opcode.IRCode)
+			{
+				case IRCode.Stelem_I4:
+					stindOpcode = IROpCodes.Stind_I4;
+					break;
+				case IRCode.Stelem_R4:
+					stindOpcode = IROpCodes.Stind_R4;
+					break;
+				default:
+					throw new NotSupportedException("Unsupported array opcode: " + treeinst.Opcode);
+			}
+
+			TreeInstruction valueInst = Pop(); // The value.
+
+			TreeInstruction ldelemachild = new TreeInstruction();
+			ldelemachild.Opcode = IROpCodes.Ldelema;
+			ldelemachild.Right = Pop(); // The index.
+			ldelemachild.Left = Pop(); // The array.
+			ldelemachild.Operand = ldelemachild.Left.StackType.GetArrayElementType();
+			ldelemachild.Offset = treeinst.Offset; // Assume the identity of the stelem.
+
+			TreeInstruction stindParent = new TreeInstruction();
+			stindParent.Opcode = stindOpcode;
+			stindParent.Left = ldelemachild;
+			stindParent.Right = valueInst;
+
+			typederiver.DeriveType(ldelemachild);
+			typederiver.DeriveType(stindParent);
+			treeinst = stindParent;
+			return treeinst;
 		}
 
 		/// <summary>
