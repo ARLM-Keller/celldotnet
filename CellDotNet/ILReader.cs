@@ -378,6 +378,9 @@ namespace CellDotNet
 
 			{
 				// ldarg(a)
+
+				// Q: What should _operand be when it's a 'this' argument?
+
 				if (srOpcode == OpCodes.Ldarg_S)
 				{
 					srOpcode = OpCodes.Ldarg;
@@ -385,6 +388,8 @@ namespace CellDotNet
 				}
 				else if (srOpcode.Value >= OpCodes.Ldarg_0.Value && srOpcode.Value <= OpCodes.Ldarg_3.Value)
 				{
+					if (!_method.IsStatic)
+						throw new NotSupportedException("Instances are not supported.");
 					int index = srOpcode.Value - OpCodes.Ldarg_0.Value;
 					_operand = _method.GetParameters()[index];
 					srOpcode = OpCodes.Ldarg;

@@ -375,7 +375,7 @@ namespace CellDotNet
 
 			SpuIntrinsicFunction intrinsic;
 			MethodCallInstruction mci;
-			if (false && methodinfo != null && _intrinsics.TryGetIntrinsic(methodinfo, out intrinsic))
+			if (methodinfo != null && _intrinsics.TryGetIntrinsic(methodinfo, out intrinsic))
 			{
 				mci = new MethodCallInstruction(intrinsic);
 			}

@@ -496,6 +496,32 @@ main:
 
 				List<ObjectWithAddress> symbols = new List<ObjectWithAddress>(GetAllObjectsForDisassembly());
 				symbols.Sort(delegate(ObjectWithAddress x, ObjectWithAddress y) { return x.Offset - y.Offset; });
+				
+
+				// We don't want duplicate names.
+				Set<string> usedNames = new Set<string>(symbols.Count);
+				List<KeyValuePair<ObjectWithAddress, string>> symbolsWithNames = new List<KeyValuePair<ObjectWithAddress, string>>();
+				foreach (ObjectWithAddress symbol in symbols)
+				{
+					// Anonymous methods contains '<' and '>' in their name.
+					string encodedname = symbol.Name;
+					encodedname = encodedname.Replace("<", "").Replace('>', '$');
+
+					if (usedNames.Contains(encodedname))
+					{
+						int suffix = 0;
+						string newname;
+						do
+						{
+							suffix++;
+							newname = encodedname + "$" + suffix;
+						} while (usedNames.Contains(encodedname));
+						encodedname = newname;
+					}
+
+					symbolsWithNames.Add(new KeyValuePair<ObjectWithAddress, string>(symbol, encodedname));
+				}
+
 
 
 				int wordOffset = 0;
@@ -557,20 +583,20 @@ main:
 				writer.WriteLine();
 
 				// Write the symbol values.
-				foreach (ObjectWithAddress obj in symbols)
+				foreach (KeyValuePair<ObjectWithAddress, string> item in symbolsWithNames)
 				{
+					ObjectWithAddress obj = item.Key;
+					string name = item.Value;
+
 					if (obj.Offset == 0)
 						continue;
 
-					// Anonymous methods contains '<' and '>' in their name.
-					string encodedname = obj.Name;
-					encodedname = encodedname.Replace("<", "").Replace('>', '$');
 
 					writer.Write(@"
   .globl {0}
   .type {0}, @object
   .set {0}, main + 0x{1:x}
-", encodedname, obj.Offset);
+", name, obj.Offset);
 				}
 			}
 		}
