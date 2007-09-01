@@ -17,7 +17,7 @@ namespace CellDotNet
 		/// <summary>
 		/// The operand cast as a <see cref="MethodCompiler"/>.
 		/// </summary>
-		public MethodCompiler TargetMethod
+		public MethodCompiler TargetMethodCompiler
 		{
 			get { return (MethodCompiler) Operand; }
 		}
@@ -28,12 +28,17 @@ namespace CellDotNet
 			Opcode = _opcode;
 		}
 
+		public MethodCallInstruction(SpuIntrinsicFunction intrinsic)
+		{
+			Utilities.AssertArgument(intrinsic != SpuIntrinsicFunction.None, "intrinsic != SpuIntrinsicFunction.None");
+			Operand = intrinsic;
+		}
+
 		private List<TreeInstruction> _parameters = new List<TreeInstruction>();
 		public List<TreeInstruction> Parameters
 		{
 			get { return _parameters; }
 		}
-
 
 		internal override void BuildPreorder(List<TreeInstruction> list)
 		{
@@ -49,5 +54,15 @@ namespace CellDotNet
 		{
 			return Parameters;
 		}
+	}
+
+	/// <summary>
+	/// These values represents intrinsic functions.
+	/// </summary>
+	internal enum SpuIntrinsicFunction
+	{
+		None,
+		Runtime_Stop,
+
 	}
 }
