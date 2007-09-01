@@ -41,26 +41,8 @@ namespace CellDotNet
 			get { return _name; }
 		}
 
-		private OpCodeType _opcodeType;
-		public OpCodeType OpcodeType
-		{
-			get { return _opcodeType; }
-		}
-
-		private StackBehaviour _stackBehaviourPush;
-		public StackBehaviour StackBehaviourPush
-		{
-			get { return _stackBehaviourPush; }
-		}
-
-		private StackBehaviour _stackBehaviourPop;
-		public StackBehaviour StackBehaviourPop
-		{
-			get { return _stackBehaviourPop; }
-		}
-
-		private OpCode _reflectionOpCode;
-		public OpCode ReflectionOpCode
+		private OpCode? _reflectionOpCode;
+		public OpCode? ReflectionOpCode
 		{
 			get { return _reflectionOpCode; }
 		}
@@ -71,26 +53,29 @@ namespace CellDotNet
 			get { return _irCode; }
 		}
 
-
-		public IROpCode(string name, IRCode ircode, FlowControl flowControl, OpCodeType opcodeType,
-						StackBehaviour stackBehaviourPush, StackBehaviour stackBehaviourPop, OpCode opcode)
+		public IROpCode(string name, IRCode irCode, FlowControl flowControl, OpCode reflectionOpCode)
 		{
 			_flowControl = flowControl;
 			_name = name;
-			_irCode = ircode;
-			_opcodeType = opcodeType;
-			_stackBehaviourPush = stackBehaviourPush;
-			_stackBehaviourPop = stackBehaviourPop;
-			_reflectionOpCode = opcode;
+			_reflectionOpCode = reflectionOpCode;
+			_irCode = irCode;
 
 			Utilities.PretendVariableIsUsed(DebuggerDisplay);
 		}
 
 		public PopBehavior GetPopBehavior()
 		{
+			if (_reflectionOpCode == null)
+				throw new InvalidOperationException("_reflectionOpCode == null");
+
+			return GetPopBehavior(_reflectionOpCode.Value.StackBehaviourPop);
+		}
+
+		public static PopBehavior GetPopBehavior(StackBehaviour stackBehaviourPop)
+		{
 			PopBehavior pb;
 
-			switch (StackBehaviourPop)
+			switch (stackBehaviourPop)
 			{
 				case StackBehaviour.Pop0:
 					pb = PopBehavior.Pop0;
