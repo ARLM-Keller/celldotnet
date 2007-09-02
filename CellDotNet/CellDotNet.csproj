@@ -81,6 +81,7 @@
     <Compile Include="LiveInterval.cs" />
     <Compile Include="MethodCallInstruction.cs" />
     <Compile Include="ObjectModelTest.cs" />
+    <Compile Include="ObjectOffset.cs" />
     <Compile Include="ObjectWithAddress.cs" />
     <Compile Include="RecursiveInstructionSelector.cs" />
     <Compile Include="RegAllocGraphColloring.cs" />

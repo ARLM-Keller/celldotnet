@@ -13,7 +13,9 @@ namespace CellDotNet
 
 		private RegisterSizedObject _nextAllocationStartObject = new RegisterSizedObject("NextAllocationStart");
 		private RegisterSizedObject _allocatableByteCountObject = new RegisterSizedObject("AllocatableByteCount");
-		private RegisterSizedObject _stackSizeObject = new RegisterSizedObject("StackSize");
+		private RegisterSizedObject _stackPointerObject = new RegisterSizedObject("StackPointer");
+		private RegisterSizedObject _debugValueObject = new RegisterSizedObject("DebugValue");
+		//		private RegisterSizedObject _stackSizeObject = new RegisterSizedObject("StackSize");
 		private SpuManualRoutine _stackOverflow;
 		private SpuManualRoutine _outOfMemory;
 
@@ -39,10 +41,20 @@ namespace CellDotNet
 			get { return _allocatableByteCountObject; }
 		}
 
-		public RegisterSizedObject StackSizeObject
+		public RegisterSizedObject StackPointerObject
 		{
-			get { return _stackSizeObject; }
+			get { return _stackPointerObject; }
 		}
+
+		public RegisterSizedObject DebugValueObject
+		{
+			get { return _debugValueObject; }
+		}
+
+//		public RegisterSizedObject StackSizeObject
+//		{
+//			get { return _stackSizeObject; }
+//		}
 
 		public SpuManualRoutine StackOverflow
 		{
@@ -62,7 +74,10 @@ namespace CellDotNet
 		{
 			return new ObjectWithAddress[] {
 				NextAllocationStartObject, AllocatableByteCountObject, 
-				StackSizeObject, StackOverflow, 
+				StackPointerObject,
+//				StackSizeObject,
+				DebugValueObject,
+				StackOverflow, 
 				OutOfMemory, 
 			};
 		}
@@ -93,6 +108,17 @@ namespace CellDotNet
 			}
 		}
 
+		private int _stackPointer = -1;
+		public int StackPointer
+		{
+			get
+			{
+				if (_stackPointer == -1)
+					throw new InvalidOperationException();
+				return _stackPointer;
+			}
+		}
+
 		private int _stackSize = -1;
 		public int StackSize
 		{
@@ -104,10 +130,11 @@ namespace CellDotNet
 			}
 		}
 
-		public void SetMemorySettings(int stackSize, int nextAllocationStart, int allocatableByteCount)
+		public void SetMemorySettings(int stackPointer, int stackSize, int nextAllocationStart, int allocatableByteCount)
 		{
 			const int MemSize = 256*1024;
 
+			Utilities.AssertArgumentRange(stackPointer >= 0 && stackPointer < MemSize, "stackPointer", stackPointer);
 			Utilities.AssertArgumentRange(stackSize >= 0 && stackSize < MemSize, "stackSize", stackSize);
 			Utilities.AssertArgumentRange(nextAllocationStart > 0 && nextAllocationStart < MemSize,
 				"nextAllocationStart", nextAllocationStart);
@@ -116,6 +143,7 @@ namespace CellDotNet
 			Utilities.AssertArgument(nextAllocationStart + allocatableByteCount + stackSize <= MemSize,
 				"Memory settings exceeds memory size.");
 
+			_stackPointer = stackPointer;
 			_stackSize = stackSize;
 			_nextAllocationStart = nextAllocationStart;
 			_allocatableByteCount = allocatableByteCount;

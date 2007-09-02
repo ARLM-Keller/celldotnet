@@ -30,7 +30,7 @@ namespace CellDotNet
 			epilog.WriteBi(HardwareRegister.LR);
 		}
 
-		public static void WriteProlog(int frameSlots, SpuInstructionWriter prolog)
+		public static void WriteProlog(int frameSlots, SpuInstructionWriter prolog, ObjectWithAddress stackOverflow)
 		{
 			// Save LR in caller's frame.
 			prolog.WriteStqd(HardwareRegister.LR, HardwareRegister.SP, 1);
@@ -39,6 +39,19 @@ namespace CellDotNet
 
 			// Establish new SP.
 			prolog.WriteAi(HardwareRegister.SP, HardwareRegister.SP, -frameSlots*16);
+
+			if (stackOverflow != null)
+			{
+				VirtualRegister isNotOverflow = HardwareRegister.GetVirtualHardwareRegister((CellRegister) 76);
+
+				prolog.WriteCgti(isNotOverflow, HardwareRegister.SP, 0);
+
+				prolog.WriteGb(isNotOverflow, isNotOverflow);
+
+				prolog.WriteAndi(isNotOverflow, isNotOverflow, 2);
+
+				prolog.WriteConditionalBranch(SpuOpCode.brz, isNotOverflow, stackOverflow);
+			}
 
 			// Store SP at new frame's Back Chain.
 			prolog.WriteStqd(HardwareRegister.GetVirtualHardwareRegister((CellRegister)75), HardwareRegister.SP, 0);

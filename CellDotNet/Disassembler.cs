@@ -150,7 +150,7 @@ namespace CellDotNet
 					case SpuInstructionFormat.WEIRD:
 						if (inst.OpCode == SpuOpCode.stop)
 						{
-							tw.Write(inst.OpCode.Name);
+							tw.Write("{0} {1} ", inst.OpCode.Name, inst.Constant);
 							break;
 						}
 

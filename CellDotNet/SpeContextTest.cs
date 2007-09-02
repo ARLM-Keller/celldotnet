@@ -175,23 +175,48 @@ namespace CellDotNet
 			}
 		}
 
-		private static void Recursion(int level)
+		private static int Recursion(int level)
 		{
 			if (level > 0)
-				Recursion(level - 1);
+				return Recursion(level - 1)+1;
+			else
+				return 1;
 		}
+
+		private delegate int SimpleDelegateIntInt(int i);
 
 		[Test, ExpectedException(typeof(SpeStackOverflowException))]
 		public void TestStackOverflow()
 		{
-			Action<int> del = Recursion;
-			Action<int> del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+			SimpleDelegateIntInt del = Recursion;
+
+			CompileContext cc = new CompileContext(del.Method);
+
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			new TreeDrawer().DrawMethods(cc);
+
+			Disassembler.DisassembleToConsole(cc);
+
+			int[] code = cc.GetEmittedCode();
+
 
 			if (!SpeContext.HasSpeHardware)
 				throw new SpeStackOverflowException();
 
-			// 100K of stack should do the trick.
-			del2(50000);
+			using (SpeContext ctx = new SpeContext())
+			{
+				ctx.LoadProgram(code);
+				// 100K of stack should do the trick.
+				ctx.LoadArguments(cc, new object[] { 50000 });
+
+				ctx.DebugValueObject = cc.DebugValueObject;
+				ctx.Run();
+
+				int returnValue = ctx.DmaGetValue<int>(cc.ReturnValueAddress);
+
+				Console.WriteLine("Resultat {0}", returnValue);
+			}
 		}
 
 		[Test, Explicit]

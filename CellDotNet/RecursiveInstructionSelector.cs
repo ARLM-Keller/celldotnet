@@ -99,9 +99,9 @@ namespace CellDotNet
 			{
 				MethodParameter parameter = _parameters[i];
 
-				VirtualRegister dest = HardwareRegister.GetHardwareRegister(FirstArgumentRegister + i);
+				VirtualRegister src = HardwareRegister.GetHardwareRegister(FirstArgumentRegister + i);
 
-				_writer.WriteMove(parameter.VirtualRegister, dest);
+				_writer.WriteMove(src, parameter.VirtualRegister);
 			}
 		}
 
@@ -161,6 +161,9 @@ namespace CellDotNet
 					return _writer.WriteLoadI4(0);
 				case IRCode.Ldc_I4:
 					return _writer.WriteLoadI4((int) inst.Operand);
+//					VirtualRegister dbgr = _writer.WriteLoadI4((int) inst.Operand);
+//					_writer.WriteDebugStop(dbgr, _specialSpeObjects.DebugValueObject);
+//					return dbgr;
 				case IRCode.Ldc_I8:
 					break;
 				case IRCode.Ldc_R4:
@@ -226,7 +229,7 @@ namespace CellDotNet
 					WriteConditionalBranch(SpuOpCode.brz, vrleft, (IRBasicBlock) inst.Operand);
 					return null;
 				case IRCode.Brtrue:
-					WriteConditionalBranch(SpuOpCode.brnz, vrleft, (IRBasicBlock) inst.Operand);
+					WriteConditionalBranch(SpuOpCode.brnz, vrleft, (IRBasicBlock)inst.Operand);
 					return null;
 				case IRCode.Beq:
 					// NOTE: Asumes left and right operand is compatible
@@ -926,15 +929,15 @@ namespace CellDotNet
 						{
 							case CliType.Int8:
 							case CliType.UInt8:
-								val = _writer.WriteCeqb(vrleft, vrright);
-								return _writer.WriteAndi(val, 1);
+//								val = _writer.WriteCeqb(vrleft, vrright);
+//								return _writer.WriteAndi(val, 1);
+							case CliType.Int16:
+							case CliType.UInt16:
+//								val = _writer.WriteCeqh(vrleft, vrright);
+//								return _writer.WriteAndi(val, 1);
 							case CliType.Int32:
 							case CliType.UInt32:
 								val = _writer.WriteCeq(vrleft, vrright);
-								return _writer.WriteAndi(val, 1);
-							case CliType.Int16:
-							case CliType.UInt16:
-								val = _writer.WriteCeqh(vrleft, vrright);
 								return _writer.WriteAndi(val, 1);
 							case CliType.Float32:
 							case CliType.Float64:

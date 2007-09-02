@@ -12,6 +12,9 @@ namespace CellDotNet
 		{
 			const int magicnum = 0x3654ff;
 
+			SpecialSpeObjects _specialSpeObjects = new SpecialSpeObjects();
+			_specialSpeObjects.SetMemorySettings(256*1024-0x20,8*1024-0x20,128*1024,118*1024);
+
 			// The code to run just returns.
 			SpuManualRoutine routine = new SpuManualRoutine(true);
 			routine.Writer.BeginNewBasicBlock();
@@ -25,7 +28,7 @@ namespace CellDotNet
 			int[] code = new int[1000];
 			{
 				// Initialization.
-				SpuInitializer initializer = new SpuInitializer(routine, returnLocation);
+				SpuInitializer initializer = new SpuInitializer(routine, returnLocation, null, 0, _specialSpeObjects.StackPointerObject);
 				initializer.Offset = 0;
 				initializer.PerformAddressPatching();
 				int[] initCode = initializer.Emit();

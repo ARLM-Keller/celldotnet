@@ -28,6 +28,12 @@ namespace CellDotNet
 		private Dictionary<string, MethodCompiler> _methodDict = new Dictionary<string, MethodCompiler>();
 		private SpecialSpeObjects _specialSpeObjects;
 
+		public RegisterSizedObject DebugValueObject
+		{
+			get { return _specialSpeObjects.DebugValueObject; }
+			set { throw new Exception("");}
+		}
+
 		/// <summary>
 		/// The first method that is run.
 		/// </summary>
@@ -152,6 +158,25 @@ namespace CellDotNet
 			State = CompileContextState.S5MethodAddressesDetermined;
 		}
 
+		// Used in ILOpCodeExecutionTest.
+		public static int LayoutObjects(IEnumerable<ObjectWithAddress> objects)
+		{
+			// Start from the beginning and lay them out sequentially.
+			int lsOffset = 0;
+			foreach (ObjectWithAddress o in objects)
+			{
+//				if (o is MethodCompiler)
+//				{
+//					((MethodCompiler)o).PerformProcessing(MethodCompileState.S6PrologAndEpilogDone);
+//				}
+
+				o.Offset = lsOffset;
+				lsOffset = Utilities.Align16(lsOffset + o.Size);
+			}
+			return lsOffset;
+		}
+
+
 		/// <summary>
 		/// Substitute label and method addresses for calls.
 		/// </summary>
@@ -211,7 +236,9 @@ namespace CellDotNet
 			_argumentArea = DataObject.FromQuadWords(EntryPoint.Parameters.Count, "ArgumentArea");
 
 			_spuRoutines = new List<SpuRoutine>();
-			SpuInitializer init = new SpuInitializer(EntryPoint, _returnValueLocation, _specialSpeObjects.StackSizeObject);
+			SpuInitializer init = new SpuInitializer(EntryPoint, _returnValueLocation,
+				_argumentArea, EntryPoint.Parameters.Count,
+				_specialSpeObjects.StackPointerObject);
 
 			// It's important that the initialization routine is the first one, since execution
 			// will start at address 0.
@@ -268,20 +295,19 @@ namespace CellDotNet
 			// Initialize memory allocation.
 			{
 				const int TotalSpeMem = 256 * 1024;
+				const int StackPointer = 256*1024-32;
 				const int StackSize = 8*1024;
 				int codeByteSize = _emittedCode.Length*4;
-				_specialSpeObjects.SetMemorySettings(StackSize, codeByteSize, TotalSpeMem - codeByteSize - StackSize);
+				_specialSpeObjects.SetMemorySettings(StackPointer, StackSize, codeByteSize, TotalSpeMem - codeByteSize - StackSize);
 
 				// We only need to write to the preferred slot.
 				_emittedCode[_specialSpeObjects.AllocatableByteCountObject.Offset/4] = _specialSpeObjects.AllocatableByteCount;
-				_emittedCode[_specialSpeObjects.AllocatableByteCountObject.Offset/4+1] = _specialSpeObjects.AllocatableByteCount;
-				_emittedCode[_specialSpeObjects.AllocatableByteCountObject.Offset/4+2] = _specialSpeObjects.AllocatableByteCount;
-				_emittedCode[_specialSpeObjects.AllocatableByteCountObject.Offset/4+3] = _specialSpeObjects.AllocatableByteCount;
 				_emittedCode[_specialSpeObjects.NextAllocationStartObject.Offset/4] = _specialSpeObjects.NextAllocationStart;
-				_emittedCode[_specialSpeObjects.NextAllocationStartObject.Offset/4+1] = _specialSpeObjects.NextAllocationStart;
-				_emittedCode[_specialSpeObjects.NextAllocationStartObject.Offset/4+2] = _specialSpeObjects.NextAllocationStart;
-				_emittedCode[_specialSpeObjects.NextAllocationStartObject.Offset/4+3] = _specialSpeObjects.NextAllocationStart;
-				_emittedCode[_specialSpeObjects.StackSizeObject.Offset/4] = _specialSpeObjects.StackSize;
+				_emittedCode[_specialSpeObjects.StackPointerObject.Offset/4] = _specialSpeObjects.StackPointer;
+				_emittedCode[_specialSpeObjects.StackPointerObject.Offset / 4 + 1] = _specialSpeObjects.StackSize;
+				// NOTE: SpuAbiUtilities.WriteProlog() is dependending on that the two larst words is >= stackSize.
+				_emittedCode[_specialSpeObjects.StackPointerObject.Offset / 4 + 2] = _specialSpeObjects.StackSize;
+				_emittedCode[_specialSpeObjects.StackPointerObject.Offset / 4 + 3] = _specialSpeObjects.StackSize;
 			}
 
 			State = CompileContextState.S7CodeEmitted;
@@ -478,7 +504,19 @@ namespace CellDotNet
 		public void WriteAssemblyToFile(string filename)
 		{
 			int[] code = GetEmittedCode();
+			List<ObjectWithAddress> symbols = new List<ObjectWithAddress>(GetAllObjectsForDisassembly());
+			WriteAssemblyToFile(filename, code, symbols);
+		}
 
+		/// <summary>
+		/// Writes the code to the file with instructions on how to compile it.
+		/// The executable should be ready for debugging with spu-gdb.
+		/// </summary>
+		/// <param name="filename"></param>
+		/// <param name="code"></param>
+		/// <param name="symbols"></param>
+		public static void WriteAssemblyToFile(string filename, int[] code, List<ObjectWithAddress> symbols)
+		{
 			using (StreamWriter writer = new StreamWriter(filename, false, Encoding.ASCII))
 			{
 				// Write the bytes and define main (which really is the initializer).
@@ -494,7 +532,6 @@ namespace CellDotNet
 main:
 ", Path.GetFileName(filename), Path.GetFileNameWithoutExtension(filename), DateTime.Now);
 
-				List<ObjectWithAddress> symbols = new List<ObjectWithAddress>(GetAllObjectsForDisassembly());
 				symbols.Sort(delegate(ObjectWithAddress x, ObjectWithAddress y) { return x.Offset - y.Offset; });
 				
 
@@ -517,7 +554,7 @@ main:
 							newname = encodedname + "$" + suffix;
 						} while (usedNames.Contains(encodedname));
 						encodedname = newname;
-					}
+	}
 
 					symbolsWithNames.Add(new KeyValuePair<ObjectWithAddress, string>(symbol, encodedname));
 				}
@@ -552,14 +589,14 @@ main:
 						nextSymIndex++;
 					}
 
-					writer.Write("  .int ");
+						writer.Write("  .int ");
 					for (int i = 0; i < wordsPerLine && wordOffset + i < code.Length; i++)
 					{
 						if (i > 0)
 							writer.Write(",  ");
 						uint inst = (uint) code[wordOffset + i];
 
-						writer.Write("0x" + inst.ToString("x8"));
+							writer.Write("0x" + inst.ToString("x8"));
 					}
 					writer.WriteLine();
 

@@ -313,9 +313,10 @@ namespace CellDotNet
 		{
 			AssertRegisterNotNull(rt, "rt");
 
-			SpuInstruction inst = new SpuInstruction(SpuOpCode.lqd);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.lqr);
 			inst.ObjectWithAddress = objectToLoad;
 			inst.Rt = rt;
+			AddInstruction(inst);
 		}
 
 		public VirtualRegister WriteLoad(ObjectWithAddress objectToLoad)
@@ -330,9 +331,10 @@ namespace CellDotNet
 		{
 			AssertRegisterNotNull(rt, "rt");
 
-			SpuInstruction inst = new SpuInstruction(SpuOpCode.stqd);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.stqr);
 			inst.ObjectWithAddress = target;
 			inst.Rt = rt;
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -354,6 +356,13 @@ namespace CellDotNet
 			LastInstruction.Constant = (int) stopCode;
 		}
 
+		public void WriteDebugStop(VirtualRegister r, ObjectWithAddress debugValueObject)
+		{
+			WriteStqr(r, debugValueObject);
+			WriteStop();
+			LastInstruction.Constant = (int)SpuStopCode.DebuggerBreakpoint;
+		}
+
 		/// <summary>
 		/// Pseudo instruction to load the integer into the register.
 		/// No other registers are used.
@@ -363,8 +372,7 @@ namespace CellDotNet
 		/// <returns></returns>
 		public void WriteLoadI4(VirtualRegister rt, int i)
 		{
-			// TODO overvej hvordan dette virker i forbindelse med signed extendet shifting.
-			if (i >> 16 == 0)
+			if (i >> 15 == 0)
 			{
 				WriteIl(rt, i);
 			}

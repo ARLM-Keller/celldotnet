@@ -17,6 +17,8 @@ namespace CellDotNet
 
 		private int maxInstNr = 0; // note første inst har nr = 1
 
+		private int maxRegNum = 0;
+
 		private int K; // antal af tilgængelige registre.
 
 //		private Dictionary<Node, SpuBasicBlock> nodeToBlockDic = new Dictionary<Node, SpuBasicBlock>();
@@ -86,16 +88,16 @@ namespace CellDotNet
 //		private Dictionary<uint, uint> alias = new Dictionary<uint, uint>();
 		private uint[] alias;
 
-		// maps from virtual reg to weight
-//		private Dictionary<uint, int> virtualRegisteWeight = new Dictionary<uint, int>();
-		private int[] virtualRegisteWeight;
-
+		// maps from virtual reg to weight. Is not cleared for each iteration.
+		private Dictionary<VirtualRegister, int> virtualRegisteWeight = new Dictionary<VirtualRegister, int>();
+//		private List<int> virtualRegisteWeight;
+//		private int[] virtualRegisteWeight;
 
 		private List<VirtualRegister> intToReg = new List<VirtualRegister>();
 		private Dictionary<VirtualRegister, uint> regToInt = new Dictionary<VirtualRegister, uint>();
 
-		private List<SpuInstruction> intToSpuInst = new List<SpuInstruction>(); //TODO init
-		private Dictionary<SpuInstruction, int> spuinstToInt = new Dictionary<SpuInstruction, int>(); // TODO init
+		private List<SpuInstruction> intToSpuInst = new List<SpuInstruction>();
+		private Dictionary<SpuInstruction, int> spuinstToInt = new Dictionary<SpuInstruction, int>();
 
 		public delegate int NewSpillOffsetDelegate();
 
@@ -130,7 +132,19 @@ namespace CellDotNet
 			}
 
 			initial = getInitialVirtualRegisters();
-			
+
+			foreach (uint r in initial)
+			{
+				maxRegNum = (int) r > maxRegNum ? (int) r : maxRegNum;
+				virtualRegisteWeight.Add(intToReg[(int) r], 0);
+			}
+
+			foreach (int r in precolored)
+			{
+				maxRegNum = r > maxRegNum ? r : maxRegNum;
+				virtualRegisteWeight.Add(intToReg[r], 0);
+			}
+
 			do
 			{
 				maxInstNr = 0;
@@ -174,18 +188,6 @@ namespace CellDotNet
 					}
 				}
 
-				int maxRegNum = 0;
-
-				foreach (uint r in initial)
-				{
-					maxRegNum = (int) r > maxRegNum ? (int) r : maxRegNum;
-				}
-
-				foreach (int r in precolored)
-				{
-					maxRegNum = r > maxRegNum ? r : maxRegNum;
-				}
-
 				moveList = new BitVector[maxRegNum + 1];
 				adjList = new BitVector[maxRegNum + 1];
 
@@ -204,8 +206,6 @@ namespace CellDotNet
 				degree = new int[maxRegNum+1];
 
 				color = new CellRegister[maxRegNum + 1];
-
-				virtualRegisteWeight = new int[maxRegNum+1];
 
 				alias = new uint[maxRegNum+1];
 
@@ -359,31 +359,47 @@ namespace CellDotNet
 				{
 					if (inst.Ra != null && !inst.Ra.IsRegisterSet)
 					{
-						regToInt[inst.Ra] = (uint)intToReg.Count;
-						intToReg.Add(inst.Ra);
+						uint val;
+						if(!regToInt.TryGetValue(inst.Ra, out val))
+						{
+							regToInt[inst.Ra] = (uint)intToReg.Count;
+							intToReg.Add(inst.Ra);
 
-						result.Add((int) regToInt[inst.Ra]);
+							result.Add((int)regToInt[inst.Ra]);
+						}
 					}
 					if (inst.Rb != null && !inst.Rb.IsRegisterSet)
 					{
-						regToInt[inst.Rb] = (uint)intToReg.Count;
-						intToReg.Add(inst.Rb);
+						uint val;
+						if (!regToInt.TryGetValue(inst.Rb, out val))
+						{
+							regToInt[inst.Rb] = (uint) intToReg.Count;
+							intToReg.Add(inst.Rb);
 
-						result.Add((int)regToInt[inst.Rb]);
+							result.Add((int) regToInt[inst.Rb]);
+						}
 					}
 					if (inst.Rc != null && !inst.Rc.IsRegisterSet)
 					{
-						regToInt[inst.Rc] = (uint)intToReg.Count;
-						intToReg.Add(inst.Rc);
+						uint val;
+						if (!regToInt.TryGetValue(inst.Rc, out val))
+						{
+							regToInt[inst.Rc] = (uint) intToReg.Count;
+							intToReg.Add(inst.Rc);
 
-						result.Add((int)regToInt[inst.Rc]);
+							result.Add((int) regToInt[inst.Rc]);
+						}
 					}
 					if (inst.Rt != null && !inst.Rt.IsRegisterSet)
 					{
-						regToInt[inst.Rt] = (uint)intToReg.Count;
-						intToReg.Add(inst.Rt);
+						uint val;
+						if (!regToInt.TryGetValue(inst.Rt, out val))
+						{
+							regToInt[inst.Rt] = (uint) intToReg.Count;
+							intToReg.Add(inst.Rt);
 
-						result.Add((int)regToInt[inst.Rt]);
+							result.Add((int) regToInt[inst.Rt]);
+						}
 					}
 
 					inst = inst.Next;
@@ -622,6 +638,15 @@ namespace CellDotNet
 				if (inst.Def != null)
 				{
 					live.Add((int) regToInt[inst.Def]);
+
+					if(inst.IsCall())
+						foreach (VirtualRegister register in HardwareRegister.CallerSavesVirtualRegisters)
+						{
+							live.Add((int) regToInt[register]);
+						}
+
+//						live.AndAll(new List<VirtualRegister>(HardwareRegister.CallerSavesVirtualRegisters));
+
 					foreach (int l in live)
 						AddEdge((uint) l, regToInt[inst.Def]);
 				}
@@ -915,7 +940,7 @@ namespace CellDotNet
 
 			foreach (uint register in spillWorklist)
 			{
-				if (virtualRegisteWeight[register] < 100)
+				if (virtualRegisteWeight[intToReg[(int) register]] < 100)
 				{
 					m = register;
 					spillWorklist.Remove(register);
@@ -1004,8 +1029,9 @@ namespace CellDotNet
 
 							regToInt[vt] = (uint)intToReg.Count;
 							intToReg.Add(vt);
+							maxRegNum++;
 
-							virtualRegisteWeight[regToInt[vt]] = int.MaxValue;
+							virtualRegisteWeight[vt] = int.MaxValue;
 							newTemps.Add(regToInt[vt]);
 
 							inst.Rt = vt;
@@ -1031,8 +1057,9 @@ namespace CellDotNet
 
 							regToInt[vt] = (uint)intToReg.Count;
 							intToReg.Add(vt);
+							maxRegNum++;
 
-							virtualRegisteWeight[regToInt[vt]] = int.MaxValue;
+							virtualRegisteWeight[vt] = int.MaxValue;
 							newTemps.Add(regToInt[vt]);
 
 							if (inst.Ra == v)
@@ -1074,8 +1101,12 @@ namespace CellDotNet
 					}
 				}
 			}
+
+			foreach (uint r in newTemps)
+			{
+				initial.AddLast(r);
+			}
+
 		}
 	}
-
-
 }

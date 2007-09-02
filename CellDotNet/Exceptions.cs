@@ -149,4 +149,16 @@ namespace CellDotNet
 		  StreamingContext context)
 			: base(info, context) { }
 	}
+
+	[Serializable]
+	public class SpeDebugException : SpeExecutionException
+	{
+		public SpeDebugException() { }
+		public SpeDebugException(string message) : base(message) { }
+		public SpeDebugException(string message, Exception inner) : base(message, inner) { }
+		protected SpeDebugException(
+		  SerializationInfo info,
+		  StreamingContext context)
+			: base(info, context) { }
+	}
 }

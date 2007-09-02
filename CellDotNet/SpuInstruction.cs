@@ -107,12 +107,17 @@ namespace CellDotNet
 			}
     	}
 
+		public bool IsCall()
+		{
+			return _opcode == SpuOpCode.brsl;
+		}
+
     	public List<VirtualRegister> Use
     	{
     		get
     		{
-				if (_opcode == SpuOpCode.brsl)
-					return new List<VirtualRegister>(HardwareRegister.CallerSavesVirtualRegisters);
+//				if (_opcode == SpuOpCode.brsl)
+//					return new List<VirtualRegister>(HardwareRegister.CallerSavesVirtualRegisters);
 
     			List<VirtualRegister> use = new List<VirtualRegister>();
 				if (Ra != null) use.Add(_ra);
