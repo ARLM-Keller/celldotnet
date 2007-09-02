@@ -409,7 +409,7 @@ namespace CellDotNet
 
 		private static void Execution<T>(ILWriter ilcode, T expetedValue) where T : struct
 		{
-			RegisterSizedObject returnAddressObject = new RegisterSizedObject();
+			RegisterSizedObject returnAddressObject = new RegisterSizedObject("ReturnObject");
 //			returnAddressObject.Offset = Utilities.Align16(0x1000);
 
 			IRTreeBuilder builder = new IRTreeBuilder();
@@ -442,17 +442,19 @@ namespace CellDotNet
 			SpecialSpeObjects specialSpeObjects = new SpecialSpeObjects();
 			specialSpeObjects.SetMemorySettings(256 * 1024 - 0x20, 8 * 1024 - 0x20, 128 * 1024, 118 * 1024);
 
-			spum.Writer.BeginNewBasicBlock();
-			SpuAbiUtilities.WriteProlog(2, spum.Writer, specialSpeObjects.StackOverflow);
+			spum.WriteProlog(2, specialSpeObjects.StackOverflow);
 
 			sel.GenerateCode(basicBlocks, par, spum.Writer);
+
+			spum.WriteEpilog();
 
 //			Console.WriteLine(spum.Writer.Disassemble());
 
 //			new Disassembler().Disassemble(new ObjectWithAddress[] {spum}, Console.Out);
 
 			// TODO Det håndteres muligvis ikke virtuelle moves i SimpleRegAlloc.
-			new SimpleRegAlloc().alloc(spum.Writer.BasicBlocks);
+			// NOTE: køre ikke på prolog og epilog.
+			new SimpleRegAlloc().alloc(spum.Writer.BasicBlocks.GetRange(1, spum.Writer.BasicBlocks.Count-2));
 
 //			Console.WriteLine(spum.Writer.Disassemble());
 
@@ -461,8 +463,6 @@ namespace CellDotNet
 //			Console.WriteLine(spum.Writer.Disassemble());
 
 			SpuInitializer spuinit = new SpuInitializer(spum, returnAddressObject, null, 0, specialSpeObjects.StackPointerObject);
-
-
 
 			List<ObjectWithAddress> objectsWithAddresss = new List<ObjectWithAddress>();
 
@@ -503,9 +503,9 @@ namespace CellDotNet
 			code[specialSpeObjects.StackPointerObject.Offset/4 + 2] = specialSpeObjects.StackSize;
 			code[specialSpeObjects.StackPointerObject.Offset/4 + 3] = specialSpeObjects.StackSize;
 
-			Disassembler.DisassembleToConsole(objectsWithAddresss);
+//			Disassembler.DisassembleToConsole(objectsWithAddresss);
 
-			CompileContext.WriteAssemblyToFile(Utilities.GetUnitTestName()+"_asm.s", code, objectsWithAddresss);
+//			CompileContext.WriteAssemblyToFile(Utilities.GetUnitTestName()+"_asm.s", code, objectsWithAddresss);
 
 			if (!SpeContext.HasSpeHardware)
 				return;

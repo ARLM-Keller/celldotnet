@@ -56,19 +56,24 @@ namespace CellDotNet
 			return Writer.GetAsList();
 		}
 
+		public void WriteProlog(int frameslots, SpuManualRoutine stackOverflow)
+		{
+			_writer.BeginNewBasicBlock();
+
+			SpuAbiUtilities.WriteProlog(frameslots, _writer, stackOverflow);
+		}
+
+		public void WriteEpilog()
+		{
+			_writer.BeginNewBasicBlock();
+
+			SpuAbiUtilities.WriteEpilog(_writer);
+		}
+
 		public override void PerformAddressPatching()
 		{
 			if (!_isPatchingDone)
-			{
-				if (_omitEpilog)
-					PerformAddressPatching(Writer.BasicBlocks, null);
-				else
-				{
-					Writer.BeginNewBasicBlock();
-					SpuAbiUtilities.WriteEpilog(Writer);
-					PerformAddressPatching(Writer.BasicBlocks, Writer.CurrentBlock);
-				}
-			}
+				PerformAddressPatching(Writer.BasicBlocks, Writer.CurrentBlock);
 			_isPatchingDone = true;
 		}
 	}
