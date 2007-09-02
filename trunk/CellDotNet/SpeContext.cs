@@ -559,6 +559,11 @@ namespace CellDotNet
 			return RunProgram(cc, code, arguments);
 		}
 
+		internal object RunProgram(CompileContext cc, params object[] arguments)
+		{
+			return RunProgram(cc, cc.GetEmittedCode(), arguments);
+		}
+
 		internal object RunProgram(CompileContext cc, int[] code, params object[] arguments)
 		{
 			// Run and load.

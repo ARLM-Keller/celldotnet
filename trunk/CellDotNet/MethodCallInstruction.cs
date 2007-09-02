@@ -64,7 +64,6 @@ namespace CellDotNet
 			{
 				param.BuildPreorder(list);
 			}
-//			base.BuildPreorder(list);
 		}
 
 		public override IEnumerable<TreeInstruction> GetChildInstructions()
@@ -80,6 +79,5 @@ namespace CellDotNet
 	{
 		None,
 		Runtime_Stop,
-
 	}
 }

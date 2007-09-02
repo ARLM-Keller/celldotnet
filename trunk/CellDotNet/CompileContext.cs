@@ -552,7 +552,7 @@ main:
 						nextSymIndex++;
 					}
 
-					const bool useKnownToWorkByteSyntax = false;
+					const bool useKnownToWorkByteSyntax = true;
 					if (useKnownToWorkByteSyntax)
 						writer.Write("  .byte ");
 					else

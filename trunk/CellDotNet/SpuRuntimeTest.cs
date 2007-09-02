@@ -10,6 +10,7 @@ namespace CellDotNet
 //		private delegate void SimpleDelegate();
 		private delegate int IntDelegate();
 
+		[Test]
 		public void TestStop()
 		{
 			const int magicnumber = 45;
