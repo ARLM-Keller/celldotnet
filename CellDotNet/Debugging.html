@@ -19,15 +19,15 @@
 	
 	<h3>Disassembly</h3>
 	<h4>Option 1</h4>
-	<p>Call Utilities.WriteAssemblyToFile() to dump a CompileContext to a assembler file with instructions on how to compile it.</p>
+	<p>Call SpeContext.WriteAssemblyToFile() to dump a CompileContext to a assembler file with instructions on how to compile it.</p>
 	<p>This also defines symbols that spu-gdb will use.</p>
+		<p>
+			Debug with DDD with the command "ddd --debugger spu-gdb &lt;compiled file name&gt;".</p>
 
 	<h4>Option 2</h4>
 	<p>
-		Currently, every time a program is run, the binary image is written to a file called
-		&lt;unit test method name&gt;.bin. This file can be converted to an ELF file which
-		can then be disassembled (and debugged).
-		<br />
+		This one is not so cool: It dumps a raw binary code file and converts it to a program.</p>
+		<p>
 		Create the following shell script which can perform the conversion:</p>
 		<pre class="code">#!/bin/sh
 
@@ -53,6 +53,6 @@ spu-gcc $1.o -o $1
 		<p>
 			To disassemble the file, calll "spu-objdump -D &lt;unit test method name&gt;".
 		</p>
-		<p><em>Update: The dumping is not automatic anymore.</em></p>
+		<p><em></em>&nbsp;</p>
 	</body>
 </html>
