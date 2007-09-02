@@ -529,6 +529,7 @@ namespace CellDotNet
   .section "".text""
   .globl main
   .type main, @function
+  .align 4
 main:
 ", Path.GetFileName(filename), Path.GetFileNameWithoutExtension(filename), DateTime.Now);
 
