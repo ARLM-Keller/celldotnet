@@ -40,8 +40,7 @@ namespace CellDotNet
 				delegate
 					{
 						int[] arr = new int[0];
-//						return arr.Length;
-						return 4;
+						return arr.Length;
 					};
 
 //			IntReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
@@ -50,11 +49,6 @@ namespace CellDotNet
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
-
-			cc.WriteAssemblyToFile(@"c:\temp\gen.s");
-
-			Disassembler.DisassembleToConsole(cc);
-
 
 			if (!SpeContext.HasSpeHardware)
 				return;
@@ -84,7 +78,6 @@ namespace CellDotNet
 			int val = del2();
 			AreEqual(5, val);
 		}
-
 
 		[Test]
 		public void TestArray_Int()
@@ -152,6 +145,45 @@ namespace CellDotNet
 
 			int retval = del2();
 			AreEqual(60, retval);
+		}
+
+		[Test]
+		public void TestArray_TmpTest()
+		{
+			const int MagicNumber = 0xbababa;
+			IntReturnDelegate del =
+				delegate
+				{
+					int[] arr = new int[10];
+					arr[0] = MagicNumber;
+					arr[1] = 20;
+					return arr[0];
+				};
+
+			CompileContext cc = new CompileContext(del.Method);
+
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			new TreeDrawer().DrawMethods(cc);
+
+			Disassembler.DisassembleToConsole(cc);
+
+			cc.WriteAssemblyToFile("TestArray_TmpTest_asm.s");
+
+			int[] code = cc.GetEmittedCode();
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			using (SpeContext ctx = new SpeContext())
+			{
+				ctx.LoadProgram(code);
+				ctx.Run();
+
+				int returnValue = ctx.DmaGetValue<int>(cc.ReturnValueAddress);
+
+				AreEqual(MagicNumber, returnValue, "");
+			}
 		}
 	}
 }

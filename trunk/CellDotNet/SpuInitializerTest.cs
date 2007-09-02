@@ -60,6 +60,42 @@ namespace CellDotNet
 
 			}
 		}
+
+		private delegate int SimpleDelegateTripelArg(int a, int b, int c);
+
+		private static int TestFuncTrippleArg(int a, int b, int c)
+		{
+			return a + b + c;
+		}
+
+
+		[Test]
+		public void TestArugments()
+		{
+			SimpleDelegateTripelArg del = TestFuncTrippleArg;
+
+
+			CompileContext cc = new CompileContext(del.Method);
+
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			int[] code = cc.GetEmittedCode();
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			using (SpeContext ctx = new SpeContext())
+			{
+				ctx.LoadProgram(code);
+				ctx.LoadArguments(cc, new object[]{1, 2, 3});
+				ctx.Run();
+
+				int returnValue = ctx.DmaGetValue<int>(cc.ReturnValueAddress);
+
+				AreEqual(6, returnValue, "Function call returned a wrong value.");
+			}
+
+		}
 	}
 }
 
