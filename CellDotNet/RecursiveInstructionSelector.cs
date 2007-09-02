@@ -772,6 +772,8 @@ namespace CellDotNet
 						else
 							throw new NotSupportedException("Element size of " + elementByteSize + " is not supported.");
 
+						_writer.WriteAi(bytesize, bytesize, 16); // makes rom for the arraysize.
+
 						// Subtract from available byte count.
 						{
 							VirtualRegister allocatableByteCount = _writer.WriteLoad(_specialSpeObjects.AllocatableByteCountObject);
@@ -790,9 +792,12 @@ namespace CellDotNet
 
 						// Increment the pointer for the next allocation.
 						{
-							_writer.WriteA(nextAllocAddress, nextAllocAddress, bytesize);
-							_writer.WriteStore(nextAllocAddress, _specialSpeObjects.NextAllocationStartObject);
+							VirtualRegister newNextAllocAddress = new VirtualRegister();
+							_writer.WriteA(newNextAllocAddress, nextAllocAddress, bytesize);
+							_writer.WriteStore(newNextAllocAddress, _specialSpeObjects.NextAllocationStartObject);
 						}
+						// make the arraypointer point to the first element.
+						_writer.WriteAi(array, array, 16);
 
 						// Initialize array length field.
 						_writer.WriteStqd(elementcount, array, -1);

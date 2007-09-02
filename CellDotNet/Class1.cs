@@ -25,9 +25,11 @@ namespace CellDotNet
 		{
 //			new ILOpCodeExecutionTest().TestRefArgumentTest();
 
-			new SpeContextTest().TestStackOverflow();
+//			new SpeContextTest().TestStackOverflow();
 
 //			new SpeContextTest().TestFirstCellProgram();
+
+			new ObjectModelTest().TestArray_TmpTest();
 
 			Console.WriteLine("Running RunKlaus done.");
 		}
