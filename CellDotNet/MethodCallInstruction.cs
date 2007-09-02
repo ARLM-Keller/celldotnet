@@ -28,11 +28,27 @@ namespace CellDotNet
 			Opcode = opcode;
 		}
 
-		public MethodCallInstruction(SpuIntrinsicFunction intrinsic)
+		private MethodInfo _intrinsicMethod;
+		/// <summary>
+		/// Intrinsic methods are exposed via this property so that the type deriver can do its job.
+		/// </summary>
+		public MethodInfo IntrinsicMethod
 		{
-			Utilities.AssertArgument(intrinsic != SpuIntrinsicFunction.None, "intrinsic != SpuIntrinsicFunction.None");
+			get { return _intrinsicMethod; }
+		}
+
+		/// <summary>
+		/// The reason that this ctor also takes the method as an argument is so that the type deriver
+		/// can do its job.
+		/// </summary>
+		/// <param name="intrinsic"></param>
+		/// <param name="method"></param>
+		public MethodCallInstruction(SpuIntrinsicMethod intrinsic, MethodInfo method)
+		{
+			Utilities.AssertArgument(intrinsic != SpuIntrinsicMethod.None, "intrinsic != SpuIntrinsicMethod.None");
 			Operand = intrinsic;
 			Opcode = IROpCodes.IntrinsicMethod;
+			_intrinsicMethod = method;
 		}
 
 		private List<TreeInstruction> _parameters = new List<TreeInstruction>();
@@ -60,7 +76,7 @@ namespace CellDotNet
 	/// <summary>
 	/// These values represents intrinsic functions.
 	/// </summary>
-	internal enum SpuIntrinsicFunction
+	internal enum SpuIntrinsicMethod
 	{
 		None,
 		Runtime_Stop,

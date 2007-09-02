@@ -72,10 +72,8 @@ namespace CellDotNet
 		/// <param name="inst"></param>
 		public void DeriveType(TreeInstruction inst)
 		{
-			TreeInstruction firstchild;
-			Utilities.TryGetFirst(inst.GetChildInstructions(), out firstchild);
-
 			StackTypeDescription t;
+
 			switch (inst.Opcode.FlowControl)
 			{
 				case FlowControl.Branch:
@@ -87,16 +85,14 @@ namespace CellDotNet
 						MethodCallInstruction mci = (MethodCallInstruction)inst;
 
 						foreach (TreeInstruction param in mci.Parameters)
-						{
 							DeriveType(param);
-						}
 
-						MethodInfo method = mci.Method as MethodInfo; // might be a constructor.
-						// TODO: Handle void type.
-						if (method != null && method.ReturnType != typeof(void))
-						{
+						MethodInfo method = mci.IntrinsicMethod;
+						if (method == null)
+							method = mci.Method as MethodInfo;  // might be a constructor.
+
+						if (method != null && method.ReturnType != typeof (void))
 							t = GetStackTypeDescription(method.ReturnType);
-						}
 						else
 							t = StackTypeDescription.None;
 					}
@@ -118,6 +114,8 @@ namespace CellDotNet
 					}
 					break;
 				case FlowControl.Return:
+					TreeInstruction firstchild;
+					Utilities.TryGetFirst(inst.GetChildInstructions(), out firstchild);
 					if (firstchild != null)
 						t = inst.Left.StackType;
 					else
@@ -129,7 +127,6 @@ namespace CellDotNet
 				default:
 					throw new ILSemanticErrorException("Invalid FlowControl: " + inst.Opcode.FlowControl);
 			}
-
 
 			inst.StackType = t;
 		}

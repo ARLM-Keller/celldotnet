@@ -193,6 +193,6 @@ namespace CellDotNet
 		// End of generated opcodes.
 
 		// Custom opcodes.
-		Intrinsic
+		IntrinsicMethodCall
 	}
 }

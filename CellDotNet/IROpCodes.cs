@@ -200,7 +200,7 @@ namespace CellDotNet
 		/// This is a custom opcode that may be used with <see cref="MethodCallInstruction"/> to
 		/// signal that the method is an intrinsic method.
 		/// </summary>
-		public static readonly IROpCode IntrinsicMethod = new IROpCode("_intrinsic_method", IRCode.Intrinsic, FlowControl.Call, null);
+		public static readonly IROpCode IntrinsicMethod = new IROpCode("_intrinsic_method", IRCode.IntrinsicMethodCall, FlowControl.Call, null);
 	}
 
 }

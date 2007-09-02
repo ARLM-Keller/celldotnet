@@ -11,7 +11,7 @@ namespace CellDotNet
 		/// <summary>
 		/// Immediately stops execution without throwing an exception.
 		/// </summary>
-		[IntrinsicMethod(SpuIntrinsicFunction.Runtime_Stop)]
+		[IntrinsicMethod(SpuIntrinsicMethod.Runtime_Stop)]
 		public static void Stop()
 		{
 			throw new InvalidOperationException();

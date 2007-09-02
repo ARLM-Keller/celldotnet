@@ -131,21 +131,23 @@ namespace CellDotNet
 
 
 			// Assert that vrleft and vrright are not null if the opcode requires them not to be.
-			switch (inst.Opcode.GetPopBehavior())
+			if (inst.Opcode.ReflectionOpCode != null)
 			{
-				case PopBehavior.Pop0:
-					Utilities.Assert(vrleft == null && vrright == null, "vrleft == null && vrright == null");
-					break;
-				case PopBehavior.Pop1:
-					Utilities.Assert(vrleft != null && vrright == null, "vrleft != null && vrright == null");
-					break;
-				case PopBehavior.Pop2:
-					Utilities.Assert(vrleft != null && vrright != null, "vrleft == null && vrright == null");
-					break;
-				case PopBehavior.Pop3:
-					throw new InvalidIRTreeException("PopBehavior.Pop3");
+				switch (IROpCode.GetPopBehavior(inst.Opcode.ReflectionOpCode.Value.StackBehaviourPop))
+				{
+					case PopBehavior.Pop0:
+						Utilities.Assert(vrleft == null && vrright == null, "vrleft == null && vrright == null");
+						break;
+					case PopBehavior.Pop1:
+						Utilities.Assert(vrleft != null && vrright == null, "vrleft != null && vrright == null");
+						break;
+					case PopBehavior.Pop2:
+						Utilities.Assert(vrleft != null && vrright != null, "vrleft == null && vrright == null");
+						break;
+					case PopBehavior.Pop3:
+						throw new InvalidIRTreeException("PopBehavior.Pop3");
+				}
 			}
-
 
 			IRCode ilcode = inst.Opcode.IRCode;
 			StackTypeDescription lefttype = inst.Left != null ? inst.Left.StackType : StackTypeDescription.None;
@@ -176,6 +178,11 @@ namespace CellDotNet
 					break;
 				case IRCode.Jmp:
 					break;
+				case IRCode.IntrinsicMethodCall:
+					{
+						MethodCallInstruction callInst = (MethodCallInstruction)inst;
+						return GenerateIntrinsicMethod(_writer, (SpuIntrinsicMethod)callInst.Operand);
+					}
 				case IRCode.Call:
 					{
 						MethodCallInstruction callInst = (MethodCallInstruction) inst;
@@ -1057,6 +1064,18 @@ namespace CellDotNet
 
 			_unimplementedOpCodes.Add(inst.Opcode);
 			return new VirtualRegister(-1);
+		}
+
+		private static VirtualRegister GenerateIntrinsicMethod(SpuInstructionWriter writer, SpuIntrinsicMethod method)
+		{
+			switch (method)
+			{
+				case SpuIntrinsicMethod.Runtime_Stop:
+					writer.WriteStop();
+					return null;
+				default:
+					throw new ArgumentException();
+			}
 		}
 
 		private void WriteUnconditionalBranch(SpuOpCode branchopcode, IRBasicBlock target)
