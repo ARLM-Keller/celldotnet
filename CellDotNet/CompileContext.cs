@@ -479,7 +479,7 @@ namespace CellDotNet
 		{
 			int[] code = GetEmittedCode();
 
-			using (StreamWriter writer = new StreamWriter(filename, false, Encoding.UTF8))
+			using (StreamWriter writer = new StreamWriter(filename, false, Encoding.ASCII))
 			{
 				// Write the bytes and define main (which really is the initializer).
 				writer.Write(@"
@@ -552,26 +552,14 @@ main:
 						nextSymIndex++;
 					}
 
-					const bool useKnownToWorkByteSyntax = true;
-					if (useKnownToWorkByteSyntax)
-						writer.Write("  .byte ");
-					else
-						writer.Write("  .int ");
+					writer.Write("  .int ");
 					for (int i = 0; i < wordsPerLine && wordOffset + i < code.Length; i++)
 					{
 						if (i > 0)
 							writer.Write(",  ");
 						uint inst = (uint) code[wordOffset + i];
 
-						if (useKnownToWorkByteSyntax)
-						{
-							writer.Write("0x" + ((byte)(inst >> 24)).ToString("x2"));
-							writer.Write(", 0x" + ((byte)(inst >> 16)).ToString("x2"));
-							writer.Write(", 0x" + ((byte)(inst >> 8)).ToString("x2"));
-							writer.Write(", 0x" + ((byte)(inst >> 0)).ToString("x2"));
-						}
-						else 
-							writer.Write("0x" + inst.ToString("x8"));
+						writer.Write("0x" + inst.ToString("x8"));
 					}
 					writer.WriteLine();
 
