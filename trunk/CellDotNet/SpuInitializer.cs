@@ -11,9 +11,9 @@ namespace CellDotNet
 		private SpuInstructionWriter _writer = new SpuInstructionWriter();
 		private bool _isPatched;
 
-		public SpuInitializer(ObjectWithAddress initialMethod, RegisterSizedObject returnValueLocation)
-			: this(initialMethod, returnValueLocation, null)
-		{ }
+//		public SpuInitializer(ObjectWithAddress initialMethod, RegisterSizedObject returnValueLocation)
+//			: this(initialMethod, returnValueLocation, null)
+//		{ }
 
 		/// <summary>
 		/// The argument is of type <see cref="ObjectWithAddress"/> so that testing doesn't
@@ -22,36 +22,37 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="initialMethod"></param>
 		/// <param name="returnValueLocation">The location where the return value should be placed. Null is ok.</param>
-		/// <param name="stackSizeObject">The object that will hold the stack size. Null is ok.</param>
+		/// <param name="argumentValueLocation"></param>
+		/// <param name="argumentcount"></param>
+		/// <param name="stackPointerObject">The object that will hold the stack pointer.</param>
 		public SpuInitializer(ObjectWithAddress initialMethod, RegisterSizedObject returnValueLocation, 
-			RegisterSizedObject stackSizeObject)
+			ObjectWithAddress argumentValueLocation, int argumentcount,
+			RegisterSizedObject stackPointerObject)
 			: base("SpuInitializer")
 		{
+			Utilities.AssertNotNull(stackPointerObject, "stackPointerObject");
+
 			_writer.BeginNewBasicBlock();
 
-			// Initialize stack pointer to two qwords below ls top.
-			_writer.WriteLoadI4(HardwareRegister.SP, (256 * 1024) - 0x20);
+//			// Initialize second word of SP with the stack size.
+//			VirtualRegister stackSizeReg = HardwareRegister.GetHardwareRegister(75);
 
-			// Initialize second word of SP with the stack size.
-			if (stackSizeObject != null)
-			{
-				VirtualRegister stackSizeReg = HardwareRegister.GetHardwareRegister(77);
-				VirtualRegister zeroValReg = HardwareRegister.GetHardwareRegister(75);
-				VirtualRegister controlReg = HardwareRegister.GetHardwareRegister(76);
+			// Load stack pointer(including stacksize).
+			_writer.WriteLoad(HardwareRegister.SP, stackPointerObject);
 
-				// Load stack size.
-				_writer.WriteLoad(stackSizeReg, stackSizeObject);
+//			// Load stack size.
+//			_writer.WriteLoad(stackSizeReg, stackSizeObject);
 
-				// Merge the stack size into second word of SP.
-				_writer.WriteLoadI4(zeroValReg, 0);
-				_writer.WriteCwd(controlReg, zeroValReg, 4);
-				_writer.WriteShufb(HardwareRegister.SP, stackSizeReg, HardwareRegister.SP, controlReg);
-			}
+//			// Merge the stack size into second word of SP.
+//			_writer.WriteOr(HardwareRegister.SP, HardwareRegister.SP, stackSizeReg);
 
 			// Store zero to Back Chain.
 			VirtualRegister zeroreg = HardwareRegister.GetHardwareRegister(75);
 			_writer.WriteLoadI4(zeroreg, 0);
 			_writer.WriteStqd(zeroreg, HardwareRegister.SP, 0);
+
+			for (int i = 0; i < argumentcount; i++)
+				_writer.WriteLoad(HardwareRegister.GetVirtualHardwareRegister((CellRegister)i+3), new ObjectOffset(argumentValueLocation, i*16));
 
 			// Branch to method and set LR.
 			_writer.WriteBranchAndSetLink(SpuOpCode.brsl, initialMethod);

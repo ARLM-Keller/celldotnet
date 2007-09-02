@@ -410,7 +410,7 @@ namespace CellDotNet
 		private static void Execution<T>(ILWriter ilcode, T expetedValue) where T : struct
 		{
 			RegisterSizedObject returnAddressObject = new RegisterSizedObject();
-			returnAddressObject.Offset = Utilities.Align16(0x1000);
+//			returnAddressObject.Offset = Utilities.Align16(0x1000);
 
 			IRTreeBuilder builder = new IRTreeBuilder();
 			List<MethodVariable> vars = new List<MethodVariable>();
@@ -437,10 +437,13 @@ namespace CellDotNet
 
 			ReadOnlyCollection<MethodParameter> par = new ReadOnlyCollection<MethodParameter>(new List<MethodParameter>());
 
-			SpuManualRoutine spum = new SpuManualRoutine(false);
+			SpuManualRoutine spum = new SpuManualRoutine(false, "opcodetester");
+
+			SpecialSpeObjects specialSpeObjects = new SpecialSpeObjects();
+			specialSpeObjects.SetMemorySettings(256 * 1024 - 0x20, 8 * 1024 - 0x20, 128 * 1024, 118 * 1024);
 
 			spum.Writer.BeginNewBasicBlock();
-			SpuAbiUtilities.WriteProlog(2, spum.Writer);
+			SpuAbiUtilities.WriteProlog(2, spum.Writer, specialSpeObjects.StackOverflow);
 
 			sel.GenerateCode(basicBlocks, par, spum.Writer);
 
@@ -457,18 +460,52 @@ namespace CellDotNet
 
 //			Console.WriteLine(spum.Writer.Disassemble());
 
-			spum.Offset = 1024;
-			// This also creates an epilog.
-			spum.PerformAddressPatching();
+			SpuInitializer spuinit = new SpuInitializer(spum, returnAddressObject, null, 0, specialSpeObjects.StackPointerObject);
 
-			SpuInitializer spuinit = new SpuInitializer(spum, returnAddressObject);
-			spuinit.Offset = 0;
-			spuinit.PerformAddressPatching();
 
-			int[] code = new int[1024];
+
+			List<ObjectWithAddress> objectsWithAddresss = new List<ObjectWithAddress>();
+
+			objectsWithAddresss.Add(spuinit);
+			objectsWithAddresss.Add(spum);
+			objectsWithAddresss.AddRange(specialSpeObjects.GetAll());
+			objectsWithAddresss.Add(returnAddressObject);
+
+			int codeByteSize = CompileContext.LayoutObjects(objectsWithAddresss);
+
+//			spum.Offset = 1024;
+//			spuinit.Offset = 0;
+//			spum.PerformAddressPatching();
+//			spuinit.PerformAddressPatching();
+
+			foreach (ObjectWithAddress o in objectsWithAddresss)
+			{
+				SpuRoutine routine = o as SpuRoutine;
+				if(routine != null)
+					routine.PerformAddressPatching();
+			}
+
+			int[] code = new int[codeByteSize/4];
 			CompileContext.CopyCode(code, new SpuRoutine[] { spuinit, spum });
 
-//			Disassembler.DisassembleToConsole(new ObjectWithAddress[] { spuinit, spum, returnAddressObject });
+			const int TotalSpeMem = 256*1024;
+			const int StackPointer = 256*1024 - 32;
+			const int StackSize = 8*1024;
+			specialSpeObjects.SetMemorySettings(StackPointer, StackSize, codeByteSize, TotalSpeMem - codeByteSize - StackSize);
+
+			// We only need to write to the preferred slot.
+			code[specialSpeObjects.AllocatableByteCountObject.Offset/4] = specialSpeObjects.AllocatableByteCount;
+			code[specialSpeObjects.NextAllocationStartObject.Offset/4] = specialSpeObjects.NextAllocationStart;
+
+			code[specialSpeObjects.StackPointerObject.Offset/4] = specialSpeObjects.StackPointer;
+			code[specialSpeObjects.StackPointerObject.Offset/4 + 1] = specialSpeObjects.StackSize;
+			// NOTE: SpuAbiUtilities.WriteProlog() is dependending on that the two larst words is >= stackSize.
+			code[specialSpeObjects.StackPointerObject.Offset/4 + 2] = specialSpeObjects.StackSize;
+			code[specialSpeObjects.StackPointerObject.Offset/4 + 3] = specialSpeObjects.StackSize;
+
+			Disassembler.DisassembleToConsole(objectsWithAddresss);
+
+			CompileContext.WriteAssemblyToFile(Utilities.GetUnitTestName()+"_asm.s", code, objectsWithAddresss);
 
 			if (!SpeContext.HasSpeHardware)
 				return;

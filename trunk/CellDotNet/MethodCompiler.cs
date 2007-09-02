@@ -449,7 +449,7 @@ namespace CellDotNet
 			// First/topmost caller-saves register caller SP slot offset.
 //			int first_GRSA_slot_offset = -(RASA_slots + 1);
 
-			SpuAbiUtilities.WriteProlog(frameSlots, prolog);
+			SpuAbiUtilities.WriteProlog(frameSlots, prolog, _specialSpeObjects != null ? _specialSpeObjects.StackOverflow : null);
 		}
 
 		/// <summary>

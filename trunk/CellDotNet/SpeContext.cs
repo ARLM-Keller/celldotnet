@@ -296,7 +296,13 @@ namespace CellDotNet
 			get { return _localStorageSize; }
 		}
 
+		private RegisterSizedObject _debugValueObject;
 
+		public RegisterSizedObject DebugValueObject
+		{
+			set {_debugValueObject = value; }
+			get { return _debugValueObject;}
+		}
 
 		enum SpeContextCreateFlags
 		{
@@ -535,6 +541,9 @@ namespace CellDotNet
 			if (rc < 0)
 				throw new LibSpeException("spe_context_run failed. Return code:" + rc);
 
+			Utilities.DumpMemory(this, (LocalStorageAddress) 0, 1024, Console.Out);  //DEBUG
+
+
 			switch (stopinfo.SignalCode)
 			{
 				case SpuStopCode.None:
@@ -545,6 +554,16 @@ namespace CellDotNet
 					throw new SpeOutOfMemoryException();
 				case SpuStopCode.StackOverflow:
 					throw new SpeStackOverflowException();
+				case SpuStopCode.DebuggerBreakpoint:
+					if (_debugValueObject != null)
+					{
+						throw new SpeDebugException("Debug breakpoint. Debug value: "
+							+ DmaGetValue<int>((LocalStorageAddress)_debugValueObject.Offset));
+					}
+					else
+					{
+						throw new SpeDebugException("Debug breakpoint.");
+					}
 				default:
 					throw new SpeExecutionException("An error occurred during execution. The error code is: " + (SpuStopCode)stopinfo.SignalCode);
 			}
@@ -569,6 +588,7 @@ namespace CellDotNet
 			// Run and load.
 			LoadProgram(code);
 			LoadArguments(cc, arguments);
+			DebugValueObject = cc.DebugValueObject;
 			Run();
 
 			// Get return value.
@@ -600,6 +620,8 @@ namespace CellDotNet
 				DmaPutValue(argAddress, (ValueType) val);
 			}
 		}
+
+
 
 		public SpeControlArea GetControlArea()
 		{

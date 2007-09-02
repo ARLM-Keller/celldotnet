@@ -245,6 +245,17 @@ namespace CellDotNet
 			return true;
 		}
 
+		public override string ToString()
+		{
+			String result = "";
+
+			foreach (int i in this)
+			{
+				result = result + " " + i;
+			}
+			return result;
+		}
+
 		IEnumerator<int> IEnumerable<int>.GetEnumerator()
 		{
 			return new Enumerator(this);
