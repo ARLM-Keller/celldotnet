@@ -20,7 +20,7 @@ namespace CellDotNet
 		}
 
 		static private object s_lock = new object();
-		static private Dictionary<MethodKey, SpuIntrinsicFunction> s_map;
+		static private Dictionary<MethodKey, SpuIntrinsicMethod> s_map;
 
 
 		public IntrinsicsManager()
@@ -32,14 +32,14 @@ namespace CellDotNet
 			}
 		}
 
-		public bool TryGetIntrinsic(MethodInfo method, out SpuIntrinsicFunction intrinsic)
+		public bool TryGetIntrinsic(MethodInfo method, out SpuIntrinsicMethod intrinsic)
 		{
 			return s_map.TryGetValue(new MethodKey(method), out intrinsic);
 		}
 
 		static private void ConstructIntrinsicsMap()
 		{
-			Dictionary<MethodKey, SpuIntrinsicFunction> map = new Dictionary<MethodKey, SpuIntrinsicFunction>();
+			Dictionary<MethodKey, SpuIntrinsicMethod> map = new Dictionary<MethodKey, SpuIntrinsicMethod>();
 
 			Type[] typesWithIntrinsics = new Type[] { typeof(Dma), typeof(SpuRuntime) };
 			foreach (Type type in typesWithIntrinsics)

@@ -425,11 +425,11 @@ namespace CellDotNet
 			else
 				pushcount = 0;
 
-			SpuIntrinsicFunction intrinsic;
+			SpuIntrinsicMethod intrinsic;
 			MethodCallInstruction mci;
 			if (methodinfo != null && _intrinsics.TryGetIntrinsic(methodinfo, out intrinsic))
 			{
-				mci = new MethodCallInstruction(intrinsic);
+				mci = new MethodCallInstruction(intrinsic, methodinfo);
 			}
 			else
 			{

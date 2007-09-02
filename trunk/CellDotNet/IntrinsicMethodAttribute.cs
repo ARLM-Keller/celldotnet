@@ -10,9 +10,9 @@ namespace CellDotNet
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 	class IntrinsicMethodAttribute : Attribute
 	{
-		public readonly SpuIntrinsicFunction Intrinsic;
+		public readonly SpuIntrinsicMethod Intrinsic;
 
-		public IntrinsicMethodAttribute(SpuIntrinsicFunction intrinsic)
+		public IntrinsicMethodAttribute(SpuIntrinsicMethod intrinsic)
 		{
 			Intrinsic = intrinsic;
 		}

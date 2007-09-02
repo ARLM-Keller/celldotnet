@@ -42,6 +42,9 @@ namespace CellDotNet
 		}
 
 		private OpCode? _reflectionOpCode;
+		/// <summary>
+		/// The IL opcode that this IR opcode is based upon, if any.
+		/// </summary>
 		public OpCode? ReflectionOpCode
 		{
 			get { return _reflectionOpCode; }
@@ -61,14 +64,6 @@ namespace CellDotNet
 			_irCode = irCode;
 
 			Utilities.PretendVariableIsUsed(DebuggerDisplay);
-		}
-
-		public PopBehavior GetPopBehavior()
-		{
-			if (_reflectionOpCode == null)
-				throw new InvalidOperationException("_reflectionOpCode == null");
-
-			return GetPopBehavior(_reflectionOpCode.Value.StackBehaviourPop);
 		}
 
 		public static PopBehavior GetPopBehavior(StackBehaviour stackBehaviourPop)

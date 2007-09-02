@@ -7,7 +7,7 @@ namespace CellDotNet
 	[TestFixture]
 	public class SpuRunTimeTest : UnitTest
 	{
-		private delegate void SimpleDelegate();
+//		private delegate void SimpleDelegate();
 		private delegate int IntDelegate();
 
 		public void TestStop()
@@ -22,6 +22,7 @@ namespace CellDotNet
 			CompileContext cc = new CompileContext(del.Method);
 
 			cc.PerformProcessing(CompileContextState.S8Complete);
+			// Stop is an intrinsic.
 			AreEqual(1, cc.Methods.Count);
 
 			if (!SpeContext.HasSpeHardware)
@@ -30,7 +31,8 @@ namespace CellDotNet
 			using (SpeContext sc = new SpeContext())
 			{
 				object rv = sc.RunProgram(cc, cc.GetEmittedCode());
-				IsNull(rv);
+				// The return value shouldn't have made it to $3.
+				AreEqual(0, (int) rv);
 			}
 		}
 	}
