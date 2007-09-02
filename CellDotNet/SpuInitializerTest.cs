@@ -20,6 +20,7 @@ namespace CellDotNet
 			routine.Writer.BeginNewBasicBlock();
 			routine.Writer.WriteLoadI4(HardwareRegister.GetHardwareRegister(3), magicnum);
 			routine.Writer.WriteBi(HardwareRegister.LR);
+			routine.WriteEpilog();
 			routine.Offset = 512;
 
 			RegisterSizedObject returnLocation = new RegisterSizedObject();

@@ -541,9 +541,6 @@ namespace CellDotNet
 			if (rc < 0)
 				throw new LibSpeException("spe_context_run failed. Return code:" + rc);
 
-			Utilities.DumpMemory(this, (LocalStorageAddress) 0, 1024, Console.Out);  //DEBUG
-
-
 			switch (stopinfo.SignalCode)
 			{
 				case SpuStopCode.None:
