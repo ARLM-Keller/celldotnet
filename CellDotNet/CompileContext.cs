@@ -534,16 +534,20 @@ main:
 ", Path.GetFileName(filename), Path.GetFileNameWithoutExtension(filename), DateTime.Now);
 
 				symbols.Sort(delegate(ObjectWithAddress x, ObjectWithAddress y) { return x.Offset - y.Offset; });
-				
+
 
 				// We don't want duplicate names.
 				Set<string> usedNames = new Set<string>(symbols.Count);
 				List<KeyValuePair<ObjectWithAddress, string>> symbolsWithNames = new List<KeyValuePair<ObjectWithAddress, string>>();
 				foreach (ObjectWithAddress symbol in symbols)
 				{
+					if (string.IsNullOrEmpty(symbol.Name))
+						throw new ArgumentException("Object with offset " + symbol.Offset.ToString("x") + " has no name.");
+
 					// Anonymous methods contains '<' and '>' in their name.
 					string encodedname = symbol.Name;
 					encodedname = encodedname.Replace("<", "").Replace('>', '$');
+
 
 					if (usedNames.Contains(encodedname))
 					{
@@ -555,7 +559,7 @@ main:
 							newname = encodedname + "$" + suffix;
 						} while (usedNames.Contains(encodedname));
 						encodedname = newname;
-	}
+					}
 
 					symbolsWithNames.Add(new KeyValuePair<ObjectWithAddress, string>(symbol, encodedname));
 				}
