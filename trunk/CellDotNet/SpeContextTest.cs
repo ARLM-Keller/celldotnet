@@ -194,12 +194,10 @@ namespace CellDotNet
 
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			new TreeDrawer().DrawMethods(cc);
-
-			Disassembler.DisassembleToConsole(cc);
+//			new TreeDrawer().DrawMethods(cc);
+//			Disassembler.DisassembleToConsole(cc);
 
 			int[] code = cc.GetEmittedCode();
-
 
 			if (!SpeContext.HasSpeHardware)
 				throw new SpeStackOverflowException();
@@ -216,6 +214,66 @@ namespace CellDotNet
 				int returnValue = ctx.DmaGetValue<int>(cc.ReturnValueAddress);
 
 				Console.WriteLine("Resultat {0}", returnValue);
+			}
+		}
+
+		private static void OutOfMemory()
+		{
+			int[] arraya = new int[32 * 1024];
+			int[] arrayb = new int[16 * 1024];
+			int[] arrayc = new int[32 * 1024];
+			Utilities.PretendVariableIsUsed(arraya);
+			Utilities.PretendVariableIsUsed(arrayb);
+			Utilities.PretendVariableIsUsed(arrayc);
+		}
+
+		private static void NotOutOfMemory()
+		{
+			int[] arraya = new int[32 * 1024];
+			int[] arrayb = new int[16 * 1024];
+			Utilities.PretendVariableIsUsed(arraya);
+			Utilities.PretendVariableIsUsed(arrayb);
+		}
+
+		[Test, ExpectedException(typeof(SpeOutOfMemoryException))]
+		public void TestOutOfMemory()
+		{
+			BasicTestDelegate del = OutOfMemory;
+
+			CompileContext cc = new CompileContext(del.Method);
+
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			int[] code = cc.GetEmittedCode();
+
+			if (!SpeContext.HasSpeHardware)
+				throw new SpeStackOverflowException();
+
+			using (SpeContext ctx = new SpeContext())
+			{
+				ctx.LoadProgram(code);
+				ctx.Run();
+			}
+		}
+
+		[Test]
+		public void TestNotOutOfMemory()
+		{
+			BasicTestDelegate del = NotOutOfMemory;
+
+			CompileContext cc = new CompileContext(del.Method);
+
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			int[] code = cc.GetEmittedCode();
+
+			if (!SpeContext.HasSpeHardware)
+				throw new SpeStackOverflowException();
+
+			using (SpeContext ctx = new SpeContext())
+			{
+				ctx.LoadProgram(code);
+				ctx.Run();
 			}
 		}
 

@@ -146,47 +146,5 @@ namespace CellDotNet
 			int retval = del2();
 			AreEqual(60, retval);
 		}
-
-		[Test]
-		public void TestArray_TmpTest()
-		{
-			const int MagicNumber = 0xbababa;
-			IntReturnDelegate del =
-				delegate
-				{
-					// Check that arr2 doesn't overwrite arr1.
-					int[] arr1 = new int[1];
-					arr1[0] = MagicNumber;
-					int[] arr2 = new int[1];
-					arr2[0] = 50;
-
-					return arr1[0];
-				};
-
-			CompileContext cc = new CompileContext(del.Method);
-
-			cc.PerformProcessing(CompileContextState.S8Complete);
-
-			new TreeDrawer().DrawMethods(cc);
-
-			Disassembler.DisassembleToConsole(cc);
-
-			cc.WriteAssemblyToFile("TestArray_TmpTest_asm.s");
-
-			int[] code = cc.GetEmittedCode();
-
-			if (!SpeContext.HasSpeHardware)
-				return;
-
-			using (SpeContext ctx = new SpeContext())
-			{
-				ctx.LoadProgram(code);
-				ctx.Run();
-
-				int returnValue = ctx.DmaGetValue<int>(cc.ReturnValueAddress);
-
-				AreEqual(MagicNumber, returnValue, "");
-			}
-		}
 	}
 }
