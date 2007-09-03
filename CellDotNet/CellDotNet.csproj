@@ -50,7 +50,6 @@
     <Compile Include="DataObject.cs" />
     <Compile Include="Disassembler.cs" />
     <Compile Include="DisassemblerTest.cs" />
-    <Compile Include="Dma.cs" />
     <Compile Include="FlowGraph.cs" />
     <Compile Include="Graph.cs" />
     <Compile Include="GraphTest.cs" />
@@ -80,6 +79,7 @@
     <Compile Include="CliType.cs" />
     <Compile Include="LiveInterval.cs" />
     <Compile Include="MethodCallInstruction.cs" />
+    <Compile Include="Mfc.cs" />
     <Compile Include="ObjectModelTest.cs" />
     <Compile Include="ObjectOffset.cs" />
     <Compile Include="ObjectWithAddress.cs" />

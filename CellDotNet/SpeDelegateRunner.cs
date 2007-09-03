@@ -61,6 +61,8 @@ namespace CellDotNet
 			_compileContext = new CompileContext(method);
 			_compileContext.PerformProcessing(CompileContextState.S8Complete);
 			_spuCode = _compileContext.GetEmittedCode();
+
+			_compileContext.WriteAssemblyToFile((Utilities.GetUnitTestName() ?? "dump") + ".s");
 		}
 
 		private void CreateWrapperDelegate(Delegate del, MethodInfo method)

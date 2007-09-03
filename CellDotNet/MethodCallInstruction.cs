@@ -79,5 +79,7 @@ namespace CellDotNet
 	{
 		None,
 		Runtime_Stop,
+
+		Mfc_GetAvailableQueueEntries,
 	}
 }

@@ -189,6 +189,8 @@ namespace CellDotNet
 					return _opcode.OpCode | ((_constant & 0x3ffff) << 7) | (int)_rt.Register;
 				case SpuInstructionFormat.RI8:
 					return _opcode.OpCode | ((_constant & 0xff) << 14) | ((int)_ra.Register << 7) | (int)_rt.Register;
+				case SpuInstructionFormat.Channel:
+					return _opcode.OpCode | ((_constant & 0x3f) << 7) | (int)_rt.Register;
 				case SpuInstructionFormat.WEIRD:
 					return _opcode.OpCode | _constant;
 				default:

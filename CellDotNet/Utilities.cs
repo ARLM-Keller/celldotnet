@@ -32,7 +32,7 @@ namespace CellDotNet
 					return m.Name;
 				}
 			}
-			return "";
+			return null;
 		}
 
 		static public void AssertArgument(bool condition, string message)
