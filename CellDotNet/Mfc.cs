@@ -19,24 +19,16 @@ namespace CellDotNet
 			throw new InvalidOperationException();
 		}
 
-//		static unsafe public void Put(void *ls, int ea, int size, tag, tid, rid)
-//		{
-//			
-//		}
-//
-//		private static unsafe void MfcDma32(void* ls, uint ea, uint size, uint tagid, uint cmd)
-//		{
-//			si_wrch(MFC_LSA, si_from_ptr(ls));
-//			si_wrch(MFC_EAL, si_from_uint(ea));
-//			si_wrch(MFC_Size, si_from_uint(size));
-//			si_wrch(MFC_TagID, si_from_uint(tagid));
-//			si_wrch(MFC_Cmd, si_from_uint(cmd));
-//		}
-
-
-		static int CreateMfcCommand(int _tid, int _rid, int _cmd)
+		[IntrinsicMethod(SpuIntrinsicMethod.Mfc_Put)]
+		static unsafe public void Put(void *ls, int ea, int size, uint tag, uint tid, uint rid)
 		{
-			return (((_tid) << 24) | ((_rid) << 16) | (_cmd));
+			throw new InvalidOperationException();			
+		}
+
+		[IntrinsicMethod(SpuIntrinsicMethod.Mfc_Get)]
+		static unsafe public void Get(void* ls, int ea, int size, uint tag, uint tid, uint rid)
+		{
+			throw new InvalidOperationException();
 		}
 	}
 }

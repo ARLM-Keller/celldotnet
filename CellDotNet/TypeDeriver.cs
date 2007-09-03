@@ -512,7 +512,7 @@ namespace CellDotNet
 		/// Computation is done according to table 2 and table 7 in the CIL spec plus intuition.
 		/// </summary>
 		/// <returns></returns>
-		private static StackTypeDescription GetNumericResultType(StackTypeDescription tleft, StackTypeDescription tright)
+		internal static StackTypeDescription GetNumericResultType(StackTypeDescription tleft, StackTypeDescription tright)
 		{
 			// We are relying on the fact that the enumeration values are sorted by size.
 			if (tleft.CliBasicType == tright.CliBasicType)

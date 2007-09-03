@@ -81,5 +81,8 @@ namespace CellDotNet
 		Runtime_Stop,
 
 		Mfc_GetAvailableQueueEntries,
+		MfcGet,
+		Mfc_Put,
+		Mfc_Get
 	}
 }

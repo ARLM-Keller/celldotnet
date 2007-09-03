@@ -61,24 +61,15 @@ namespace CellDotNet
 			}
 		}
 
-		private delegate int SimpleDelegateTripelArg(int a, int b, int c);
-
-		private static int TestFuncTrippleArg(int a, int b, int c)
-		{
-			return a + b + c;
-		}
-
+		private delegate int IntDelegateTripleArg(int a, int b, int c);
 
 		[Test]
-		public void TestArugments()
+		public void TestArguments_LoadArguments()
 		{
-			SimpleDelegateTripelArg del = TestFuncTrippleArg;
-
+			IntDelegateTripleArg del = delegate(int a, int b, int c) { return a + b + c; };
 
 			CompileContext cc = new CompileContext(del.Method);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
-
 			int[] code = cc.GetEmittedCode();
 
 			if (!SpeContext.HasSpeHardware)
@@ -94,7 +85,50 @@ namespace CellDotNet
 
 				AreEqual(6, returnValue, "Function call returned a wrong value.");
 			}
+		}
 
+		[Test]
+		public void TestArguments_RunProgram()
+		{
+			IntDelegateTripleArg del = delegate(int a, int b, int c) { return a + b + c; };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			using (SpeContext ctx = new SpeContext())
+			{
+				ctx.RunProgram(cc, new object[] { 1, 2, 3 });
+				int returnValue = ctx.DmaGetValue<int>(cc.ReturnValueAddress);
+				AreEqual(6, returnValue, "Function call returned a wrong value.");
+			}
+		}
+
+		private unsafe delegate int* IntPointerDelegate(int* ea);
+		static unsafe int* PointerMethod(int* ea)
+		{
+			return ea + 1;
+		}
+
+		[Test]
+		public unsafe void TestArguments_RunProgram2()
+		{
+			IntPointerDelegate del = PointerMethod;
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			using (SpeContext ctx = new SpeContext())
+			{
+				object rv = ctx.RunProgram(cc, new object[] { new IntPtr(16) });
+				AreEqual(typeof(IntPtr), rv.GetType());
+				AreEqual((IntPtr)32, (IntPtr)rv);
+			}
 		}
 	}
 }

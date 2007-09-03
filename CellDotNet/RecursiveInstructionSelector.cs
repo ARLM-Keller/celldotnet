@@ -184,7 +184,7 @@ namespace CellDotNet
 				case IRCode.IntrinsicMethodCall:
 					{
 						MethodCallInstruction callInst = (MethodCallInstruction)inst;
-						return GenerateIntrinsicMethod(_writer, (SpuIntrinsicMethod)callInst.Operand);
+						return IntrinsicsWriter.GenerateIntrinsicMethod(_writer, (SpuIntrinsicMethod)callInst.Operand, childregs);
 					}
 				case IRCode.Call:
 					{
@@ -1078,17 +1078,86 @@ namespace CellDotNet
 			return new VirtualRegister(-1);
 		}
 
-		private static VirtualRegister GenerateIntrinsicMethod(SpuInstructionWriter writer, SpuIntrinsicMethod method)
+
+
+		private enum MfcDmaCommand
 		{
-			switch (method)
+			Put = 0x0020,
+//			PutS = 0x0028, /*  PU Only */
+			PutR = 0x0030,
+			PutF = 0x0022,
+			PutB = 0x0021,
+//			PutFS = 0x002A, /*  PU Only */
+//			PutBS = 0x0029, /*  PU Only */
+			PutRF = 0x0032,
+			PutRB = 0x0031,
+			PutL = 0x0024, /* SPU Only */
+			PutRL = 0x0034, /* SPU Only */
+			PutLF = 0x0026, /* SPU Only */
+			PutLB = 0x0025, /* SPU Only */
+			PutRLF = 0x0036, /* SPU Only */
+			PutRLB = 0x0035, /* SPU Only */
+
+			Get = 0x0040,
+//			GetS = 0x0048, /*  PU Only */
+			GetF = 0x0042,
+			GetB = 0x0041,
+//			GetFS = 0x004A, /*  PU Only */
+//			GetBS = 0x0049, /*  PU Only */
+			GetL = 0x0044, /* SPU Only */
+			GetLF = 0x0046, /* SPU Only */
+			GetLB = 0x0045, /* SPU Only */
+		}
+
+
+		class IntrinsicsWriter
+		{
+			public static VirtualRegister GenerateIntrinsicMethod(SpuInstructionWriter writer, SpuIntrinsicMethod method, List<VirtualRegister> childregs)
 			{
-				case SpuIntrinsicMethod.Runtime_Stop:
-					writer.WriteStop();
-					return null;
-				case SpuIntrinsicMethod.Mfc_GetAvailableQueueEntries:
-					return writer.WriteRdchcnt(SpuWriteChannel.MFC_CmdAndMFC_ClassID);
-				default:
-					throw new ArgumentException();
+				switch (method)
+				{
+					case SpuIntrinsicMethod.Runtime_Stop:
+						writer.WriteStop();
+						return null;
+					case SpuIntrinsicMethod.Mfc_GetAvailableQueueEntries:
+						return writer.WriteRdchcnt(SpuWriteChannel.MFC_CmdAndMFC_ClassID);
+					case SpuIntrinsicMethod.MfcGet:
+						WriteMfcDmaCommand(writer, MfcDmaCommand.Get, childregs);
+						return null;
+					case SpuIntrinsicMethod.Mfc_Put:
+						WriteMfcDmaCommand(writer, MfcDmaCommand.Put, childregs);
+						return null;
+					default:
+						throw new ArgumentException();
+				}
+			}
+
+			private static void WriteMfcDmaCommand(SpuInstructionWriter writer, MfcDmaCommand cmd, List<VirtualRegister> arguments)
+			{
+				// These must match the order of the mfc dma method arguments.
+				VirtualRegister ls = arguments[0];
+				VirtualRegister ea = arguments[1];
+				VirtualRegister size = arguments[2];
+				VirtualRegister tag = arguments[3];
+				VirtualRegister tid = arguments[4];
+				VirtualRegister rid = arguments[5];
+
+				writer.WriteWrch(SpuWriteChannel.MFC_LSA, ls);
+				writer.WriteWrch(SpuWriteChannel.MFC_EAL, ea);
+				writer.WriteWrch(SpuWriteChannel.MFC_Size, size);
+				writer.WriteWrch(SpuWriteChannel.MFC_TagID, tag);
+
+				// Combine tid, rid and cmd into a cmd-and-class-id-word.
+				// Formula: (tid << 24) | (rid << 16) | cmd)
+
+				VirtualRegister cmdReg = writer.WriteLoadI4((int) cmd);
+				VirtualRegister tid2 = writer.WriteShli(tid, 24);
+				VirtualRegister rid2 = writer.WriteShli(rid, 16);
+
+				VirtualRegister or1 = writer.WriteOr(cmdReg, tid2);
+				VirtualRegister finalCmd = writer.WriteOr(or1, rid2);
+
+				writer.WriteWrch(SpuWriteChannel.MFC_CmdAndMFC_ClassID, finalCmd);
 			}
 		}
 
