@@ -101,6 +101,8 @@ namespace CellDotNet
 				throw new ArgumentException("Register argument " + regname + " is null.");
 		}
 
+		#region Formats
+
 		private VirtualRegister WriteRR(SpuOpCode opcode, VirtualRegister ra, VirtualRegister rb)
 		{
 			VirtualRegister rt = NextRegister();
@@ -221,6 +223,8 @@ namespace CellDotNet
 			return inst.Rt;
 		}
 
+		#endregion
+
 		// custom instructions ===============================================
 
 		/// <summary>
@@ -273,6 +277,23 @@ namespace CellDotNet
 			AddInstruction(inst);
 		}
 
+		public void WriteDebugStop(VirtualRegister r, ObjectWithAddress debugValueObject)
+		{
+			WriteStqr(r, debugValueObject);
+			WriteStop();
+			LastInstruction.Constant = (int)SpuStopCode.DebuggerBreakpoint;
+		}
+
+		public void WriteStop(SpuStopCode stopCode)
+		{
+			Utilities.AssertArgumentRange(((uint)stopCode >> 14) == 0, "stopCode", stopCode);
+
+			WriteStop();
+			LastInstruction.Constant = (int) stopCode;
+		}
+
+		#region Branching
+
 		/// <summary>
 		/// This will generate an instruction that must be patched with a <see cref="SpuBasicBlock"/>.
 		/// </summary>
@@ -309,23 +330,17 @@ namespace CellDotNet
 			AddInstruction(inst);
 		}
 
-		public void WriteLoad(VirtualRegister rt, ObjectWithAddress objectToLoad)
+		public void WriteBrsl(ObjectWithAddress owa)
 		{
-			AssertRegisterNotNull(rt, "rt");
-
-			SpuInstruction inst = new SpuInstruction(SpuOpCode.lqr);
-			inst.ObjectWithAddress = objectToLoad;
-			inst.Rt = rt;
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.brsl);
+			inst.ObjectWithAddress = owa;
+			inst.Rt = HardwareRegister.LR;
 			AddInstruction(inst);
 		}
 
-		public VirtualRegister WriteLoad(ObjectWithAddress objectToLoad)
-		{
-			VirtualRegister rt = NextRegister();
-			WriteLoad(rt, objectToLoad);
+		#endregion
 
-			return rt;
-		}
+		#region Load/store
 
 		public void WriteStore(VirtualRegister rt, ObjectWithAddress target)
 		{
@@ -348,19 +363,22 @@ namespace CellDotNet
 			AddInstruction(inst);
 		}
 
-		public void WriteStop(SpuStopCode stopCode)
+		public void WriteLoad(VirtualRegister rt, ObjectWithAddress objectToLoad)
 		{
-			Utilities.AssertArgumentRange(((uint)stopCode >> 14) == 0, "stopCode", stopCode);
+			AssertRegisterNotNull(rt, "rt");
 
-			WriteStop();
-			LastInstruction.Constant = (int) stopCode;
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.lqr);
+			inst.ObjectWithAddress = objectToLoad;
+			inst.Rt = rt;
+			AddInstruction(inst);
 		}
 
-		public void WriteDebugStop(VirtualRegister r, ObjectWithAddress debugValueObject)
+		public VirtualRegister WriteLoad(ObjectWithAddress objectToLoad)
 		{
-			WriteStqr(r, debugValueObject);
-			WriteStop();
-			LastInstruction.Constant = (int)SpuStopCode.DebuggerBreakpoint;
+			VirtualRegister rt = NextRegister();
+			WriteLoad(rt, objectToLoad);
+
+			return rt;
 		}
 
 		/// <summary>
@@ -416,14 +434,6 @@ namespace CellDotNet
 			AddInstruction(inst);
 		}
 
-		public void WriteBrsl(ObjectWithAddress owa)
-		{
-			SpuInstruction inst = new SpuInstruction(SpuOpCode.brsl);
-			inst.ObjectWithAddress = owa;
-			inst.Rt = HardwareRegister.LR;
-			AddInstruction(inst);
-		}
-
 		/// <summary>
 		/// Pseudo instruction to load the address of an object into a rgister.
 		/// </summary>
@@ -445,6 +455,87 @@ namespace CellDotNet
 
 			return rt;
 		}
+
+		#endregion
+
+		#region Channels
+
+		/// <summary>
+		/// Read channel.
+		/// </summary>
+		/// <param name="rt"></param>
+		/// <param name="channel"></param>
+		public void WriteRdch(VirtualRegister rt, SpuReadChannel channel)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rdch);
+			inst.Constant = (int) channel;
+			inst.Rt = rt;
+			AddInstruction(inst);
+		}
+
+		/// <summary>
+		/// Read channel.
+		/// </summary>
+		/// <param name="channel"></param>
+		/// <returns></returns>
+		public VirtualRegister WriteRdch(SpuReadChannel channel)
+		{
+			VirtualRegister rt = NextRegister();
+			WriteRdch(rt, channel);
+			return rt;
+		}
+
+		/// <summary>
+		/// Read channel count.
+		/// </summary>
+		/// <param name="rt"></param>
+		/// <param name="channel"></param>
+		public void WriteRdchcnt(VirtualRegister rt, SpuWriteChannel channel)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rchcnt);
+			inst.Constant = (int)channel;
+			inst.Rt = rt;
+			AddInstruction(inst);
+		}
+
+		/// <summary>
+		/// Read channel count.
+		/// </summary>
+		/// <param name="channel"></param>
+		/// <returns></returns>
+		public VirtualRegister WriteRdchcnt(SpuWriteChannel channel)
+		{
+			VirtualRegister rt = NextRegister();
+			WriteRdchcnt(rt, channel);
+			return rt;
+		}
+
+		/// <summary>
+		/// Write channel.
+		/// </summary>
+		/// <param name="rt"></param>
+		/// <param name="channel"></param>
+		public void WriteWrch(VirtualRegister rt, SpuWriteChannel channel)
+		{
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.rdch);
+			inst.Constant = (int)channel;
+			inst.Rt = rt;
+			AddInstruction(inst);
+		}
+
+		/// <summary>
+		/// Write channel.
+		/// </summary>
+		/// <param name="channel"></param>
+		/// <returns></returns>
+		public VirtualRegister WriteWrch(SpuWriteChannel channel)
+		{
+			VirtualRegister rt = NextRegister();
+			WriteWrch(rt, channel);
+			return rt;
+		}
+
+		#endregion
 		
 		public void WriteNop()
 		{

@@ -501,8 +501,16 @@ namespace CellDotNet
 
 		unsafe private static void RefIntMethod(int* i) { }
 
+
+		private delegate int IntDelegate();
 		private static void RunRasmus()
 		{
+			IntDelegate del = delegate() { return Mfc.GetAvailableQueueEntries(); };
+			IntDelegate r = SpeDelegateRunner.CreateSpeDelegate(del);
+			int entries = r();
+			Console.WriteLine("Entries: " + entries);
+			return;
+
 			Console.WriteLine("---------------------");
 			Console.WriteLine("Create:");
 			new ObjectModelTest().TestArray_Create();

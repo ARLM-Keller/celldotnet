@@ -1081,6 +1081,8 @@ namespace CellDotNet
 				case SpuIntrinsicMethod.Runtime_Stop:
 					writer.WriteStop();
 					return null;
+				case SpuIntrinsicMethod.Mfc_GetAvailableQueueEntries:
+					return writer.WriteRdchcnt(SpuWriteChannel.MFC_CmdAndMFC_ClassID);
 				default:
 					throw new ArgumentException();
 			}

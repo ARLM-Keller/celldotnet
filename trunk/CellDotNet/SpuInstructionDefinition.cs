@@ -77,6 +77,10 @@ namespace CellDotNet
 		/// 18 bit immediate.
 		/// </summary>
 		RI18,
+		/// <summary>
+		/// For the channel instructions.
+		/// </summary>
+		Channel,
 		WEIRD,
 		/// <summary>
 		/// For pseudo-instructions.
@@ -272,6 +276,10 @@ namespace CellDotNet
 				case SpuInstructionFormat.RI18:
 					_registerUsage = SpuOpCodeRegisterUsage.Rt;
 					_immediateBits = 18;
+					break;
+				case SpuInstructionFormat.Channel:
+					_registerUsage = SpuOpCodeRegisterUsage.Rt | SpuOpCodeRegisterUsage.Ca;
+					_immediateBits = 7;
 					break;
 				case SpuInstructionFormat.WEIRD:
 				case SpuInstructionFormat.Custom:
@@ -682,6 +690,14 @@ namespace CellDotNet
 
 		public static readonly SpuOpCode nop =
 			new SpuOpCode("nop", "No Operation (Execute)", SpuInstructionFormat.WEIRD, "01000000001");
+
+		public static readonly SpuOpCode rdch =
+			new SpuOpCode("rdch", "Read Channel", SpuInstructionFormat.Channel, "00000001101");
+		public static readonly SpuOpCode rchcnt =
+			new SpuOpCode("rchcnt", "Read Channel Count", SpuInstructionFormat.Channel, "00000001111");
+		public static readonly SpuOpCode wrch =
+			new SpuOpCode("wrch", "Write Channel", SpuInstructionFormat.Channel, "00100001101");
+
 
 		// *****************************************
 		// Pseudo instructions.

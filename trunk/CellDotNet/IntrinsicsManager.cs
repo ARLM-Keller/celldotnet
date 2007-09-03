@@ -41,7 +41,7 @@ namespace CellDotNet
 		{
 			Dictionary<MethodKey, SpuIntrinsicMethod> map = new Dictionary<MethodKey, SpuIntrinsicMethod>();
 
-			Type[] typesWithIntrinsics = new Type[] { typeof(Dma), typeof(SpuRuntime) };
+			Type[] typesWithIntrinsics = new Type[] { typeof(Mfc), typeof(SpuRuntime) };
 			foreach (Type type in typesWithIntrinsics)
 			{
 				MethodInfo[] methods = type.GetMethods(BindingFlags.Static | BindingFlags.Public);
