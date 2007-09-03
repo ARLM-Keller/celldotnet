@@ -29,8 +29,6 @@ namespace CellDotNet
 
 //			new SpeContextTest().TestFirstCellProgram();
 
-			new ObjectModelTest().TestArray_TmpTest();
-
 			Console.WriteLine("Running RunKlaus done.");
 		}
 
