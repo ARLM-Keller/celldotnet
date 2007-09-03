@@ -515,24 +515,12 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="rt"></param>
 		/// <param name="channel"></param>
-		public void WriteWrch(VirtualRegister rt, SpuWriteChannel channel)
+		public void WriteWrch(SpuWriteChannel channel, VirtualRegister rt)
 		{
-			SpuInstruction inst = new SpuInstruction(SpuOpCode.rdch);
+			SpuInstruction inst = new SpuInstruction(SpuOpCode.wrch);
 			inst.Constant = (int)channel;
 			inst.Rt = rt;
 			AddInstruction(inst);
-		}
-
-		/// <summary>
-		/// Write channel.
-		/// </summary>
-		/// <param name="channel"></param>
-		/// <returns></returns>
-		public VirtualRegister WriteWrch(SpuWriteChannel channel)
-		{
-			VirtualRegister rt = NextRegister();
-			WriteWrch(rt, channel);
-			return rt;
 		}
 
 		#endregion

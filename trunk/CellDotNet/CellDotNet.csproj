@@ -80,6 +80,7 @@
     <Compile Include="LiveInterval.cs" />
     <Compile Include="MethodCallInstruction.cs" />
     <Compile Include="Mfc.cs" />
+    <Compile Include="MfcTest.cs" />
     <Compile Include="ObjectModelTest.cs" />
     <Compile Include="ObjectOffset.cs" />
     <Compile Include="ObjectWithAddress.cs" />
@@ -116,6 +117,7 @@
     <Compile Include="StoreLocation.cs" />
     <Compile Include="TreeDrawer.cs" />
     <Compile Include="TypeDeriver.cs" />
+    <Compile Include="TypeDeriverTest.cs" />
     <Compile Include="TypeDescription.cs" />
     <Compile Include="UnitTest.cs" />
     <Compile Include="Utilities.cs" />
