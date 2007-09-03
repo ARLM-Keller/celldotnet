@@ -25,14 +25,35 @@ namespace CellDotNet
 		/// <param name="argumentValueLocation"></param>
 		/// <param name="argumentcount"></param>
 		/// <param name="stackPointerObject">The object that will hold the stack pointer.</param>
+		/// <param name="NextAllocationStartObject"></param>
+		/// <param name="AllocatableByteCountObject"></param>
 		public SpuInitializer(ObjectWithAddress initialMethod, RegisterSizedObject returnValueLocation, 
 			ObjectWithAddress argumentValueLocation, int argumentcount,
-			RegisterSizedObject stackPointerObject)
-			: base("SpuInitializer")
+			RegisterSizedObject stackPointerObject,
+			RegisterSizedObject NextAllocationStartObject, RegisterSizedObject AllocatableByteCountObject
+			) : base("SpuInitializer")
 		{
 			Utilities.AssertNotNull(stackPointerObject, "stackPointerObject");
 
 			_writer.BeginNewBasicBlock();
+
+			// Patch availabel memory.
+			if (NextAllocationStartObject != null && AllocatableByteCountObject != null)
+			{
+				VirtualRegister r75 = HardwareRegister.GetHardwareRegister(75);
+				VirtualRegister r76 = HardwareRegister.GetHardwareRegister(76);
+
+				_writer.WriteBrsl(r75, 1);
+				_writer.WriteAi(r75, r75, -4);
+
+				_writer.WriteLoad(r76, NextAllocationStartObject);
+				_writer.WriteA(r76, r75, r76);
+				_writer.WriteStore(r76, NextAllocationStartObject);
+
+				_writer.WriteLoad(r76, AllocatableByteCountObject);
+				_writer.WriteSf(r76, r75, r76);
+				_writer.WriteStore(r76, AllocatableByteCountObject);
+			}
 
 //			// Initialize second word of SP with the stack size.
 //			VirtualRegister stackSizeReg = HardwareRegister.GetHardwareRegister(75);

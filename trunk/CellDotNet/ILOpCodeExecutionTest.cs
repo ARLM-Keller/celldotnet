@@ -462,7 +462,7 @@ namespace CellDotNet
 
 //			Console.WriteLine(spum.Writer.Disassemble());
 
-			SpuInitializer spuinit = new SpuInitializer(spum, returnAddressObject, null, 0, specialSpeObjects.StackPointerObject);
+			SpuInitializer spuinit = new SpuInitializer(spum, returnAddressObject, null, 0, specialSpeObjects.StackPointerObject, specialSpeObjects.NextAllocationStartObject, specialSpeObjects.AllocatableByteCountObject);
 
 			List<ObjectWithAddress> objectsWithAddresss = new List<ObjectWithAddress>();
 
