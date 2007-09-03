@@ -772,7 +772,11 @@ namespace CellDotNet
 						else
 							throw new NotSupportedException("Element size of " + elementByteSize + " is not supported.");
 
-						_writer.WriteAi(bytesize, bytesize, 4); // makes room for the arraysize.
+						_writer.WriteAi(bytesize, bytesize, 16); // makes room for the arraysize.
+
+						// Sets the size to be 16 bytes aligned. Note if the size is 16 bytes aligned, there will be allocated 16 extra bytes.
+						_writer.WriteAndi(bytesize, bytesize, 0xfff0);//Note the immediated field is no more than 16 bits wide.
+						_writer.WriteAi(bytesize, bytesize, 16);
 
 						// Subtract from available byte count.
 						{
@@ -797,18 +801,10 @@ namespace CellDotNet
 							_writer.WriteStore(newNextAllocAddress, _specialSpeObjects.NextAllocationStartObject);
 						}
 						// make the arraypointer point to the first element.
-						_writer.WriteAi(array, array, 4);
+						_writer.WriteAi(array, array, 16);
 
 						// Initialize array length field.
-						VirtualRegister sizeaddr = _writer.WriteAi(array, -1*4);
-						VirtualRegister load = _writer.WriteLqd(sizeaddr, 0);
-
-						VirtualRegister cwdreg = new VirtualRegister();
-						_writer.WriteCwd(cwdreg, sizeaddr, 0);
-
-						_writer.WriteShufb(cwdreg, elementcount, load ,cwdreg);
-
-						_writer.WriteStqd(cwdreg, sizeaddr, 0);
+						_writer.WriteStqd(elementcount, array, -1);
 
 						return array;
 					}
@@ -849,17 +845,12 @@ namespace CellDotNet
 
 						// Load.
 						VirtualRegister byteoffset = _writer.WriteShli(index, 2);
-
-						VirtualRegister totaloffset = _writer.WriteA(array, byteoffset);
-
-
-						VirtualRegister quad = _writer.WriteLqd(totaloffset, 0);
-//						VirtualRegister quad = _writer.WriteLqx(array, byteoffset);
+						VirtualRegister quad = _writer.WriteLqx(array, byteoffset);
 
 						// Move word to preferred slot.
 						// We're going to use shlqby (Shift Left Quadword by Bytes),
 						// so we have to clear bit 27 from the byte offset.
-						VirtualRegister addrMod16 = _writer.WriteAndi(totaloffset, 0xf);
+						VirtualRegister addrMod16 = _writer.WriteAndi(byteoffset, 0xf);
 						return _writer.WriteShlqby(quad, addrMod16);
 					}
 				case IRCode.Ldelem_I8:
