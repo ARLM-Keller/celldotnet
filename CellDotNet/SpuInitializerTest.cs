@@ -29,7 +29,7 @@ namespace CellDotNet
 			int[] code = new int[1000];
 			{
 				// Initialization.
-				SpuInitializer initializer = new SpuInitializer(routine, returnLocation, null, 0, _specialSpeObjects.StackPointerObject);
+				SpuInitializer initializer = new SpuInitializer(routine, returnLocation, null, 0, _specialSpeObjects.StackPointerObject, _specialSpeObjects.NextAllocationStartObject, _specialSpeObjects.AllocatableByteCountObject);
 				initializer.Offset = 0;
 				initializer.PerformAddressPatching();
 				int[] initCode = initializer.Emit();

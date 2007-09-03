@@ -238,7 +238,8 @@ namespace CellDotNet
 			_spuRoutines = new List<SpuRoutine>();
 			SpuInitializer init = new SpuInitializer(EntryPoint, _returnValueLocation,
 				_argumentArea, EntryPoint.Parameters.Count,
-				_specialSpeObjects.StackPointerObject);
+				_specialSpeObjects.StackPointerObject,
+				_specialSpeObjects.NextAllocationStartObject, _specialSpeObjects.AllocatableByteCountObject);
 
 			// It's important that the initialization routine is the first one, since execution
 			// will start at address 0.

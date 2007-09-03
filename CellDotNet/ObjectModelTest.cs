@@ -154,10 +154,13 @@ namespace CellDotNet
 			IntReturnDelegate del =
 				delegate
 				{
-					int[] arr = new int[10];
-					arr[0] = MagicNumber;
-					arr[1] = 20;
-					return arr[0];
+					// Check that arr2 doesn't overwrite arr1.
+					int[] arr1 = new int[1];
+					arr1[0] = MagicNumber;
+					int[] arr2 = new int[1];
+					arr2[0] = 50;
+
+					return arr1[0];
 				};
 
 			CompileContext cc = new CompileContext(del.Method);
