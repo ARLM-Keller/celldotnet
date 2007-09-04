@@ -149,13 +149,11 @@ namespace CellDotNet
 						switch (_numericSize)
 						{
 							case CliNumericSize.OneByte:
-								return IsSigned ? CliType.Int8 : CliType.UInt8;
 							case CliNumericSize.TwoBytes:
-								return IsSigned ? CliType.Int16 : CliType.UInt16;
 							case CliNumericSize.FourBytes:
-								return IsSigned ? CliType.Int32 : CliType.UInt32;
+								return CliType.Int32;
 							case CliNumericSize.EightBytes:
-								return IsSigned ? CliType.Int64 : CliType.UInt64;
+								return CliType.Int64;
 							default:
 								throw new Exception();
 						}
@@ -171,7 +169,7 @@ namespace CellDotNet
 					case CliBasicType.ObjectType:
 						return CliType.ObjectType;
 					case CliBasicType.NativeInt:
-						return IsSigned ? CliType.NativeInt : CliType.NativeUInt;
+						return CliType.NativeInt;
 					case CliBasicType.None:
 						return CliType.None;
 					default:
@@ -336,26 +334,12 @@ namespace CellDotNet
 			{
 				case CliType.None:
 					return null;
-				case CliType.Int8:
-					return typeof (sbyte);
-				case CliType.UInt8:
-					return typeof(byte);
-				case CliType.Int16:
-					return typeof(short);
-				case CliType.UInt16:
-					return typeof(ushort);
 				case CliType.Int32:
 					return typeof(int);
-				case CliType.UInt32:
-					return typeof(uint);
 				case CliType.Int64:
 					return typeof(long);
-				case CliType.UInt64:
-					return typeof(ulong);
 				case CliType.NativeInt:
 					return typeof(IntPtr);
-				case CliType.NativeUInt:
-					return typeof(UIntPtr);
 				case CliType.Float32:
 					return typeof(sbyte);
 				case CliType.Float64:
@@ -451,27 +435,14 @@ namespace CellDotNet
 	/// <remarks>
 	/// This enumeration contains more than the six basic CLI types: 
 	/// It also contains variations of the numeric types.
-	/// 
-	/// <para>
-	/// NOTE: It is important that within the numeric groups (int, float)
-	/// the types are defined in order of increasing size. 
-	/// This is used to determine expression types.
-	/// </para>
 	/// </remarks>
 	/// </summary>
 	internal enum CliType
 	{
 		None = 0,
-		Int8,
-		UInt8,
-		Int16,
-		UInt16,
 		Int32,
-		UInt32,
 		Int64,
-		UInt64,
 		NativeInt,
-		NativeUInt,
 		Float32,
 		Float64,
 		/// <summary>
