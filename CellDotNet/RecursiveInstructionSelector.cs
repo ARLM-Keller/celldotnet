@@ -237,9 +237,7 @@ namespace CellDotNet
 					switch (lefttype.CliType)
 					{
 						case CliType.Int32:
-						case CliType.UInt32:
 						case CliType.NativeInt:
-						case CliType.NativeUInt:
 							VirtualRegister vr1 = _writer.WriteCeq(vrleft, vrright);
 							WriteConditionalBranch(SpuOpCode.brnz, vr1, (IRBasicBlock)inst.Operand);
 							return null;
@@ -248,7 +246,6 @@ namespace CellDotNet
 							WriteConditionalBranch(SpuOpCode.brnz, vr2, (IRBasicBlock)inst.Operand);
 							return null;
 						case CliType.Int64:
-						case CliType.UInt64:
 						case CliType.Float64:
 						case CliType.ObjectType:
 						case CliType.ManagedPointer:
@@ -264,9 +261,7 @@ namespace CellDotNet
 						switch (lefttype.CliType)
 						{
 							case CliType.Int32:
-							case CliType.UInt32:
 							case CliType.NativeInt:
-							case CliType.NativeUInt:
 								vr = _writer.WriteCgt(vrright, vrleft);
 								_writer.WriteXori(vr, vr, 0xfffffff);
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
@@ -277,7 +272,6 @@ namespace CellDotNet
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
 								return null;
 							case CliType.Int64:
-							case CliType.UInt64:
 							case CliType.Float64:
 							case CliType.ObjectType:
 							case CliType.ManagedPointer:
@@ -293,9 +287,7 @@ namespace CellDotNet
 						switch (lefttype.CliType)
 						{
 							case CliType.Int32:
-							case CliType.UInt32:
 							case CliType.NativeInt:
-							case CliType.NativeUInt:
 								vr = _writer.WriteCgt(vrleft, vrright);
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
@@ -304,7 +296,6 @@ namespace CellDotNet
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Int64:
-							case CliType.UInt64:
 							case CliType.Float64:
 							case CliType.ObjectType:
 							case CliType.ManagedPointer:
@@ -321,9 +312,7 @@ namespace CellDotNet
 						switch (lefttype.CliType)
 						{
 							case CliType.Int32:
-							case CliType.UInt32:
 							case CliType.NativeInt:
-							case CliType.NativeUInt:
 								vr = _writer.WriteCgt(vrleft, vrright);
 								_writer.WriteXori(vr, vr, 0xfffffff);
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
@@ -334,7 +323,6 @@ namespace CellDotNet
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
 								return null;
 							case CliType.Int64:
-							case CliType.UInt64:
 							case CliType.Float64:
 							case CliType.ObjectType:
 							case CliType.ManagedPointer:
@@ -351,9 +339,7 @@ namespace CellDotNet
 						switch (lefttype.CliType)
 						{
 							case CliType.Int32:
-							case CliType.UInt32:
 							case CliType.NativeInt:
-							case CliType.NativeUInt:
 								vr = _writer.WriteCgt(vrright, vrleft);
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
 								return null;
@@ -362,7 +348,6 @@ namespace CellDotNet
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
 								return null;
 							case CliType.Int64:
-							case CliType.UInt64:
 							case CliType.Float64:
 							case CliType.ObjectType:
 							case CliType.ManagedPointer:
@@ -378,9 +363,7 @@ namespace CellDotNet
 						switch (lefttype.CliType)
 						{
 							case CliType.Int32:
-							case CliType.UInt32:
 							case CliType.NativeInt:
-							case CliType.NativeUInt:
 								vr = _writer.WriteCeq(vrleft, vrright);
 								_writer.WriteXori(vr, vr, 0xfffffff);
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
@@ -391,7 +374,6 @@ namespace CellDotNet
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
 								return null;
 							case CliType.Int64:
-							case CliType.UInt64:
 							case CliType.Float64:
 							case CliType.ObjectType:
 							case CliType.ManagedPointer:
@@ -408,9 +390,7 @@ namespace CellDotNet
 						switch (lefttype.CliType)
 						{
 							case CliType.Int32:
-							case CliType.UInt32:
 							case CliType.NativeInt:
-							case CliType.NativeUInt:
 								vr = _writer.WriteClgt(vrright, vrleft);
 								_writer.WriteXori(vr, vr, 0xfffffff);
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
@@ -421,7 +401,6 @@ namespace CellDotNet
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
 								return null;
 							case CliType.Int64:
-							case CliType.UInt64:
 							case CliType.Float64:
 							case CliType.ObjectType:
 							case CliType.ManagedPointer:
@@ -437,9 +416,7 @@ namespace CellDotNet
 						switch (lefttype.CliType)
 						{
 							case CliType.Int32:
-							case CliType.UInt32:
 							case CliType.NativeInt:
-							case CliType.NativeUInt:
 								vr = _writer.WriteClgt(vrleft, vrright);
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
 								return null;
@@ -448,7 +425,6 @@ namespace CellDotNet
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
 								return null;
 							case CliType.Int64:
-							case CliType.UInt64:
 							case CliType.Float64:
 							case CliType.ObjectType:
 							case CliType.ManagedPointer:
@@ -465,9 +441,7 @@ namespace CellDotNet
 						switch (lefttype.CliType)
 						{
 							case CliType.Int32:
-							case CliType.UInt32:
 							case CliType.NativeInt:
-							case CliType.NativeUInt:
 								vr = _writer.WriteClgt(vrleft, vrright);
 								_writer.WriteXori(vr, vr, 0xfffffff);
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
@@ -478,7 +452,6 @@ namespace CellDotNet
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
 								return null;
 							case CliType.Int64:
-							case CliType.UInt64:
 							case CliType.Float64:
 							case CliType.ObjectType:
 							case CliType.ManagedPointer:
@@ -495,9 +468,7 @@ namespace CellDotNet
 						switch (lefttype.CliType)
 						{
 							case CliType.Int32:
-							case CliType.UInt32:
 							case CliType.NativeInt:
-							case CliType.NativeUInt:
 								vr = _writer.WriteClgt(vrright, vrleft);
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
 								return null;
@@ -506,7 +477,6 @@ namespace CellDotNet
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
 								return null;
 							case CliType.Int64:
-							case CliType.UInt64:
 							case CliType.Float64:
 							case CliType.ObjectType:
 							case CliType.ManagedPointer:
@@ -567,9 +537,7 @@ namespace CellDotNet
 					switch (lefttype.CliType)
 					{
 						case CliType.Int32:
-						case CliType.UInt32:
 						case CliType.NativeInt:
-						case CliType.NativeUInt:
 							return _writer.WriteA(vrleft, vrright);
 					}
 					break;
@@ -577,9 +545,7 @@ namespace CellDotNet
 					switch (lefttype.CliType)
 					{
 						case CliType.Int32:
-						case CliType.UInt32:
 						case CliType.NativeInt:
-						case CliType.NativeUInt:
 							return _writer.WriteSf(vrright, vrleft);
 					}
 					break;
@@ -587,9 +553,7 @@ namespace CellDotNet
 					switch (lefttype.CliType)
 					{
 						case CliType.Int32:
-						case CliType.UInt32:
 						case CliType.NativeInt:
-						case CliType.NativeUInt:
 							// "A 32-bit multiply instruction, mpy32 rt,ra,rb, can be 
 							// emulated with the following instruction sequence:
 							// mpyh t1,ra,rb
@@ -623,12 +587,9 @@ namespace CellDotNet
 					switch (lefttype.CliType)
 					{
 						case CliType.Int32:
-						case CliType.UInt32:
 						case CliType.NativeInt:
-						case CliType.NativeUInt:
 							return _writer.WriteAnd(vrleft, vrright);
 						case CliType.Int64:
-						case CliType.UInt64:
 							break;
 					}
 					break;
@@ -638,12 +599,9 @@ namespace CellDotNet
 					switch (lefttype.CliType)
 					{
 						case CliType.Int32:
-						case CliType.UInt32:
 						case CliType.NativeInt:
-						case CliType.NativeUInt:
 							return _writer.WriteOr(vrleft, vrright);
 						case CliType.Int64:
-						case CliType.UInt64:
 							break;
 					}
 					break;
@@ -653,12 +611,9 @@ namespace CellDotNet
 					switch (lefttype.CliType)
 					{
 						case CliType.Int32:
-						case CliType.UInt32:
 						case CliType.NativeInt:
-						case CliType.NativeUInt:
 							return _writer.WriteXor(vrleft, vrright);
 						case CliType.Int64:
-						case CliType.UInt64:
 							break;
 					}
 					break;
@@ -936,22 +891,16 @@ namespace CellDotNet
 						VirtualRegister val;
 						switch (lefttype.CliType)
 						{
-							case CliType.Int8:
-							case CliType.UInt8:
 //								val = _writer.WriteCeqb(vrleft, vrright);
 //								return _writer.WriteAndi(val, 1);
-							case CliType.Int16:
-							case CliType.UInt16:
 //								val = _writer.WriteCeqh(vrleft, vrright);
 //								return _writer.WriteAndi(val, 1);
 							case CliType.Int32:
-							case CliType.UInt32:
 								val = _writer.WriteCeq(vrleft, vrright);
 								return _writer.WriteAndi(val, 1);
 							case CliType.Float32:
 							case CliType.Float64:
 							case CliType.Int64:
-							case CliType.UInt64:
 								break;
 						}
 						break;
@@ -960,9 +909,7 @@ namespace CellDotNet
 					switch (lefttype.CliType)
 					{
 						case CliType.NativeInt:
-						case CliType.NativeUInt:
 						case CliType.Int32:
-						case CliType.UInt32:
 							VirtualRegister val = _writer.WriteCgt(vrleft, vrright);
 							return _writer.WriteAndi(val, 1);
 					}
@@ -973,9 +920,7 @@ namespace CellDotNet
 					switch (lefttype.CliType)
 					{
 						case CliType.NativeInt:
-						case CliType.NativeUInt:
 						case CliType.Int32:
-						case CliType.UInt32:
 							return _writer.WriteCgt(vrright, vrleft);
 					}
 					break;
