@@ -59,20 +59,13 @@ namespace CellDotNet
 	struct StackTypeDescription : IEquatable<StackTypeDescription>
 	{
 		public static readonly StackTypeDescription None = new StackTypeDescription();
-		public static readonly StackTypeDescription Int8 = new StackTypeDescription(CliBasicType.Integer, CliNumericSize.OneByte, true);
-		public static readonly StackTypeDescription UInt8 = new StackTypeDescription(CliBasicType.Integer, CliNumericSize.OneByte, false);
-		public static readonly StackTypeDescription Int16 = new StackTypeDescription(CliBasicType.Integer, CliNumericSize.TwoBytes, true);
-		public static readonly StackTypeDescription UInt16 = new StackTypeDescription(CliBasicType.Integer, CliNumericSize.TwoBytes, false);
 		public static readonly StackTypeDescription Int32 = new StackTypeDescription(CliBasicType.Integer, CliNumericSize.FourBytes, true);
-		public static readonly StackTypeDescription UInt32 = new StackTypeDescription(CliBasicType.Integer, CliNumericSize.FourBytes, false);
 		public static readonly StackTypeDescription Int64 = new StackTypeDescription(CliBasicType.Integer, CliNumericSize.EightBytes, true);
-		public static readonly StackTypeDescription UInt64 = new StackTypeDescription(CliBasicType.Integer, CliNumericSize.EightBytes, false);
 		public static readonly StackTypeDescription Float32 = new StackTypeDescription(CliBasicType.Floating, CliNumericSize.FourBytes, true);
 		public static readonly StackTypeDescription Float64 = new StackTypeDescription(CliBasicType.Floating, CliNumericSize.EightBytes, true);
 		public static readonly StackTypeDescription ObjectType = new StackTypeDescription(CliBasicType.ObjectType, CliNumericSize.None, false);
 		public static readonly StackTypeDescription ValueType = new StackTypeDescription(CliBasicType.Valuetype, CliNumericSize.None, false);
 		public static readonly StackTypeDescription NativeInt = new StackTypeDescription(CliBasicType.NativeInt, CliNumericSize.None, true);
-		public static readonly StackTypeDescription NativeUInt = new StackTypeDescription(CliBasicType.NativeInt, CliNumericSize.None, false);
 
 		public CliBasicType _cliBasicType;
 		private bool _isSigned;

@@ -168,22 +168,22 @@ namespace CellDotNet
 					t = StackTypeDescription.None;
 					break;
 				case IRCode.Ldind_I1: // ldind.i1
-					t = StackTypeDescription.Int8;
+					t = StackTypeDescription.Int32;
 					break;
 				case IRCode.Ldind_U1: // ldind.u1
-					t = StackTypeDescription.UInt8;
+					t = StackTypeDescription.Int32;
 					break;
 				case IRCode.Ldind_I2: // ldind.i2
-					t = StackTypeDescription.Int16;
+					t = StackTypeDescription.Int32;
 					break;
 				case IRCode.Ldind_U2: // ldind.u2
-					t = StackTypeDescription.UInt16;
+					t = StackTypeDescription.Int32;
 					break;
 				case IRCode.Ldind_I4: // ldind.i4
 					t = StackTypeDescription.Int32;
 					break;
 				case IRCode.Ldind_U4: // ldind.u4
-					t = StackTypeDescription.UInt32;
+					t = StackTypeDescription.Int32;
 					break;
 				case IRCode.Ldind_I8: // ldind.i8
 					t = StackTypeDescription.Int64;
@@ -234,11 +234,11 @@ namespace CellDotNet
 						t = inst.Left.StackType;
 					else
 					{
-						// Must be native (u)int.
-						if (inst.Left.StackType.IsSigned)
+						if ((inst.Left.StackType == StackTypeDescription.Int32 && inst.Right.StackType == StackTypeDescription.NativeInt) ||
+							(inst.Left.StackType == StackTypeDescription.NativeInt && inst.Right.StackType == StackTypeDescription.Int32))
 							t = StackTypeDescription.NativeInt;
 						else
-							t = StackTypeDescription.NativeUInt;
+							throw new Exception();
 					}
 					break;
 				case IRCode.Shl: // shl
@@ -278,12 +278,12 @@ namespace CellDotNet
 				case IRCode.Conv_I1: // conv.i1
 				case IRCode.Conv_Ovf_I1_Un: // conv.ovf.i1.un
 				case IRCode.Conv_Ovf_I1: // conv.ovf.i1
-					t = StackTypeDescription.Int8;
+					t = StackTypeDescription.Int32;
 					break;
 				case IRCode.Conv_I2: // conv.i2
 				case IRCode.Conv_Ovf_I2: // conv.ovf.i2
 				case IRCode.Conv_Ovf_I2_Un: // conv.ovf.i2.un
-					t = StackTypeDescription.Int16;
+					t = StackTypeDescription.Int32;
 					break;
 				case IRCode.Conv_Ovf_I4: // conv.ovf.i4
 				case IRCode.Conv_I4: // conv.i4
@@ -293,7 +293,7 @@ namespace CellDotNet
 				case IRCode.Conv_U4: // conv.u4
 				case IRCode.Conv_Ovf_U4: // conv.ovf.u4
 				case IRCode.Conv_Ovf_U4_Un: // conv.ovf.u4.un
-					t = StackTypeDescription.UInt32;
+					t = StackTypeDescription.Int32;
 					break;
 				case IRCode.Conv_R_Un: // conv.r.un
 					t = StackTypeDescription.Float32; // really F, but we're 32 bit.
@@ -301,17 +301,17 @@ namespace CellDotNet
 				case IRCode.Conv_Ovf_U1_Un: // conv.ovf.u1.un
 				case IRCode.Conv_U1: // conv.u1
 				case IRCode.Conv_Ovf_U1: // conv.ovf.u1
-					t = StackTypeDescription.UInt8;
+					t = StackTypeDescription.Int32;
 					break;
 				case IRCode.Conv_Ovf_U2_Un: // conv.ovf.u2.un
 				case IRCode.Conv_U2: // conv.u2
 				case IRCode.Conv_Ovf_U2: // conv.ovf.u2
-					t = StackTypeDescription.UInt16;
+					t = StackTypeDescription.Int32;
 					break;
 				case IRCode.Conv_U8: // conv.u8
 				case IRCode.Conv_Ovf_U8_Un: // conv.ovf.u8.un
 				case IRCode.Conv_Ovf_U8: // conv.ovf.u8
-					t = StackTypeDescription.UInt64;
+					t = StackTypeDescription.Int64;
 					break;
 				case IRCode.Conv_I: // conv.i
 				case IRCode.Conv_Ovf_I: // conv.ovf.i
@@ -321,7 +321,7 @@ namespace CellDotNet
 				case IRCode.Conv_Ovf_U_Un: // conv.ovf.u.un
 				case IRCode.Conv_Ovf_U: // conv.ovf.u
 				case IRCode.Conv_U: // conv.u
-					t = StackTypeDescription.NativeUInt;
+					t = StackTypeDescription.NativeInt;
 					break;
 				case IRCode.Box: // box
 					throw new NotImplementedException();
@@ -332,28 +332,28 @@ namespace CellDotNet
 						break;
 					}
 				case IRCode.Ldlen: // ldlen
-					t = StackTypeDescription.NativeUInt;
+					t = StackTypeDescription.NativeInt;
 					break;
 				case IRCode.Ldelema: // ldelema
 					t = ((StackTypeDescription) inst.Operand).GetManagedPointer();
 					break;
 				case IRCode.Ldelem_I1: // ldelem.i1
-					t = StackTypeDescription.Int8;
+					t = StackTypeDescription.Int32;
 					break;
 				case IRCode.Ldelem_U1: // ldelem.u1
-					t = StackTypeDescription.UInt8;
+					t = StackTypeDescription.Int32;
 					break;
 				case IRCode.Ldelem_I2: // ldelem.i2
 					t = StackTypeDescription.Int32;
 					break;
 				case IRCode.Ldelem_U2: // ldelem.u2
-					t = StackTypeDescription.UInt16;
+					t = StackTypeDescription.Int32;
 					break;
 				case IRCode.Ldelem_I4: // ldelem.i4
 					t = StackTypeDescription.Int32;
 					break;
 				case IRCode.Ldelem_U4: // ldelem.u4
-					t = StackTypeDescription.UInt32;
+					t = StackTypeDescription.Int32;
 					break;
 				case IRCode.Ldelem_I8: // ldelem.i8
 					t = StackTypeDescription.Int64;
@@ -396,7 +396,7 @@ namespace CellDotNet
 				case IRCode.Cgt_Un: // cgt.un
 				case IRCode.Clt: // clt
 				case IRCode.Clt_Un: // clt.un
-					t = StackTypeDescription.Int8; // CLI says int32, but let's try...
+					t = StackTypeDescription.Int32; // CLI says int32, but let's try...
 					break;
 				case IRCode.Ldftn: // ldftn
 				case IRCode.Ldvirtftn: // ldvirtftn
@@ -440,18 +440,18 @@ namespace CellDotNet
 		{
 			Dictionary<Type, StackTypeDescription> dict = new Dictionary<Type, StackTypeDescription>();
 
-			dict.Add(typeof(bool), StackTypeDescription.Int8); // Correct?
-			dict.Add(typeof(sbyte), StackTypeDescription.Int8);
-			dict.Add(typeof(byte), StackTypeDescription.UInt8);
-			dict.Add(typeof(short), StackTypeDescription.Int16);
-			dict.Add(typeof(ushort), StackTypeDescription.UInt16);
-			dict.Add(typeof(char), StackTypeDescription.UInt16); // Correct?
+			dict.Add(typeof(bool), StackTypeDescription.Int32); // Correct?
+			dict.Add(typeof(sbyte), StackTypeDescription.Int32);
+			dict.Add(typeof(byte), StackTypeDescription.Int32);
+			dict.Add(typeof(short), StackTypeDescription.Int32);
+			dict.Add(typeof(ushort), StackTypeDescription.Int32);
+			dict.Add(typeof(char), StackTypeDescription.Int32); // Correct?
 			dict.Add(typeof(int), StackTypeDescription.Int32);
-			dict.Add(typeof(uint), StackTypeDescription.UInt32);
+			dict.Add(typeof(uint), StackTypeDescription.Int32);
 			dict.Add(typeof(long), StackTypeDescription.Int64);
-			dict.Add(typeof(ulong), StackTypeDescription.UInt64);
+			dict.Add(typeof(ulong), StackTypeDescription.Int64);
 			dict.Add(typeof(IntPtr), StackTypeDescription.NativeInt);
-			dict.Add(typeof(UIntPtr), StackTypeDescription.NativeUInt);
+			dict.Add(typeof(UIntPtr), StackTypeDescription.NativeInt);
 			dict.Add(typeof(float), StackTypeDescription.Float32);
 			dict.Add(typeof(double), StackTypeDescription.Float64);
 
