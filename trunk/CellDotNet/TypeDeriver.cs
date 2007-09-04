@@ -89,7 +89,7 @@ namespace CellDotNet
 
 						MethodInfo method = mci.IntrinsicMethod;
 						if (method == null)
-							method = mci.Method as MethodInfo;  // might be a constructor.
+							method = mci.OperandMethod as MethodInfo;  // might be a constructor.
 
 						if (method != null && method.ReturnType != typeof (void))
 							t = GetStackTypeDescription(method.ReturnType);

@@ -76,6 +76,12 @@ namespace CellDotNet
 			get { return _lastInstruction; }
 		}
 
+		internal void AddInstructionManually(SpuInstruction inst)
+		{
+			// Let's keep the public method separate from the private.
+			AddInstruction(inst);
+		}
+
 		private SpuInstruction _lastInstruction;
 		private void AddInstruction(SpuInstruction inst)
 		{

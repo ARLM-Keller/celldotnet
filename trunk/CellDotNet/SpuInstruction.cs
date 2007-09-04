@@ -14,10 +14,11 @@ namespace CellDotNet
 
     	private int SpuInstructionNumber;
 
-        public SpuInstruction(SpuOpCode _opcode)
+        public SpuInstruction(SpuOpCode opcode)
         {
+			Utilities.AssertArgumentNotNull(opcode, "opcode");
 			SpuInstructionNumber = ++SpuInstructionCount;
-			this._opcode = _opcode;
+			this._opcode = opcode;
         }
 
         private SpuOpCode _opcode;

@@ -201,6 +201,7 @@ namespace CellDotNet
 		/// signal that the method is an intrinsic method.
 		/// </summary>
 		public static readonly IROpCode IntrinsicMethod = new IROpCode("_intrinsic_method", IRCode.IntrinsicMethodCall, FlowControl.Call, null);
+		public static readonly IROpCode SpuInstructionMethod = new IROpCode("_spu_instruction_method", IRCode.SpuInstructionMethodCall, FlowControl.Call, null);
 	}
 
 }

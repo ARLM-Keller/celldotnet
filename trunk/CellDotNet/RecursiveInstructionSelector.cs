@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Reflection;
 
 namespace CellDotNet
 {
@@ -181,6 +182,11 @@ namespace CellDotNet
 					break;
 				case IRCode.Jmp:
 					break;
+				case IRCode.SpuInstructionMethodCall:
+					{
+						MethodCallInstruction callInst = (MethodCallInstruction)inst;
+						return IntrinsicsWriter.GenerateSpuInstructionMethod(_writer, callInst, childregs);
+					}
 				case IRCode.IntrinsicMethodCall:
 					{
 						MethodCallInstruction callInst = (MethodCallInstruction)inst;
@@ -1057,6 +1063,86 @@ namespace CellDotNet
 
 		class IntrinsicsWriter
 		{
+			public static VirtualRegister GenerateSpuInstructionMethod(
+				SpuInstructionWriter writer, MethodCallInstruction inst, List<VirtualRegister> childregs)
+			{
+				MethodBase method = inst.IntrinsicMethod;
+				ParameterInfo[] parr = method.GetParameters();
+				SpuInstructionPart partsSoFar = SpuInstructionPart.None;
+				SpuInstruction spuinst = new SpuInstruction(inst.OperandSpuOpCode);
+
+				MethodInfo mi = method as MethodInfo;
+				if (mi == null)
+				{
+					// Constructor.
+					throw new NotSupportedException();
+				}
+
+				// Assign parameters.
+				for (int i = 0; i < parr.Length; i++)
+				{
+					object[] atts = parr[i].GetCustomAttributes(typeof (SpuInstructionPartAttribute), false);
+					if (atts.Length == 0)
+						throw new InvalidInstructionParametersException("Method: " + method.Name);
+					SpuInstructionPartAttribute att = (SpuInstructionPartAttribute) atts[0];
+
+					// Make sure that it's not a reassignment.
+					if ((partsSoFar | att.Part) == partsSoFar)
+						throw new InvalidInstructionParametersException("Same instruction part applied to multiple parameters.");
+					partsSoFar |= att.Part;
+
+					// TODO: Check that the opcode actually uses the parts that we give it.
+					// TODO: There should be a way for the tree builder to fix any immediate part so that we can assign it here.
+					// TODO: Should probably move some of this logic to the tree builder.
+					switch (att.Part)
+					{
+						case SpuInstructionPart.Rt:
+							spuinst.Rt = childregs[i];
+							break;
+						case SpuInstructionPart.Ra:
+							spuinst.Ra = childregs[i];
+							break;
+						case SpuInstructionPart.Rb:
+							spuinst.Rb = childregs[i];
+							break;
+						case SpuInstructionPart.Rc:
+							spuinst.Rc = childregs[i];
+							break;
+						case SpuInstructionPart.Sa:
+						case SpuInstructionPart.Ca:
+						case SpuInstructionPart.Immediate:
+							throw new NotImplementedException("Constant instruction parts are not implemented.");
+						default:
+							throw new InvalidInstructionParametersException();
+					}
+				}
+
+				// Assign optional return register.
+				{
+					writer.AddInstructionManually(spuinst);
+
+					SpuInstructionPartAttribute att;
+					if (mi.ReturnType == typeof (void))
+						return null;
+					else
+					{
+						object[] retAtts = mi.ReturnParameter.GetCustomAttributes(typeof (SpuInstructionPartAttribute), false);
+						if (retAtts.Length != 1)
+							throw new InvalidInstructionParametersException();
+
+						att = (SpuInstructionPartAttribute) retAtts[0];
+						switch (att.Part)
+						{
+							case SpuInstructionPart.Rt:
+								spuinst.Rt = writer.NextRegister();
+								return spuinst.Rt;
+							default:
+								throw new NotSupportedException();
+						}
+					}
+				}
+			}
+
 			public static VirtualRegister GenerateIntrinsicMethod(SpuInstructionWriter writer, SpuIntrinsicMethod method, List<VirtualRegister> childregs)
 			{
 				switch (method)

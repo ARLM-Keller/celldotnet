@@ -247,7 +247,7 @@ namespace CellDotNet
 			int[] code = cc.GetEmittedCode();
 
 			if (!SpeContext.HasSpeHardware)
-				throw new SpeStackOverflowException();
+				throw new SpeOutOfMemoryException();
 
 			using (SpeContext ctx = new SpeContext())
 			{
@@ -268,7 +268,7 @@ namespace CellDotNet
 			int[] code = cc.GetEmittedCode();
 
 			if (!SpeContext.HasSpeHardware)
-				throw new SpeStackOverflowException();
+				return;
 
 			using (SpeContext ctx = new SpeContext())
 			{

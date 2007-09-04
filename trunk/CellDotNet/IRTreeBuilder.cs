@@ -429,11 +429,25 @@ namespace CellDotNet
 			MethodCallInstruction mci;
 			if (methodinfo != null && _intrinsics.TryGetIntrinsic(methodinfo, out intrinsic))
 			{
-				mci = new MethodCallInstruction(intrinsic, methodinfo);
+				mci = new MethodCallInstruction(methodinfo, intrinsic);
 			}
 			else
 			{
-				mci = new MethodCallInstruction(methodBase, opcode);
+				object[] attributes = methodBase.GetCustomAttributes(typeof (SpuOpCodeAttribute), false);
+				if (attributes.Length != 0)
+				{
+					SpuOpCodeAttribute att = (SpuOpCodeAttribute) attributes[0];
+					SpuOpCode oc = SpuOpCode.GetOpCode(att.SpuOpCode);
+
+					// TODO: Check that immediate arguments are constants (ldc.*).
+
+					mci = new MethodCallInstruction(methodinfo, oc);
+				}
+				else
+				{
+					// A normal method call.
+					mci = new MethodCallInstruction(methodBase, opcode);					
+				}
 			}
 			mci.Offset = reader.Offset;
 			mci.Parameters.AddRange(arr);

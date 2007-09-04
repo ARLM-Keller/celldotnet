@@ -6,10 +6,37 @@ namespace CellDotNet
 {
 	class MethodCallInstruction : TreeInstruction
 	{
+		public MethodCallInstruction(MethodBase method, IROpCode opcode)
+		{
+			Operand = method;
+			Opcode = opcode;
+		}
+
+		/// <summary>
+		/// The reason that this ctor also takes the method as an argument is so that the type deriver
+		/// can do its job.
+		/// </summary>
+		/// <param name="intrinsic"></param>
+		/// <param name="method"></param>
+		public MethodCallInstruction(MethodInfo method, SpuIntrinsicMethod intrinsic)
+		{
+			Utilities.AssertArgument(intrinsic != SpuIntrinsicMethod.None, "intrinsic != SpuIntrinsicMethod.None");
+			Operand = intrinsic;
+			Opcode = IROpCodes.IntrinsicMethod;
+			_intrinsicMethod = method;
+		}
+
+		public MethodCallInstruction(MethodInfo method, SpuOpCode spuOpCode)
+		{
+			Operand = spuOpCode;
+			Opcode = IROpCodes.SpuInstructionMethod;
+			_intrinsicMethod = method;
+		}
+
 		/// <summary>
 		/// The Operand casted as a method.
 		/// </summary>
-		public MethodBase Method
+		public MethodBase OperandMethod
 		{
 			get { return (MethodBase) Operand; }
 		}
@@ -22,12 +49,6 @@ namespace CellDotNet
 			get { return (MethodCompiler) Operand; }
 		}
 
-		public MethodCallInstruction(MethodBase method, IROpCode opcode)
-		{
-			Operand = method;
-			Opcode = opcode;
-		}
-
 		private MethodInfo _intrinsicMethod;
 		/// <summary>
 		/// Intrinsic methods are exposed via this property so that the type deriver can do its job.
@@ -37,24 +58,15 @@ namespace CellDotNet
 			get { return _intrinsicMethod; }
 		}
 
-		/// <summary>
-		/// The reason that this ctor also takes the method as an argument is so that the type deriver
-		/// can do its job.
-		/// </summary>
-		/// <param name="intrinsic"></param>
-		/// <param name="method"></param>
-		public MethodCallInstruction(SpuIntrinsicMethod intrinsic, MethodInfo method)
-		{
-			Utilities.AssertArgument(intrinsic != SpuIntrinsicMethod.None, "intrinsic != SpuIntrinsicMethod.None");
-			Operand = intrinsic;
-			Opcode = IROpCodes.IntrinsicMethod;
-			_intrinsicMethod = method;
-		}
-
 		private List<TreeInstruction> _parameters = new List<TreeInstruction>();
 		public List<TreeInstruction> Parameters
 		{
 			get { return _parameters; }
+		}
+
+		public SpuOpCode OperandSpuOpCode
+		{
+			get { return (SpuOpCode) Operand; }
 		}
 
 		internal override void BuildPreorder(List<TreeInstruction> list)
