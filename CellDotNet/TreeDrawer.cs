@@ -30,7 +30,7 @@ namespace CellDotNet
 /*
 			bool isBranch = false;
 			bool isTarget = false;
-			if (inst.Opcode.FlowControl == FlowControl.Branch || inst.Opcode.FlowControl == FlowControl.Cond_Branch)
+			if (inst.OpCode.FlowControl == FlowControl.Branch || inst.OpCode.FlowControl == FlowControl.Cond_Branch)
 				isBranch = true;
 			if (_branchTargets.Contains(inst.Offset))
 				isTarget = true;

@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace CellDotNet
 {
@@ -89,6 +91,19 @@ namespace CellDotNet
 	}
 
 	[Flags]
+	enum SpuInstructionPart
+	{
+		None = 0,
+		Rt = 1 << 0,
+		Ra = 1 << 1,
+		Rb = 1 << 2,
+		Rc = 1 << 3,
+		Sa = 1 << 4,
+		Ca = 1 << 5,
+		Immediate = 1 << 6,
+	}
+
+	[Flags]
 	public enum SpuOpCodeRegisterUsage
 	{
 		None,
@@ -174,6 +189,9 @@ namespace CellDotNet
 		}
 
 		private SpuInstructionFormat _format;
+		/// <summary>
+		/// The instruction format indicates the bit layout of instructions using the opcode.
+		/// </summary>
 		public SpuInstructionFormat Format
 		{
 			get { return _format; }
@@ -221,6 +239,63 @@ namespace CellDotNet
 		public SpuOpCodeSpecialFeatures SpecialFeatures
 		{
 			get { return _specialFeatures; }
+		}
+
+		static Dictionary<SpuOpCodeEnum, SpuOpCode> s_enumCodeMap;
+		static object s_lock = new object();
+
+		internal static SpuOpCode GetOpCode(SpuOpCodeEnum code)
+		{
+			lock (s_lock)
+			{
+				if (s_enumCodeMap != null)
+					return s_enumCodeMap[code];
+
+				s_enumCodeMap = new Dictionary<SpuOpCodeEnum, SpuOpCode>();
+				foreach (KeyValuePair<SpuOpCode, int> pair in GetSpuOpCodes())
+				{
+					SpuOpCode opcode = pair.Key;
+					int enumvalue = pair.Value;
+
+					s_enumCodeMap.Add((SpuOpCodeEnum) enumvalue, opcode);
+				}
+			}
+
+			return s_enumCodeMap[code];
+		}
+
+//		internal static List<SpuOpCode> GetSpuOpCodes()
+
+		/// <summary>
+		/// Returns the SPU opcodes that are defined and checks that their field names are the same as the name that is given to the constructor.
+		/// <para>
+		/// IMPORTANT: There is generated code that depend on this method, 
+		/// so if you change it be sure generate new code with <see cref="CodeGenUtils"/>.
+		/// </para>
+		/// </summary>
+		/// <returns>Pairs of opcodes and their <see cref="SpuOpCodeEnum"/> values.</returns>
+		internal static List<KeyValuePair<SpuOpCode, int>> GetSpuOpCodes()
+		{
+			FieldInfo[] fields = typeof (SpuOpCode).GetFields(BindingFlags.Static | BindingFlags.Public);
+
+			List<KeyValuePair<SpuOpCode, int>> opcodes = new List<KeyValuePair<SpuOpCode, int>>();
+
+			int num = 1;
+			foreach (FieldInfo field in fields)
+			{
+				if (field.FieldType != typeof(SpuOpCode))
+					continue;
+
+				SpuOpCode oc = (SpuOpCode) field.GetValue(null);
+
+				if (oc.Name != field.Name)
+					throw new Exception(string.Format("Name of opcode field {0} is not the same as the opcode name ({1}).", field.Name, oc.Name));
+
+				opcodes.Add(new KeyValuePair<SpuOpCode, int>(oc, num));
+				num++;
+			}
+
+			return opcodes;
 		}
 
 		private SpuOpCode(string name, string title, SpuInstructionFormat format, String opcode)

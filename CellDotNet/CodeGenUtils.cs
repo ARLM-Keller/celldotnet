@@ -69,42 +69,6 @@ namespace CellDotNet
 			Console.Write(sw.GetStringBuilder().ToString());
 		}
 
-
-		/// <summary>
-		/// Returns the SPU opcodes that are defined and checks that their field names are the same as the name that is given to the constructor.
-		/// </summary>
-		/// <returns></returns>
-		private static List<SpuOpCode> GetSpuOpCodes()
-		{
-			FieldInfo[] fields = typeof (SpuOpCode).GetFields(BindingFlags.Static | BindingFlags.Public);
-
-			List<SpuOpCode> opcodes = new List<SpuOpCode>();
-
-			foreach (FieldInfo field in fields)
-			{
-				if (field.FieldType != typeof(SpuOpCode))
-					continue;
-
-				SpuOpCode oc = (SpuOpCode) field.GetValue(null);
-
-				if (oc.Name != field.Name)
-					throw new Exception(string.Format("Name of opcode field {0} is not the same as the opcode name ({1}).", field.Name, oc.Name));
-
-				opcodes.Add(oc);
-			}
-
-			return opcodes;
-		}
-
-//		[Test]
-//		public void RhDump()
-//		{
-//			foreach (SpuOpCode code in GetSpuOpCodes())
-//			{
-//				Console.WriteLine(code.Name + ": reg: " + code.RegisterUsage + "; nowrite: " + code.NoRegisterWrite);
-//			}
-//		}
-
 		/// <summary>
 		/// Returns the qualified name of the static field that contains the field. 
 		/// Used for generating the instruction writer methods.
@@ -125,9 +89,9 @@ namespace CellDotNet
 	{{
 ", GetType().FullName, "GenerateSpuInstructionWriterMethods()", typeof(SpuInstructionWriter).Name);
 
-			List<SpuOpCode> list = GetSpuOpCodes();
-			foreach (SpuOpCode opcode in list)
+			foreach (KeyValuePair<SpuOpCode, int> pair in SpuOpCode.GetSpuOpCodes())
 			{
+				SpuOpCode opcode = pair.Key;
 				if (opcode.Format == SpuInstructionFormat.Custom)
 					continue;
 
@@ -248,13 +212,14 @@ namespace CellDotNet
 	{{
 		None,", GetType().FullName);
 
-			foreach (SpuOpCode code in GetSpuOpCodes())
+			foreach (KeyValuePair<SpuOpCode, int> pair in SpuOpCode.GetSpuOpCodes())
 			{
+				SpuOpCode code = pair.Key;
 				sw.Write(@"
 		/// <summary>
-		/// {1}
+		/// {2}
 		/// </summary>
-		{0},", CultureInfo.InvariantCulture.TextInfo.ToTitleCase(code.Name), code.Title);
+		{0} = {1},", CultureInfo.InvariantCulture.TextInfo.ToTitleCase(code.Name), pair.Value, code.Title);
 			}
 			sw.Write(@"
 	}
