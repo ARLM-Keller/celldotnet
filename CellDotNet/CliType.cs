@@ -92,6 +92,29 @@ namespace CellDotNet
 			_isArray = false;
 		}
 
+		static public StackTypeDescription GetStackType(CliType clitype)
+		{
+			switch (clitype)
+			{
+				case CliType.Int32:
+					return Int32;
+				case CliType.Int64:
+					return Int64;
+				case CliType.NativeInt:
+					return NativeInt;
+				case CliType.Float32:
+					return Float32;
+				case CliType.Float64:
+					return Float64;
+				case CliType.ValueType:
+				case CliType.ObjectType:
+				case CliType.ManagedPointer:
+					throw new NotImplementedException();
+				default:
+					throw new ArgumentException();
+			}
+		}
+
 		/// <summary>
 		/// For complex types.
 		/// </summary>
@@ -143,6 +166,15 @@ namespace CellDotNet
 		{
 			get
 			{
+				if (IndirectionLevel > 0)
+				{
+					if (IsManagedPointer)
+						return CliType.ManagedPointer;
+					else if (IndirectionLevel > 0)
+						return CliType.NativeInt;
+				}
+
+				CliType t;
 				switch (_cliBasicType)
 				{
 					case CliBasicType.Integer:
@@ -151,30 +183,45 @@ namespace CellDotNet
 							case CliNumericSize.OneByte:
 							case CliNumericSize.TwoBytes:
 							case CliNumericSize.FourBytes:
-								return CliType.Int32;
+								t = CliType.Int32;
+								break;
 							case CliNumericSize.EightBytes:
-								return CliType.Int64;
+								t = CliType.Int64;
+								break;
 							default:
 								throw new Exception();
 						}
+						break;
 					case CliBasicType.Floating:
 						if (_numericSize == CliNumericSize.FourBytes)
-							return CliType.Float32;
+						{
+							t = CliType.Float32;
+							break;
+						}
 						else if (_numericSize == CliNumericSize.EightBytes)
-							return CliType.Float64;
+						{
+							t = CliType.Float64;
+							break;
+						}
 						else
 							throw new Exception();
 					case CliBasicType.Valuetype:
-						return CliType.ValueType;
+						t = CliType.ValueType;
+						break;
 					case CliBasicType.ObjectType:
-						return CliType.ObjectType;
+						t = CliType.ObjectType;
+						break;
 					case CliBasicType.NativeInt:
-						return CliType.NativeInt;
+						t = CliType.NativeInt;
+						break;
 					case CliBasicType.None:
-						return CliType.None;
+						t = CliType.None;
+						break;
 					default:
 						throw new Exception();
 				}
+
+				return t;
 			}
 		}
 
@@ -440,22 +487,22 @@ namespace CellDotNet
 	internal enum CliType
 	{
 		None = 0,
-		Int32,
-		Int64,
-		NativeInt,
-		Float32,
-		Float64,
+		Int32 = 1,
+		Int64 = 2,
+		NativeInt = 3,
+		Float32 = 4,
+		Float64 = 5,
 		/// <summary>
 		/// Any value type.
 		/// </summary>
-		ValueType,
+		ValueType = 6,
 		/// <summary>
 		/// Any object type.
 		/// </summary>
-		ObjectType,
+		ObjectType = 7,
 		/// <summary>
 		/// The "&amp;" type.
 		/// </summary>
-		ManagedPointer,
+		ManagedPointer = 8,
 	}
 }
