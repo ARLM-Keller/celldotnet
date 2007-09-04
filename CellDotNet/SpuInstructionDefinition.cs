@@ -233,8 +233,11 @@ namespace CellDotNet
 			_format = format;
 			_opCodeWidth = opcode.Length;
 			_opCode = Convert.ToInt32(opcode, 2) << 32 - OpCodeWidth;
-			if (name.StartsWith("st"))
+
+			// HACK: Shitty way to determine this.
+			if (name.StartsWith("st") || name == "rchcnt" || name == "rdch")
 				_noRegisterWrite = true;
+
 			_specialFeatures = features;
 
 			switch (format)

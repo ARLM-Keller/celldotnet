@@ -89,6 +89,7 @@
     <Compile Include="RegAllocGraphColloringTest.cs" />
     <Compile Include="RegisterSizedObject.cs" />
     <Compile Include="SpuChannel.cs" />
+    <Compile Include="SpuOpCodeTest.cs" />
     <Compile Include="SpuRuntime.cs" />
     <Compile Include="SimpleLiveAnalyzer.cs" />
     <Compile Include="SimpleRegAlloc.cs" />
