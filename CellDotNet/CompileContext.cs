@@ -304,7 +304,7 @@ namespace CellDotNet
 				// We only need to write to the preferred slot.
 				_emittedCode[_specialSpeObjects.AllocatableByteCountObject.Offset/4] = _specialSpeObjects.AllocatableByteCount;
 				_emittedCode[_specialSpeObjects.NextAllocationStartObject.Offset/4] = _specialSpeObjects.NextAllocationStart;
-				_emittedCode[_specialSpeObjects.StackPointerObject.Offset/4] = _specialSpeObjects.StackPointer;
+				_emittedCode[_specialSpeObjects.StackPointerObject.Offset/4] = _specialSpeObjects.InitialStackPointer;
 				_emittedCode[_specialSpeObjects.StackPointerObject.Offset / 4 + 1] = _specialSpeObjects.StackSize;
 				// NOTE: SpuAbiUtilities.WriteProlog() is dependending on that the two larst words is >= stackSize.
 				_emittedCode[_specialSpeObjects.StackPointerObject.Offset / 4 + 2] = _specialSpeObjects.StackSize;

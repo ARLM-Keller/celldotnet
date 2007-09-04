@@ -497,7 +497,7 @@ namespace CellDotNet
 			code[specialSpeObjects.AllocatableByteCountObject.Offset/4] = specialSpeObjects.AllocatableByteCount;
 			code[specialSpeObjects.NextAllocationStartObject.Offset/4] = specialSpeObjects.NextAllocationStart;
 
-			code[specialSpeObjects.StackPointerObject.Offset/4] = specialSpeObjects.StackPointer;
+			code[specialSpeObjects.StackPointerObject.Offset/4] = specialSpeObjects.InitialStackPointer;
 			code[specialSpeObjects.StackPointerObject.Offset/4 + 1] = specialSpeObjects.StackSize;
 			// NOTE: SpuAbiUtilities.WriteProlog() is dependending on that the two larst words is >= stackSize.
 			code[specialSpeObjects.StackPointerObject.Offset/4 + 2] = specialSpeObjects.StackSize;

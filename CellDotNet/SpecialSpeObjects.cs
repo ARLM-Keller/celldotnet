@@ -13,7 +13,7 @@ namespace CellDotNet
 
 		private RegisterSizedObject _nextAllocationStartObject = new RegisterSizedObject("NextAllocationStart");
 		private RegisterSizedObject _allocatableByteCountObject = new RegisterSizedObject("AllocatableByteCount");
-		private RegisterSizedObject _stackPointerObject = new RegisterSizedObject("StackPointer");
+		private RegisterSizedObject _stackPointerObject = new RegisterSizedObject("InitialStackPointer");
 		private RegisterSizedObject _debugValueObject = new RegisterSizedObject("DebugValue");
 		//		private RegisterSizedObject _stackSizeObject = new RegisterSizedObject("StackSize");
 		private SpuManualRoutine _stackOverflow;
@@ -108,14 +108,14 @@ namespace CellDotNet
 			}
 		}
 
-		private int _stackPointer = -1;
-		public int StackPointer
+		private int _initialStackPointer = -1;
+		public int InitialStackPointer
 		{
 			get
 			{
-				if (_stackPointer == -1)
+				if (_initialStackPointer == -1)
 					throw new InvalidOperationException();
-				return _stackPointer;
+				return _initialStackPointer;
 			}
 		}
 
@@ -130,11 +130,11 @@ namespace CellDotNet
 			}
 		}
 
-		public void SetMemorySettings(int stackPointer, int stackSize, int nextAllocationStart, int allocatableByteCount)
+		public void SetMemorySettings(int initialStackPointer, int stackSize, int nextAllocationStart, int allocatableByteCount)
 		{
 			const int MemSize = 256*1024;
 
-			Utilities.AssertArgumentRange(stackPointer >= 0 && stackPointer < MemSize, "stackPointer", stackPointer);
+			Utilities.AssertArgumentRange(initialStackPointer >= 0 && initialStackPointer < MemSize, "initialStackPointer", initialStackPointer);
 			Utilities.AssertArgumentRange(stackSize >= 0 && stackSize < MemSize, "stackSize", stackSize);
 			Utilities.AssertArgumentRange(nextAllocationStart > 0 && nextAllocationStart < MemSize,
 				"nextAllocationStart", nextAllocationStart);
@@ -143,7 +143,7 @@ namespace CellDotNet
 			Utilities.AssertArgument(nextAllocationStart + allocatableByteCount + stackSize <= MemSize,
 				"Memory settings exceeds memory size.");
 
-			_stackPointer = stackPointer;
+			_initialStackPointer = initialStackPointer;
 			_stackSize = stackSize;
 			_nextAllocationStart = nextAllocationStart;
 			_allocatableByteCount = allocatableByteCount;
