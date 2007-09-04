@@ -507,6 +507,26 @@ namespace CellDotNet
 			return std;
 		}
 
+		static private CliType[,] s_binaryNumericOps;
+		static TypeDeriver()
+		{
+			// The diagonal.
+			s_binaryNumericOps = new CliType[(int)CliType.ManagedPointer + 1, (int)CliType.ManagedPointer + 1];
+			s_binaryNumericOps[(int) CliType.Int32, (int) CliType.Int32] = CliType.Int32;
+			s_binaryNumericOps[(int) CliType.Int64, (int) CliType.Int64] = CliType.Int64;
+			s_binaryNumericOps[(int) CliType.NativeInt, (int) CliType.NativeInt] = CliType.NativeInt;
+			s_binaryNumericOps[(int) CliType.Float32, (int) CliType.Float32] = CliType.Float32;
+			s_binaryNumericOps[(int) CliType.Float64, (int) CliType.Float64] = CliType.Float64;
+
+			
+			s_binaryNumericOps[(int) CliType.Int32, (int) CliType.NativeInt] = CliType.NativeInt;
+			s_binaryNumericOps[(int) CliType.NativeInt, (int) CliType.Int32] = CliType.NativeInt;
+			s_binaryNumericOps[(int) CliType.ManagedPointer, (int) CliType.Int32] = CliType.ManagedPointer;
+			s_binaryNumericOps[(int) CliType.Int32, (int) CliType.ManagedPointer] = CliType.ManagedPointer;
+			s_binaryNumericOps[(int) CliType.NativeInt, (int) CliType.Int32] = CliType.NativeInt;
+			s_binaryNumericOps[(int) CliType.Int32, (int) CliType.NativeInt] = CliType.NativeInt;
+		}
+
 		/// <summary>
 		/// Computes the result type of binary numeric operations given the specified input types.
 		/// Computation is done according to table 2 and table 7 in the CIL spec plus intuition.
@@ -514,6 +534,7 @@ namespace CellDotNet
 		/// <returns></returns>
 		internal static StackTypeDescription GetNumericResultType(StackTypeDescription tleft, StackTypeDescription tright)
 		{
+			return StackTypeDescription.GetStackType(s_binaryNumericOps[(int) tleft.CliType, (int) tright.CliType]);
 			// We are relying on the fact that the enumeration values are sorted by size.
 			if (tleft.CliBasicType == tright.CliBasicType)
 			{

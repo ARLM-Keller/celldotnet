@@ -19,7 +19,7 @@ namespace CellDotNet
 		{
 			StackTypeDescription rv = TypeDeriver.GetNumericResultType(
 				StackTypeDescription.Int32.GetPointer(), StackTypeDescription.Int32);
-			AreEqual(StackTypeDescription.Int32.GetPointer(), rv);
+			AreEqual(StackTypeDescription.NativeInt, rv);
 		}
 	}
 }
