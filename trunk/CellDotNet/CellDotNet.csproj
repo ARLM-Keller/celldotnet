@@ -89,6 +89,10 @@
     <Compile Include="RegAllocGraphColloringTest.cs" />
     <Compile Include="RegisterSizedObject.cs" />
     <Compile Include="SpuChannel.cs" />
+    <Compile Include="SpuOpCode.cs" />
+    <Compile Include="SpuOpCodeAttribute.cs" />
+    <Compile Include="SpuOpCodeAttributeTest.cs" />
+    <Compile Include="SpuOpCodeEnum.cs" />
     <Compile Include="SpuOpCodeTest.cs" />
     <Compile Include="SpuRuntime.cs" />
     <Compile Include="SimpleLiveAnalyzer.cs" />
@@ -107,7 +111,6 @@
     <Compile Include="SpuInstruction.cs" />
     <Compile Include="OpCodeGroup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SpuInstructionDefinition.cs" />
     <Compile Include="SpuInstructionTest.cs" />
     <Compile Include="SpuInstructionWriter.cs" />
     <Compile Include="SpuInstructionWriter_autogen.cs" />
