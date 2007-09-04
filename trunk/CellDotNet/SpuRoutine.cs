@@ -88,7 +88,7 @@ namespace CellDotNet
 					}
 					else if (inst.ObjectWithAddress != null)
 					{
-						Utilities.Assert(inst.ObjectWithAddress.Offset > 0, "Bad ObjectWithAddress offset: " + inst.ObjectWithAddress.Offset);
+						Utilities.Assert(inst.ObjectWithAddress.Offset > 0, "Bad ObjectWithAddress offset: " + inst.ObjectWithAddress.Offset + ". Type: " + inst.ObjectWithAddress.GetType().Name);
 						int diff = inst.ObjectWithAddress.Offset - (Offset + curroffset);
 						Utilities.Assert(diff % 4 == 0, "branch offset not multiple of four bytes: " + diff);
 						Utilities.Assert(inst.OpCode != SpuOpCode.brsl || (diff < 1024*127 || diff > -1024*127), "Branch offset for brsl is not whitin bounds " + -1024*127 + " and " + 1024*127 + ": " + diff);

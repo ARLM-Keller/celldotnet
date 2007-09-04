@@ -507,15 +507,6 @@ namespace CellDotNet
 			IntDelegate r = SpeDelegateRunner.CreateSpeDelegate(del);
 			int entries = r();
 			Console.WriteLine("Entries: " + entries);
-			return;
-
-			Console.WriteLine("---------------------");
-			Console.WriteLine("Create:");
-			new ObjectModelTest().TestArray_Create();
-
-			Console.WriteLine("---------------------");
-			Console.WriteLine("length:");
-			new ObjectModelTest().TestArray_Length();
 		}
 	}
 }

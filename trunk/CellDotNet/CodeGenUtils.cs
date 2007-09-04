@@ -95,6 +95,15 @@ namespace CellDotNet
 			return opcodes;
 		}
 
+//		[Test]
+//		public void RhDump()
+//		{
+//			foreach (SpuOpCode code in GetSpuOpCodes())
+//			{
+//				Console.WriteLine(code.Name + ": reg: " + code.RegisterUsage + "; nowrite: " + code.NoRegisterWrite);
+//			}
+//		}
+
 		/// <summary>
 		/// Returns the qualified name of the static field that contains the field. 
 		/// Used for generating the instruction writer methods.

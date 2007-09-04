@@ -535,31 +535,6 @@ namespace CellDotNet
 		internal static StackTypeDescription GetNumericResultType(StackTypeDescription tleft, StackTypeDescription tright)
 		{
 			return StackTypeDescription.GetStackType(s_binaryNumericOps[(int) tleft.CliType, (int) tright.CliType]);
-			// We are relying on the fact that the enumeration values are sorted by size.
-			if (tleft.CliBasicType == tright.CliBasicType)
-			{
-				if (!tleft.IsByRef)
-					return new StackTypeDescription(tleft.CliBasicType,
-													(CliNumericSize)Math.Max((int)tleft.NumericSize, (int)tright.NumericSize),
-													tleft.IsSigned);
-				else
-					return StackTypeDescription.NativeInt;
-			}
-
-			if (tleft.IsByRef || tright.IsByRef)
-			{
-				if (tleft.IsByRef && tright.IsByRef)
-					return StackTypeDescription.NativeInt;
-
-				return tleft;
-			}
-
-			if (tleft.CliBasicType == CliBasicType.NativeInt || tright.CliBasicType == CliBasicType.NativeInt)
-				return tleft;
-
-			throw new ArgumentException(
-				string.Format("Argument types are not valid cil binary numeric opcodes: Left: {0}; right: {1}.", tleft.CliType,
-							  tright.CliType));
 		}
 	}
 }
