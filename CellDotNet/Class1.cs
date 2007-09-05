@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Text;
 
@@ -503,6 +504,19 @@ namespace CellDotNet
 		private delegate int IntDelegate();
 		private static void RunRasmus()
 		{
+			List<SpuOpCode> list = SpuOpCode.GetSpuOpCodes();
+			list.Sort(delegate(SpuOpCode x, SpuOpCode y) { return x.Name.CompareTo(y.Name); });
+
+			StreamWriter fs = new StreamWriter(@"c:\temp\ops.txt");
+			foreach (SpuOpCode oc in list)
+			{
+				fs.WriteLine(oc.Name + "; regs: " + oc.Parts + "; features: " + oc.SpecialFeatures + "; " +
+				                  oc.HasImmediate + "; nowrite: " + oc.NoRegisterWrite);
+
+			}
+			fs.Close();
+			return;
+
 			IntDelegate del = delegate() { return Mfc.GetAvailableQueueEntries(); };
 			IntDelegate r = SpeDelegateRunner.CreateSpeDelegate(del);
 			int entries = r();

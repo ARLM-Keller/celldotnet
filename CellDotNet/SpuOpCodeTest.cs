@@ -12,15 +12,15 @@ namespace CellDotNet
 		{
 			IsTrue(SpuOpCode.rchcnt.NoRegisterWrite);
 			IsTrue(SpuOpCode.rchcnt.HasImmediate);
-			AreEqual(SpuOpCodeRegisterUsage.Rt | SpuOpCodeRegisterUsage.Ca, SpuOpCode.rchcnt.RegisterUsage);
+			AreEqual(SpuInstructionPart.Rt | SpuInstructionPart.Ca, SpuOpCode.rchcnt.Parts);
 
 			IsTrue(SpuOpCode.rdch.NoRegisterWrite);
 			IsTrue(SpuOpCode.rdch.HasImmediate);
-			AreEqual(SpuOpCodeRegisterUsage.Rt | SpuOpCodeRegisterUsage.Ca, SpuOpCode.rdch.RegisterUsage);
+			AreEqual(SpuInstructionPart.Rt | SpuInstructionPart.Ca, SpuOpCode.rdch.Parts);
 
 			IsFalse(SpuOpCode.wrch.NoRegisterWrite);
 			IsTrue(SpuOpCode.wrch.HasImmediate);
-			AreEqual(SpuOpCodeRegisterUsage.Rt | SpuOpCodeRegisterUsage.Ca, SpuOpCode.wrch.RegisterUsage);
+			AreEqual(SpuInstructionPart.Rt | SpuInstructionPart.Ca, SpuOpCode.wrch.Parts);
 		}
 
 		[Test]
@@ -28,7 +28,7 @@ namespace CellDotNet
 		{
 			IsFalse(SpuOpCode.lqd.NoRegisterWrite);
 			IsTrue(SpuOpCode.lqd.HasImmediate);
-			AreEqual(SpuOpCodeRegisterUsage.Rt | SpuOpCodeRegisterUsage.Ra, SpuOpCode.lqd.RegisterUsage);
+			AreEqual(SpuInstructionPart.Rt | SpuInstructionPart.Ra | SpuInstructionPart.Immediate, SpuOpCode.lqd.Parts);
 		}
 
 		[Test]
@@ -36,7 +36,7 @@ namespace CellDotNet
 		{
 			IsTrue(SpuOpCode.stqd.NoRegisterWrite);
 			IsTrue(SpuOpCode.stqd.HasImmediate);
-			AreEqual(SpuOpCodeRegisterUsage.Rt | SpuOpCodeRegisterUsage.Ra, SpuOpCode.stqd.RegisterUsage);
+			AreEqual(SpuInstructionPart.Rt | SpuInstructionPart.Ra | SpuInstructionPart.Immediate, SpuOpCode.stqd.Parts);
 		}
 	}
 }

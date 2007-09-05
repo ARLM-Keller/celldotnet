@@ -103,42 +103,40 @@ namespace CellDotNet
 		Immediate = 1 << 6,
 	}
 
-	[Flags]
-	public enum SpuOpCodeRegisterUsage
-	{
-		None,
-		Rt = 1 << 0,
-		Ra = 1 << 1,
-		Rb = 1 << 2,
-		Rc = 1 << 3,
-		/// <summary>
-		/// A Special purpose register.
-		/// </summary>
-		Sa = 1 << 4,
-		/// <summary>
-		/// A channel register.
-		/// </summary>
-		Ca = 1 << 5,
-	}
-
 	/// <summary>
 	/// Special features that an opcode can have, like D and E bits or branch hint offset.
 	/// </summary>
 	public enum SpuOpCodeSpecialFeatures
 	{
 		None = 0,
-		BitC = 1 << 0,
-		BitD = 1 << 1,
-		BitE = 1 << 2,
 		/// <summary>
-		/// Combination of BitD and BitE.
+		/// Sync opcode.
+		/// <para>This is bit 11.</para>
+		/// <para>
+		/// The C feature bit causes channel synchronization to occur before instruction synchronization occurs. 
+		/// Channel synchronization allows an SPU state modified through channel instructions to affect execution.
+		/// </para>
+		/// </summary>
+		BitC = 1 << 0,
+
+		/// <summary>
+		/// These are always bits 12 and 13.
 		/// </summary>
 		BitDE = (1 << 1) | (1 << 2),
+
+		/// <summary>
+		/// Used for hbr to trigger inline prefetching. 
+		/// Both offset and register is ignored when this is set.
+		/// <para>This is bit 11.</para>
+		/// <para>When the P feature bit is set, the instruction ignores the value of RA.</para>
+		/// </summary>
 		BitP = 1 << 3,
+
 		/// <summary>
 		/// ROH and ROL.
 		/// </summary>
 		BranchHintOffset = 1 << 4,
+
 		/// <summary>
 		/// Means that the instruction in not a SPU instruction, but rather an instruction
 		/// of meaning to the compiler. Used for move.
@@ -176,127 +174,27 @@ namespace CellDotNet
 	[DebuggerDisplay("{Name}")]
 	public class SpuOpCode
 	{
-		private string _name;
-		public string Name
-		{
-			get { return _name; }
-		}
+		private readonly string _name;
+		private readonly int _opCode;
 
-		private string _title;
-		public string Title
-		{
-			get { return _title; }
-		}
+		private readonly SpuInstructionFormat _format;
 
-		private SpuInstructionFormat _format;
-		/// <summary>
-		/// The instruction format indicates the bit layout of instructions using the opcode.
-		/// </summary>
-		public SpuInstructionFormat Format
-		{
-			get { return _format; }
-		}
+		private readonly int _immediateBits;
 
-		private int _opCodeWidth;
-		public int OpCodeWidth
-		{
-			get { return _opCodeWidth; }
-		}
+		private readonly SpuOpCodeSpecialFeatures _specialFeatures;
 
-		private int _opCode;
-		public int OpCode
-		{
-			get { return _opCode; }
-		}
+		private readonly bool _noRegisterWrite;
 
-		private bool _noRegisterWrite;
-		/// <summary>
-		/// Some instructions (store) have a common layout, but the rt register is not written to.
-		/// For those instructions, this property returns true.
-		/// </summary>
-		public bool NoRegisterWrite
-		{
-			get { return _noRegisterWrite; }
-		}
+		private readonly int _opCodeWidth;
 
-		private int _immediateBits;
-		/// <summary>
-		/// Indicates if the opcode has bits for immediate data. 
-		/// ROH and ROL are not indicated by this property.
-		/// </summary>
-		public bool HasImmediate
-		{
-			get { return _immediateBits > 0; }
-		}
+		private readonly string _title;
 
-		private SpuOpCodeRegisterUsage _registerUsage;
-		public SpuOpCodeRegisterUsage RegisterUsage
-		{
-			get { return _registerUsage; }
-		}
+		private readonly SpuInstructionPart _parts;
 
-		private SpuOpCodeSpecialFeatures _specialFeatures;
-		public SpuOpCodeSpecialFeatures SpecialFeatures
-		{
-			get { return _specialFeatures; }
-		}
 
 		static Dictionary<SpuOpCodeEnum, SpuOpCode> s_enumCodeMap;
+
 		static object s_lock = new object();
-
-		internal static SpuOpCode GetOpCode(SpuOpCodeEnum code)
-		{
-			lock (s_lock)
-			{
-				if (s_enumCodeMap != null)
-					return s_enumCodeMap[code];
-
-				s_enumCodeMap = new Dictionary<SpuOpCodeEnum, SpuOpCode>();
-				foreach (KeyValuePair<SpuOpCode, int> pair in GetSpuOpCodes())
-				{
-					SpuOpCode opcode = pair.Key;
-					int enumvalue = pair.Value;
-
-					s_enumCodeMap.Add((SpuOpCodeEnum) enumvalue, opcode);
-				}
-			}
-
-			return s_enumCodeMap[code];
-		}
-
-//		internal static List<SpuOpCode> GetSpuOpCodes()
-
-		/// <summary>
-		/// Returns the SPU opcodes that are defined and checks that their field names are the same as the name that is given to the constructor.
-		/// <para>
-		/// IMPORTANT: There is generated code that depend on this method, 
-		/// so if you change it be sure generate new code with <see cref="CodeGenUtils"/>.
-		/// </para>
-		/// </summary>
-		/// <returns>Pairs of opcodes and their <see cref="SpuOpCodeEnum"/> values.</returns>
-		internal static List<KeyValuePair<SpuOpCode, int>> GetSpuOpCodes()
-		{
-			FieldInfo[] fields = typeof (SpuOpCode).GetFields(BindingFlags.Static | BindingFlags.Public);
-
-			List<KeyValuePair<SpuOpCode, int>> opcodes = new List<KeyValuePair<SpuOpCode, int>>();
-
-			int num = 1;
-			foreach (FieldInfo field in fields)
-			{
-				if (field.FieldType != typeof(SpuOpCode))
-					continue;
-
-				SpuOpCode oc = (SpuOpCode) field.GetValue(null);
-
-				if (oc.Name != field.Name)
-					throw new Exception(string.Format("Name of opcode field {0} is not the same as the opcode name ({1}).", field.Name, oc.Name));
-
-				opcodes.Add(new KeyValuePair<SpuOpCode, int>(oc, num));
-				num++;
-			}
-
-			return opcodes;
-		}
 
 		private SpuOpCode(string name, string title, SpuInstructionFormat format, String opcode)
 			: this(name, title, format, opcode, SpuOpCodeSpecialFeatures.None) { }
@@ -320,43 +218,43 @@ namespace CellDotNet
 				case SpuInstructionFormat.None:
 					break;
 				case SpuInstructionFormat.RR:
-					_registerUsage = SpuOpCodeRegisterUsage.Rt | SpuOpCodeRegisterUsage.Ra | SpuOpCodeRegisterUsage.Rb;
+					_parts = SpuInstructionPart.Rt | SpuInstructionPart.Ra | SpuInstructionPart.Rb;
 					break;
 				case SpuInstructionFormat.RR2:
-					_registerUsage = SpuOpCodeRegisterUsage.Rt | SpuOpCodeRegisterUsage.Ra;
+					_parts = SpuInstructionPart.Rt | SpuInstructionPart.Ra;
 					break;
 				case SpuInstructionFormat.RR1:
-					_registerUsage = SpuOpCodeRegisterUsage.Ra;
+					_parts = SpuInstructionPart.Ra;
 					break;
 				case SpuInstructionFormat.RRR:
-					_registerUsage = SpuOpCodeRegisterUsage.Rt | SpuOpCodeRegisterUsage.Ra | SpuOpCodeRegisterUsage.Rb | SpuOpCodeRegisterUsage.Rc;
+					_parts = SpuInstructionPart.Rt | SpuInstructionPart.Ra | SpuInstructionPart.Rb | SpuInstructionPart.Rc;
 					break;
 				case SpuInstructionFormat.RI7:
-					_registerUsage = SpuOpCodeRegisterUsage.Rt | SpuOpCodeRegisterUsage.Ra;
+					_parts = SpuInstructionPart.Rt | SpuInstructionPart.Ra | SpuInstructionPart.Immediate;
 					_immediateBits = 7;
 					break;
 				case SpuInstructionFormat.RI8:
-					_registerUsage = SpuOpCodeRegisterUsage.Rt | SpuOpCodeRegisterUsage.Ra;
+					_parts = SpuInstructionPart.Rt | SpuInstructionPart.Ra | SpuInstructionPart.Immediate;
 					_immediateBits = 8;
 					break;
 				case SpuInstructionFormat.RI10:
-					_registerUsage = SpuOpCodeRegisterUsage.Rt | SpuOpCodeRegisterUsage.Ra;
+					_parts = SpuInstructionPart.Rt | SpuInstructionPart.Ra | SpuInstructionPart.Immediate;
 					_immediateBits = 10;
 					break;
 				case SpuInstructionFormat.RI16:
-					_registerUsage = SpuOpCodeRegisterUsage.Rt;
+					_parts = SpuInstructionPart.Rt | SpuInstructionPart.Immediate;
 					_immediateBits = 16;
 					break;
 				case SpuInstructionFormat.RI16NoRegs:
-					_registerUsage = SpuOpCodeRegisterUsage.None;
+					_parts = SpuInstructionPart.Immediate;
 					_immediateBits = 16;
 					break;
 				case SpuInstructionFormat.RI18:
-					_registerUsage = SpuOpCodeRegisterUsage.Rt;
+					_parts = SpuInstructionPart.Rt | SpuInstructionPart.Immediate;
 					_immediateBits = 18;
 					break;
 				case SpuInstructionFormat.Channel:
-					_registerUsage = SpuOpCodeRegisterUsage.Rt | SpuOpCodeRegisterUsage.Ca;
+					_parts = SpuInstructionPart.Rt | SpuInstructionPart.Ca;
 					_immediateBits = 7;
 					break;
 				case SpuInstructionFormat.WEIRD:
@@ -365,6 +263,123 @@ namespace CellDotNet
 				default:
 					throw new ArgumentException();
 			}
+		}
+
+		internal static SpuOpCode GetOpCode(SpuOpCodeEnum code)
+		{
+			lock (s_lock)
+			{
+				if (s_enumCodeMap != null)
+					return s_enumCodeMap[code];
+
+				Dictionary<string, SpuOpCode> opcodenames = new Dictionary<string, SpuOpCode>(StringComparer.OrdinalIgnoreCase);
+				foreach (SpuOpCode opcode in GetSpuOpCodes())
+					opcodenames.Add(opcode.Name, opcode);
+
+
+				s_enumCodeMap = new Dictionary<SpuOpCodeEnum, SpuOpCode>();
+				FieldInfo[] fields = typeof (SpuOpCodeEnum).GetFields(BindingFlags.Static | BindingFlags.Public);
+				foreach (FieldInfo fi in fields)
+				{
+					SpuOpCode oc;
+					SpuOpCodeEnum val = (SpuOpCodeEnum) fi.GetValue(null);
+					if (val == SpuOpCodeEnum.None)
+						continue;
+
+					if (!opcodenames.TryGetValue(fi.Name, out oc))
+						throw new Exception("Enum names must match opcode names.");
+
+					s_enumCodeMap.Add(val, oc);
+				}
+			}
+
+			return s_enumCodeMap[code];
+		}
+
+		/// <summary>
+		/// Returns the SPU opcodes that are defined and checks that their field names are the same as the name that is given to the constructor.
+		/// <para>
+		/// IMPORTANT: There is generated code that depend on this method, 
+		/// so if you change it be sure generate new code with <see cref="CodeGenUtils"/>.
+		/// </para>
+		/// </summary>
+		/// <returns>Pairs of opcodes and their <see cref="SpuOpCodeEnum"/> values.</returns>
+		internal static List<SpuOpCode> GetSpuOpCodes()
+		{
+			FieldInfo[] fields = typeof (SpuOpCode).GetFields(BindingFlags.Static | BindingFlags.Public);
+
+			List<SpuOpCode> opcodes = new List<SpuOpCode>();
+
+			foreach (FieldInfo field in fields)
+			{
+				if (field.FieldType != typeof(SpuOpCode))
+					continue;
+
+				SpuOpCode oc = (SpuOpCode) field.GetValue(null);
+
+				if (oc.Name != field.Name)
+					throw new Exception(string.Format("Name of opcode field {0} is not the same as the opcode name ({1}).", field.Name, oc.Name));
+
+				opcodes.Add(oc);
+			}
+
+			return opcodes;
+		}
+
+		public string Name
+		{
+			get { return _name; }
+		}
+
+		public string Title
+		{
+			get { return _title; }
+		}
+
+		/// <summary>
+		/// The instruction format indicates the bit layout of instructions using the opcode.
+		/// </summary>
+		public SpuInstructionFormat Format
+		{
+			get { return _format; }
+		}
+
+		internal SpuInstructionPart Parts
+		{
+			get { return _parts; }
+		}
+
+		public int OpCodeWidth
+		{
+			get { return _opCodeWidth; }
+		}
+
+		public int OpCode
+		{
+			get { return _opCode; }
+		}
+
+		/// <summary>
+		/// Some instructions (store) have a common layout, but the rt register is not written to.
+		/// For those instructions, this property returns true.
+		/// </summary>
+		public bool NoRegisterWrite
+		{
+			get { return _noRegisterWrite; }
+		}
+
+		/// <summary>
+		/// Indicates if the opcode has bits for immediate data. 
+		/// ROH and ROL are not indicated by this property.
+		/// </summary>
+		public bool HasImmediate
+		{
+			get { return _immediateBits != 0; }
+		}
+
+		public SpuOpCodeSpecialFeatures SpecialFeatures
+		{
+			get { return _specialFeatures; }
 		}
 
 		/// <summary>
