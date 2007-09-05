@@ -14,12 +14,12 @@ namespace CellDotNet
 		{
 			if (!SpeContext.HasSpeHardware)
 				return;
+
 			using (SpeContext ctxt = new SpeContext())
 			{
 				ctxt.LoadProgram(new int[] { 13 });
 
 				int[] lsa = ctxt.GetCopyOffLocalStorage();
-
 				if (lsa[0] != 13)
 					Assert.Fail("DMA error.");
 			}
