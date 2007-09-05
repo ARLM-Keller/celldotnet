@@ -60,21 +60,42 @@ namespace CellDotNet
 		}
 
 		// *********************************************************************
+		// TestAddWordSubstitution_WrongDecoration_MissingDecoration
+		// *********************************************************************
+
+		[Test, ExpectedException(typeof(InvalidInstructionParametersException))]
+		public void TestAddWordSubstitution_WrongDecoration_MissingDecoration()
+		{
+			Converter<int, int> del = delegate(int input) { return Add_MissingDecorationRa(input, 10); };
+			SpeDelegateRunner.CreateSpeDelegate(del);
+		}
+
+		[SpuOpCode(SpuOpCodeEnum.A)]
+		[return: SpuInstructionPart(SpuInstructionPart.Rt)]
+		static int Add_MissingDecorationRa(
+			[SpuInstructionPart(SpuInstructionPart.Ra)]int x,
+			int y) // Missing decoration.
+		{
+			Utilities.PretendVariableIsUsed(x);
+			Utilities.PretendVariableIsUsed(y);
+			throw new InvalidOperationException();
+		}
+
+		// *********************************************************************
 		// TestAddWordSubstitution_WrongDecoration_MissingPart
 		// *********************************************************************
 
 		[Test, ExpectedException(typeof(InvalidInstructionParametersException))]
 		public void TestAddWordSubstitution_WrongDecoration_MissingPart()
 		{
-			Converter<int, int> del = delegate(int input) { return Add_WithMissingPartRa(input, 10); };
+			Action<int> del = delegate(int input) { Add_MissingPartRa(input, 10); };
 			SpeDelegateRunner.CreateSpeDelegate(del);
 		}
 
 		[SpuOpCode(SpuOpCodeEnum.A)]
-		[return: SpuInstructionPart(SpuInstructionPart.Rt)]
-		static int Add_WithMissingPartRa(
-			[SpuInstructionPart(SpuInstructionPart.Ra)]int x,
-			int y) // Missing part.
+		private static void Add_MissingPartRa( // rt return part is not present.
+			[SpuInstructionPart(SpuInstructionPart.Ra)] int x,
+			[SpuInstructionPart(SpuInstructionPart.Rb)] int y) // Missing part.
 		{
 			Utilities.PretendVariableIsUsed(x);
 			Utilities.PretendVariableIsUsed(y);

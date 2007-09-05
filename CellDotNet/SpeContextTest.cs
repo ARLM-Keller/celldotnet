@@ -186,34 +186,36 @@ namespace CellDotNet
 		private delegate int SimpleDelegateIntInt(int i);
 
 		[Test, ExpectedException(typeof(SpeStackOverflowException))]
-		public void TestStackOverflow()
+		public void TestRecursion_StackOverflow()
 		{
 			SimpleDelegateIntInt del = Recursion;
 
 			CompileContext cc = new CompileContext(del.Method);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
-
-//			new TreeDrawer().DrawMethods(cc);
-//			Disassembler.DisassembleToConsole(cc);
-
-			int[] code = cc.GetEmittedCode();
 
 			if (!SpeContext.HasSpeHardware)
 				throw new SpeStackOverflowException();
 
-			using (SpeContext ctx = new SpeContext())
+			using (SpeContext sc = new SpeContext())
 			{
-				ctx.LoadProgram(code);
-				// 100K of stack should do the trick.
-				ctx.LoadArguments(cc, new object[] { 50000 });
+				sc.RunProgram(cc, 10000); // generates at least 320K stack.
+			}
+		}
 
-				ctx.DebugValueObject = cc.DebugValueObject;
-				ctx.Run();
+		[Test]
+		public void TestRecursion_WithoutStackOverflow()
+		{
+			SimpleDelegateIntInt del = Recursion;
 
-				int returnValue = ctx.DmaGetValue<int>(cc.ReturnValueAddress);
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
 
-				Console.WriteLine("Resultat {0}", returnValue);
+			if (!SpeContext.HasSpeHardware)
+				throw new SpeStackOverflowException();
+
+			using (SpeContext sc = new SpeContext())
+			{
+				sc.RunProgram(cc, 2000); // generates at least 64K stack which is ok.
 			}
 		}
 

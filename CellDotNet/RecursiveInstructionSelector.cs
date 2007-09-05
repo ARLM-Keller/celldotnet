@@ -1078,6 +1078,8 @@ namespace CellDotNet
 					throw new NotSupportedException();
 				}
 
+				SpuInstructionPart necessaryParts = spuinst.OpCode.Parts;
+
 				// Assign parameters.
 				for (int i = 0; i < parr.Length; i++)
 				{
@@ -1117,13 +1119,15 @@ namespace CellDotNet
 					}
 				}
 
+				VirtualRegister returnRegister;
+
 				// Assign optional return register.
 				{
 					writer.AddInstructionManually(spuinst);
 
 					SpuInstructionPartAttribute att;
 					if (mi.ReturnType == typeof (void))
-						return null;
+						returnRegister = null;
 					else
 					{
 						object[] retAtts = mi.ReturnParameter.GetCustomAttributes(typeof (SpuInstructionPartAttribute), false);
@@ -1135,12 +1139,20 @@ namespace CellDotNet
 						{
 							case SpuInstructionPart.Rt:
 								spuinst.Rt = writer.NextRegister();
-								return spuinst.Rt;
+								returnRegister = spuinst.Rt;
+								partsSoFar |= SpuInstructionPart.Rt;
+								break;
 							default:
 								throw new NotSupportedException();
 						}
 					}
 				}
+
+				if (partsSoFar != necessaryParts)
+					throw new InvalidInstructionParametersException(
+						"Not all necessary instruction parts are mapped. Missing parts: " + (necessaryParts & ~partsSoFar) + ".");
+
+				return returnRegister;
 			}
 
 			public static VirtualRegister GenerateIntrinsicMethod(SpuInstructionWriter writer, SpuIntrinsicMethod method, List<VirtualRegister> childregs)
