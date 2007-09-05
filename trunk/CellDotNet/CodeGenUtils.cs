@@ -89,9 +89,8 @@ namespace CellDotNet
 	{{
 ", GetType().FullName, "GenerateSpuInstructionWriterMethods()", typeof(SpuInstructionWriter).Name);
 
-			foreach (KeyValuePair<SpuOpCode, int> pair in SpuOpCode.GetSpuOpCodes())
+			foreach (SpuOpCode opcode in SpuOpCode.GetSpuOpCodes())
 			{
-				SpuOpCode opcode = pair.Key;
 				if (opcode.Format == SpuInstructionFormat.Custom)
 					continue;
 
@@ -99,13 +98,13 @@ namespace CellDotNet
 				string ocname = opcode.Name[0].ToString().ToUpper() + opcode.Name.Substring(1);
 
 				List<string> regnames = new List<string>();
-				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Rt) != SpuOpCodeRegisterUsage.None)
+				if ((opcode.Parts & SpuInstructionPart.Rt) != SpuInstructionPart.None)
 					regnames.Add("rt");
-				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Ra) != SpuOpCodeRegisterUsage.None)
+				if ((opcode.Parts & SpuInstructionPart.Ra) != SpuInstructionPart.None)
 					regnames.Add("ra");
-				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Rb) != SpuOpCodeRegisterUsage.None)
+				if ((opcode.Parts & SpuInstructionPart.Rb) != SpuInstructionPart.None)
 					regnames.Add("rb");
-				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Rc) != SpuOpCodeRegisterUsage.None)
+				if ((opcode.Parts & SpuInstructionPart.Rc) != SpuInstructionPart.None)
 					regnames.Add("rc");
 
 
@@ -130,7 +129,7 @@ namespace CellDotNet
 				}
 
 				// Body.
-				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Rt) != SpuOpCodeRegisterUsage.None)
+				if ((opcode.Parts & SpuInstructionPart.Rt) != SpuInstructionPart.None)
 				{
 					if (opcode.NoRegisterWrite)
 					{
@@ -146,21 +145,21 @@ namespace CellDotNet
 						bodyolddest.AppendLine("inst.Rt = rt;");
 					}
 				}
-				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Ra) != SpuOpCodeRegisterUsage.None)
+				if ((opcode.Parts & SpuInstructionPart.Ra) != SpuInstructionPart.None)
 				{
 					bodynewdest.AppendLine("inst.Ra = ra;");
 					bodynewdest.AppendLine("AssertRegisterNotNull(ra, \"ra\");");
 					bodyolddest.AppendLine("inst.Ra = ra;");
 					bodyolddest.AppendLine("AssertRegisterNotNull(ra, \"ra\");");
 				}
-				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Rb) != SpuOpCodeRegisterUsage.None)
+				if ((opcode.Parts & SpuInstructionPart.Rb) != SpuInstructionPart.None)
 				{
 					bodynewdest.AppendLine("inst.Rb = rb;");
 					bodynewdest.AppendLine("AssertRegisterNotNull(rb, \"rb\");");
 					bodyolddest.AppendLine("inst.Rb = rb;");
 					bodyolddest.AppendLine("AssertRegisterNotNull(rb, \"rb\");");
 				}
-				if ((opcode.RegisterUsage & SpuOpCodeRegisterUsage.Rc) != SpuOpCodeRegisterUsage.None)
+				if ((opcode.Parts & SpuInstructionPart.Rc) != SpuInstructionPart.None)
 				{
 					bodynewdest.AppendLine("inst.Rc = rc;");
 					bodynewdest.AppendLine("AssertRegisterNotNull(rc, \"rc\");");
@@ -212,14 +211,13 @@ namespace CellDotNet
 	{{
 		None,", GetType().FullName);
 
-			foreach (KeyValuePair<SpuOpCode, int> pair in SpuOpCode.GetSpuOpCodes())
+			foreach (SpuOpCode code in SpuOpCode.GetSpuOpCodes())
 			{
-				SpuOpCode code = pair.Key;
 				sw.Write(@"
 		/// <summary>
-		/// {2}
+		/// {1}
 		/// </summary>
-		{0} = {1},", CultureInfo.InvariantCulture.TextInfo.ToTitleCase(code.Name), pair.Value, code.Title);
+		{0},", CultureInfo.InvariantCulture.TextInfo.ToTitleCase(code.Name), code.Title);
 			}
 			sw.Write(@"
 	}
