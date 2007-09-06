@@ -9,7 +9,10 @@
 	}
 	
 	pre.code {
-		padding-left: 20px;
+		margin-left: 20px;
+		padding: 10px;
+		border: 1px solid #a0a0a0;
+		background-color: #f8f8f8;
 	}
 	
 	</style>
@@ -31,22 +34,15 @@
 		Create the following shell script which can perform the conversion:</p>
 		<pre class="code">#!/bin/sh
 
- 
-
 # Convert the raw binary file to an ELF relocatable.
-
 # At the same time, we want objcopy to call the main sumbol "main"
-
 # so that the linker knows what to start.
 
-spu-objcopy -B spu -I binary -O elf32-spu --redefine-sym _binary_$1_bin_start=main  $1.bin $1.o
-
- 
+spu-objcopy -B spu -I binary -O elf32-spu --redefine-sym _binary_$1_bin_start=main $1.bin $1.o 
 
 # Finish by linking it.
 
 spu-gcc $1.o -o $1
-
 </pre>
 <p>
 	Call this script with the name of the dump file without the .bin extension.</p>
