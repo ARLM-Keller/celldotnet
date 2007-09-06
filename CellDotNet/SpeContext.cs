@@ -7,6 +7,41 @@ using System.Runtime.InteropServices;
 
 namespace CellDotNet
 {
+	/// <summary>
+	/// Represents a pinned array segment which is suiatably aligned for MFC DMA.
+	/// </summary>
+	public class AlignedMemory<T> : IDisposable where T : struct
+	{
+		private GCHandle _handle;
+		private ArraySegment<T> _arraySegment;
+
+		internal AlignedMemory(GCHandle handle, ArraySegment<T> arraySegment)
+		{
+			_handle = handle;
+			_arraySegment = arraySegment;
+		}
+
+		public ArraySegment<T> ArraySegment
+		{
+			get { return _arraySegment; }
+		}
+
+		public void Dispose()
+		{
+			if (_handle.IsAllocated)
+			{
+				_handle.Free();
+				GC.SuppressFinalize(this);
+				_arraySegment = new ArraySegment<T>();
+			}
+		}
+
+		~AlignedMemory()
+		{
+			Dispose();
+		}
+	}
+
 	internal unsafe class SpeContext : IDisposable
 	{
 		private const uint SPE_TAG_ALL = 1;
@@ -677,6 +712,46 @@ namespace CellDotNet
 
 			if (loadresult != 0)
 				throw new LibSpeException("spe_mfcio_put failed.");
+		}
+
+		public static AlignedMemory<int> AllocateAlignedInt32(int count)
+		{
+			return AllocateAlignedFourByteElementArray<int>(count);
+		}
+
+		/// <summary>
+		/// Returns an array segment containing the requested number of integers.
+		/// </summary>
+		/// <param name="count"></param>
+		private static unsafe AlignedMemory<T> AllocateAlignedFourByteElementArray<T>(int count) where T : struct
+		{
+			// Minimal padding to ensure that a final 16-byte dma write can't damage other data.
+			int paddedByteCount = Utilities.Align16(count * 4);
+
+			// Allocate a sufficently large array.
+			// We only 128-align relatively large arrays.
+			bool align128 = paddedByteCount > 64;
+			int bytesToAllocate;
+			if (align128)
+				bytesToAllocate = paddedByteCount + 128;
+			else
+				bytesToAllocate = paddedByteCount + 16;
+
+			T[] arr = new T[bytesToAllocate / 4];
+			GCHandle gchandle = GCHandle.Alloc(arr, GCHandleType.Pinned);
+
+			// Find an aligned element.
+			long arrayStartAddress = (long) Marshal.UnsafeAddrOfPinnedArrayElement(arr, 0);
+			long alignedAddress;
+			if (align128)
+				alignedAddress = Utilities.Align128(arrayStartAddress);
+			else
+				alignedAddress = Utilities.Align16(arrayStartAddress);
+
+			int segmentStartIndex = (int) (alignedAddress - arrayStartAddress) / 4;
+			ArraySegment<T> segment = new ArraySegment<T>(arr, segmentStartIndex, count);
+
+			return new AlignedMemory<T>(gchandle, segment);
 		}
 
 		public void Dispose()

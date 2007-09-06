@@ -169,7 +169,7 @@ namespace CellDotNet
 		/// </para>
 		/// <para>Write blocking</para>
 		/// </summary>
-		MFC_CmdAndMFC_ClassID = 0x15,
+		MFC_CmdAndClassID = 0x15,
 
 		/// <summary>
 		/// MFC Write Tag-Group Query Mask Channel.
