@@ -187,7 +187,15 @@ namespace CellDotNet
 
 
 			ILReader reader = new ILReader(_methodBase);
-			_blocks = new IRTreeBuilder().BuildBasicBlocks(MethodBase, reader, _variablesMutable, _parameters);
+			try
+			{
+				_blocks = new IRTreeBuilder().BuildBasicBlocks(MethodBase, reader, _variablesMutable, _parameters);
+			}
+			catch (ILParseException e)
+			{
+				throw new ILParseException(string.Format("An error occurred while parsing method '{0}.{1}'.", 
+					_methodBase.DeclaringType.Name, _methodBase.Name), e);
+			}
 			CheckTreeInstructionCountIsMinimum(reader.InstructionsRead);
 
 			State = MethodCompileState.S2TreeConstructionDone;

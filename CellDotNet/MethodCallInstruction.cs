@@ -94,6 +94,7 @@ namespace CellDotNet
 
 		Mfc_GetAvailableQueueEntries,
 		Mfc_Put,
-		Mfc_Get
+		Mfc_Get,
+		MainStorageArea_get_EffectiveAddress
 	}
 }

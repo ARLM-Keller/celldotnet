@@ -402,8 +402,6 @@ namespace CellDotNet
 			return blocks;
 		}
 
-		private IntrinsicsManager _intrinsics = new IntrinsicsManager();
-
 		private void CreateMethodCallInstruction(ILReader reader, IROpCode opcode, out int pushcount, out TreeInstruction treeinst)
 		{
 			// Build a method call from the stack.
@@ -425,32 +423,27 @@ namespace CellDotNet
 			else
 				pushcount = 0;
 
-			SpuIntrinsicMethod intrinsic;
+			object[] attribArray = methodBase.GetCustomAttributes(false);
+
+			SpuOpCodeAttribute opcodeAtt = (SpuOpCodeAttribute) Array.Find(attribArray, 
+				delegate(object obj) { return obj is SpuOpCodeAttribute; });
+			IntrinsicMethodAttribute methodAtt = (IntrinsicMethodAttribute) Array.Find(attribArray,
+				delegate(object obj) { return obj is IntrinsicMethodAttribute; });
+
 			MethodCallInstruction mci;
-			if (methodinfo != null && _intrinsics.TryGetIntrinsic(methodinfo, out intrinsic))
+			if (methodinfo != null && methodAtt != null)
 			{
-				mci = new MethodCallInstruction(methodinfo, intrinsic);
+				mci = new MethodCallInstruction(methodinfo, methodAtt.Intrinsic);
+			}
+			else if (opcodeAtt != null)
+			{
+				SpuOpCode oc = SpuOpCode.GetOpCode(opcodeAtt.SpuOpCode);
+				mci = new MethodCallInstruction(methodinfo, oc);
 			}
 			else
 			{
-				object[] attributes = methodBase.GetCustomAttributes(typeof (SpuOpCodeAttribute), false);
-				if (attributes.Length != 0)
-				{
-					SpuOpCodeAttribute att = (SpuOpCodeAttribute) attributes[0];
-					SpuOpCode oc = SpuOpCode.GetOpCode(att.SpuOpCode);
-
-					// TODO: Check that immediate arguments are constants (ldc.*).
-
-
-					// TODO: Check that immediate arguments are constants (ldc.*).
-
-					mci = new MethodCallInstruction(methodinfo, oc);
-				}
-				else
-				{
-					// A normal method call.
-					mci = new MethodCallInstruction(methodBase, opcode);					
-				}
+				// A normal method call.
+				mci = new MethodCallInstruction(methodBase, opcode);
 			}
 			mci.Offset = reader.Offset;
 			mci.Parameters.AddRange(arr);

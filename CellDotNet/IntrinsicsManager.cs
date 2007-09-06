@@ -6,6 +6,10 @@ namespace CellDotNet
 {
 	/// <summary>
 	/// Used to determine information about intrinsics.
+	/// 
+	/// <para>
+	/// NB: Currently (20070906) this class isn't used. Maybe it should be deleted...
+	/// </para>
 	/// </summary>
 	class IntrinsicsManager
 	{
@@ -44,7 +48,7 @@ namespace CellDotNet
 			Type[] typesWithIntrinsics = new Type[] { typeof(Mfc), typeof(SpuRuntime) };
 			foreach (Type type in typesWithIntrinsics)
 			{
-				MethodInfo[] methods = type.GetMethods(BindingFlags.Static | BindingFlags.Public);
+				MethodInfo[] methods = type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
 				foreach (MethodInfo mi in methods)
 				{
 					object[] arr = mi.GetCustomAttributes(typeof (IntrinsicMethodAttribute), false);
