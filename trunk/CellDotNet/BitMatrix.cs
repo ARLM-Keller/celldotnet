@@ -23,13 +23,12 @@ namespace CellDotNet
 
 		public void add(int row, int collum)
 		{
-			if(0 < row && 0 < collum)
+			if(row < 0 || collum < 0)
 				return;
 
 			if(row >= height || collum >= width)
-			{
 				resizeMatric(row+1, collum+1);
-			}
+
 			int cbit = collum%32;
 			int cindex = collum/32;
 
@@ -57,6 +56,16 @@ namespace CellDotNet
 				return ((matrix[row, cindex] >> cbit) & 1) != 0;
 			}
 			return false;
+		}
+
+		public BitVector GetRow(int row)
+		{
+			BitVector result = new BitVector();
+			for (int i = 0; i < width; i++)
+				if(contains(row,i))
+					result.Add(i);
+
+			return result;
 		}
 
 		private void resizeMatric(int newHeight, int newWidth)

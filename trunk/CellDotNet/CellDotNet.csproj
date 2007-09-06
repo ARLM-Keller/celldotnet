@@ -43,7 +43,9 @@
   <ItemGroup>
     <Compile Include="Algorithms.cs" />
     <Compile Include="BitMatrix.cs" />
+    <Compile Include="BitMatrixTest.cs" />
     <Compile Include="BitVector.cs" />
+    <Compile Include="BitVectorTest.cs" />
     <Compile Include="CalleeSavesStoreRoutine.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="CompileContextTest.cs" />

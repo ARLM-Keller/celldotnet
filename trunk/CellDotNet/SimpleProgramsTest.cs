@@ -27,10 +27,13 @@ namespace CellDotNet
 					};
 
 			int correctVal = del();
+
+			IntReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			AreEqual(correctVal, SpeDelegateRunner.CreateSpeDelegate(del)());
+			AreEqual(correctVal, del2());
 		}
 
 		[Test]
@@ -47,10 +50,13 @@ namespace CellDotNet
 				};
 
 			float correctVal = del();
+
+			FloatReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			AreEqual(correctVal, SpeDelegateRunner.CreateSpeDelegate(del)());
+			AreEqual(correctVal, del2());
 		}
 
 		[Test]
@@ -72,10 +78,11 @@ namespace CellDotNet
 				};
 
 			float correctVal = del();
+			FloatReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			AreEqual(correctVal, SpeDelegateRunner.CreateSpeDelegate(del)());
+			AreEqual(correctVal, del2());
 		}
 
 		// **************************************************
@@ -88,17 +95,25 @@ namespace CellDotNet
 			Converter<int, int> del = RecursiveSummation_Int;
 
 			const int arg = 15;
+
 			int correctval = del(arg);
 
+			Console.WriteLine("TestRecursiveSummation_Int: {0}", correctval);
+
 			CompileContext cc = new CompileContext(del.Method);
+
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
+			Disassembler.DisassembleToConsole(cc);
+
+			cc.WriteAssemblyToFile(Utilities.GetUnitTestName() + "_asm.s");
+			
 			if (!SpeContext.HasSpeHardware)
 				return;
 
 			using (SpeContext sc = new SpeContext())
 			{
-				object rv = sc.RunProgram(cc);
+				object rv = sc.RunProgram(cc, arg);
 				AreEqual(correctval, (int)rv);
 			}
 		}
@@ -112,7 +127,7 @@ namespace CellDotNet
 		{
 			if (level == 0)
 				return 0;
-			else if ((level & 2) == 1)
+			else if ((level & 1) == 1)
 				return level + RecursiveSummation_Int(level - 1);
 			else
 				return RecursiveSummation_Int(level - 1);

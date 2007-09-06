@@ -648,6 +648,14 @@ namespace CellDotNet
 				case IRCode.Conv_I8:
 					break;
 				case IRCode.Conv_R4:
+					switch (lefttype.CliType)
+					{
+						case CliType.Int32:
+						case CliType.NativeInt:
+							return _writer.WriteCsflt(vrleft, 0);
+						case CliType.Int64:
+							break;
+					}
 					break;
 				case IRCode.Conv_R8:
 					break;
@@ -1113,7 +1121,12 @@ namespace CellDotNet
 						case SpuInstructionPart.Sa:
 						case SpuInstructionPart.Ca:
 						case SpuInstructionPart.Immediate:
-							throw new NotImplementedException("Constant instruction parts are not implemented.");
+							int hasThisExtraParam = ((int)(method.CallingConvention & CallingConventions.HasThis) != 0) ? 1 : 0;
+							if (inst.Parameters[hasThisExtraParam + i].Opcode == IROpCodes.Ldc_I4)
+								spuinst.Constant = (int)inst.Parameters[hasThisExtraParam + i].Operand;
+							else
+								throw new InvalidInstructionParametersException("Spu instruction method requeries a constant.");
+							break;
 						default:
 							throw new InvalidInstructionParametersException();
 					}

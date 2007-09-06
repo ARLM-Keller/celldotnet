@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace CellDotNet
 {
-	class BitVector : IEnumerable<int>
+	public class BitVector : IEnumerable<int>
 	{
 		private int size = 0;
 
@@ -144,22 +144,7 @@ namespace CellDotNet
 			vector = newVector;
 		}
 
-//		override public bool Equals(Object o)
-//		{
-//			if (!(o is BitVector))
-//				return false;
-//
-//			BitVector bv = (BitVector)o;
-//
-//			if (vector.Length != bv.vector.Length)
-//				return false;
-//
-//			for (int i = 0; i < vector.Length; i++)
-//				if (vector[i] != bv.vector[i])
-//					return false;
-//			return true;
-//		}
-
+		// Returns the first item in the vector. NOTE if the vector is empty uint.MaxVaue is returned.
 		public uint getItem()
 		{
 			int element = 0;
@@ -221,7 +206,7 @@ namespace CellDotNet
 		public static BitVector operator |(BitVector v1, BitVector v2)
 		{
 			BitVector vmin = v1.size < v2.size ? v1 : v2;
-			BitVector vmax = v1.size > v2.size ? v1 : v2;
+			BitVector vmax = v1.size >= v2.size ? v1 : v2;
 
 			BitVector result = new BitVector(vmax);
 			result.AddAll(vmin);

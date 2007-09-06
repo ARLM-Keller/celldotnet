@@ -441,6 +441,9 @@ namespace CellDotNet
 
 					// TODO: Check that immediate arguments are constants (ldc.*).
 
+
+					// TODO: Check that immediate arguments are constants (ldc.*).
+
 					mci = new MethodCallInstruction(methodinfo, oc);
 				}
 				else

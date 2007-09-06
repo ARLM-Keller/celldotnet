@@ -112,31 +112,6 @@ namespace CellDotNet
 				AreEqual(6, returnValue, "Function call returned a wrong value.");
 			}
 		}
-
-		private unsafe delegate int* IntPointerDelegate(int* ea);
-		static unsafe int* PointerMethod(int* ea)
-		{
-			return ea + 1;
-		}
-
-		[Test]
-		public unsafe void TestArguments_RunProgram2()
-		{
-			IntPointerDelegate del = PointerMethod;
-
-			CompileContext cc = new CompileContext(del.Method);
-			cc.PerformProcessing(CompileContextState.S8Complete);
-
-			if (!SpeContext.HasSpeHardware)
-				return;
-
-			using (SpeContext ctx = new SpeContext())
-			{
-				object rv = ctx.RunProgram(cc, new object[] { new IntPtr(16) });
-				AreEqual(typeof(IntPtr), rv.GetType());
-				AreEqual((IntPtr)32, (IntPtr)rv);
-			}
-		}
 	}
 }
 

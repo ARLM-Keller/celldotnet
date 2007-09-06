@@ -30,6 +30,10 @@ namespace CellDotNet
 
 //			new SpeContextTest().TestFirstCellProgram();
 
+//			new SimpleProgramsTest().TestRecursiveSummation_Int();
+
+			new SpeContextTest().TestOutOfMemory();
+
 			Console.WriteLine("Running RunKlaus done.");
 		}
 

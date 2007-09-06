@@ -377,6 +377,7 @@ namespace CellDotNet
 
 		private void PerformRegisterAllocation()
 		{
+			
 			AssertState(MethodCompileState.S5RegisterAllocationDone - 1);
 
 			RegAllocGraphColloring regalloc = new RegAllocGraphColloring();
@@ -387,6 +388,7 @@ namespace CellDotNet
 //			regalloc.alloc(asm, 16);
 
 			State = MethodCompileState.S5RegisterAllocationDone;
+			
 		}
 
 		private void PerformRemoveRedundantMoves()
