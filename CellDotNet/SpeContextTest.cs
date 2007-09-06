@@ -218,7 +218,7 @@ namespace CellDotNet
 
 			using (SpeContext sc = new SpeContext())
 			{
-				sc.RunProgram(cc, 2000); // generates at least 64K stack which is ok.
+				sc.RunProgram(cc, 100); // generates at least 6K stack which is ok.
 			}
 		}
 

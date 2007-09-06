@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -99,6 +98,59 @@ namespace CellDotNet
 			Utilities.PretendVariableIsUsed(x);
 			Utilities.PretendVariableIsUsed(y);
 			throw new InvalidOperationException();
+		}
+
+
+
+		[SpuOpCode(SpuOpCodeEnum.Ai)]
+		[return: SpuInstructionPart(SpuInstructionPart.Rt)]
+		static int AddI(
+			[SpuInstructionPart(SpuInstructionPart.Ra)]int x,
+			[SpuInstructionPart(SpuInstructionPart.Immediate)]int y)
+		{
+			Utilities.PretendVariableIsUsed(x);
+			Utilities.PretendVariableIsUsed(y);
+			throw new InvalidOperationException();
+		}
+
+		[Test]
+		public void TestAddWordImmediatedSubstitution()
+		{
+			Converter<int, int> del = delegate(int input) { return AddI(input, 10); };
+
+			CompileContext cc = new CompileContext(del.Method);
+
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			using (SpeContext sc = new SpeContext())
+			{
+				sc.RunProgram(cc, new object[] {12});
+
+				int returnValue = sc.DmaGetValue<int>(cc.ReturnValueAddress);
+
+				AreEqual(22, returnValue, "");
+			}
+		}
+
+		[Test, ExpectedException(typeof(InvalidInstructionParametersException))]
+		public void TestAddWordImmediatedSubstitution_NotConst()
+		{
+			Converter<int, int> del = delegate(int input) { return AddI(input, input); };
+
+			CompileContext cc = new CompileContext(del.Method);
+
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			using (SpeContext sc = new SpeContext())
+			{
+				sc.RunProgram(cc, new object[] { 12 });
+			}
 		}
 	}
 }

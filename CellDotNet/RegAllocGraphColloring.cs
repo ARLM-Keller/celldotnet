@@ -639,16 +639,20 @@ namespace CellDotNet
 				{
 					live.Add((int) regToInt[inst.Def]);
 
-					if(inst.IsCall())
+					if (inst.IsCall())
+					{
 						foreach (VirtualRegister register in HardwareRegister.CallerSavesVirtualRegisters)
-						{
 							live.Add((int) regToInt[register]);
-						}
 
-//						live.AndAll(new List<VirtualRegister>(HardwareRegister.CallerSavesVirtualRegisters));
+//							live.AndAll(new List<VirtualRegister>(HardwareRegister.CallerSavesVirtualRegisters));
+						uint reg3 = regToInt[HardwareRegister.GetVirtualHardwareRegister((CellRegister) 3)];
+						foreach (int l in live)
+							AddEdge((uint) l, reg3);
+					}
 
+					uint regdef = regToInt[inst.Def];
 					foreach (int l in live)
-						AddEdge((uint) l, regToInt[inst.Def]);
+						AddEdge((uint) l, regdef);
 				}
 			}
 		}
@@ -965,14 +969,10 @@ namespace CellDotNet
 			BitVector initOkColors = new BitVector(HardwareRegister.getCallerSavesCellRegisters().Length + HardwareRegister.getCalleeSavesCellRegisters().Length);
 
 			foreach (CellRegister register in HardwareRegister.getCallerSavesCellRegisters())
-			{
 				initOkColors.Add((int)register);
-			}
 
 			foreach (CellRegister register in HardwareRegister.getCalleeSavesCellRegisters())
-			{
 				initOkColors.Add((int)register);
-			}
 
 			while (selectStack.Count > 0)
 			{
