@@ -3,8 +3,6 @@ using System.Collections.Generic;
 
 namespace CellDotNet
 {
-	using CellDotNet_SpuOpCode=CellDotNet.SpuOpCode;
-
 	/// <summary>
 	/// Contains static methods for DMA operations by an SPE. 
 	/// <para>It closely mirrors the functionality of libspe.</para>
@@ -50,11 +48,11 @@ namespace CellDotNet
 			throw new InvalidOperationException();
 		}
 
-		static public void WaitForCompletion(uint tagMask)
+		static public void WaitForDmaCompletion(uint tagMask)
 		{
 			const uint SPE_TAG_ALL = 1;
-			const uint SPE_TAG_ANY = 2;
-			const uint SPE_TAG_IMMEDIATE = 3;
+//			const uint SPE_TAG_ANY = 2;
+//			const uint SPE_TAG_IMMEDIATE = 3;
 
 			WriteChannel(SpuWriteChannel.MFC_WrTagMask, tagMask);
 			WriteChannel(SpuWriteChannel.MFC_WrTagUpdate, SPE_TAG_ALL);

@@ -23,7 +23,7 @@ namespace CellDotNet
 
 		public MainStorageArea GetArea()
 		{
-			if (_arrayHandle.IsAllocated)
+			if (!_arrayHandle.IsAllocated)
 				throw new InvalidOperationException();
 
 			IntPtr ptr = Marshal.UnsafeAddrOfPinnedArrayElement(_arraySegment.Array, _arraySegment.Offset);
@@ -290,7 +290,14 @@ namespace CellDotNet
 					*((float*)ptr) = f;
 					break;
 				default:
-					throw new NotSupportedException("Argument type " + value.GetType().Name + " not supported.");
+					if (value is MainStorageArea)
+					{
+						MainStorageArea area = (MainStorageArea) value;
+						*((int*)ptr) = area.EffectiveAddress;
+					}
+					else
+						throw new NotSupportedException("Argument type " + value.GetType().Name + " not supported.");
+					break;
 			}
 
 			spe_mfcio_get(lsAddress.Value, ptr, 16, DMA_tag, 0, 0);

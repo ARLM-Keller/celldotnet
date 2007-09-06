@@ -50,7 +50,7 @@ namespace CellDotNet
 						uint tag = 1;
 //						Mfc.Get(arr, input, 4);
 						Mfc.Get(arr, input, 4, tag);
-						Mfc.WaitForCompletion(tag);
+						Mfc.WaitForDmaCompletion(tag);
 
 						int sum = 0;
 						for (int i = 0; i < 4; i++)
@@ -81,6 +81,7 @@ namespace CellDotNet
 		private int _effectiveAddress;
 		public int EffectiveAddress
 		{
+			[IntrinsicMethod(SpuIntrinsicMethod.MainStorageArea_get_EffectiveAddress)]
 			get { return _effectiveAddress; }
 		}
 

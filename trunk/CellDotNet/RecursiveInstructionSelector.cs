@@ -1183,6 +1183,9 @@ namespace CellDotNet
 					case SpuIntrinsicMethod.Mfc_Put:
 						WriteMfcDmaCommand(writer, MfcDmaCommand.Put, childregs);
 						return null;
+					case SpuIntrinsicMethod.MainStorageArea_get_EffectiveAddress:
+						// The address is the only component.
+						return childregs[0];
 					default:
 						throw new ArgumentException();
 				}
