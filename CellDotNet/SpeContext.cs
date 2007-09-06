@@ -8,17 +8,28 @@ using System.Runtime.InteropServices;
 namespace CellDotNet
 {
 	/// <summary>
-	/// Represents a pinned array segment which is suiatably aligned for MFC DMA.
+	/// Represents a pinned array segment which is sutably aligned for MFC DMA.
 	/// </summary>
 	public class AlignedMemory<T> : IDisposable where T : struct
 	{
-		private GCHandle _handle;
+		private GCHandle _arrayHandle;
 		private ArraySegment<T> _arraySegment;
 
-		internal AlignedMemory(GCHandle handle, ArraySegment<T> arraySegment)
+		internal AlignedMemory(GCHandle arrayHandle, ArraySegment<T> arraySegment)
 		{
-			_handle = handle;
+			_arrayHandle = arrayHandle;
 			_arraySegment = arraySegment;
+		}
+
+		public MainStorageArea GetArea()
+		{
+			if (_arrayHandle.IsAllocated)
+				throw new InvalidOperationException();
+
+			IntPtr ptr = Marshal.UnsafeAddrOfPinnedArrayElement(_arraySegment.Array, _arraySegment.Offset);
+			MainStorageArea area = new MainStorageArea(ptr);
+
+			return area;
 		}
 
 		public ArraySegment<T> ArraySegment
@@ -28,9 +39,9 @@ namespace CellDotNet
 
 		public void Dispose()
 		{
-			if (_handle.IsAllocated)
+			if (_arrayHandle.IsAllocated)
 			{
-				_handle.Free();
+				_arrayHandle.Free();
 				GC.SuppressFinalize(this);
 				_arraySegment = new ArraySegment<T>();
 			}
@@ -47,229 +58,6 @@ namespace CellDotNet
 		private const uint SPE_TAG_ALL = 1;
 		private const uint SPE_TAG_ANY = 2;
 		private const uint SPE_TAG_IMMEDIATE = 3;
-
-
-		#region struct SpeStopInfo
-
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <remarks>
-		/// The structure is defined by libspe 2.1 as:
-		/// <code>
-		/// typedef struct spe_stop_info { 
-		///		unsigned int stop_reason; 
-		///		union { 
-		///			int spe_exit_code; 
-		///			int spe_signal_code; 
-		///			int spe_runtime_error; 
-		///			int spe_runtime_exception; 
-		///			int spe_runtime_fatal; 
-		///			int spe_callback_error; 
-		///			void *__reserved_ptr; 
-		///			unsigned long long __reserved_u64;
-		///		} result; 
-		///		int spu_status; 
-		/// } spe_stop_info_t;
-		/// </code>
-		/// <para>Note that some of the fields that are based on <see cref="Result"/>
-		/// directly reflects the contents of <see cref="SpuStatus"/>.
-		/// </para>
-		/// </remarks>
-		[StructLayout(LayoutKind.Explicit)]
-		struct SpeStopInfo
-		{
-			[FieldOffset(0)] private SpeStopReason StopReason;
-			[FieldOffset(4)] private long Result;
-			[FieldOffset(12)] private int SpuStatus;
-
-
-			public override string ToString()
-			{
-				return string.Format("stopreason: {0}; result: {1:x8}; status: {2:x8}",
-				                     StopReason, Result, SpuStatus);
-			}
-
-			/// <summary>
-			/// Exit code returned by the SPE program in the range 0..255. 
-			/// The convention for stop and signal usage by SPE programs is that
-			/// 0x2000-0x20FF are exit events. 0x2100-0x21FF are callback events. 
-			/// 0x0 is an invalid instruction runtime error. Signal codes 0x0001-0x1FFF 
-			/// are user-defined signals. This convention determines the mapping to the 
-			/// respective fields in stopinfo.
-			/// </summary>
-			public int ExitCode
-			{
-				get
-				{
-					if (StopReason != SpeStopReason.SPE_EXIT)
-						throw new InvalidOperationException();
-					return (int) Result;
-				}
-			}
-
-			/// <summary>
-			/// Stop and signal code sent by the SPE program. The lower 14-bit of this field 
-			/// contain the signal number. The convention for stop and signal usage by SPE
-			///  programs is that 0x2000-0x20FF are exit events. 0x2100-0x21FF are
-			///  callback events. 0x0 is an invalid instruction runtime error. 
-			/// Signal codes 0x0001-0x1FFF are user-defined signals. 
-			/// This convention determines the mapping to the respective fields in stopinfo.
-			/// </summary>
-			public SpuStopCode SignalCode
-			{
-				get
-				{
-					if (StopReason != SpeStopReason.SPE_EXIT && StopReason != SpeStopReason.SPE_STOP_AND_SIGNAL)
-						throw new InvalidOperationException();
-					return (SpuStopCode) ((int)Result | 0x2000);
-				}
-			}
-
-			public int RuntimeExceptionCode
-			{
-				get
-				{
-					if (StopReason != SpeStopReason.SPE_RUNTIME_ERROR)
-						throw new InvalidOperationException();
-					return (int)Result;
-				}
-			}
-
-			/// <summary>
-			/// Contains the (implementation-dependent) errno as set by the 
-			/// underlying system call that failed.
-			/// </summary>
-			public int RuntimeFatalCode
-			{
-				get
-				{
-					if (StopReason != SpeStopReason.SPE_RUNTIME_FATAL)
-						throw new InvalidOperationException();
-					return (int)Result;
-				}
-			}
-
-			/// <summary>
-			/// Contains the return code from the failed library callback.
-			/// </summary>
-			public int CallbackErrorCode
-			{
-				get
-				{
-					if (StopReason != SpeStopReason.SPE_CALLBACK_ERROR)
-						throw new InvalidOperationException();
-					return (int)Result;
-				}
-			}
-		}
-
-		#endregion
-
-		#region struct SpuStatusRegister
-
-		#endregion
-
-		#region enum SpeStopReason ad SpeProblemArea
-
-		/// <summary>
-		/// Used by <see cref="SpeStopInfo"/> to specify a stop reason.
-		/// <para>The documentation is from the libspe documentation.</para>
-		/// </summary>
-		enum SpeStopReason
-		{
-			/// <summary>
-			/// SPE program terminated calling exit(code) with code in the range 0..255. 
-			/// The code is saved in spe_exit_code.
-			/// </summary>
-			SPE_EXIT = 1,
-
-			/// <summary>
-			/// SPE program stopped because SPU ran a stop and signal instruction. 
-			/// Further information in field spe_signal_code.
-			/// </summary>
-			SPE_STOP_AND_SIGNAL = 2,
-
-			/// <summary>
-			/// SPE program stopped asynchronously because of an runtime exception (event) 
-			/// described in spe_runtime_exception. In this case, spe_status is meaningless 
-			/// and is therefore set to -1. 
-			/// <para>
-			/// Note: (Linux) This error condition can only be caught and reported by 
-			/// spe_context_run if the SPE context was created with the flag SPE_EVENTS_ENABLE. 
-			/// Otherwise the Linux kernel generates a signal to indicate the runtime error.
-			/// </para>
-			/// </summary>
-			SPE_RUNTIME_ERROR = 3,
-
-			/// <summary>
-			/// The documentation does not state what this one is supposed to signal; it
-			/// seems like it's  <see cref="SPE_RUNTIME_ERROR"/> that uses the 
-			/// <see cref="SpeStopInfo.RuntimeExceptionCode"/> field.
-			/// </summary>
-			SPE_RUNTIME_EXCEPTION = 4,
-
-			/// <summary>
-			/// SPE program stopped for other reasons, usually fatal operating system errors 
-			/// such as insufficient resources. Further information in spe_runtime_fatal. 
-			/// In this case, spe_status would be meaningless and is therefore set to -1.
-			/// </summary>
-			SPE_RUNTIME_FATAL = 5,
-
-			/// <summary>
-			/// A library callback returned a non-zero exit value, which is provided
-			/// in spe_callback_error. spe_status contains the information about the failed
-			/// library callback (spe_status &amp; 0x3fff0000 is the stop code which led to the
-			/// library callback.)
-			/// </summary>
-			SPE_CALLBACK_ERROR = 6,
-		}
-
-
-		/// <summary>
-		/// Different spe problem areas that can be retrieved if the context is created 
-		/// with the SPE_MAP_PS flag.
-		/// </summary>
-		enum SpeProblemArea
-		{ 
-			SPE_MSSYNC_AREA = 0,
-			SPE_MFC_COMMAND_AREA = 1,
-			SPE_CONTROL_AREA = 2,
-			SPE_SIG_NOTIFY_1_AREA = 3,
-			SPE_SIG_NOTIFY_2_AREA = 4
-		};
-
-		#endregion
-
-		#region errno
-
-		private static ErrorCodeDelegate s_errorCodeGetter;
-		private delegate object ErrorCodeDelegate();
-
-		/// <summary>
-		/// Used to get the errno that libspe sets.
-		/// </summary>
-		public static object GetErrorCode()
-		{
-			if (!HasSpeHardware)
-				throw new InvalidOperationException();
-
-			if (s_errorCodeGetter == null)
-			{
-				//  /usr/lib/mono/gac/Mono.Posix/2.0.0.0__0738eb9f132ed756/Mono.Posix.dll
-				Assembly ass = Assembly.LoadFrom("/usr/lib/mono/gac/Mono.Posix/2.0.0.0__0738eb9f132ed756/Mono.Posix.dll");
-				Type s_stdlib = ass.GetType("Mono.Unix.Native.Stdlib");
-				MethodInfo method = s_stdlib.GetMethod("GetLastError");
-
-				s_errorCodeGetter = (ErrorCodeDelegate)Delegate.CreateDelegate(
-							typeof(ErrorCodeDelegate), method);
-			}
-
-			return s_errorCodeGetter();
-		}
-
-		#endregion
-
 
 /*
 		class SpeHandle : SafeHandle
@@ -426,7 +214,8 @@ namespace CellDotNet
 
 				if (waitresult == -1)
 					throw new LibSpeException("spe_mfcio_status_tag_read failed.");
-			} finally
+			} 
+			finally
 			{
 				if (dataBufMain != IntPtr.Zero)
 					Marshal.FreeHGlobal(dataBufMain);
@@ -809,6 +598,227 @@ namespace CellDotNet
 		}
 
 		#endregion
+
+		#region struct SpeStopInfo
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <remarks>
+		/// The structure is defined by libspe 2.1 as:
+		/// <code>
+		/// typedef struct spe_stop_info { 
+		///		unsigned int stop_reason; 
+		///		union { 
+		///			int spe_exit_code; 
+		///			int spe_signal_code; 
+		///			int spe_runtime_error; 
+		///			int spe_runtime_exception; 
+		///			int spe_runtime_fatal; 
+		///			int spe_callback_error; 
+		///			void *__reserved_ptr; 
+		///			unsigned long long __reserved_u64;
+		///		} result; 
+		///		int spu_status; 
+		/// } spe_stop_info_t;
+		/// </code>
+		/// <para>Note that some of the fields that are based on <see cref="Result"/>
+		/// directly reflects the contents of <see cref="SpuStatus"/>.
+		/// </para>
+		/// </remarks>
+		[StructLayout(LayoutKind.Explicit)]
+		struct SpeStopInfo
+		{
+			[FieldOffset(0)]
+			private SpeStopReason StopReason;
+			[FieldOffset(4)]
+			private long Result;
+			[FieldOffset(12)]
+			private int SpuStatus;
+
+
+			public override string ToString()
+			{
+				return string.Format("stopreason: {0}; result: {1:x8}; status: {2:x8}",
+									 StopReason, Result, SpuStatus);
+			}
+
+			/// <summary>
+			/// Exit code returned by the SPE program in the range 0..255. 
+			/// The convention for stop and signal usage by SPE programs is that
+			/// 0x2000-0x20FF are exit events. 0x2100-0x21FF are callback events. 
+			/// 0x0 is an invalid instruction runtime error. Signal codes 0x0001-0x1FFF 
+			/// are user-defined signals. This convention determines the mapping to the 
+			/// respective fields in stopinfo.
+			/// </summary>
+			public int ExitCode
+			{
+				get
+				{
+					if (StopReason != SpeStopReason.SPE_EXIT)
+						throw new InvalidOperationException();
+					return (int)Result;
+				}
+			}
+
+			/// <summary>
+			/// Stop and signal code sent by the SPE program. The lower 14-bit of this field 
+			/// contain the signal number. The convention for stop and signal usage by SPE
+			///  programs is that 0x2000-0x20FF are exit events. 0x2100-0x21FF are
+			///  callback events. 0x0 is an invalid instruction runtime error. 
+			/// Signal codes 0x0001-0x1FFF are user-defined signals. 
+			/// This convention determines the mapping to the respective fields in stopinfo.
+			/// </summary>
+			public SpuStopCode SignalCode
+			{
+				get
+				{
+					if (StopReason != SpeStopReason.SPE_EXIT && StopReason != SpeStopReason.SPE_STOP_AND_SIGNAL)
+						throw new InvalidOperationException();
+					return (SpuStopCode)((int)Result | 0x2000);
+				}
+			}
+
+			public int RuntimeExceptionCode
+			{
+				get
+				{
+					if (StopReason != SpeStopReason.SPE_RUNTIME_ERROR)
+						throw new InvalidOperationException();
+					return (int)Result;
+				}
+			}
+
+			/// <summary>
+			/// Contains the (implementation-dependent) errno as set by the 
+			/// underlying system call that failed.
+			/// </summary>
+			public int RuntimeFatalCode
+			{
+				get
+				{
+					if (StopReason != SpeStopReason.SPE_RUNTIME_FATAL)
+						throw new InvalidOperationException();
+					return (int)Result;
+				}
+			}
+
+			/// <summary>
+			/// Contains the return code from the failed library callback.
+			/// </summary>
+			public int CallbackErrorCode
+			{
+				get
+				{
+					if (StopReason != SpeStopReason.SPE_CALLBACK_ERROR)
+						throw new InvalidOperationException();
+					return (int)Result;
+				}
+			}
+		}
+
+		#endregion
+
+		#region enum SpeStopReason ad SpeProblemArea
+
+		/// <summary>
+		/// Used by <see cref="SpeStopInfo"/> to specify a stop reason.
+		/// <para>The documentation is from the libspe documentation.</para>
+		/// </summary>
+		enum SpeStopReason
+		{
+			/// <summary>
+			/// SPE program terminated calling exit(code) with code in the range 0..255. 
+			/// The code is saved in spe_exit_code.
+			/// </summary>
+			SPE_EXIT = 1,
+
+			/// <summary>
+			/// SPE program stopped because SPU ran a stop and signal instruction. 
+			/// Further information in field spe_signal_code.
+			/// </summary>
+			SPE_STOP_AND_SIGNAL = 2,
+
+			/// <summary>
+			/// SPE program stopped asynchronously because of an runtime exception (event) 
+			/// described in spe_runtime_exception. In this case, spe_status is meaningless 
+			/// and is therefore set to -1. 
+			/// <para>
+			/// Note: (Linux) This error condition can only be caught and reported by 
+			/// spe_context_run if the SPE context was created with the flag SPE_EVENTS_ENABLE. 
+			/// Otherwise the Linux kernel generates a signal to indicate the runtime error.
+			/// </para>
+			/// </summary>
+			SPE_RUNTIME_ERROR = 3,
+
+			/// <summary>
+			/// The documentation does not state what this one is supposed to signal; it
+			/// seems like it's  <see cref="SPE_RUNTIME_ERROR"/> that uses the 
+			/// <see cref="SpeStopInfo.RuntimeExceptionCode"/> field.
+			/// </summary>
+			SPE_RUNTIME_EXCEPTION = 4,
+
+			/// <summary>
+			/// SPE program stopped for other reasons, usually fatal operating system errors 
+			/// such as insufficient resources. Further information in spe_runtime_fatal. 
+			/// In this case, spe_status would be meaningless and is therefore set to -1.
+			/// </summary>
+			SPE_RUNTIME_FATAL = 5,
+
+			/// <summary>
+			/// A library callback returned a non-zero exit value, which is provided
+			/// in spe_callback_error. spe_status contains the information about the failed
+			/// library callback (spe_status &amp; 0x3fff0000 is the stop code which led to the
+			/// library callback.)
+			/// </summary>
+			SPE_CALLBACK_ERROR = 6,
+		}
+
+
+		/// <summary>
+		/// Different spe problem areas that can be retrieved if the context is created 
+		/// with the SPE_MAP_PS flag.
+		/// </summary>
+		enum SpeProblemArea
+		{
+			SPE_MSSYNC_AREA = 0,
+			SPE_MFC_COMMAND_AREA = 1,
+			SPE_CONTROL_AREA = 2,
+			SPE_SIG_NOTIFY_1_AREA = 3,
+			SPE_SIG_NOTIFY_2_AREA = 4
+		};
+
+		#endregion
+
+		#region errno
+
+		private static ErrorCodeDelegate s_errorCodeGetter;
+		private delegate object ErrorCodeDelegate();
+
+		/// <summary>
+		/// Used to get the errno that libspe sets.
+		/// </summary>
+		public static object GetErrorCode()
+		{
+			if (!HasSpeHardware)
+				throw new InvalidOperationException();
+
+			if (s_errorCodeGetter == null)
+			{
+				//  /usr/lib/mono/gac/Mono.Posix/2.0.0.0__0738eb9f132ed756/Mono.Posix.dll
+				Assembly ass = Assembly.LoadFrom("/usr/lib/mono/gac/Mono.Posix/2.0.0.0__0738eb9f132ed756/Mono.Posix.dll");
+				Type s_stdlib = ass.GetType("Mono.Unix.Native.Stdlib");
+				MethodInfo method = s_stdlib.GetMethod("GetLastError");
+
+				s_errorCodeGetter = (ErrorCodeDelegate)Delegate.CreateDelegate(
+							typeof(ErrorCodeDelegate), method);
+			}
+
+			return s_errorCodeGetter();
+		}
+
+		#endregion
+
 	}
 
 	#region struct SpuStatusRegister

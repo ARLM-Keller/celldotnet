@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Security.Permissions;
 
 namespace CellDotNet
 {
@@ -209,7 +210,6 @@ namespace CellDotNet
 			{
 				parms.Add(new MethodParameter(pi, td.GetStackTypeDescription(pi.ParameterType)));
 			}
-
 
 			variables = new List<MethodVariable>();
 			foreach (LocalVariableInfo lvi in method.GetMethodBody().LocalVariables)

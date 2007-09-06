@@ -1177,7 +1177,7 @@ namespace CellDotNet
 						return null;
 					case SpuIntrinsicMethod.Mfc_GetAvailableQueueEntries:
 						return writer.WriteRdchcnt(SpuWriteChannel.MFC_CmdAndClassID);
-					case SpuIntrinsicMethod.MfcGet:
+					case SpuIntrinsicMethod.Mfc_Get:
 						WriteMfcDmaCommand(writer, MfcDmaCommand.Get, childregs);
 						return null;
 					case SpuIntrinsicMethod.Mfc_Put:
