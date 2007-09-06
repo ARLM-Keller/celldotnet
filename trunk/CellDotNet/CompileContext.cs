@@ -201,16 +201,6 @@ namespace CellDotNet
 		private int[] _emittedCode;
 		private DataObject _argumentArea;
 
-		public int[] GetEmittedCode()
-		{
-			if (State < CompileContextState.S7CodeEmitted)
-				throw new InvalidOperationException("State: " + State);
-
-			Utilities.Assert(_emittedCode != null, "_emittedCode != null");
-
-			return _emittedCode;
-		}
-
 		/// <summary>
 		/// Returns a list of infrastructure SPU routines, including the initalization code.
 		/// </summary>
@@ -502,9 +492,15 @@ namespace CellDotNet
 		/// The executable should be ready for debugging with spu-gdb.
 		/// </summary>
 		/// <param name="filename"></param>
-		public void WriteAssemblyToFile(string filename)
+		/// <param name="arguments">Optional.</param>
+		public void WriteAssemblyToFile(string filename, params ValueType[] arguments)
 		{
-			int[] code = GetEmittedCode();
+			int[] code;
+			if (arguments != null && arguments.Length != 0)
+				code = GetEmittedCode(arguments);
+			else
+				code = GetEmittedCode();
+
 			List<ObjectWithAddress> symbols = new List<ObjectWithAddress>(GetAllObjectsForDisassembly());
 			WriteAssemblyToFile(filename, code, symbols);
 		}
@@ -516,7 +512,7 @@ namespace CellDotNet
 		/// <param name="filename"></param>
 		/// <param name="code"></param>
 		/// <param name="symbols"></param>
-		public static void WriteAssemblyToFile(string filename, int[] code, List<ObjectWithAddress> symbols)
+		private static void WriteAssemblyToFile(string filename, int[] code, List<ObjectWithAddress> symbols)
 		{
 			using (StreamWriter writer = new StreamWriter(filename, false, Encoding.ASCII))
 			{
@@ -630,6 +626,62 @@ main:
 ", name, obj.Offset);
 				}
 			}
+		}
+
+		private int[] GetArgumentsImage(object[] arguments)
+		{
+			if (EntryPoint.Parameters.Count != arguments.Length)
+				throw new ArgumentException(string.Format("Invalid number of arguments in array; expected {0}, got {1}.",
+				                                          EntryPoint.Parameters.Count, arguments.Length));
+			Utilities.Assert(ArgumentArea.Size == arguments.Length * 16, "cc.ArgumentArea.Size == arguments.Length * 16");
+
+			int[] argbuf = new int[arguments.Length * 4];
+			for (int i = 0; i < EntryPoint.Parameters.Count; i++)
+			{
+				object val = arguments[i];
+				byte[] buf;
+
+				if (val is int)
+					buf = BitConverter.GetBytes((int)val);
+				else if (val is long)
+					buf = BitConverter.GetBytes((long)val);
+				else if (val is float)
+					buf = BitConverter.GetBytes((float)val);
+				else if (val is double)
+					buf = BitConverter.GetBytes((double)val);
+				else if (val is MainStorageArea)
+					buf = BitConverter.GetBytes(((MainStorageArea)val).EffectiveAddress);
+				else
+					throw new ArgumentException("Unsupported argument datatype: " + val.GetType().Name);
+
+				Utilities.Assert(buf.Length <= 16, "buf.Length <= 16");
+
+				Buffer.BlockCopy(buf, 0, argbuf, i*16, buf.Length);
+			}
+
+			return argbuf;
+		}
+
+		public int[] GetEmittedCode()
+		{
+			if (State < CompileContextState.S7CodeEmitted)
+				throw new InvalidOperationException("State: " + State);
+
+			Utilities.Assert(_emittedCode != null, "_emittedCode != null");
+
+			int[] copy = new int[_emittedCode.Length];
+			Utilities.CopyCode(_emittedCode, 0, copy, 0, _emittedCode.Length);
+
+			return copy;
+		}
+
+		public int[] GetEmittedCode(params object[] arguments)
+		{
+			int[] code = GetEmittedCode();
+			int[] argumentImage = GetArgumentsImage(arguments);
+			Utilities.CopyCode(argumentImage, 0, code, ArgumentArea.Offset / 4, argumentImage.Length);
+
+			return code;
 		}
 	}
 }

@@ -20,7 +20,7 @@ namespace CellDotNet
 			{
 				ctxt.LoadProgram(new int[] { 13 });
 
-				int[] lsa = ctxt.GetCopyOffLocalStorage();
+				int[] lsa = ctxt.GetCopyOfLocalStorage16K();
 				if (lsa[0] != 13)
 					Assert.Fail("DMA error.");
 			}
@@ -75,7 +75,7 @@ namespace CellDotNet
 				ctx.LoadProgram(bincode);
 
 				ctx.Run();
-				int[] ls = ctx.GetCopyOffLocalStorage();
+				int[] ls = ctx.GetCopyOfLocalStorage16K();
 
 				if (ls[0x40 / 4] != 34)
 				{
@@ -93,11 +93,11 @@ namespace CellDotNet
 
 			using (SpeContext ctx = new SpeContext())
 			{
-//				ctx.DmaPutValue((LocalStorageAddress) 32, 33000);
+				ctx.DmaPutValue((LocalStorageAddress) 32, 33000);
 				ctx.DmaPutValue((LocalStorageAddress) 64, 34000);
 
-//				int readvalue = ctx.DmaGetValue<int>((LocalStorageAddress) 32);
-//				AreEqual(33000, readvalue);
+				int readvalue = ctx.DmaGetValue<int>((LocalStorageAddress) 32);
+				AreEqual(33000, readvalue);
 			}
 		}
 
@@ -246,18 +246,14 @@ namespace CellDotNet
 			BasicTestDelegate del = OutOfMemory;
 
 			CompileContext cc = new CompileContext(del.Method);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
-
-			int[] code = cc.GetEmittedCode();
 
 			if (!SpeContext.HasSpeHardware)
 				throw new SpeOutOfMemoryException();
 
 			using (SpeContext ctx = new SpeContext())
 			{
-				ctx.LoadProgram(code);
-				ctx.Run();
+				ctx.RunProgram(cc);
 			}
 		}
 
@@ -267,18 +263,14 @@ namespace CellDotNet
 			BasicTestDelegate del = NotOutOfMemory;
 
 			CompileContext cc = new CompileContext(del.Method);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
-
-			int[] code = cc.GetEmittedCode();
 
 			if (!SpeContext.HasSpeHardware)
 				return;
 
 			using (SpeContext ctx = new SpeContext())
 			{
-				ctx.LoadProgram(code);
-				ctx.Run();
+				ctx.RunProgram(cc);
 			}
 		}
 

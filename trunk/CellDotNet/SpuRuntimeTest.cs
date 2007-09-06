@@ -31,7 +31,7 @@ namespace CellDotNet
 
 			using (SpeContext sc = new SpeContext())
 			{
-				object rv = sc.RunProgram(cc, cc.GetEmittedCode());
+				object rv = sc.RunProgram(cc);
 				// The return value shouldn't have made it to $3.
 				AreEqual(0, (int) rv);
 			}
