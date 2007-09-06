@@ -1163,7 +1163,7 @@ namespace CellDotNet
 						writer.WriteStop();
 						return null;
 					case SpuIntrinsicMethod.Mfc_GetAvailableQueueEntries:
-						return writer.WriteRdchcnt(SpuWriteChannel.MFC_CmdAndMFC_ClassID);
+						return writer.WriteRdchcnt(SpuWriteChannel.MFC_CmdAndClassID);
 					case SpuIntrinsicMethod.MfcGet:
 						WriteMfcDmaCommand(writer, MfcDmaCommand.Get, childregs);
 						return null;
@@ -1200,7 +1200,7 @@ namespace CellDotNet
 				VirtualRegister or1 = writer.WriteOr(cmdReg, tid2);
 				VirtualRegister finalCmd = writer.WriteOr(or1, rid2);
 
-				writer.WriteWrch(SpuWriteChannel.MFC_CmdAndMFC_ClassID, finalCmd);
+				writer.WriteWrch(SpuWriteChannel.MFC_CmdAndClassID, finalCmd);
 			}
 		}
 

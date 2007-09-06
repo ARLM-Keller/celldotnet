@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -128,6 +129,10 @@ namespace CellDotNet
 				IsTrue(SpeContext.HasSpeHardware);
 		}
 
+		private delegate int SimpleDelegateIntInt(int i);
+
+		#region Runtime checks tests
+
 		[Test, ExpectedException(typeof(SpeOutOfMemoryException))]
 		public void TestStopCode_OutOfMemoryException()
 		{
@@ -182,8 +187,6 @@ namespace CellDotNet
 			else
 				return 1;
 		}
-
-		private delegate int SimpleDelegateIntInt(int i);
 
 		[Test, ExpectedException(typeof(SpeStackOverflowException))]
 		public void TestRecursion_StackOverflow()
@@ -279,6 +282,8 @@ namespace CellDotNet
 			}
 		}
 
+		#endregion
+
 		[Test, Explicit]
 		public void TestGetSpeControlArea()
 		{
@@ -291,6 +296,48 @@ namespace CellDotNet
 				AreEqual((uint)0, area.SPU_NPC);
 			}
 		}
+
+		[Test]
+		public void TestAllocation1()
+		{
+			using (AlignedMemory<int> mem = SpeContext.AllocateAlignedInt32(8))
+			{
+				ArraySegment<int> segment = mem.ArraySegment;
+				AreEqual(8, segment.Count);
+				if (segment.Array.Length < 8 || segment.Array.Length > 16)
+					Fail();
+			}
+		}
+
+		[Test]
+		public void TestAllocation2()
+		{
+			using (AlignedMemory<int> mem = SpeContext.AllocateAlignedInt32(5))
+			{
+				ArraySegment<int> segment = mem.ArraySegment;
+				AreEqual(5, segment.Count);
+				if (segment.Array.Length < 5 || segment.Array.Length > 16)
+					Fail();
+			}
+		}
+
+		[Test]
+		public void TestAllocation3()
+		{
+			using (AlignedMemory<int> mem = SpeContext.AllocateAlignedInt32(64))
+			{
+				ArraySegment<int> segment = mem.ArraySegment;
+				AreEqual(64, segment.Count);
+				if (segment.Array.Length < 64 || segment.Array.Length > 192)
+					Fail();
+			}			
+		}
+
+
+		#region Return value tests
+
+		private delegate int IntReturnDelegate();
+		private delegate float SingleReturnDelegate();
 
 		[Test]
 		public void TestRunProgram_ReturnInt32_Manual()
@@ -353,9 +400,6 @@ namespace CellDotNet
 			}
 		}
 
-		private delegate int IntReturnDelegate();
-		private delegate float SingleReturnDelegate();
-
 		[Test]
 		public void TestDelegateRun_ReturnInt()
 		{
@@ -403,6 +447,8 @@ namespace CellDotNet
 				IsTrue(hasRun);
 			}
 		}
+
+		#endregion
 
 		private static T CreateSpeDelegate<T>(T delegateToWrap) where T : class
 		{
