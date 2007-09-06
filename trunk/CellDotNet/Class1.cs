@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace CellDotNet
@@ -506,25 +507,97 @@ namespace CellDotNet
 
 
 		private delegate int IntDelegate();
-		private static void RunRasmus()
+
+//		public static unsafe void arrfunc(int[] arr)
+//		{
+//			fixed (int* p = arr)
+//			{
+//				Console.WriteLine("addr2: " + ((int)p).ToString("x"));
+//			}
+//		}
+
+		private unsafe static void RunRasmus()
 		{
-			List<SpuOpCode> list = SpuOpCode.GetSpuOpCodes();
-			list.Sort(delegate(SpuOpCode x, SpuOpCode y) { return x.Name.CompareTo(y.Name); });
+//			{
+//				int[] arr1 = new int[3];
+//				int[] arr2 = new int[1];
+//
+//				fixed (int* p1 = arr1)
+//				fixed (int* p2 = arr2)
+//				{
+//					Console.WriteLine("add: " + ((int)p1).ToString("x"));
+//					Console.WriteLine("add: " + ((int)p2).ToString("x"));
+//					//				RuntimeTypeHandle th = 45;
+//					RuntimeTypeHandle* th;
+//					int i = 234;
+//					th = (RuntimeTypeHandle*) (&i);
+//				}
+//			}
+//			return;
 
-			StreamWriter fs = new StreamWriter(@"c:\temp\ops.txt");
-			foreach (SpuOpCode oc in list)
 			{
-				fs.WriteLine(oc.Name + "; regs: " + oc.Parts + "; features: " + oc.SpecialFeatures + "; " +
-				                  oc.HasImmediate + "; nowrite: " + oc.NoRegisterWrite);
+				int[] realarray = new int[50];
 
+				int[] fakearray;
+				const int fakestartindex = 10;
+				fixed (int* p = realarray)
+				{
+					Console.WriteLine("Dump real array - 4: ");
+					DumpMem(p - 4, 6);
+
+					int* fakeStartPtr = p + fakestartindex;
+					if (((int)fakeStartPtr - (int) p) < 16)
+						throw new Exception("Diff: " + ((int)fakeStartPtr - (int) p) + " bytes.");
+//					int offset = memcpy(fakeStartPtr, p, 0);
+					Console.WriteLine("real ptr   : " + ((int)p).ToString("x"));
+					Console.WriteLine("fake start : " + ((int)fakeStartPtr).ToString("x"));
+					Console.WriteLine("fake diff  : " + ((int)fakeStartPtr - (int)p));
+//					Console.WriteLine("new ptr    : " + offset.ToString("x"));
+//					return;
+
+					*(fakeStartPtr - 1) = *(p - 1);
+					*(fakeStartPtr - 2) = *(p - 2);
+					*(fakeStartPtr - 3) = *(p - 3);
+					*(fakeStartPtr - 4) = *(p - 4);
+
+					*(fakeStartPtr - 1) = 40;
+
+					Console.WriteLine("Dump fake array - 4: ");
+					DumpMem(fakeStartPtr - 4, 6);
+
+					fakearray = memcpy(fakeStartPtr, p, 0);
+					Console.WriteLine("is null: " + (fakearray == null));
+					Console.WriteLine("length: " + fakearray.Length);
+					Console.WriteLine("length from offset -1: " + *(fakeStartPtr - 1));
+
+					Console.WriteLine("Dump fake ptr - 4: ");
+					DumpMem(fakeStartPtr - 4, 6);
+					Console.WriteLine("Dump fake array - 4: ");
+					fixed (int* p2 = fakearray)
+						DumpMem(p2 - 4, 6);
+
+					//					Console.WriteLine("real ptr   : " + ((int)p).ToString("x"));
+
+				}
 			}
-			fs.Close();
-			return;
-
-			IntDelegate del = delegate() { return Mfc.GetAvailableQueueEntries(); };
-			IntDelegate r = SpeDelegateRunner.CreateSpeDelegate(del);
-			int entries = r();
-			Console.WriteLine("Entries: " + entries);
 		}
+
+		static unsafe void DumpMem(int* start, int wordcount)
+		{
+			Console.WriteLine("At offset " + ((int)start).ToString("x") + ": ");
+			string s = "";
+			for (int i = 0; i < wordcount; i++)
+			{
+				if (i > 0)
+					s += " ";
+				s += (*(start + i)).ToString("x8");
+			}
+
+			Console.WriteLine(s);
+		}
+
+		[DllImport("libc")]
+//		private static extern unsafe int memcpy(void* dest, void* src, int bytecount);
+		private static extern unsafe int[] memcpy(void* dest, void* src, int bytecount);
 	}
 }

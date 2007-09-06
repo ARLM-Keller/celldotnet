@@ -1,6 +1,6 @@
 namespace CellDotNet
 {
-	public sealed class BitMatrix
+	internal sealed class BitMatrix
 	{
 		private int width = 0;
 		private int height = 0;

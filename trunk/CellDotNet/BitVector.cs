@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace CellDotNet
 {
-	public class BitVector : IEnumerable<int>
+	internal class BitVector : IEnumerable<int>
 	{
 		private int size = 0;
 
