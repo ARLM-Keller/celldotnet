@@ -211,7 +211,7 @@ namespace CellDotNet
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			if (!SpeContext.HasSpeHardware)
-				throw new SpeStackOverflowException();
+				return;
 
 			using (SpeContext sc = new SpeContext())
 			{

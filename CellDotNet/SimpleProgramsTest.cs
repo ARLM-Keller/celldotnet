@@ -90,10 +90,17 @@ namespace CellDotNet
 			const int arg = 15;
 			int correctval = del(arg);
 
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			AreEqual(correctval, SpeDelegateRunner.CreateSpeDelegate(del)(arg));
+			using (SpeContext sc = new SpeContext())
+			{
+				object rv = sc.RunProgram(cc);
+				AreEqual(correctval, (int)rv);
+			}
 		}
 
 		/// <summary>
@@ -123,10 +130,17 @@ namespace CellDotNet
 			const int arg = 15;
 			float correctval = del(arg);
 
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			AreEqual(correctval, SpeDelegateRunner.CreateSpeDelegate(del)(arg));
+			using (SpeContext sc = new SpeContext())
+			{
+				object rv = sc.RunProgram(cc, arg);
+				AreEqual(correctval, (float)rv);
+			}
 		}
 
 		/// <summary>

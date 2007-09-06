@@ -12,18 +12,17 @@ namespace CellDotNet
 		{
 			Converter<int, int> del = delegate(int input) { return Add(input, 10); };
 
-			Converter<int, int> del2 = SpeDelegateRunner.CreateSpeDelegate(del);
-			SpeDelegateRunner runner = (SpeDelegateRunner) del2.Target;
-			AreEqual(1, runner.CompileContext.Methods.Count);
-
-			Disassembler.DisassembleToConsole(runner.CompileContext);
-
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			int rv = del2(5);
-			AreEqual(15, rv);
+			using (SpeContext sc = new SpeContext())
+			{
+				object rv = sc.RunProgram(cc, 5);
+				AreEqual(15, (int) rv);
+			}
 		}
 
 		[SpuOpCode(SpuOpCodeEnum.A)]
