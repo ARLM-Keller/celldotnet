@@ -255,7 +255,7 @@ namespace CellDotNet
 //			ctx.LoadProgram(bincode);
 //
 //			ctx.Run();
-//			int[] ls = ctx.GetCopyOffLocalStorage();
+//			int[] ls = ctx.GetCopyOfLocalStorage16K();
 //
 //			Console.WriteLine("Value: {0}", ls[0x40 / 4]);
 
@@ -273,7 +273,7 @@ namespace CellDotNet
 //			SpeContext ctxt = new SpeContext();
 //			ctxt.LoadProgram(new int[] { 13 });
 //	
-//			int[] lsa = ctxt.GetCopyOffLocalStorage();
+//			int[] lsa = ctxt.GetCopyOfLocalStorage16K();
 //
 //			if(lsa[0] != 13)
 //				Console.WriteLine("øv");
@@ -357,18 +357,18 @@ namespace CellDotNet
 
 //			Console.WriteLine("LocalStorageSize = {0}", ctx.LocalStorageSize);
 
-//			int[] ls1 = ctx.GetCopyOffLocalStorage();
+//			int[] ls1 = ctx.GetCopyOfLocalStorage16K();
 
 			ctx.LoadProgram(bincode);
 				
-//			int[] ls2 = ctx.GetCopyOffLocalStorage();
+//			int[] ls2 = ctx.GetCopyOfLocalStorage16K();
 
 			//            Buffer.BlockCopy(myspucode, 0, ctx.LocalS myspycode.Length, );
 			// copy code to spu...
 			ctx.Run();
 //			Console.WriteLine("ctx.Run(): {0}", r);
 
-//			int[] ls3 = ctx.GetCopyOffLocalStorage();
+//			int[] ls3 = ctx.GetCopyOfLocalStorage16K();
 
 //			Console.WriteLine("Programe code:");
 //			for (int i = 0; i < bincode.Length; i++ )
@@ -392,7 +392,7 @@ namespace CellDotNet
 //			Console.WriteLine("DiffCount ls2 ls3: {0}", CountDiff(ls2, ls3));
 //			Console.WriteLine("DiffCount ls1 ls3: {0}", CountDiff(ls1, ls3));
 
-			int[] ls = ctx.GetCopyOffLocalStorage();
+			int[] ls = ctx.GetCopyOfLocalStorage16K();
 
 
 //			int* i2;

@@ -164,7 +164,7 @@ namespace CellDotNet
 		{
 			AssertArgument(IsQuadwordAligned(lsa), "IsQuadwordAligned(lsa): " + lsa.Value.ToString("x6"));
 
-			int[] mem = context.GetCopyOffLocalStorage();
+			int[] mem = context.GetCopyOfLocalStorage16K();
 			if (lsa.Value + bytecount > mem.Length * 4)
 				throw new ArgumentException("Memory out of range.");
 			DumpMemory(mem, lsa.Value / 4, lsa, bytecount, writer);

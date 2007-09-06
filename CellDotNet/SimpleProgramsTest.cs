@@ -14,6 +14,17 @@ namespace CellDotNet
 		private delegate float FloatReturnDelegate();
 
 		[Test]
+		public void TestDump()
+		{
+			Converter<int, int> del = delegate(int input) { return input + 0xf0f0; };
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			cc.WriteAssemblyToFile("dumpx.s", 0xaeae);
+//			cc.GetEmittedCode(0xaeae);
+		}
+
+		[Test]
 		public void TestLoop_SumInt()
 		{
 			IntReturnDelegate del =

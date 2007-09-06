@@ -71,30 +71,6 @@ namespace CellDotNet
 		private delegate int IntDelegateTripleArg(int a, int b, int c);
 
 		[Test]
-		public void TestArguments_LoadArguments()
-		{
-			IntDelegateTripleArg del = delegate(int a, int b, int c) { return a + b + c; };
-
-			CompileContext cc = new CompileContext(del.Method);
-			cc.PerformProcessing(CompileContextState.S8Complete);
-			int[] code = cc.GetEmittedCode();
-
-			if (!SpeContext.HasSpeHardware)
-				return;
-
-			using (SpeContext ctx = new SpeContext())
-			{
-				ctx.LoadProgram(code);
-				ctx.LoadArguments(cc, new object[]{1, 2, 3});
-				ctx.Run();
-
-				int returnValue = ctx.DmaGetValue<int>(cc.ReturnValueAddress);
-
-				AreEqual(6, returnValue, "Function call returned a wrong value.");
-			}
-		}
-
-		[Test]
 		public void TestArguments_RunProgram()
 		{
 			IntDelegateTripleArg del = delegate(int a, int b, int c) { return a + b + c; };
@@ -107,7 +83,7 @@ namespace CellDotNet
 
 			using (SpeContext ctx = new SpeContext())
 			{
-				ctx.RunProgram(cc, new object[] { 1, 2, 3 });
+				ctx.RunProgram(cc, new ValueType[] { 1, 2, 3 });
 				int returnValue = ctx.DmaGetValue<int>(cc.ReturnValueAddress);
 				AreEqual(6, returnValue, "Function call returned a wrong value.");
 			}

@@ -29,7 +29,7 @@ namespace CellDotNet
 
 			using (SpeContext sc = new SpeContext())
 			{
-				sc.RunProgram(cc, cc.GetEmittedCode());
+				sc.RunProgram(cc);
 			}
 		}
 
@@ -55,7 +55,7 @@ namespace CellDotNet
 
 			using (SpeContext sc = new SpeContext())
 			{
-				object ret = sc.RunProgram(cc, cc.GetEmittedCode());
+				object ret = sc.RunProgram(cc);
 				AreEqual(typeof(int), ret.GetType());
 				AreEqual(0, (int) ret);
 			}

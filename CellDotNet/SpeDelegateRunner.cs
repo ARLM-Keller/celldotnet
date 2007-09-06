@@ -74,7 +74,7 @@ namespace CellDotNet
 			foreach (ParameterInfo parameter in method.GetParameters())
 				paramtypes.Add(parameter.ParameterType);
 
-			DynamicMethod dm = new DynamicMethod(method.Name + "-spewrapper",
+			DynamicMethod dm = new DynamicMethod(method.Name + "-sperunner",
 												 method.ReturnType, paramtypes.ToArray(), GetType(), true);
 			/// body:
 			/// 1: create object[] til args.
@@ -138,7 +138,7 @@ namespace CellDotNet
 		{
 			using (SpeContext sc = new SpeContext())
 			{
-				return sc.RunProgram(_compileContext, _spuCode, args);
+				return sc.RunProgram(_compileContext, args);
 
 				//					sc.LoadProgram(_spuCode);
 				//					sc.LoadArguments(_compileContext, args);

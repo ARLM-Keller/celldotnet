@@ -112,7 +112,7 @@ namespace CellDotNet
 
 		private IntPtr _handle;
 
-		private int _localStorageSize = 16*1024;
+		private int _localStorageSize = -1;
 
 		public int LocalStorageSize
 		{
@@ -174,11 +174,9 @@ namespace CellDotNet
 			if (_handle == IntPtr.Zero || _handle == null)
 				throw new Exception();
 
-//			_localStorageSize = UnsafeNativeMethods.spe_ls_size_get(_handle);
+			_localStorageSize = UnsafeNativeMethods.spe_ls_size_get(_handle);
 
-			Console.WriteLine("localStorageSize: {0}", _localStorageSize);
-			
-//			Console.WriteLine("SpeContext created, handler addr={0}", _handle);
+			Console.WriteLine("LocalStorageSize: {0}", LocalStorageSize);
 		}
 
 		public void LoadProgram(int[] code)
@@ -274,6 +272,11 @@ namespace CellDotNet
 			}
 		}
 
+		/// <summary>
+		/// This is not the preferred way to pass arguments; they should be embedded in the code.
+		/// </summary>
+		/// <param name="lsAddress"></param>
+		/// <param name="value"></param>
 		public void DmaPutValue(LocalStorageAddress lsAddress, ValueType value)
 		{
 			uint DMA_tag = 1;
@@ -290,14 +293,7 @@ namespace CellDotNet
 					*((float*)ptr) = f;
 					break;
 				default:
-					if (value is MainStorageArea)
-					{
-						MainStorageArea area = (MainStorageArea) value;
-						*((int*)ptr) = area.EffectiveAddress;
-					}
-					else
-						throw new NotSupportedException("Argument type " + value.GetType().Name + " not supported.");
-					break;
+					throw new NotSupportedException("Argument type " + value.GetType().Name + " not supported.");
 			}
 
 			spe_mfcio_get(lsAddress.Value, ptr, 16, DMA_tag, 0, 0);
@@ -318,19 +314,21 @@ namespace CellDotNet
 			DmaPutValue(lsAddress, (ValueType) value);
 		}
 
-		public int[] GetCopyOffLocalStorage()
+		public int[] GetCopyOfLocalStorage16K()
 		{
 			IntPtr dataBufMain = IntPtr.Zero;
 
 			try
 			{
-				dataBufMain = Marshal.AllocHGlobal(LocalStorageSize + 16);
+				const int sixteenK = 16*1024;
+
+				dataBufMain = Marshal.AllocHGlobal(sixteenK + 16);
 
 				IntPtr dataBuf = (IntPtr) (((int) dataBufMain + 15) & ~0xf);
 
 				uint DMA_tag = 2;
 
-				spe_mfcio_put(0, dataBuf, LocalStorageSize, DMA_tag, 0, 0);
+				spe_mfcio_put(0, dataBuf, sixteenK, DMA_tag, 0, 0);
 
 				Console.WriteLine("Waiting for DMA to finish.");
 
@@ -343,8 +341,8 @@ namespace CellDotNet
 				if (waitresult != 0)
 					throw new LibSpeException("spe_mfcio_tag_status_read failed.");
 
-				int[] data = new int[LocalStorageSize/4];
-				Marshal.Copy(dataBuf, data, 0, LocalStorageSize/4);
+				int[] data = new int[sixteenK/4];
+				Marshal.Copy(dataBuf, data, 0, sixteenK/4);
 				return data;
 			}
 			finally
@@ -384,7 +382,7 @@ namespace CellDotNet
 						throw new SpeDebugException("Debug breakpoint.");
 					}
 				default:
-					throw new SpeExecutionException("An error occurred during execution. The error code is: " + (SpuStopCode)stopinfo.SignalCode);
+					throw new SpeExecutionException("An error occurred during execution. The error code is: " + stopinfo.SignalCode);
 			}
 		}
 
@@ -392,21 +390,16 @@ namespace CellDotNet
 		{
 			CompileContext cc = new CompileContext(delegateToRun.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
-			int[] code = cc.GetEmittedCode();
 
-			return RunProgram(cc, code, arguments);
+			return RunProgram(cc, arguments);
 		}
 
 		internal object RunProgram(CompileContext cc, params object[] arguments)
 		{
-			return RunProgram(cc, cc.GetEmittedCode(), arguments);
-		}
-
-		internal object RunProgram(CompileContext cc, int[] code, params object[] arguments)
-		{
 			// Run and load.
+			int[] code = cc.GetEmittedCode(arguments);
 			LoadProgram(code);
-			LoadArguments(cc, arguments);
+
 			DebugValueObject = cc.DebugValueObject;
 			Run();
 
@@ -419,28 +412,6 @@ namespace CellDotNet
 
 			return retval;
 		}
-
-		/// <summary>
-		/// Call this after <see cref="LoadProgram"/>!
-		/// </summary>
-		/// <param name="cc"></param>
-		/// <param name="arguments"></param>
-		public void LoadArguments(CompileContext cc, object[] arguments)
-		{
-			if (cc.EntryPoint.Parameters.Count != arguments.Length)
-				throw new ArgumentException(string.Format("Invalid number of arguments in array; expected {0}, got {1}.",
-				                                          cc.EntryPoint.Parameters.Count, arguments.Length));
-			Utilities.Assert(cc.ArgumentArea.Size == arguments.Length * 16, "cc.ArgumentArea.Size == arguments.Length * 16");
-
-			for (int i = 0; i < cc.EntryPoint.Parameters.Count; i++)
-			{
-				object val = arguments[i];
-				LocalStorageAddress argAddress = (LocalStorageAddress)cc.ArgumentArea.Offset + i*16;
-				DmaPutValue(argAddress, (ValueType) val);
-			}
-		}
-
-
 
 		public SpeControlArea GetControlArea()
 		{
