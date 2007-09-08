@@ -32,10 +32,6 @@ namespace CellDotNet
 		{
 			using (AlignedMemory<int> mem = SpeContext.AllocateAlignedInt32(4))
 			{
-				SecurityPermission perm = new SecurityPermission(SecurityPermissionFlag.AllFlags);
-				perm.Assert();
-				perm.Demand();
-
 				// Create elements whose sum is twenty.
 				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
 				{
@@ -48,7 +44,6 @@ namespace CellDotNet
 						int[] arr = new int[4];
 
 						uint tag = 1;
-//						Mfc.Get(arr, input, 4);
 						Mfc.Get(arr, input, 4, tag);
 						Mfc.WaitForDmaCompletion(tag);
 
@@ -61,6 +56,10 @@ namespace CellDotNet
 
 				CompileContext cc = new CompileContext(del.Method);
 				cc.PerformProcessing(CompileContextState.S8Complete);
+				cc.WriteAssemblyToFile("dma.s", mem.GetArea());
+
+				if (!SpeContext.HasSpeHardware)
+					return;
 
 				using (SpeContext sc = new SpeContext())
 				{

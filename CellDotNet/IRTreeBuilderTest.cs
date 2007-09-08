@@ -173,12 +173,12 @@ namespace CellDotNet
 											}
 										};
 
-			MethodCompiler mc = new MethodCompiler(del.Method);
-			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
+			List<IRBasicBlock> blocks = new IRTreeBuilder().BuildBasicBlocks(del.Method);
 
-			new TreeDrawer().DrawMethod(mc);
+			new TreeDrawer().DrawMethod(blocks);
 		}
 
+		[Test]
 		public void TestParseBranchBasic()
 		{
 			BasicTestDelegate del = delegate
@@ -196,8 +196,7 @@ namespace CellDotNet
 					}
 				};
 
-			MethodCompiler mc = new MethodCompiler(del.Method);
-			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
+			new IRTreeBuilder().BuildBasicBlocks(del.Method);
 		}
 
 		[Test]
@@ -291,5 +290,30 @@ namespace CellDotNet
 
 			// TODO: Move this test to IRTreeBuilderTest or TypeDeriveTest since we don't use MethodCompiler.
 		}
+
+//		static private T ReturnSame<T>(T value)
+//		{
+//			return value;
+//		}
+
+//		[Test]
+//		public void TestInlining()
+//		{
+//			Converter<int, int> del = delegate(int input) { return ReturnSame(input + 5); };
+//
+//			CompileContext cc = new CompileContext(del.Method);
+//			cc.PerformProcessing(CompileContextState.S8Complete);
+//
+//			AreEqual(1, cc.Methods.Count);
+//
+//			if (!SpeContext.HasSpeHardware)
+//				return;
+//
+//			using (SpeContext sc = new SpeContext())
+//			{
+//				object rv = sc.RunProgram(cc, 5);
+//				AreEqual(10, (int) rv);
+//			}
+//		}
 	}
 }
