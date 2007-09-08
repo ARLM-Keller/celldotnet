@@ -50,6 +50,10 @@ namespace CellDotNet
 
 			foreach (IRBasicBlock bb in _basicBlocks)
 			{
+				_writer.WriteNop();
+				_writer.WriteNop();
+				_writer.WriteNop();
+
 				_writer.BeginNewBasicBlock();
 				_spubasicblocks.Add(bb, _writer.CurrentBlock);
 				foreach (TreeInstruction root in bb.Roots)
@@ -1209,7 +1213,7 @@ namespace CellDotNet
 				// Combine tid, rid and cmd into a cmd-and-class-id-word.
 				// Formula: (tid << 24) | (rid << 16) | cmd)
 
-				VirtualRegister cmdReg = writer.WriteLoadI4((int) cmd);
+				VirtualRegister cmdReg = writer.WriteIlhu((int) cmd);
 				VirtualRegister tid2 = writer.WriteShli(tid, 24);
 				VirtualRegister rid2 = writer.WriteShli(rid, 16);
 
