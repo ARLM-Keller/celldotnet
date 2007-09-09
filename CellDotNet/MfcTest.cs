@@ -56,7 +56,8 @@ namespace CellDotNet
 
 				CompileContext cc = new CompileContext(del.Method);
 				cc.PerformProcessing(CompileContextState.S8Complete);
-				cc.WriteAssemblyToFile("dma.s", mem.GetArea());
+				Disassembler.DisassembleToConsole(cc);
+//				cc.WriteAssemblyToFile("dma.s", mem.GetArea());
 
 				if (!SpeContext.HasSpeHardware)
 					return;

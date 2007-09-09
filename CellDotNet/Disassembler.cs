@@ -153,6 +153,11 @@ namespace CellDotNet
 							tw.Write("{0} {1} ", inst.OpCode.Name, inst.Constant);
 							break;
 						}
+						else if (inst.OpCode == SpuOpCode.nop)
+						{
+							tw.Write("nop");
+							break;
+						}
 
 						throw new NotImplementedException();
 					case SpuInstructionFormat.Custom:
@@ -163,8 +168,24 @@ namespace CellDotNet
 						}
 						else
 						{
-							tw.WriteLine("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Ra);
+							tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Ra);
 						}
+						break;
+					case SpuInstructionFormat.Channel:
+						string chan;
+						if (Enum.IsDefined(typeof (SpuWriteChannel), inst.Constant))
+							chan = ((SpuWriteChannel) inst.Constant).ToString();
+						else if (Enum.IsDefined(typeof (SpuReadChannel), inst.Constant))
+							chan = ((SpuReadChannel) inst.Constant).ToString();
+						else
+							chan = "??";
+						if (inst.OpCode == SpuOpCode.rchcnt)
+						{
+							tw.Write("{0} {1}", inst.OpCode.Name, chan);
+						}
+						else
+							tw.Write("{0} ${1}, {2}", inst.OpCode.Name, chan, inst.Rt);
+
 						break;
 					default:
 						throw new Exception();
