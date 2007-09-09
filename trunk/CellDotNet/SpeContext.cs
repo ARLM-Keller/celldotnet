@@ -53,7 +53,7 @@ namespace CellDotNet
 		}
 	}
 
-	internal unsafe class SpeContext : IDisposable
+	internal class SpeContext : IDisposable
 	{
 		private const uint SPE_TAG_ALL = 1;
 		private const uint SPE_TAG_ANY = 2;
@@ -245,7 +245,7 @@ namespace CellDotNet
 		/// Gets a value type from the specified local storage address.
 		/// </summary>
 		/// <param name="lsAddress"></param>
-		public T DmaGetValue<T>(LocalStorageAddress lsAddress) where T : struct
+		public unsafe T DmaGetValue<T>(LocalStorageAddress lsAddress) where T : struct
 		{
 			byte* buf = stackalloc byte[31];
 			IntPtr ptr = Utilities.Align16((IntPtr) buf);
@@ -277,7 +277,7 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="lsAddress"></param>
 		/// <param name="value"></param>
-		public void DmaPutValue(LocalStorageAddress lsAddress, ValueType value)
+		public unsafe void DmaPutValue(LocalStorageAddress lsAddress, ValueType value)
 		{
 			uint DMA_tag = 1;
 			byte* buf = stackalloc byte[31];
@@ -413,7 +413,30 @@ namespace CellDotNet
 			return retval;
 		}
 
-		public SpeControlArea GetControlArea()
+		/// <summary>
+		/// This method can be used to execute a method even on windows. It will attempt to 
+		/// perform DMA ops as an SPE would.
+		/// </summary>
+		/// <param name="cc"></param>
+		/// <param name="args"></param>
+		/// <returns></returns>
+		public static object UnitTestRunProgram(CompileContext cc, params object[] args)
+		{
+			// Just to make sure...
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			if (HasSpeHardware)
+			{
+				using (SpeContext sc = new SpeContext())
+					return sc.RunProgram(cc, args);
+			}
+			else
+			{
+				return cc.EntryPoint.MethodBase.Invoke(null, args);
+			}
+		}
+
+		internal unsafe SpeControlArea GetControlArea()
 		{
 			IntPtr ptr = GetProblemState(SpeProblemArea.SPE_MSSYNC_AREA);
 			SpeControlArea* areaptr = (SpeControlArea*) ptr;

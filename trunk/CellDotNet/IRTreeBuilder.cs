@@ -75,8 +75,7 @@ namespace CellDotNet
 				{
 					MethodVariable var = _currentVariableStack[_currentVariableStackTop];
 					_currentVariableStackTop--;
-					TreeInstruction inst = new TreeInstruction();
-					inst.Opcode = IROpCodes.Ldloc;
+					TreeInstruction inst = new TreeInstruction(IROpCodes.Ldloc);
 					inst.StackType = var.StackType;
 					inst.Operand = var;
 					return inst;
@@ -114,9 +113,8 @@ namespace CellDotNet
 				// Insert instructions to save.
 				for (int i = 0; i < InstructionStack.Count; i++)
 				{
-					TreeInstruction storeInst = new TreeInstruction();
+					TreeInstruction storeInst = new TreeInstruction(IROpCodes.Stloc);
 					storeInst.StackType = StackTypeDescription.None;
-					storeInst.Opcode = IROpCodes.Stloc;
 					storeInst.Operand = stack[i];
 					storeInst.Left = InstructionStack[i];
 
@@ -283,8 +281,7 @@ namespace CellDotNet
 				int pushcount = GetPushCount(reader.OpCode);
 
 
-				TreeInstruction treeinst = new TreeInstruction();
-				treeinst.Opcode = ircode;
+				TreeInstruction treeinst = new TreeInstruction(ircode);
 				treeinst.Offset = reader.Offset;
 
 				// Replace variable and parameter references with our own types.
@@ -529,15 +526,13 @@ namespace CellDotNet
 
 			TreeInstruction valueInst = _parseStack.Pop(); // The value.
 
-			TreeInstruction ldelemachild = new TreeInstruction();
-			ldelemachild.Opcode = IROpCodes.Ldelema;
+			TreeInstruction ldelemachild = new TreeInstruction(IROpCodes.Ldelema);
 			ldelemachild.Right = _parseStack.Pop(); // The index.
 			ldelemachild.Left = _parseStack.Pop(); // The array.
 			ldelemachild.Operand = ldelemachild.Left.StackType.GetArrayElementType();
 			ldelemachild.Offset = storeInst.Offset; // Assume the identity of the stelem.
 
-			TreeInstruction stindParent = new TreeInstruction();
-			stindParent.Opcode = stindOpcode;
+			TreeInstruction stindParent = new TreeInstruction(stindOpcode);
 			stindParent.Left = ldelemachild;
 			stindParent.Right = valueInst;
 

@@ -29,6 +29,11 @@ namespace CellDotNet
 			get { return _name; }
 		}
 
+		public override string ToString()
+		{
+			return _name;
+		}
+
 		private FlowControl _flowControl;
 		public FlowControl FlowControl
 		{

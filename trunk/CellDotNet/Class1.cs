@@ -508,32 +508,9 @@ namespace CellDotNet
 
 		private delegate int IntDelegate();
 
-//		public static unsafe void arrfunc(int[] arr)
-//		{
-//			fixed (int* p = arr)
-//			{
-//				Console.WriteLine("addr2: " + ((int)p).ToString("x"));
-//			}
-//		}
 
 		private unsafe static void RunRasmus()
 		{
-//			{
-//				int[] arr1 = new int[3];
-//				int[] arr2 = new int[1];
-//
-//				fixed (int* p1 = arr1)
-//				fixed (int* p2 = arr2)
-//				{
-//					Console.WriteLine("add: " + ((int)p1).ToString("x"));
-//					Console.WriteLine("add: " + ((int)p2).ToString("x"));
-//					//				RuntimeTypeHandle th = 45;
-//					RuntimeTypeHandle* th;
-//					int i = 234;
-//					th = (RuntimeTypeHandle*) (&i);
-//				}
-//			}
-//			return;
 
 			{
 				int[] realarray = new int[50];

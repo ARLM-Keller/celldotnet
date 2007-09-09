@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Security.Permissions;
 using NUnit.Framework;
 
@@ -25,7 +26,6 @@ namespace CellDotNet
 			int depth = del2();
 			AreEqual(16, depth);
 		}
-
 
 		[Test]
 		public void TestDma_GetIntArray()
