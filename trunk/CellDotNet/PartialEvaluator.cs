@@ -11,13 +11,6 @@ namespace CellDotNet
 	internal class PartialEvaluator
 	{
 		private Dictionary<MethodInfo, int> _fixedMethods;
-/*
-		/// <summary>
-		/// This one is declared with object key so that it will work with the reflection variable class 
-		/// <see cref="LocalVariableInfo"/> and with out own <see cref="MethodVariable"/>.
-		/// </summary>
-
-*/
 		private Dictionary<MethodVariable, int> _knownVariables;
 
 		/// <summary>
@@ -160,7 +153,9 @@ namespace CellDotNet
 			if (inst.Opcode.IRCode == IRCode.Call)
 			{
 				int fixedValue;
-				MethodInfo mi = inst.Operand as MethodInfo;
+				// When used on a method in a CompileContext the operand is a MethodCompiler;
+				// when used on a standalone MethodCompiler the operand is a MethodBase.
+				MethodInfo mi = inst.OperandAsMethod as MethodInfo ?? inst.OperandAsMethodCompiler.MethodBase as MethodInfo;
 				if (mi != null && _fixedMethods.TryGetValue(mi, out fixedValue))
 				{
 					// Replace the call inst with a constant load.
