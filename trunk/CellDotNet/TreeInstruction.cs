@@ -123,6 +123,11 @@ namespace CellDotNet
 			get { return (int) _operand; }
 		}
 
+		public MethodVariable OperandAsVariable
+		{
+			get { return _operand as MethodVariable; }
+		}
+
 		#endregion
 
 		private int _offset = -1;
