@@ -10,70 +10,109 @@ namespace CellDotNet
 	{
 		public static bool BoolProperty
 		{
-			get { throw new InvalidOperationException(); }
+			get
+			{
+				SpuRuntime.Stop();
+				return false;
+			}
 		}
 
 		const int MagicNumber = 50;
 
-		private static int BranchMethod(int arg)
-		{
-			if (BoolProperty)
-				return MagicNumber;
-			else
-				return -MagicNumber;
-		}
-
 		[Test]
 		public void TestBranch_True()
 		{
-			Converter<int, int> del = BranchMethod;
+			Converter<int, int> del = 
+				delegate
+					{
+						if (BoolProperty)
+							return MagicNumber;
+						else
+						{
+							SpuRuntime.Stop();
+							return -1;
+						}
+					};
 
 			// Fix BoolProperty to true.
 			Dictionary<MethodInfo, int> fixedMethods = new Dictionary<MethodInfo, int>();
 			PropertyInfo pi = GetType().GetProperty("BoolProperty");
 			fixedMethods.Add(pi.GetGetMethod(), 1);
 
-			MethodCompiler mc = new MethodCompiler(del.Method);
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
+			MethodCompiler mc = cc.EntryPoint;
 			IRTreeBuilder.RemoveNops(mc.Blocks);
-
-			Console.WriteLine();
-			Console.WriteLine("Initial:");
-			new TreeDrawer().DrawMethod(mc);
 
 			new PartialEvaluator().Evaluate(mc, fixedMethods);
 
-			Console.WriteLine();
-			Console.WriteLine("After eval:");
-			new TreeDrawer().DrawMethod(mc);
+			// This should have eliminated all method calls.
+			mc.ForeachTreeInstruction(
+				delegate(TreeInstruction obj)
+					{
+						if (obj.Opcode == IROpCodes.Call)
+							Fail("Method calls were not removed.");
+					});
 
-			AreEqual(1, mc.Blocks.Count);
-			AreEqual(1, mc.Blocks[0].Roots.Count);
-			AreEqual(IROpCodes.Ret, mc.Blocks[0].Roots[0].Opcode);
-			AreEqual(IROpCodes.Ldc_I4, mc.Blocks[0].Roots[0].Left.Opcode);
-			AreEqual(MagicNumber, mc.Blocks[0].Roots[0].Left.OperandAsInt32);
+
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			using (SpeContext sc = new SpeContext())
+			{
+				object rv = sc.RunProgram(cc);
+				AreEqual(MagicNumber, (int) rv);
+			}
 		}
 
 
 		[Test]
 		public void TestBranch_False()
 		{
-			Converter<int, int> del = BranchMethod;
+			Converter<int, int> del =
+				delegate
+				{
+					if (BoolProperty)
+					{
+						SpuRuntime.Stop();
+						return -1;
+					}
+					else
+						return MagicNumber;
+				};
 
 			// Fix BoolProperty to true.
 			Dictionary<MethodInfo, int> fixedMethods = new Dictionary<MethodInfo, int>();
 			PropertyInfo pi = GetType().GetProperty("BoolProperty");
 			fixedMethods.Add(pi.GetGetMethod(), 0);
 
-			MethodCompiler mc = new MethodCompiler(del.Method);
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
+			MethodCompiler mc = cc.EntryPoint;
 			IRTreeBuilder.RemoveNops(mc.Blocks);
 
 			new PartialEvaluator().Evaluate(mc, fixedMethods);
 
-			AreEqual(1, mc.Blocks.Count);
-			AreEqual(1, mc.Blocks[0].Roots.Count);
-			AreEqual(IROpCodes.Ret, mc.Blocks[0].Roots[0].Opcode);
-			AreEqual(IROpCodes.Ldc_I4, mc.Blocks[0].Roots[0].Left.Opcode);
-			AreEqual(-MagicNumber, mc.Blocks[0].Roots[0].Left.OperandAsInt32);
+			// This should have eliminated all method calls.
+			mc.ForeachTreeInstruction(
+				delegate(TreeInstruction obj)
+				{
+					if (obj.Opcode == IROpCodes.Call)
+						Fail("Method calls were not removed.");
+				});
+
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			using (SpeContext sc = new SpeContext())
+			{
+				object rv = sc.RunProgram(cc);
+				AreEqual(MagicNumber, (int)rv);
+			}
 		}
 
 		static public int IntProperty

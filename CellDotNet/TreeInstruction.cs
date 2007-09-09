@@ -113,6 +113,11 @@ namespace CellDotNet
 			get { return _operand as MethodBase; }
 		}
 
+		public MethodCompiler OperandAsMethodCompiler
+		{
+			get { return _operand as MethodCompiler; }
+		}
+
 		public IRBasicBlock OperandAsBasicBlock
 		{
 			get {return _operand as IRBasicBlock; }
