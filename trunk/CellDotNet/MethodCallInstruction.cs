@@ -76,9 +76,14 @@ namespace CellDotNet
 			}
 		}
 
-		public override IEnumerable<TreeInstruction> GetChildInstructions()
+		public override TreeInstruction[] GetChildInstructions()
 		{
-			return Parameters;
+			return Parameters.ToArray();
+		}
+
+		public override void ReplaceChild(int childIndex, TreeInstruction newchild)
+		{
+			Parameters[childIndex] = newchild;
 		}
 	}
 

@@ -575,5 +575,14 @@ namespace CellDotNet
 
 			return pushCount;
 		}
+
+		public static void RemoveNops(List<IRBasicBlock> blocks)
+		{
+			for (int blocknum = 0; blocknum < blocks.Count; blocknum++)
+			{
+				IRBasicBlock bb = blocks[blocknum];
+				bb.Roots.RemoveAll(delegate(TreeInstruction obj) { return obj.Opcode == IROpCodes.Nop; });
+			}
+		}
 	}
 }
