@@ -11,6 +11,11 @@ namespace CellDotNet
 	[DebuggerDisplay("{DebuggerDisplay}")]
 	class TreeInstruction
 	{
+		public TreeInstruction(IROpCode opcode)
+		{
+			_opcode = opcode;
+		}
+
 		private TreeInstruction _left;
 		public TreeInstruction Left
 		{
@@ -70,12 +75,31 @@ namespace CellDotNet
 			set { _opcode = value; }
 		}
 
+		#region Operand
+
 		private object _operand;
 		public object Operand
 		{
 			get { return _operand; }
 			set { _operand = value; }
 		}
+
+		public MethodBase OperandAsMethod
+		{
+			get { return _operand as MethodBase; }
+		}
+
+		public IRBasicBlock OperandAsBasicBlock
+		{
+			get {return _operand as IRBasicBlock; }
+		}
+
+		public int OperandAsInt32
+		{
+			get { return (int) _operand; }
+		}
+
+		#endregion
 
 		private int _offset = -1;
 		/// <summary>
@@ -87,11 +111,11 @@ namespace CellDotNet
 			set { _offset = value; }
 		}
 
-		private StackTypeDescription _stackTyp;
+		private StackTypeDescription _stackType;
 		public StackTypeDescription StackType
 		{
-			get { return _stackTyp; }
-			set { _stackTyp = value; }
+			get { return _stackType; }
+			set { _stackType = value; }
 		}
 
 		#region Tree iteration / checking.

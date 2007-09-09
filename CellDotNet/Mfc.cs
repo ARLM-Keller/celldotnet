@@ -25,7 +25,7 @@ namespace CellDotNet
 			throw new InvalidOperationException();			
 		}
 
-		static public void Get(int[] target, MainStorageArea ea, int count, uint tag)
+		static public void Get(int[] target, MainStorageArea ea, short count, uint tag)
 		{
 			Get(ref target[0], ea.EffectiveAddress, count * 4, 0xfffff, 0, 0);
 		}
@@ -59,7 +59,7 @@ namespace CellDotNet
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.Mfc_Get)]
-		static private void Get<T>(ref T lsStart, int ea, int size, uint tag, uint tid, uint rid)
+		static private void Get<T>(ref T lsStart, int ea, int byteCount, uint tag, uint tid, uint rid)
 		{
 			throw new InvalidOperationException();
 		}

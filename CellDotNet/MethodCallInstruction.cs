@@ -6,7 +6,7 @@ namespace CellDotNet
 {
 	class MethodCallInstruction : TreeInstruction
 	{
-		public MethodCallInstruction(MethodBase method, IROpCode opcode)
+		public MethodCallInstruction(MethodBase method, IROpCode opcode) : base(opcode)
 		{
 			Operand = method;
 			Opcode = opcode;
@@ -18,18 +18,16 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="intrinsic"></param>
 		/// <param name="method"></param>
-		public MethodCallInstruction(MethodInfo method, SpuIntrinsicMethod intrinsic)
+		public MethodCallInstruction(MethodInfo method, SpuIntrinsicMethod intrinsic) : base(IROpCodes.IntrinsicMethod)
 		{
 			Utilities.AssertArgument(intrinsic != SpuIntrinsicMethod.None, "intrinsic != SpuIntrinsicMethod.None");
 			Operand = intrinsic;
-			Opcode = IROpCodes.IntrinsicMethod;
 			_intrinsicMethod = method;
 		}
 
-		public MethodCallInstruction(MethodInfo method, SpuOpCode spuOpCode)
+		public MethodCallInstruction(MethodInfo method, SpuOpCode spuOpCode) : base(IROpCodes.SpuInstructionMethod)
 		{
 			Operand = spuOpCode;
-			Opcode = IROpCodes.SpuInstructionMethod;
 			_intrinsicMethod = method;
 		}
 
