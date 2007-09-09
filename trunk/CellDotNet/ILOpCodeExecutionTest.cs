@@ -407,7 +407,7 @@ namespace CellDotNet
 		}
 
 
-		private static void Execution<T>(ILWriter ilcode, T expetedValue) where T : struct
+		private static void Execution<T>(ILWriter ilcode, T expectedValue) where T : struct
 		{
 			RegisterSizedObject returnAddressObject = new RegisterSizedObject("ReturnObject");
 //			returnAddressObject.Offset = Utilities.Align16(0x1000);
@@ -517,7 +517,7 @@ namespace CellDotNet
 
 				T returnValue = ctx.DmaGetValue<T>((LocalStorageAddress) returnAddressObject.Offset);
 
-				AreEqual(expetedValue, returnValue, "SPU delegate execution returned a wrong value.");
+				AreEqual(expectedValue, returnValue, "SPU delegate execution returned a wrong value.");
 			}
 		}
 
