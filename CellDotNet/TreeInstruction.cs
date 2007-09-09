@@ -28,14 +28,38 @@ namespace CellDotNet
 		/// <para>Overridden implementations may return more - as does <see cref="MethodCallInstruction"/>.</para>
 		/// </summary>
 		/// <returns></returns>
-		public virtual IEnumerable<TreeInstruction> GetChildInstructions()
+		public virtual TreeInstruction[] GetChildInstructions()
 		{
 			Utilities.PretendVariableIsUsed(DebuggerDisplay);
 
-			if (Left != null)
-				yield return Left;
 			if (Right != null)
-				yield return Right;
+				return new TreeInstruction[] {Left, Right};
+			else if (Left != null)
+				return new TreeInstruction[] {Left};
+			else
+				return new TreeInstruction[0];
+		}
+
+		/// <summary>
+		/// Replaces the specified child with <paramref name="newchild"/>.
+		/// </summary>
+		/// <param name="childIndex"></param>
+		/// <param name="newchild"></param>
+		public virtual void ReplaceChild(int childIndex, TreeInstruction newchild)
+		{
+			switch (childIndex)
+			{
+				case 0:
+					Utilities.AssertNotNull(Left, "Left");
+					Left = newchild;
+					break;
+				case 1:
+					Utilities.AssertNotNull(Left, "Right");
+					Right = newchild;
+					break;
+				default:
+					throw new ArgumentOutOfRangeException("childIndex");
+			}
 		}
 
 		private string DebuggerDisplay
