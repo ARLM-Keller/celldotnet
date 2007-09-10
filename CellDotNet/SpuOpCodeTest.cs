@@ -8,17 +8,17 @@ namespace CellDotNet
 	public class SpuOpCodeTest : UnitTest
 	{
 		[Test]
-		public void TestChannel()
+		public void TestChannelOpCode()
 		{
-			IsTrue(SpuOpCode.rchcnt.NoRegisterWrite);
+			IsFalse(SpuOpCode.rchcnt.NoRegisterWrite);
 			IsTrue(SpuOpCode.rchcnt.HasImmediate);
 			AreEqual(SpuInstructionPart.Rt | SpuInstructionPart.Ca, SpuOpCode.rchcnt.Parts);
 
-			IsTrue(SpuOpCode.rdch.NoRegisterWrite);
+			IsFalse(SpuOpCode.rdch.NoRegisterWrite);
 			IsTrue(SpuOpCode.rdch.HasImmediate);
 			AreEqual(SpuInstructionPart.Rt | SpuInstructionPart.Ca, SpuOpCode.rdch.Parts);
 
-			IsFalse(SpuOpCode.wrch.NoRegisterWrite);
+			IsTrue(SpuOpCode.wrch.NoRegisterWrite);
 			IsTrue(SpuOpCode.wrch.HasImmediate);
 			AreEqual(SpuInstructionPart.Rt | SpuInstructionPart.Ca, SpuOpCode.wrch.Parts);
 		}

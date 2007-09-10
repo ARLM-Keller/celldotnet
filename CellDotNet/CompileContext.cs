@@ -548,16 +548,17 @@ main:
 
 					if (usedNames.Contains(encodedname))
 					{
-						int suffix = 0;
+						int suffix = 1;
 						string newname;
 						do
 						{
 							suffix++;
 							newname = encodedname + "$" + suffix;
-						} while (usedNames.Contains(encodedname));
+						} while (usedNames.Contains(newname));
 						encodedname = newname;
 					}
 
+					usedNames.Add(encodedname);
 					symbolsWithNames.Add(new KeyValuePair<ObjectWithAddress, string>(symbol, encodedname));
 				}
 
@@ -591,7 +592,7 @@ main:
 						nextSymIndex++;
 					}
 
-						writer.Write("  .int ");
+					writer.Write("  .int ");
 					for (int i = 0; i < wordsPerLine && wordOffset + i < code.Length; i++)
 					{
 						if (i > 0)
