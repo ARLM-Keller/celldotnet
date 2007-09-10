@@ -41,7 +41,7 @@ namespace CellDotNet
 			}
 		}
 
-		private static void AssertValidEffectiveAddress(int address, int bytecount)
+		private static void AssertValidEffectiveAddress(uint address, int bytecount)
 		{
 			if (bytecount % 16 == 0)
 				Utilities.Assert(address % 16 == 0, "address % 16 == 0");
@@ -90,11 +90,21 @@ namespace CellDotNet
 			throw new InvalidOperationException();
 		}
 
+		[SpuOpCode(SpuOpCodeEnum.Wrch)]
+		static private void WriteChannel<T>(
+			[SpuInstructionPart(SpuInstructionPart.Ca)] SpuWriteChannel channel,
+			[SpuInstructionPart(SpuInstructionPart.Rt)] ref T value)
+		{
+			Utilities.PretendVariableIsUsed(channel);
+			Utilities.PretendVariableIsUsed(value);
+			throw new InvalidOperationException();
+		}
+
 		static public void WaitForDmaCompletion(uint tagMask)
 		{
-			const uint SPE_TAG_ALL = 1;
-//			const uint SPE_TAG_ANY = 2;
-//			const uint SPE_TAG_IMMEDIATE = 3;
+			const int SPE_TAG_ALL = 1;
+//			const int SPE_TAG_ANY = 2;
+//			const int SPE_TAG_IMMEDIATE = 3;
 
 			if (SpuRuntime.IsRunningOnSpu)
 			{
@@ -104,16 +114,67 @@ namespace CellDotNet
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.Mfc_Get)]
-		static private void Get<T>(ref T lsStart, int ea, int byteCount, uint tag, uint tid, uint rid) where T : struct
+		static private void Get<T>(ref T lsStart, uint ea, int byteCount, uint tag, uint tid, uint rid) where T : struct
 		{
-			throw new InvalidOperationException();
+			if (!SpuRuntime.IsRunningOnSpu)
+				throw new InvalidOperationException();
+			//  MFC_CMD_WORD(_tid, _rid, _cmd) (((_tid)<<24)|((_rid)<<16)|(_cmd))
+
+			uint cmd = (int) MfcDmaCommand.Get;
+			cmd |= (tid << 24) | (rid << 16);
+
+			WriteChannel(SpuWriteChannel.MFC_LSA, ref lsStart);
+			WriteChannel(SpuWriteChannel.MFC_EAL, ea);
+			WriteChannel(SpuWriteChannel.MFC_Size, (uint) byteCount);
+			WriteChannel(SpuWriteChannel.MFC_TagID, tag);
+			WriteChannel(SpuWriteChannel.MFC_CmdAndClassID, cmd);
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.Mfc_Put)]
-		static private void Put<T>(ref T lsStart, int ea, int byteCount, uint tag, uint tid, uint rid) where T : struct
+		static private void Put<T>(ref T lsStart, uint ea, int byteCount, uint tag, uint tid, uint rid) where T : struct
 		{
-			throw new InvalidOperationException();
+			if (!SpuRuntime.IsRunningOnSpu)
+				throw new InvalidOperationException();
+
+//			 MFC_CMD_WORD(_tid, _rid, _cmd) (((_tid)<<24)|((_rid)<<16)|(_cmd))
+
+			uint cmd = (int)MfcDmaCommand.Get;
+			cmd |= (tid << 24) | (rid << 16);
+
+			WriteChannel(SpuWriteChannel.MFC_LSA, ref lsStart);
+			WriteChannel(SpuWriteChannel.MFC_EAL, ea);
+			WriteChannel(SpuWriteChannel.MFC_Size, (uint)byteCount);
+			WriteChannel(SpuWriteChannel.MFC_TagID, tag);
+			WriteChannel(SpuWriteChannel.MFC_CmdAndClassID, cmd);
 		}
 
+		internal enum MfcDmaCommand
+		{
+			Put = 0x0020,
+//			PutS = 0x0028, /*  PU Only */
+			PutR = 0x0030,
+			PutF = 0x0022,
+			PutB = 0x0021,
+//			PutFS = 0x002A, /*  PU Only */
+//			PutBS = 0x0029, /*  PU Only */
+			PutRF = 0x0032,
+			PutRB = 0x0031,
+			PutL = 0x0024, /* SPU Only */
+			PutRL = 0x0034, /* SPU Only */
+			PutLF = 0x0026, /* SPU Only */
+			PutLB = 0x0025, /* SPU Only */
+			PutRLF = 0x0036, /* SPU Only */
+			PutRLB = 0x0035, /* SPU Only */
+
+			Get = 0x0040,
+//			GetS = 0x0048, /*  PU Only */
+			GetF = 0x0042,
+			GetB = 0x0041,
+//			GetFS = 0x004A, /*  PU Only */
+//			GetBS = 0x0049, /*  PU Only */
+			GetL = 0x0044, /* SPU Only */
+			GetLF = 0x0046, /* SPU Only */
+			GetLB = 0x0045, /* SPU Only */
+		}
 	}
 }

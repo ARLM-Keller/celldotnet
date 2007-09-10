@@ -1042,37 +1042,6 @@ namespace CellDotNet
 		}
 
 
-
-		private enum MfcDmaCommand
-		{
-			Put = 0x0020,
-//			PutS = 0x0028, /*  PU Only */
-			PutR = 0x0030,
-			PutF = 0x0022,
-			PutB = 0x0021,
-//			PutFS = 0x002A, /*  PU Only */
-//			PutBS = 0x0029, /*  PU Only */
-			PutRF = 0x0032,
-			PutRB = 0x0031,
-			PutL = 0x0024, /* SPU Only */
-			PutRL = 0x0034, /* SPU Only */
-			PutLF = 0x0026, /* SPU Only */
-			PutLB = 0x0025, /* SPU Only */
-			PutRLF = 0x0036, /* SPU Only */
-			PutRLB = 0x0035, /* SPU Only */
-
-			Get = 0x0040,
-//			GetS = 0x0048, /*  PU Only */
-			GetF = 0x0042,
-			GetB = 0x0041,
-//			GetFS = 0x004A, /*  PU Only */
-//			GetBS = 0x0049, /*  PU Only */
-			GetL = 0x0044, /* SPU Only */
-			GetLF = 0x0046, /* SPU Only */
-			GetLB = 0x0045, /* SPU Only */
-		}
-
-
 		class IntrinsicsWriter
 		{
 			public static VirtualRegister GenerateSpuInstructionMethod(
@@ -1182,10 +1151,10 @@ namespace CellDotNet
 					case SpuIntrinsicMethod.Mfc_GetAvailableQueueEntries:
 						return writer.WriteRdchcnt(SpuWriteChannel.MFC_CmdAndClassID);
 					case SpuIntrinsicMethod.Mfc_Get:
-						WriteMfcDmaCommand(writer, MfcDmaCommand.Get, childregs);
+						WriteMfcDmaCommand(writer, Mfc.MfcDmaCommand.Get, childregs);
 						return null;
 					case SpuIntrinsicMethod.Mfc_Put:
-						WriteMfcDmaCommand(writer, MfcDmaCommand.Put, childregs);
+						WriteMfcDmaCommand(writer, Mfc.MfcDmaCommand.Put, childregs);
 						return null;
 					case SpuIntrinsicMethod.MainStorageArea_get_EffectiveAddress:
 						// The address is the only component.
@@ -1195,7 +1164,7 @@ namespace CellDotNet
 				}
 			}
 
-			private static void WriteMfcDmaCommand(SpuInstructionWriter writer, MfcDmaCommand cmd, List<VirtualRegister> arguments)
+			private static void WriteMfcDmaCommand(SpuInstructionWriter writer, Mfc.MfcDmaCommand cmd, List<VirtualRegister> arguments)
 			{
 				// These must match the order of the mfc dma method arguments.
 				VirtualRegister ls = arguments[0];

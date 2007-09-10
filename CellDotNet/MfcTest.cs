@@ -114,8 +114,8 @@ namespace CellDotNet
 	/// </remarks>
 	public struct MainStorageArea
 	{
-		private int _effectiveAddress;
-		internal int EffectiveAddress
+		private uint _effectiveAddress;
+		internal uint EffectiveAddress
 		{
 			[IntrinsicMethod(SpuIntrinsicMethod.MainStorageArea_get_EffectiveAddress)]
 			get { return _effectiveAddress; }
@@ -123,7 +123,7 @@ namespace CellDotNet
 
 		internal MainStorageArea(IntPtr effectiveAddress)
 		{
-			_effectiveAddress = (int) effectiveAddress;
+			_effectiveAddress = (uint) effectiveAddress;
 		}
 	}
 }
