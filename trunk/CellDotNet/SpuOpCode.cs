@@ -208,7 +208,7 @@ namespace CellDotNet
 			_opCode = Convert.ToInt32(opcode, 2) << 32 - OpCodeWidth;
 
 			// HACK: Shitty way to determine this.
-			if (name.StartsWith("st") || name == "rchcnt" || name == "rdch")
+			if (name.StartsWith("st") || name == "wrch")
 				_noRegisterWrite = true;
 
 			_specialFeatures = features;

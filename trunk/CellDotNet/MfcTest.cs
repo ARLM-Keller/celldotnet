@@ -57,29 +57,65 @@ namespace CellDotNet
 				CompileContext cc = new CompileContext(del.Method);
 				cc.PerformProcessing(CompileContextState.S8Complete);
 				Disassembler.DisassembleToConsole(cc);
-//				cc.WriteAssemblyToFile("dma.s", mem.GetArea());
+				cc.WriteAssemblyToFile("dma.s", mem.GetArea());
 
-				if (!SpeContext.HasSpeHardware)
-					return;
-
-				using (SpeContext sc = new SpeContext())
-				{
-					object rv = sc.RunProgram(cc, mem.GetArea());
-
-					AreEqual(20, (int) rv);
-				}
+				object rv = SpeContext.UnitTestRunProgram(cc, mem.GetArea());
+				int correctVal = del(mem.GetArea());
+				AreEqual(20, correctVal);
+				AreEqual(20, (int)rv);
 			}
+		}
 
+		[Test]
+		public void TestDma_PutIntArray()
+		{
+			using (AlignedMemory<int> mem = SpeContext.AllocateAlignedInt32(4))
+			{
+				// Create elements whose sum is twenty.
+				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
+				{
+					mem.ArraySegment.Array[i] = 5;
+				}
+
+				Converter<MainStorageArea, int> del =
+					delegate(MainStorageArea input)
+					{
+						int[] arr = new int[4];
+
+						uint tag = 1;
+						Mfc.Get(arr, input, 4, tag);
+						Mfc.WaitForDmaCompletion(tag);
+
+						int sum = 0;
+						for (int i = 0; i < 4; i++)
+							sum += arr[i];
+
+						return sum;
+					};
+
+				CompileContext cc = new CompileContext(del.Method);
+				cc.PerformProcessing(CompileContextState.S8Complete);
+				Disassembler.DisassembleToConsole(cc);
+				cc.WriteAssemblyToFile("dma.s", mem.GetArea());
+
+				object rv = SpeContext.UnitTestRunProgram(cc, mem.GetArea());
+				int correctVal = del(mem.GetArea());
+				AreEqual(20, correctVal);
+				AreEqual(20, (int)rv);
+			}
 		}
 	}
 
 	/// <summary>
 	/// Represent an area in main storage that can be used for dma transfers.
 	/// </summary>
+	/// <remarks>
+	/// This struct will be laid out so that the effective address will be in the preferred slot.
+	/// </remarks>
 	public struct MainStorageArea
 	{
 		private int _effectiveAddress;
-		public int EffectiveAddress
+		internal int EffectiveAddress
 		{
 			[IntrinsicMethod(SpuIntrinsicMethod.MainStorageArea_get_EffectiveAddress)]
 			get { return _effectiveAddress; }

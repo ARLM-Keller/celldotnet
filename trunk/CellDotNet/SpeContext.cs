@@ -506,17 +506,18 @@ namespace CellDotNet
 
 		public static AlignedMemory<int> AllocateAlignedInt32(int count)
 		{
-			return AllocateAlignedFourByteElementArray<int>(count);
+			return AllocateAlignedFourByteElementArray<int>(count, 4);
 		}
 
 		/// <summary>
-		/// Returns an array segment containing the requested number of integers.
+		/// Returns a pinned and suitably aligned array segment containing the requested number of elements.
 		/// </summary>
 		/// <param name="count"></param>
-		private static unsafe AlignedMemory<T> AllocateAlignedFourByteElementArray<T>(int count) where T : struct
+		/// <param name="elementSize"></param>
+		private static unsafe AlignedMemory<T> AllocateAlignedFourByteElementArray<T>(int count, int elementSize) where T : struct
 		{
 			// Minimal padding to ensure that a final 16-byte dma write can't damage other data.
-			int paddedByteCount = Utilities.Align16(count * 4);
+			int paddedByteCount = Utilities.Align16(count * elementSize);
 
 			// Allocate a sufficently large array.
 			// We only 128-align relatively large arrays.
@@ -527,7 +528,7 @@ namespace CellDotNet
 			else
 				bytesToAllocate = paddedByteCount + 16;
 
-			T[] arr = new T[bytesToAllocate / 4];
+			T[] arr = new T[bytesToAllocate / elementSize];
 			GCHandle gchandle = GCHandle.Alloc(arr, GCHandleType.Pinned);
 
 			// Find an aligned element.
@@ -538,7 +539,7 @@ namespace CellDotNet
 			else
 				alignedAddress = Utilities.Align16(arrayStartAddress);
 
-			int segmentStartIndex = (int) (alignedAddress - arrayStartAddress) / 4;
+			int segmentStartIndex = (int) (alignedAddress - arrayStartAddress) / elementSize;
 			ArraySegment<T> segment = new ArraySegment<T>(arr, segmentStartIndex, count);
 
 			return new AlignedMemory<T>(gchandle, segment);
