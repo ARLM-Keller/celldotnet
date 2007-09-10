@@ -28,11 +28,47 @@ namespace CellDotNet
 
 		static public void Get(int[] target, MainStorageArea ea, short count, uint tag)
 		{
+			int bytecount = count*4;
+
 			if (SpuRuntime.IsRunningOnSpu)
-				Get(ref target[0], ea.EffectiveAddress, count * 4, 0xfffff, 0, 0);
+			{
+				Get(ref target[0], ea.EffectiveAddress, bytecount, 0xfffff, 0, 0);
+			}
 			else
 			{
-				Marshal.Copy((IntPtr)ea.EffectiveAddress, target, 0, count);
+				AssertValidEffectiveAddress(ea.EffectiveAddress, bytecount);
+				Marshal.Copy((IntPtr) ea.EffectiveAddress, target, 0, count);
+			}
+		}
+
+		private static void AssertValidEffectiveAddress(int address, int bytecount)
+		{
+			if (bytecount % 16 == 0)
+				Utilities.Assert(address % 16 == 0, "address % 16 == 0");
+			else if (bytecount % 8 == 0)
+				Utilities.Assert(address % 8 == 0, "address % 8 == 0");
+			else if (bytecount % 4 == 0)
+				Utilities.Assert(address % 4 == 0, "address % 4 == 0");
+			else if (bytecount % 2 == 0)
+				Utilities.Assert(address % 2 == 0, "address % 2 == 0");
+			else if (bytecount % 1 == 0)
+				Utilities.Assert(address % 1 == 0, "address % 1 == 0");
+			else 
+				throw new ArgumentOutOfRangeException();
+		}
+
+		static public void Put(int[] source, MainStorageArea ea, short count, uint tag)
+		{
+			int bytecount = count * 4;
+
+			if (SpuRuntime.IsRunningOnSpu)
+			{
+				Put(ref source[0], ea.EffectiveAddress, bytecount, 0xfffff, 0, 0);
+			}
+			else
+			{
+				AssertValidEffectiveAddress(ea.EffectiveAddress, bytecount);
+				Marshal.Copy(source, 0, (IntPtr) ea.EffectiveAddress, count);
 			}
 		}
 
@@ -72,5 +108,12 @@ namespace CellDotNet
 		{
 			throw new InvalidOperationException();
 		}
+
+		[IntrinsicMethod(SpuIntrinsicMethod.Mfc_Put)]
+		static private void Put<T>(ref T lsStart, int ea, int byteCount, uint tag, uint tid, uint rid) where T : struct
+		{
+			throw new InvalidOperationException();
+		}
+
 	}
 }
