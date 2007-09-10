@@ -91,9 +91,9 @@ namespace CellDotNet
 		}
 
 		[SpuOpCode(SpuOpCodeEnum.Wrch)]
-		static private void WriteChannel<T>(
+		static private void WriteChannel(
 			[SpuInstructionPart(SpuInstructionPart.Ca)] SpuWriteChannel channel,
-			[SpuInstructionPart(SpuInstructionPart.Rt)] ref T value)
+			[SpuInstructionPart(SpuInstructionPart.Rt)] ref int value)
 		{
 			Utilities.PretendVariableIsUsed(channel);
 			Utilities.PretendVariableIsUsed(value);
@@ -113,8 +113,8 @@ namespace CellDotNet
 			}
 		}
 
-		[IntrinsicMethod(SpuIntrinsicMethod.Mfc_Get)]
-		static private void Get<T>(ref T lsStart, uint ea, int byteCount, uint tag, uint tid, uint rid) where T : struct
+//		[IntrinsicMethod(SpuIntrinsicMethod.Mfc_Get)]
+		static private void Get(ref int lsStart, uint ea, int byteCount, uint tag, uint tid, uint rid)
 		{
 			if (!SpuRuntime.IsRunningOnSpu)
 				throw new InvalidOperationException();
@@ -130,8 +130,8 @@ namespace CellDotNet
 			WriteChannel(SpuWriteChannel.MFC_CmdAndClassID, cmd);
 		}
 
-		[IntrinsicMethod(SpuIntrinsicMethod.Mfc_Put)]
-		static private void Put<T>(ref T lsStart, uint ea, int byteCount, uint tag, uint tid, uint rid) where T : struct
+//		[IntrinsicMethod(SpuIntrinsicMethod.Mfc_Put)]
+		static private void Put(ref int lsStart, uint ea, int byteCount, uint tag, uint tid, uint rid)
 		{
 			if (!SpuRuntime.IsRunningOnSpu)
 				throw new InvalidOperationException();

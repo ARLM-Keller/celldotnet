@@ -51,8 +51,6 @@ namespace CellDotNet
 			foreach (IRBasicBlock bb in _basicBlocks)
 			{
 				_writer.WriteNop();
-				_writer.WriteNop();
-				_writer.WriteNop();
 
 				_writer.BeginNewBasicBlock();
 				_spubasicblocks.Add(bb, _writer.CurrentBlock);
@@ -628,6 +626,11 @@ namespace CellDotNet
 					}
 					break;
 				case IRCode.Shl:
+					switch (lefttype.CliType)
+					{
+						case CliType.Int32:
+							return _writer.WriteShl(vrleft, vrright);
+					}
 					break;
 				case IRCode.Shr:
 					break;
@@ -1150,12 +1153,12 @@ namespace CellDotNet
 						return null;
 					case SpuIntrinsicMethod.Mfc_GetAvailableQueueEntries:
 						return writer.WriteRdchcnt(SpuWriteChannel.MFC_CmdAndClassID);
-					case SpuIntrinsicMethod.Mfc_Get:
-						WriteMfcDmaCommand(writer, Mfc.MfcDmaCommand.Get, childregs);
-						return null;
-					case SpuIntrinsicMethod.Mfc_Put:
-						WriteMfcDmaCommand(writer, Mfc.MfcDmaCommand.Put, childregs);
-						return null;
+//					case SpuIntrinsicMethod.Mfc_Get:
+//						WriteMfcDmaCommand(writer, Mfc.MfcDmaCommand.Get, childregs);
+//						return null;
+//					case SpuIntrinsicMethod.Mfc_Put:
+//						WriteMfcDmaCommand(writer, Mfc.MfcDmaCommand.Put, childregs);
+//						return null;
 					case SpuIntrinsicMethod.MainStorageArea_get_EffectiveAddress:
 						// The address is the only component.
 						return childregs[0];
