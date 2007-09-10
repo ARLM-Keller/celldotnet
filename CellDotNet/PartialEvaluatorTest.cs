@@ -44,7 +44,7 @@ namespace CellDotNet
 			MethodCompiler mc = cc.EntryPoint;
 			IRTreeBuilder.RemoveNops(mc.Blocks);
 
-			new PartialEvaluator().Evaluate(mc, fixedMethods);
+			new PartialEvaluator(fixedMethods).Evaluate(mc);
 
 			// This should have eliminated all method calls.
 			mc.ForeachTreeInstruction(
@@ -53,7 +53,19 @@ namespace CellDotNet
 						if (obj.Opcode == IROpCodes.Call)
 							Fail("Method calls were not removed.");
 					});
+			int retCount = 0;
+			mc.ForeachTreeInstruction(
+				delegate(TreeInstruction obj)
+				{
+					if (obj.Opcode == IROpCodes.Ret)
+					{
+						retCount++;
+						if (retCount > 1)
+							Fail("> 1 return instructions.");
+					}
+				});
 
+			new TreeDrawer().DrawMethod(mc);
 
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
@@ -62,7 +74,7 @@ namespace CellDotNet
 
 			using (SpeContext sc = new SpeContext())
 			{
-				object rv = sc.RunProgram(cc);
+				object rv = sc.RunProgram(cc, 0);
 				AreEqual(MagicNumber, (int) rv);
 			}
 		}
@@ -93,7 +105,7 @@ namespace CellDotNet
 			MethodCompiler mc = cc.EntryPoint;
 			IRTreeBuilder.RemoveNops(mc.Blocks);
 
-			new PartialEvaluator().Evaluate(mc, fixedMethods);
+			new PartialEvaluator(fixedMethods).Evaluate(mc);
 
 			// This should have eliminated all method calls.
 			mc.ForeachTreeInstruction(
@@ -101,6 +113,17 @@ namespace CellDotNet
 				{
 					if (obj.Opcode == IROpCodes.Call)
 						Fail("Method calls were not removed.");
+				});
+			int retCount = 0;
+			mc.ForeachTreeInstruction(
+				delegate(TreeInstruction obj)
+				{
+					if (obj.Opcode == IROpCodes.Ret)
+					{
+						retCount++;
+						if (retCount > 1)
+							Fail("> 1 return instructions.");
+					}
 				});
 
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -110,7 +133,7 @@ namespace CellDotNet
 
 			using (SpeContext sc = new SpeContext())
 			{
-				object rv = sc.RunProgram(cc);
+				object rv = sc.RunProgram(cc, 0);
 				AreEqual(MagicNumber, (int)rv);
 			}
 		}
@@ -141,8 +164,7 @@ namespace CellDotNet
 
 			MethodCompiler mc = new MethodCompiler(del.Method);
 			IRTreeBuilder.RemoveNops(mc.Blocks);
-			new TreeDrawer().DrawMethod(mc);
-			new PartialEvaluator().Evaluate(mc, fixedMethods);
+			new PartialEvaluator(fixedMethods).Evaluate(mc);
 
 			AreEqual(1, mc.Blocks.Count);
 			AreEqual(2, mc.Blocks[0].Roots.Count);
