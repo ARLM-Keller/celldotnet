@@ -113,14 +113,13 @@ namespace CellDotNet
 			}
 		}
 
-//		[IntrinsicMethod(SpuIntrinsicMethod.Mfc_Get)]
 		static private void Get(ref int lsStart, uint ea, int byteCount, uint tag, uint tid, uint rid)
 		{
 			if (!SpuRuntime.IsRunningOnSpu)
 				throw new InvalidOperationException();
-			//  MFC_CMD_WORD(_tid, _rid, _cmd) (((_tid)<<24)|((_rid)<<16)|(_cmd))
 
-			uint cmd = (int) MfcDmaCommand.Get;
+			// MFC_CMD_WORD(_tid, _rid, _cmd) (((_tid)<<24)|((_rid)<<16)|(_cmd))
+			uint cmd = (uint) MfcDmaCommand.Get;
 			cmd |= (tid << 24) | (rid << 16);
 
 			WriteChannel(SpuWriteChannel.MFC_LSA, ref lsStart);
@@ -130,15 +129,13 @@ namespace CellDotNet
 			WriteChannel(SpuWriteChannel.MFC_CmdAndClassID, cmd);
 		}
 
-//		[IntrinsicMethod(SpuIntrinsicMethod.Mfc_Put)]
 		static private void Put(ref int lsStart, uint ea, int byteCount, uint tag, uint tid, uint rid)
 		{
 			if (!SpuRuntime.IsRunningOnSpu)
 				throw new InvalidOperationException();
 
-//			 MFC_CMD_WORD(_tid, _rid, _cmd) (((_tid)<<24)|((_rid)<<16)|(_cmd))
-
-			uint cmd = (int)MfcDmaCommand.Get;
+			// MFC_CMD_WORD(_tid, _rid, _cmd) (((_tid)<<24)|((_rid)<<16)|(_cmd))
+			uint cmd = (uint)MfcDmaCommand.Get;
 			cmd |= (tid << 24) | (rid << 16);
 
 			WriteChannel(SpuWriteChannel.MFC_LSA, ref lsStart);
