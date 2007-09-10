@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace CellDotNet
 {
@@ -27,7 +28,12 @@ namespace CellDotNet
 
 		static public void Get(int[] target, MainStorageArea ea, short count, uint tag)
 		{
-			Get(ref target[0], ea.EffectiveAddress, count * 4, 0xfffff, 0, 0);
+			if (SpuRuntime.IsRunningOnSpu)
+				Get(ref target[0], ea.EffectiveAddress, count * 4, 0xfffff, 0, 0);
+			else
+			{
+				Marshal.Copy((IntPtr)ea.EffectiveAddress, target, 0, count);
+			}
 		}
 
 		[SpuOpCode(SpuOpCodeEnum.Rdch)]
@@ -54,12 +60,15 @@ namespace CellDotNet
 //			const uint SPE_TAG_ANY = 2;
 //			const uint SPE_TAG_IMMEDIATE = 3;
 
-			WriteChannel(SpuWriteChannel.MFC_WrTagMask, tagMask);
-			WriteChannel(SpuWriteChannel.MFC_WrTagUpdate, SPE_TAG_ALL);
+			if (SpuRuntime.IsRunningOnSpu)
+			{
+				WriteChannel(SpuWriteChannel.MFC_WrTagMask, tagMask);
+				WriteChannel(SpuWriteChannel.MFC_WrTagUpdate, SPE_TAG_ALL);
+			}
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.Mfc_Get)]
-		static private void Get<T>(ref T lsStart, int ea, int byteCount, uint tag, uint tid, uint rid)
+		static private void Get<T>(ref T lsStart, int ea, int byteCount, uint tag, uint tid, uint rid) where T : struct
 		{
 			throw new InvalidOperationException();
 		}
