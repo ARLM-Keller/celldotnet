@@ -313,6 +313,13 @@ namespace CellDotNet
 		}
 
 		[Test]
+		public void Test_Shl()
+		{
+			const int num = 0x300f0; // Uses both halfwords.
+			InstTest(OpCodes.Shl, num, 5, num << 5);
+		}
+
+		[Test]
 		public void Test_Xor()
 		{
 			InstTest(OpCodes.Xor, 0xff0, 0x0f0, 0xf00);
@@ -392,7 +399,7 @@ namespace CellDotNet
 			}
 		}
 
-		public void InstTest(OpCode opcode, int i1, int i2, int exp)
+		public void InstTest(OpCode opcode, int i1, int i2, int expectedValue)
 		{
 			ILWriter w = new ILWriter();
 
@@ -403,7 +410,7 @@ namespace CellDotNet
 			w.WriteOpcode(opcode);
 			w.WriteOpcode(OpCodes.Ret);
 
-			Execution(w, exp);
+			Execution(w, expectedValue);
 		}
 
 

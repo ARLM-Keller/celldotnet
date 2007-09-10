@@ -12,6 +12,7 @@ namespace CellDotNet
 	{
 		private Dictionary<MethodInfo, int> _fixedMethods;
 		private Dictionary<MethodVariable, int> _knownVariables;
+		TypeDeriver _typederiver = new TypeDeriver();
 
 		public PartialEvaluator(Dictionary<MethodInfo, int> methods)
 		{
@@ -68,6 +69,7 @@ namespace CellDotNet
 					{
 						TreeInstruction newroot = new TreeInstruction(IROpCodes.Br);
 						newroot.Operand = root.OperandAsBasicBlock;
+						_typederiver.DeriveType(newroot);
 						bb.Roots[rootnum] = newroot;
 						bb.Roots.RemoveRange(rootnum, bb.Roots.Count - rootnum);
 					}
@@ -160,6 +162,7 @@ namespace CellDotNet
 
 					TreeInstruction newInst = new TreeInstruction(IROpCodes.Ldc_I4);
 					newInst.Operand = fixedValue;
+					_typederiver.DeriveType(newInst);
 					return newInst;
 				}
 				return null;
@@ -176,6 +179,7 @@ namespace CellDotNet
 				{
 					TreeInstruction newinst = new TreeInstruction(IROpCodes.Ldc_I4);
 					newinst.Operand = knownValue;
+					_typederiver.DeriveType(newinst);
 					return newinst;
 				}
 			}
@@ -202,6 +206,7 @@ namespace CellDotNet
 					case IRCode.Ceq:
 						TreeInstruction newinst = new TreeInstruction(IROpCodes.Ldc_I4);
 						newinst.Operand = l == r ? 1 : 0;
+						_typederiver.DeriveType(newinst);
 						return newinst;
 				}
 			}
