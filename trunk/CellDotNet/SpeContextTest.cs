@@ -276,6 +276,24 @@ namespace CellDotNet
 
 		#endregion
 
+		[Test]
+		public void TestGetLocalStorageSize()
+		{
+			using (SpeContext sc = new SpeContext())
+				AreEqual(256*1024, sc.LocalStorageSize);
+		}
+
+		[Test]
+		public void TestGetLocalStorageArea()
+		{
+			using (SpeContext sc = new SpeContext())
+			{
+				IntPtr ls = sc.LocalStorageAddress;
+				AreNotEqual((IntPtr)0, ls);
+			}
+		}
+
+
 		[Test, Explicit]
 		public void TestGetSpeControlArea()
 		{

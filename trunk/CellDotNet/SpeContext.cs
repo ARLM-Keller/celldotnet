@@ -113,13 +113,18 @@ namespace CellDotNet
 		private IntPtr _handle;
 
 		private int _localStorageSize = -1;
+		private IntPtr _localStorageAddress;
+		private RegisterSizedObject _debugValueObject;
 
 		public int LocalStorageSize
 		{
 			get { return _localStorageSize; }
 		}
 
-		private RegisterSizedObject _debugValueObject;
+		public IntPtr LocalStorageAddress
+		{
+			get { return _localStorageAddress; }
+		}
 
 		public RegisterSizedObject DebugValueObject
 		{
@@ -175,12 +180,15 @@ namespace CellDotNet
 				throw new Exception();
 
 			_localStorageSize = UnsafeNativeMethods.spe_ls_size_get(_handle);
+			_localStorageAddress = UnsafeNativeMethods.spe_ls_area_get(_handle);
 
 			Console.WriteLine("LocalStorageSize: {0}", LocalStorageSize);
 		}
 
 		public void LoadProgram(int[] code)
 		{
+			AssertContext();
+
 			IntPtr dataBufMain = IntPtr.Zero;
 
 			// Save a copy of the code for optional disassembly.
@@ -354,6 +362,8 @@ namespace CellDotNet
 
 		public void Run()
 		{
+			AssertContext();
+
 			uint entry = 0;
 			SpeStopInfo stopinfo = new SpeStopInfo();
 
@@ -463,6 +473,8 @@ namespace CellDotNet
 		/// <param name="rid"></param>
 		private void spe_mfcio_get(int lsa, IntPtr ea, int size, uint tag, uint tid, uint rid)
 		{
+			AssertContext();
+
 			// Seems like 16 bytes is the smallest transfer unit that works...
 			if ((size <= 0) || !Utilities.IsQuadwordMultiplum(size))
 				throw new ArgumentException("Size is not a positive multiplum of 16 bytes.");
@@ -478,6 +490,12 @@ namespace CellDotNet
 				throw new LibSpeException("spe_mfcio_get failed.");
 		}
 
+		private void AssertContext()
+		{
+			if (_handle == IntPtr.Zero)
+				throw new InvalidOperationException("No context.");
+		}
+
 		/// <summary>
 		/// Wrapper for the real one which checks the return code.
 		/// </summary>
@@ -489,6 +507,8 @@ namespace CellDotNet
 		/// <param name="rid"></param>
 		private void spe_mfcio_put(int lsa, IntPtr ea, int size, uint tag, uint tid, uint rid)
 		{
+			AssertContext();
+
 			// Seems like 16 bytes is the smallest transfer unit that works...
 			if ((size <= 0) || !Utilities.IsQuadwordMultiplum(size))
 				throw new ArgumentException("Size is not a positive multiplum of 16 bytes.");
