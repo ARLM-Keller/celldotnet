@@ -71,26 +71,16 @@ namespace CellDotNet
 		{
 			using (AlignedMemory<int> mem = SpeContext.AllocateAlignedInt32(4))
 			{
-				// Create elements whose sum is twenty.
-				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
-				{
-					mem.ArraySegment.Array[i] = 5;
-				}
-
-				Converter<MainStorageArea, int> del =
+				Action<MainStorageArea> del =
 					delegate(MainStorageArea input)
 					{
 						int[] arr = new int[4];
+						for (int i = 0; i < 4; i++)
+							arr[i] = 5;
 
 						uint tag = 1;
-						Mfc.Get(arr, input, 4, tag);
+						Mfc.Put(arr, input, 4, tag);
 						Mfc.WaitForDmaCompletion(tag);
-
-						int sum = 0;
-						for (int i = 0; i < 4; i++)
-							sum += arr[i];
-
-						return sum;
 					};
 
 				CompileContext cc = new CompileContext(del.Method);
@@ -98,10 +88,20 @@ namespace CellDotNet
 				Disassembler.DisassembleToConsole(cc);
 				cc.WriteAssemblyToFile("dma.s", mem.GetArea());
 
+				// Run locally.
+				del(mem.GetArea());
+				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
+				{
+					AreEqual(5, mem.ArraySegment.Array[i]);
+					mem.ArraySegment.Array[i] = 0;
+				}
+
+				// Run on spu.
 				object rv = SpeContext.UnitTestRunProgram(cc, mem.GetArea());
-				int correctVal = del(mem.GetArea());
-				AreEqual(20, correctVal);
-				AreEqual(20, (int)rv);
+				IsNull(rv);
+
+				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
+					AreEqual(5, mem.ArraySegment.Array[i]);
 			}
 		}
 	}
