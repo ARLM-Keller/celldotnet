@@ -107,6 +107,10 @@ namespace CellDotNet
 			_methodBase = method;
 			State = MethodCompileState.S1Initial;
 
+			Dictionary<MethodInfo, int> fixedMethods = new Dictionary<MethodInfo, int>();
+			fixedMethods.Add(typeof(SpuRuntime).GetProperty("IsRunningOnSpu").GetGetMethod(), 1);
+			_partialEvaluator = new PartialEvaluator(fixedMethods);
+
 			PerformIRTreeConstruction();
 		}
 
@@ -186,6 +190,7 @@ namespace CellDotNet
 			}
 
 
+
 			ILReader reader = new ILReader(_methodBase);
 			try
 			{
@@ -197,6 +202,8 @@ namespace CellDotNet
 					_methodBase.DeclaringType.Name, _methodBase.Name), e);
 			}
 			CheckTreeInstructionCountIsMinimum(reader.InstructionsRead);
+
+			_partialEvaluator.Evaluate(this);
 
 			State = MethodCompileState.S2TreeConstructionDone;
 		}
@@ -512,6 +519,7 @@ namespace CellDotNet
 
 		private SpuInstructionWriter _instructions;
 		private StackTypeDescription _returnType;
+		private PartialEvaluator _partialEvaluator;
 
 		public override int[] Emit()
 		{

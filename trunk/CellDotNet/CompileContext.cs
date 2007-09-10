@@ -116,9 +116,9 @@ namespace CellDotNet
 			if (targetState >= CompileContextState.S7CodeEmitted && State < CompileContextState.S7CodeEmitted)
 				PerformCodeEmission();
 
-			State = CompileContextState.S8Complete;
-
-			if (targetState > CompileContextState.S8Complete)
+			if (targetState == CompileContextState.S8Complete)
+				State = CompileContextState.S8Complete;
+			else if (targetState > CompileContextState.S8Complete)
 				throw new ArgumentException("Invalid target state: " + targetState, "targetState");
 		}
 

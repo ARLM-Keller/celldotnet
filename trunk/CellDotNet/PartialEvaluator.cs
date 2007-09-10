@@ -13,16 +13,20 @@ namespace CellDotNet
 		private Dictionary<MethodInfo, int> _fixedMethods;
 		private Dictionary<MethodVariable, int> _knownVariables;
 
+		public PartialEvaluator(Dictionary<MethodInfo, int> methods)
+		{
+			Utilities.AssertArgumentNotNull(methods, "methods");
+			_fixedMethods = methods;
+		}
+
 		/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="mc"></param>
-		/// <param name="fixedMethods">
 		/// A set of methods and their fixed values.
 		/// </param>
-		public void Evaluate(MethodCompiler mc, Dictionary<MethodInfo, int> fixedMethods)
+		public void Evaluate(MethodCompiler mc)
 		{
-			_fixedMethods = fixedMethods;
 
 			// Replace methods with constants.
 			_knownVariables = new Dictionary<MethodVariable, int>();
@@ -37,10 +41,6 @@ namespace CellDotNet
 				// only valid with a block.
 				_knownVariables.Clear();
 			}
-
-			Console.WriteLine();
-			Console.WriteLine("After replace:");
-			new TreeDrawer().DrawMethod(mc.Blocks);
 
 			// Shortcut conditional branches with fixed outcomes.
 			foreach (IRBasicBlock bb in mc.Blocks)
@@ -78,10 +78,6 @@ namespace CellDotNet
 					}
 				}
 			}
-
-			Console.WriteLine();
-			Console.WriteLine("After shortcut:");
-			new TreeDrawer().DrawMethod(mc);
 
 			EliminateUnusedCode(mc);
 		}

@@ -16,5 +16,14 @@ namespace CellDotNet
 		{
 			throw new InvalidOperationException();
 		}
+
+		public static bool IsRunningOnSpu
+		{
+			get 
+			{
+				// Dont be fooled; on the spu this property will evaluate to true.
+				return false;
+			}
+		}
 	}
 }
