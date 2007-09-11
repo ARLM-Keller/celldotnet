@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 
 namespace CellDotNet
 {
@@ -511,6 +512,11 @@ namespace CellDotNet
 
 		private unsafe static void RunRasmus()
 		{
+			using (SpeContext sc =  new SpeContext())
+			{
+				Thread.Sleep(50000);
+			}
+			return;
 
 			{
 				int[] realarray = new int[50];

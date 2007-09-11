@@ -1,3 +1,5 @@
+using System;
+
 namespace CellDotNet
 {
 	internal sealed class BitMatrix
@@ -9,11 +11,11 @@ namespace CellDotNet
 
 		public BitMatrix(int height, int width)
 		{
-			resizeMatric(height, width);
+			ResizeMatrix(height, width);
 		}
 
 		//TODO overvej om den gamle matrice skal genbruges.
-		public void clear()
+		public void Clear()
 		{
 			width = 0;
 			height = 0;
@@ -21,54 +23,56 @@ namespace CellDotNet
 			matrix = new uint[0,0];
 		}
 
-		public void add(int row, int collum)
+		static void GetIndices(ref int row, ref int column, out int cindex, out int cbit)
+		{
+			int rowtemp = row;
+			int columntemp = column;
+
+			row = Math.Max(rowtemp, columntemp);
+			column = Math.Min(rowtemp, columntemp);
+
+			cbit = column % 32;
+			cindex = column / 32;
+		}
+
+		public void Add(int row, int collum)
 		{
 			if(row < 0 || collum < 0)
 				return;
 
-			if(row >= height || collum >= width)
-				resizeMatric(row+1, collum+1);
+			int cbit;
+			int cindex;
+			GetIndices(ref row, ref collum, out cindex, out cbit);
 
-			int cbit = collum%32;
-			int cindex = collum/32;
+			if(row >= height || collum >= width)
+				ResizeMatrix(row+1, collum+1);
 
 			matrix[row, cindex] |= (uint) (1 << cbit);
 		}
 
-		public void remove(int row, int collum)
+		public void Remove(int row, int collum)
 		{
-			if (0 <= row && row < height && 0 <= collum && collum < width)
-			{
-				int cbit = collum % 32;
-				int cindex = collum / 32;
+			int cbit;
+			int cindex;
+			GetIndices(ref row, ref collum, out cindex, out cbit);
 
-				matrix[row, cindex] &= ~((uint)(1 << cbit));
-			}
+			if (((0 <= row && row < height) && 0 <= collum) && collum < width)
+				matrix[row, cindex] &= ~((uint) (1 << cbit));
 		}
 
-		public bool contains(int row, int collum)
+		public bool Contains(int row, int collum)
 		{
-			if (0 <= row && row < height && 0 <= collum && collum < width)
-			{
-				int cbit = collum % 32;
-				int cindex = collum / 32;
+			int cbit;
+			int cindex;
+			GetIndices(ref row, ref collum, out cindex, out cbit);
 
+			if (((0 <= row && row < height) && 0 <= collum) && collum < width)
 				return ((matrix[row, cindex] >> cbit) & 1) != 0;
-			}
+
 			return false;
 		}
 
-		public BitVector GetRow(int row)
-		{
-			BitVector result = new BitVector();
-			for (int i = 0; i < width; i++)
-				if(contains(row,i))
-					result.Add(i);
-
-			return result;
-		}
-
-		private void resizeMatric(int newHeight, int newWidth)
+		private void ResizeMatrix(int newHeight, int newWidth)
 		{
 			if (newHeight <= height && newWidth <= width)
 				return;
