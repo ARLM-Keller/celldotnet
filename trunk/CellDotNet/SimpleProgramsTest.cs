@@ -109,15 +109,15 @@ namespace CellDotNet
 
 			int correctval = del(arg);
 
-			Console.WriteLine("TestRecursiveSummation_Int: {0}", correctval);
+//			Console.WriteLine("TestRecursiveSummation_Int: {0}", correctval);
 
 			CompileContext cc = new CompileContext(del.Method);
 
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			Disassembler.DisassembleToConsole(cc);
+//			Disassembler.DisassembleToConsole(cc);
 
-			cc.WriteAssemblyToFile(Utilities.GetUnitTestName() + "_asm.s");
+//			cc.WriteAssemblyToFile(Utilities.GetUnitTestName() + "_asm.s");
 			
 			if (!SpeContext.HasSpeHardware)
 				return;

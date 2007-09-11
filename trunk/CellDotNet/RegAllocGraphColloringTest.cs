@@ -27,19 +27,19 @@ namespace CellDotNet
 
 			mc.PerformProcessing(MethodCompileState.S4InstructionSelectionDone);
 
-			new TreeDrawer().DrawMethod(mc);
+//			new TreeDrawer().DrawMethod(mc);
 
 			mc.GetBodyWriter().WriteStop();
 
-			Console.WriteLine();
-			Console.WriteLine("Disassembly: ");
-			Console.WriteLine(mc.GetBodyWriter().Disassemble());
+//			Console.WriteLine();
+//			Console.WriteLine("Disassembly: ");
+//			Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
 			mc.PerformProcessing(MethodCompileState.S5RegisterAllocationDone);
 
-			Console.WriteLine();
-			Console.WriteLine("Disassembly after regalloc: ");
-			Console.WriteLine(mc.GetBodyWriter().Disassemble());
+//			Console.WriteLine();
+//			Console.WriteLine("Disassembly after regalloc: ");
+//			Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
 		}
 
@@ -88,15 +88,15 @@ namespace CellDotNet
 
 			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 
-			new TreeDrawer().DrawMethod(mc);
+//			new TreeDrawer().DrawMethod(mc);
 
 			mc.PerformProcessing(MethodCompileState.S4InstructionSelectionDone);
 
 			mc.GetBodyWriter().WriteStop();
 
-			Console.WriteLine();
-			Console.WriteLine("Disassembly: ");
-			Console.WriteLine(mc.GetBodyWriter().Disassemble());
+//			Console.WriteLine();
+//			Console.WriteLine("Disassembly: ");
+//			Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
 			long t1 = DateTime.Now.Ticks;
 
@@ -104,9 +104,9 @@ namespace CellDotNet
 
 			long t2 = DateTime.Now.Ticks;
 			
-			Console.WriteLine();
-			Console.WriteLine("Disassembly after regalloc: ");
-			Console.WriteLine(mc.GetBodyWriter().Disassemble());
+//			Console.WriteLine();
+//			Console.WriteLine("Disassembly after regalloc: ");
+//			Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
 			long t3 = DateTime.Now.Ticks;
 
@@ -114,11 +114,11 @@ namespace CellDotNet
 
 			long t4 = DateTime.Now.Ticks;
 
-			Console.WriteLine();
-			Console.WriteLine("Disassembly after remove of redundant moves: ");
-			Console.WriteLine(mc.GetBodyWriter().Disassemble());
-
-			Console.WriteLine("Reg alloc time: {0} Remove redundante moves: {1}", (t2-t1)/10000, (t4-t3)/10000);
+//			Console.WriteLine();
+//			Console.WriteLine("Disassembly after remove of redundant moves: ");
+//			Console.WriteLine(mc.GetBodyWriter().Disassemble());
+//
+//			Console.WriteLine("Reg alloc time: {0} Remove redundante moves: {1}", (t2-t1)/10000, (t4-t3)/10000);
 		}
 	}
 }

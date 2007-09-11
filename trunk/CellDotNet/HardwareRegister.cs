@@ -8,7 +8,7 @@ namespace CellDotNet
 		// arrays implementere IList, og array bliver redonly når der bruges som IList.
 		private static VirtualRegister[] _virtualHardwareRegisters;
 
-		public static IEnumerable<VirtualRegister> VirtualHardwareRegisters
+		public static VirtualRegister[] VirtualHardwareRegisters
 		{
 			get { return _virtualHardwareRegisters; }
 		}
@@ -22,14 +22,14 @@ namespace CellDotNet
 
 		private static VirtualRegister[] _scratchVirtualRegisters;
 
-		public static IEnumerable<VirtualRegister> ScratchVirtualRegisters
+		public static VirtualRegister[] ScratchVirtualRegisters
 		{
 			get { return _scratchVirtualRegisters; }
 		}
 
 		private static VirtualRegister[] _calleeSavesVirtualRegisters;
 
-		public static IEnumerable<VirtualRegister> CalleeSavesVirtualRegisters
+		public static VirtualRegister[] CalleeSavesVirtualRegisters
 		{
 			get { return _calleeSavesVirtualRegisters; }
 		}
@@ -52,7 +52,7 @@ namespace CellDotNet
 		public static CellRegister[] getCallerSavesCellRegisters()
 		{
 			CellRegister[] r = new CellRegister[72];
-			for (int i = 3; i <= 74; i++)
+			for (int i = 3; i < numberOfCallerSaveRegister + 3; i++)
 				r[i - 3] = (CellRegister) i;
 			return r;
 		}
@@ -68,10 +68,14 @@ namespace CellDotNet
 		public static CellRegister[] getCalleeSavesCellRegisters()
 		{
 			CellRegister[] r = new CellRegister[48];
-			for (int i = 80; i <= 127; i++)
+			for (int i = 80; i < numberOfCalleeSaveRegister + 80; i++)
 				r[i - 80] = (CellRegister) i;
 			return r;
 		}
+
+		// Max numbers, caller = 72, callee = 48
+		private const int numberOfCallerSaveRegister = 6; //72
+		private const int numberOfCalleeSaveRegister = 16; //48
 
 		static HardwareRegister()
 		{
@@ -84,19 +88,19 @@ namespace CellDotNet
 				_virtualHardwareRegisters[i].Register = (CellRegister) i;
 			}
 
-			_callerSavesVirtualRegisters = new VirtualRegister[72];
+			_callerSavesVirtualRegisters = new VirtualRegister[numberOfCallerSaveRegister];
 
 			_scratchVirtualRegisters = new VirtualRegister[5];
 
-			_calleeSavesVirtualRegisters = new VirtualRegister[48];
+			_calleeSavesVirtualRegisters = new VirtualRegister[numberOfCalleeSaveRegister];
 
-			for (int i = 3; i <= 74; i++)
+			for (int i = 3; i < numberOfCallerSaveRegister+3; i++)
 				_callerSavesVirtualRegisters[i - 3] = _virtualHardwareRegisters[i];
 
 			for (int i = 75; i <= 79; i++)
 				_scratchVirtualRegisters[i - 75] = _virtualHardwareRegisters[i];
 
-			for (int i = 80; i <= 127; i++)
+			for (int i = 80; i < numberOfCalleeSaveRegister+80; i++)
 				_calleeSavesVirtualRegisters[i - 80] = _virtualHardwareRegisters[i];
 
 			LR = GetVirtualHardwareRegister((CellRegister) 0);

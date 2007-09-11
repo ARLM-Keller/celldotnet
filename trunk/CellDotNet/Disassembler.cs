@@ -8,6 +8,9 @@ namespace CellDotNet
 	{
 		public static void DisassembleToConsole(CompileContext compileContext)
 		{
+			if (compileContext.State < CompileContextState.S6AddressPatchingDone)
+				throw new InvalidOperationException("Address patching has not yet been performed.");
+
 			DisassembleToConsole(compileContext.GetAllObjectsForDisassembly());
 		}
 
@@ -27,8 +30,27 @@ namespace CellDotNet
 
 		public void Disassemble(CompileContext compileContext, TextWriter writer)
 		{
+			if (compileContext.State < CompileContextState.S6AddressPatchingDone)
+				throw new InvalidOperationException("Address patching has not yet been performed.");
+
 			IEnumerable<ObjectWithAddress> objects = compileContext.GetAllObjectsForDisassembly();
 			Disassemble(objects, writer);
+		}
+
+		public static void DisassembleUnconditional(CompileContext compileContext, TextWriter writer)
+		{
+			IEnumerable<ObjectWithAddress> objects = compileContext.GetAllObjectsForDisassembly();
+
+			foreach (ObjectWithAddress o in objects)
+			{
+				writer.WriteLine();
+
+				SpuRoutine r = o as SpuRoutine;
+				if (r == null)
+					continue;
+
+				DisassembleInstructions(r.GetInstructions(), 0, writer);
+			}
 		}
 
 		public void Disassemble(IEnumerable<ObjectWithAddress> objects, TextWriter writer)
@@ -94,7 +116,7 @@ namespace CellDotNet
 				writer.WriteLine();
 				writer.WriteLine("# Name: {3}\r\n# Offset: {0:x6}, size: {1:x6}, type: {2}.",
 					r.Offset, r.Size, r.GetType().Name, !string.IsNullOrEmpty(o.Name) ? o.Name : "(none)");
-				int newoffset = DisassembleInstructions(r.GetInstructions(), r.Offset, writer);
+				int newoffset = DisassembleInstructions(r.GetFinalInstructions(), r.Offset, writer);
 
 				if (newoffset != r.Offset + r.Size)
 					throw new Exception(string.Format(
@@ -164,7 +186,7 @@ namespace CellDotNet
 						// Currently this only need to handle move.
 						if (inst.OpCode == SpuOpCode.move)
 						{
-							tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Ra);
+							tw.Write("{0} {1}, {2}    {3}", inst.OpCode.Name, inst.Rt, inst.Ra, inst.SpuInstructionNumber);
 						}
 						else
 						{

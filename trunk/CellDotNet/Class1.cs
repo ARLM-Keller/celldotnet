@@ -28,13 +28,19 @@ namespace CellDotNet
 		{
 //			new ILOpCodeExecutionTest().TestRefArgumentTest();
 
-//			new SpeContextTest().TestStackOverflow();
+//			new SpeContextTest().TestRecursion_StackOverflow();
+
+//			new SpeContextTest().TestRecursion_StackOverflow_Debug();
+
+			new MfcTest().TestDma_GetIntArray_DEBUG();
 
 //			new SpeContextTest().TestFirstCellProgram();
 
 //			new SimpleProgramsTest().TestRecursiveSummation_Int();
 
-			new SpeContextTest().TestOutOfMemory();
+//			new SpeContextTest().TestOutOfMemory();
+
+//			new SimpleProgramsTest().TestRecursiveSummation_Int();
 
 			Console.WriteLine("Running RunKlaus done.");
 		}

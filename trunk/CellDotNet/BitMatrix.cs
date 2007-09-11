@@ -1,111 +1,115 @@
 using System;
+using System.Text;
 
 namespace CellDotNet
 {
 	internal sealed class BitMatrix
 	{
-		private int width = 0;
-		private int height = 0;
+		private BitVector[] matrix = new BitVector[0];
 
-		private uint [,] matrix = new uint[0, 0];
-
-		public BitMatrix(int height, int width)
-		{
-			ResizeMatrix(height, width);
-		}
-
-		//TODO overvej om den gamle matrice skal genbruges.
 		public void Clear()
 		{
-			width = 0;
-			height = 0;
-
-			matrix = new uint[0,0];
+			matrix = new BitVector[0];
 		}
 
-		static void GetIndices(ref int row, ref int column, out int cindex, out int cbit)
+		public void add(int row, int collum)
 		{
-			int rowtemp = row;
-			int columntemp = column;
-
-			row = Math.Max(rowtemp, columntemp);
-			column = Math.Min(rowtemp, columntemp);
-
-			cbit = column % 32;
-			cindex = column / 32;
-		}
-
-		public void Add(int row, int collum)
-		{
-			if(row < 0 || collum < 0)
+			if (row < 0 || collum < 0)
 				return;
 
-			int cbit;
-			int cindex;
-			GetIndices(ref row, ref collum, out cindex, out cbit);
+			resizeMatric(row + 1);
 
-			if(row >= height || collum >= width)
-				ResizeMatrix(row+1, collum+1);
-
-			matrix[row, cindex] |= (uint) (1 << cbit);
+			matrix[row].Add(collum);
 		}
 
-		public void Remove(int row, int collum)
+		public void remove(int row, int collum)
 		{
-			int cbit;
-			int cindex;
-			GetIndices(ref row, ref collum, out cindex, out cbit);
-
-			if (((0 <= row && row < height) && 0 <= collum) && collum < width)
-				matrix[row, cindex] &= ~((uint) (1 << cbit));
+			if(row >= 0 && row < matrix.Length)
+				matrix[row].Remove(collum);
 		}
 
-		public bool Contains(int row, int collum)
+		public bool contains(int row, int collum)
 		{
-			int cbit;
-			int cindex;
-			GetIndices(ref row, ref collum, out cindex, out cbit);
+			if (row < 0 || row >= matrix.Length)
+				return false;
 
-			if (((0 <= row && row < height) && 0 <= collum) && collum < width)
-				return ((matrix[row, cindex] >> cbit) & 1) != 0;
-
-			return false;
+			return matrix[row].Contains(collum);
 		}
 
-		private void ResizeMatrix(int newHeight, int newWidth)
+		public bool RowEquals(int row, BitVector v)
 		{
-			if (newHeight <= height && newWidth <= width)
+			if (row < 0)
+				return true;
+
+			if (row >= matrix.Length)
+				return v.IsCountZero();
+
+			return matrix[row].Equals(v);
+	}
+
+
+		public BitVector GetRow(int row)
+		{
+			if (row < 0 || row >= matrix.Length)
+				return null; //TODO muligvis bedre håndtering af denne situation.
+
+			return matrix[row];
+		}
+
+		public bool IsSymetric()
+		{
+			int maxSize = matrix.Length;
+			for (int i = 0; i < matrix.Length; i++)
+				maxSize = (matrix[i].Size > maxSize) ? matrix[i].Size : maxSize;
+
+			bool result = true;
+			for (int row = 0; row < maxSize; row++)
+				for (int col = 0; col < maxSize; col++)
+//				for (int col = 1 + row; col < maxSize; col++)
+					result &= contains(row, col) == contains(col, row);
+
+			return result;
+		}
+
+		private void resizeMatric(int newHeight)
+		{
+			if (newHeight <= matrix.Length)
 				return;
 
-			if (newHeight > height)
+			if (newHeight > matrix.Length)
 			{
-				if (newHeight < 2 * height)
-					height = 2 * height;
-				else
-					height = newHeight;
+				if (newHeight < 2 * matrix.Length)
+					newHeight = 2 * matrix.Length;
 			}
 
-			if (newWidth > width)
-			{
-				if (newWidth < 2 * width)
-					width = 2 * width;
-				else
-					width = newWidth;
-			}
+			BitVector[] newMatrix = new BitVector[newHeight];
 
-			width = ((width - 1) / 32 + 1) * 32;
+			for (int i = 0; i < matrix.Length; i++ )
+				newMatrix[i] = matrix[i];
 
-			uint[,] newMatrix = new uint[height, (width - 1) / 32 + 1];
-
-			for (int i = 0; i < matrix.GetLength(0); i++)
-			{
-				for (int j = 0; j < matrix.GetLength(1); j++)
-				{
-					newMatrix[i, j] = matrix[i, j];
-				}
-			}
+			for (int i = matrix.Length; i < newMatrix.Length; i++)
+				newMatrix[i] = new BitVector();
 
 			matrix = newMatrix;
+		}
+
+		public string PrintFullMatrix()
+		{
+			StringBuilder text = new StringBuilder();
+			int maxWidth = 0;
+			for(int row = 0; row < matrix.Length; row++)
+			{
+				if (matrix[row].SizeTrim() > maxWidth)
+					maxWidth = matrix[row].SizeTrim();
+			}
+
+			for (int row = 0; row < matrix.Length; row++)
+			{
+				text.Append(matrix[row].PrintFullVector(maxWidth));
+				text.AppendLine();
+			}
+
+			return text.ToString();
 		}
 	}
 }

@@ -49,21 +49,21 @@ namespace CellDotNet
 			mc.PerformProcessing(MethodCompileState.S4InstructionSelectionDone);
 			mc.GetBodyWriter().WriteStop();
 
-			Console.WriteLine();
-			Console.WriteLine("Disassembly: ");
-			Console.WriteLine(mc.GetBodyWriter().Disassemble());
+//			Console.WriteLine();
+//			Console.WriteLine("Disassembly: ");
+//			Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
 			mc.PerformProcessing(MethodCompileState.S5RegisterAllocationDone);
 
-			Console.WriteLine();
-			Console.WriteLine("Disassembly after regalloc: ");
-			Console.WriteLine(mc.GetBodyWriter().Disassemble());
+//			Console.WriteLine();
+//			Console.WriteLine("Disassembly after regalloc: ");
+//			Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
 			mc.PerformProcessing(MethodCompileState.S7RemoveRedundantMoves);
 
-			Console.WriteLine();
-			Console.WriteLine("Disassembly after remove of redundant moves: ");
-			Console.WriteLine(mc.GetBodyWriter().Disassemble());
+//			Console.WriteLine();
+//			Console.WriteLine("Disassembly after remove of redundant moves: ");
+//			Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
 			int[] bincode = SpuInstruction.emit(mc.GetBodyWriter().GetAsList());
 
@@ -194,6 +194,7 @@ namespace CellDotNet
 			SimpleDelegateIntInt del = Recursion;
 
 			CompileContext cc = new CompileContext(del.Method);
+
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			if (!SpeContext.HasSpeHardware)
@@ -204,6 +205,36 @@ namespace CellDotNet
 				sc.RunProgram(cc, 10000); // generates at least 320K stack.
 			}
 		}
+
+/*		[Test, ExpectedException(typeof(SpeStackOverflowException))]*/
+		internal void TestRecursion_StackOverflow_Debug()
+		{
+			SimpleDelegateIntInt del = Recursion;
+
+			CompileContext cc = new CompileContext(del.Method);
+
+			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
+
+//			foreach (MethodCompiler method in cc.Methods)
+//				method.Naked = true;
+
+			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
+
+			Disassembler.DisassembleUnconditional(cc, Console.Out);
+
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			Disassembler.DisassembleToConsole(cc);
+
+			if (!SpeContext.HasSpeHardware)
+				throw new SpeStackOverflowException();
+
+			using (SpeContext sc = new SpeContext())
+			{
+				sc.RunProgram(cc, 10000); // generates at least 320K stack.
+			}
+		}
+
 
 		[Test]
 		public void TestRecursion_WithoutStackOverflow()
@@ -362,7 +393,7 @@ namespace CellDotNet
 			IntReturnDelegate del = delegate { return magicNumber; };
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
-			Disassembler.DisassembleToConsole(cc);
+//			Disassembler.DisassembleToConsole(cc);
 
 			int[] code = cc.GetEmittedCode();
 

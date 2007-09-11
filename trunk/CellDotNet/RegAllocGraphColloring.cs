@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 
 namespace CellDotNet
 {
@@ -66,7 +68,8 @@ namespace CellDotNet
 //		private Dictionary<uint, Set<uint>> adjSet =
 //			new Dictionary<uint, Set<uint>>();
 
-		private BitMatrix adjMatrix = new BitMatrix(10,10);
+//		private BitMatrix adjMatrix = new BitMatrix(10,10);
+		private BitMatrix adjMatrix = new BitMatrix();
 
 //		private Dictionary<uint, BitVector> adjList =
 //			new Dictionary<uint, BitVector>();
@@ -101,9 +104,15 @@ namespace CellDotNet
 
 		public delegate int NewSpillOffsetDelegate();
 
+		private static int allocCalls = 0;
+		private int allocCount = 0;
+		private int allocLoopCount = 0;
+
 		// TODO evt. tage kode og en delagate, der kan allokere plads i frames, som argument.
-		public void Alloc(List<SpuBasicBlock> inputBasicBlocks, NewSpillOffsetDelegate inputNewSpillOffset)
+		public void Alloc(List<SpuBasicBlock> inputBasicBlocks, NewSpillOffsetDelegate inputNewSpillOffset, Dictionary<VirtualRegister, int> inputRegisterWeight)
 		{
+			allocCalls++;
+
 			basicBlocks = inputBasicBlocks;
 
 			NewSpillOffset = inputNewSpillOffset;
@@ -136,17 +145,24 @@ namespace CellDotNet
 			foreach (uint r in initial)
 			{
 				maxRegNum = (int) r > maxRegNum ? (int) r : maxRegNum;
-				virtualRegisteWeight.Add(intToReg[(int) r], 0);
+				virtualRegisteWeight.Add(intToReg[(int) r], 111);
 			}
 
 			foreach (int r in precolored)
 			{
 				maxRegNum = r > maxRegNum ? r : maxRegNum;
-				virtualRegisteWeight.Add(intToReg[r], 0);
+				virtualRegisteWeight.Add(intToReg[r], int.MaxValue);
+			}
+
+			foreach (VirtualRegister r in inputRegisterWeight.Keys)
+			{
+				virtualRegisteWeight[r] =  inputRegisterWeight[r];
 			}
 
 			do
 			{
+				allocCount++;
+
 				maxInstNr = 0;
 
 				foreach (SpuBasicBlock block in basicBlocks)
@@ -233,8 +249,104 @@ namespace CellDotNet
 				Build();
 
 				MakeWorklist();
+
 				do
 				{
+					allocLoopCount++;
+
+					// DEBUG output
+
+//					foreach (VirtualRegister r in regToInt.Keys)
+//					{
+//						if (!precolored.Contains((int)regToInt[r]))
+//							Console.WriteLine("{0} degree: {1}", r, degree[regToInt[r]]);
+//					}
+//					Console.WriteLine();
+//
+//					Console.WriteLine("simplifyWorklist:");
+//					foreach (uint u in simplifyWorklist)
+//						Console.Write(intToReg[(int)u] + " ");
+//					Console.WriteLine();
+//
+//					Console.WriteLine("freezeWorklist:");
+//					foreach (uint u in freezeWorklist)
+//						Console.Write(intToReg[(int)u] + " ");
+//					Console.WriteLine();
+//
+//					Console.WriteLine("spillWorklist:");
+//					foreach (uint u in spillWorklist)
+//						Console.Write(intToReg[(int)u] + " ");
+//					Console.WriteLine();
+//
+//					Console.WriteLine("spilledNodes:");
+//					foreach (uint u in spilledNodes)
+//						Console.Write(intToReg[(int)u] + " ");
+//					Console.WriteLine();
+//
+//					Console.WriteLine("coalescedNodes:");
+//					foreach (int u in coalescedNodes)
+//						Console.Write(intToReg[(int)u] + " ");
+//					Console.WriteLine();
+//
+//					Console.WriteLine("coloredNodes:");
+//					foreach (int u in coloredNodes)
+//						Console.Write(intToReg[(int)u] + " ");
+//					Console.WriteLine();
+//
+//					Console.WriteLine("selectStack:");
+//					foreach (uint u in selectStack)
+//						Console.Write(intToReg[(int)u] + " ");
+//					Console.WriteLine();
+//
+//
+//					Console.WriteLine("coalescedMoves:");
+//					foreach (int i in coalescedMoves)
+//						Console.Write(intToSpuInst[i] + " ");
+//					Console.WriteLine();
+//
+//					Console.WriteLine("constrainedMoves:");
+//					foreach (int i in constrainedMoves)
+//						Console.Write(intToSpuInst[i] + " ");
+//					Console.WriteLine();
+//
+//					Console.WriteLine("frozenMoves:");
+//					foreach (int i in frozenMoves)
+//						Console.Write(intToSpuInst[i] + " ");
+//					Console.WriteLine();
+//
+//					Console.WriteLine("worklistMoves:");
+//					foreach (int i in worklistMoves)
+//						Console.Write(intToSpuInst[i] + " ");
+//					Console.WriteLine();
+//
+//					Console.WriteLine("activeMoves:");
+//					foreach (int i in activeMoves)
+//						Console.Write(intToSpuInst[i] + " ");
+//					Console.WriteLine();
+
+
+
+//					using (StreamWriter writer = new StreamWriter("adjMatrix.txt", false, Encoding.ASCII))
+//					{
+//						writer.WriteLine(adjMatrix.PrintFullMatrix());
+//					}
+
+
+					// TESTS =========================================
+
+					// Test: adjMatrix == adjList
+					for (int i = 0; i < adjList.Length; i++)
+						if (!intToReg[i].IsRegisterSet)
+							Utilities.Assert(adjList[i].Equals(adjMatrix.GetRow(i)), "AjdList is not equals AjdMatrix");
+
+					// Test: adjMatris is symetric
+					Utilities.Assert(adjMatrix.IsSymetric(), "adjmatrix is not symetric");
+
+					// Test: Invariants
+					InvariantsTest();
+
+					// TESTS =========================================
+
 					if (simplifyWorklist.Count != 0)
 						Simplify();
 					else if (worklistMoves.Count != 0)
@@ -243,6 +355,7 @@ namespace CellDotNet
 						Freeze();
 					else if (spillWorklist.Count != 0)
 						SelectSpill();
+
 				} while (simplifyWorklist.Count != 0 || worklistMoves.Count != 0 || freezeWorklist.Count != 0 ||
 				         spillWorklist.Count != 0);
 				AssignColors();
@@ -582,6 +695,9 @@ namespace CellDotNet
 					foreach (VirtualRegister register in inst.Use)
 						liveIn[i].Add((int)regToInt[register]);
 
+					if(inst.IsCall())
+						foreach (CellRegister register in HardwareRegister.getCallerSavesCellRegisters())
+							liveIn[i].Add((int)register);
 
 					if (!reIterate)
 						reIterate |= !oldLiveIn.Equals(liveIn[i]) || !oldLiveOut.Equals(liveOut[i]);
@@ -641,6 +757,7 @@ namespace CellDotNet
 
 					if (inst.IsCall())
 					{
+						// TODO this for loop should be removed?
 						foreach (VirtualRegister register in HardwareRegister.CallerSavesVirtualRegisters)
 							live.Add((int) regToInt[register]);
 
@@ -660,13 +777,13 @@ namespace CellDotNet
 		private void AddEdge(uint from, uint to)
 		{
 //			if (!adjSet[from].Contains(to) && from != to)
-			if (!adjMatrix.Contains((int) from, (int) to) && from != to)
+			if (!adjMatrix.contains((int) from, (int) to) && from != to)
 				{
 //				adjSet[from].Add(to);
 //				adjSet[to].Add(from);
 
-				adjMatrix.Add((int) from, (int) to);
-				adjMatrix.Add((int) to, (int) from);
+				adjMatrix.add((int) from, (int) to);
+				adjMatrix.add((int) to, (int) from);
 
 				if (!precolored.Contains((int) from))
 				{
@@ -794,7 +911,7 @@ namespace CellDotNet
 		private bool OK(uint t, uint r)
 		{
 //			return degree[t] < K || precolored.Contains(t) || adjSet[t].Contains(r);
-			return degree[t] < K || precolored.Contains((int) t) || adjMatrix.Contains((int) t, (int) r);
+			return degree[t] < K || precolored.Contains((int) t) || adjMatrix.contains((int) t, (int) r);
 		}
 
 		private bool Conservative(BitVector rlist)
@@ -838,7 +955,7 @@ namespace CellDotNet
 				AddWorkList(u);
 			}
 //			else if (precolored.Contains(v) || adjSet[u].Contains(v))
-			else if (precolored.Contains((int) v) || adjMatrix.Contains((int) u, (int) v))
+			else if (precolored.Contains((int) v) || adjMatrix.contains((int) u, (int) v))
 			{
 				constrainedMoves.Add(move);
 				AddWorkList(u);
@@ -875,7 +992,10 @@ namespace CellDotNet
 			if (freezeWorklist.Contains(v)) //TODO LinkedList not optimal.
 				freezeWorklist.Remove(v); //TODO LinkedList not optimal.
 			else
+			{
+				Utilities.Assert(spillWorklist.Contains(v), "Register allocation error.");
 				spillWorklist.Remove(v);
+			}
 
 			coalescedNodes.Add((int) v);
 			alias[v] = u;
@@ -938,30 +1058,18 @@ namespace CellDotNet
 		private void SelectSpill()
 		{
 			// TODO Bedre måde at vælge m på, se p. 239.
-
-			uint m = 0;
-			bool found = false;
-
 			foreach (uint register in spillWorklist)
 			{
 				if (virtualRegisteWeight[intToReg[(int) register]] < 100)
 				{
-					m = register;
 					spillWorklist.Remove(register);
-					found = true;
-					break;
+					simplifyWorklist.AddLast(register);
+					FreezeMoves(register);
+					return;
 				}
 			}
 
-			if(!found)
-			{
-				throw new Exception("Not able to spill.");
-			}
-
-//			VirtualRegister m = spillWorklist.First.Value;
-//			spillWorklist.RemoveFirst();
-			simplifyWorklist.AddLast(m);
-			FreezeMoves(m);
+			throw new Exception("Not able to spill.");
 		}
 
 		private void AssignColors()
@@ -1046,7 +1154,8 @@ namespace CellDotNet
 							inst.Next = stor;
 							stor.Prev = inst;
 							stor.Next = next;
-							next.Prev = stor;
+							if (next != null)
+								next.Prev = stor;
 
 							prevInst = stor;
 							inst = prevInst.Next;
@@ -1107,6 +1216,65 @@ namespace CellDotNet
 				initial.AddLast(r);
 			}
 
+		}
+
+		private String BitToReg(BitVector v)
+		{
+			StringBuilder text = new StringBuilder();
+
+			foreach (int i in v)
+			{
+				text.Append(intToReg[i]);
+				text.Append(" ");
+			}
+			return text.ToString();
+		}
+
+		private void InvariantsTest()
+		{
+			foreach (KeyValuePair<VirtualRegister, uint> pair in regToInt)
+			{
+				//Degree invariant
+				if (simplifyWorklist.Contains(pair.Value) || freezeWorklist.Contains(pair.Value) || spillWorklist.Contains(pair.Value))
+				{
+					BitVector v = new BitVector();
+
+					v.AddAll(precolored);
+					v.AddAll(simplifyWorklist);
+					v.AddAll(freezeWorklist);
+					v.AddAll(spillWorklist);
+					v.And(adjList[pair.Value]);
+
+					if (degree[pair.Value] != v.Count)
+						throw new Exception("");
+				}
+
+				// Simplify worklist invariant
+				if (simplifyWorklist.Contains(pair.Value))
+				{
+					BitVector v = new BitVector();
+					v.AddAll(activeMoves);
+					v.AddAll(worklistMoves);
+					v.And(moveList[pair.Value]);
+					if (degree[pair.Value] >= K || !v.IsCountZero())
+						throw new Exception("");
+				}
+
+				// Freeze worklist invariant
+				if (freezeWorklist.Contains(pair.Value))
+				{
+					BitVector v = new BitVector();
+					v.AddAll(activeMoves);
+					v.AddAll(worklistMoves);
+					v.And(moveList[pair.Value]);
+					if (degree[pair.Value] >= K || v.IsCountZero())
+						throw new Exception("");
+				}
+
+				// Spill worklist invariant
+				if (spillWorklist.Contains(pair.Value) && degree[pair.Value] < K)
+					throw new Exception("");
+			}
 		}
 	}
 }

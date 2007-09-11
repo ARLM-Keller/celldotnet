@@ -7,19 +7,29 @@ namespace CellDotNet
     /// <summary>
     /// Represents an SPU instruction.
     /// </summary>
-	[DebuggerDisplay("{OpCode.Name} {SpuInstructionNumber}")]
+	[DebuggerDisplay("{OpCode.Name} {_spuInstructionNumber}")]
     class SpuInstruction
     {
 		private static int SpuInstructionCount = 0;
 
-    	private int SpuInstructionNumber;
+    	public int SpuInstructionNumber
+    	{
+    		get { return _spuInstructionNumber; }
+    	}
+
+    	private int _spuInstructionNumber;
 
         public SpuInstruction(SpuOpCode opcode)
         {
 			Utilities.AssertArgumentNotNull(opcode, "opcode");
-			SpuInstructionNumber = ++SpuInstructionCount;
+			_spuInstructionNumber = ++SpuInstructionCount;
 			this._opcode = opcode;
         }
+
+		public override string ToString()
+		{
+			return "#" + _spuInstructionNumber;
+		}
 
         private SpuOpCode _opcode;
 
