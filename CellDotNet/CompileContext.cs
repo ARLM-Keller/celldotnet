@@ -262,9 +262,6 @@ namespace CellDotNet
 
 		internal ICollection<ObjectWithAddress> GetAllObjectsForDisassembly()
 		{
-			if (State < CompileContextState.S6AddressPatchingDone)
-				throw new InvalidOperationException("Address patching has not yet been performed.");
-
 			return GetAllObjects();
 		}
 
@@ -495,6 +492,9 @@ namespace CellDotNet
 		/// <param name="arguments">Optional.</param>
 		public void WriteAssemblyToFile(string filename, params ValueType[] arguments)
 		{
+			if (State < CompileContextState.S6AddressPatchingDone)
+				throw new InvalidOperationException("Address patching has not yet been performed.");
+
 			int[] code;
 			if (arguments != null && arguments.Length != 0)
 				code = GetEmittedCode(arguments);

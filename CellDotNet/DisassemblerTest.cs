@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -21,7 +19,7 @@ namespace CellDotNet
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S6AddressPatchingDone);
 
-			Disassembler.DisassembleToConsole(cc);
+//			Disassembler.DisassembleToConsole(cc);
 		}
 	}
 }

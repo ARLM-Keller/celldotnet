@@ -48,11 +48,16 @@ namespace CellDotNet
 			return bodybin;
 		}
 
-		public override IEnumerable<SpuInstruction> GetInstructions()
+		public override IEnumerable<SpuInstruction> GetFinalInstructions()
 		{
 			if (!_isPatchingDone)
 				throw new InvalidOperationException();
 
+			return Writer.GetAsList();
+		}
+
+		public override IEnumerable<SpuInstruction> GetInstructions()
+		{
 			return Writer.GetAsList();
 		}
 

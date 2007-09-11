@@ -65,7 +65,7 @@ namespace CellDotNet
 					}
 				});
 
-			new TreeDrawer().DrawMethod(mc);
+//			new TreeDrawer().DrawMethod(mc);
 
 			cc.PerformProcessing(CompileContextState.S8Complete);
 

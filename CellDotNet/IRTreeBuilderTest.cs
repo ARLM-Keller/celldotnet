@@ -43,7 +43,7 @@ namespace CellDotNet
 			MethodCompiler ci = new MethodCompiler(method);
 			ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 
-			new TreeDrawer().DrawMethod(ci);
+//			new TreeDrawer().DrawMethod(ci);
 		}
 
 
@@ -61,7 +61,7 @@ namespace CellDotNet
 			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 
 			TreeDrawer td = new TreeDrawer();
-			td.DrawMethod(mc);
+//			td.DrawMethod(mc);
 
 			IsTrue(mc.Blocks.Count == 1);
 			TreeInstruction popInst =
@@ -87,7 +87,7 @@ namespace CellDotNet
 										};
 			MethodCompiler ci = new MethodCompiler(del.Method);
 			ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
-			new TreeDrawer().DrawMethod(ci);
+//			new TreeDrawer().DrawMethod(ci);
 			AreEqual(1, ci.Blocks.Count);
 		}
 
@@ -102,7 +102,7 @@ namespace CellDotNet
 			MethodBase method = del.Method;
 			MethodCompiler ci = new MethodCompiler(method);
 			ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
-			new TreeDrawer().DrawMethod(ci);
+//			new TreeDrawer().DrawMethod(ci);
 			AreEqual(1, ci.Blocks.Count);
 		}
 
@@ -116,7 +116,7 @@ namespace CellDotNet
 			MethodBase method = del.Method;
 			MethodCompiler ci = new MethodCompiler(method);
 			ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
-			new TreeDrawer().DrawMethod(ci);
+//			new TreeDrawer().DrawMethod(ci);
 			AreEqual(1, ci.Blocks.Count);
 		}
 
@@ -132,7 +132,7 @@ namespace CellDotNet
 			MethodBase method = del.Method;
 
 			List<IRBasicBlock> blocks = new IRTreeBuilder().BuildBasicBlocks(method);
-			new TreeDrawer().DrawMethod(blocks);
+//			new TreeDrawer().DrawMethod(blocks);
 
 			// Check that stelem has been removed/decomposed.
 			IRBasicBlock.ForeachTreeInstruction(blocks, delegate(TreeInstruction obj) { AreNotEqual(IROpCodes.Stelem, obj.Opcode); });
@@ -175,7 +175,7 @@ namespace CellDotNet
 
 			List<IRBasicBlock> blocks = new IRTreeBuilder().BuildBasicBlocks(del.Method);
 
-			new TreeDrawer().DrawMethod(blocks);
+//			new TreeDrawer().DrawMethod(blocks);
 		}
 
 		[Test]
@@ -262,7 +262,7 @@ namespace CellDotNet
 					}
 				});
 
-			new TreeDrawer().DrawMethod(blocks);
+//			new TreeDrawer().DrawMethod(blocks);
 
 			AreEqual(2, branchcount, "Invalid branch count.");
 			AreEqual(1, loadcount, "Invalid load count.");

@@ -772,7 +772,7 @@ namespace CellDotNet
 
 						// Increment the pointer for the next allocation.
 						{
-							VirtualRegister newNextAllocAddress = new VirtualRegister();
+							VirtualRegister newNextAllocAddress = _writer.NextRegister();
 							_writer.WriteA(newNextAllocAddress, nextAllocAddress, bytesize);
 							_writer.WriteStore(newNextAllocAddress, _specialSpeObjects.NextAllocationStartObject);
 						}

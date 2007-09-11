@@ -102,6 +102,16 @@ namespace CellDotNet
 			get { return _returnType; }
 		}
 
+		private bool _naked;
+
+		public bool Naked
+		{
+			get { return _naked; }
+			set { _naked = value; }
+		}
+
+		private Dictionary<VirtualRegister, int> registerWeight = new Dictionary<VirtualRegister, int>();
+
 		public MethodCompiler(MethodBase method)
 		{
 			_methodBase = method;
@@ -295,13 +305,25 @@ namespace CellDotNet
 			_instructions = new SpuInstructionWriter();
 
 			// Move calle-saves regs to virtual regs.
-			_instructions.BeginNewBasicBlock();
-			List<VirtualRegister> calleTemps = new List<VirtualRegister>(48);
-			for (int regnum = 80; regnum <= 127; regnum++)
+			int calleeSavesRegisterCount = HardwareRegister.CalleeSavesVirtualRegisters.Length;
+			List<VirtualRegister> calleTemps = new List<VirtualRegister>(calleeSavesRegisterCount);
+			if (!_naked)
 			{
-				VirtualRegister temp = NextRegister();
-				calleTemps.Add(temp);
-				_instructions.WriteMove(HardwareRegister.GetHardwareRegister(regnum), temp);
+				_instructions.BeginNewBasicBlock();
+				foreach (VirtualRegister register in HardwareRegister.CalleeSavesVirtualRegisters)
+				{
+					VirtualRegister temp = NextRegister();
+					registerWeight.Add(temp, 5);
+					calleTemps.Add(temp);
+					_instructions.WriteMove(register, temp);
+				}
+
+//				for (int regnum = 80; regnum <= 127; regnum++)
+//				{
+//					VirtualRegister temp = NextRegister();
+//					calleTemps.Add(temp);
+//					_instructions.WriteMove(HardwareRegister.GetHardwareRegister(regnum), temp);
+//				}
 			}
 
 			// Generate the body.
@@ -314,12 +336,18 @@ namespace CellDotNet
 			selector.GenerateCode(Blocks, Parameters, _instructions);
 
 			// Move callee saves temps back to physical regs.
-			_instructions.BeginNewBasicBlock();
-			for (int regnum = 80; regnum <= 127; regnum++)
+			if (!_naked)
 			{
-				_instructions.WriteMove(calleTemps[regnum - 80], HardwareRegister.GetHardwareRegister(regnum));
+				_instructions.BeginNewBasicBlock();
+				for (int i = calleeSavesRegisterCount-1; i >= 0; i--)
+				{
+					_instructions.WriteMove(calleTemps[i], HardwareRegister.GetHardwareRegister(i+80));
+				}
+//				for (int regnum = 80; regnum <= 127; regnum++)
+//				{
+//					_instructions.WriteMove(calleTemps[regnum - 80], HardwareRegister.GetHardwareRegister(regnum));
+//				}
 			}
-
 			State = MethodCompileState.S4InstructionSelectionDone;
 		}
 
@@ -397,7 +425,7 @@ namespace CellDotNet
 			AssertState(MethodCompileState.S5RegisterAllocationDone - 1);
 
 			RegAllocGraphColloring regalloc = new RegAllocGraphColloring();
-			regalloc.Alloc(SpuBasicBlocks, GetNewSpillOffset);
+			regalloc.Alloc(SpuBasicBlocks, GetNewSpillOffset, registerWeight);
 
 //			SimpleRegAlloc regalloc = new SimpleRegAlloc();
 //			List<SpuInstruction> asm = _instructions.GetAsList();
@@ -547,7 +575,7 @@ namespace CellDotNet
 			return combined;
 		}
 
-		public override IEnumerable<SpuInstruction> GetInstructions()
+		public override IEnumerable<SpuInstruction> GetFinalInstructions()
 		{
 			if (State < MethodCompileState.S8AddressPatchingDone)
 				throw new InvalidOperationException();
@@ -559,5 +587,17 @@ namespace CellDotNet
 
 			return list;
 		}
+
+		public override IEnumerable<SpuInstruction> GetInstructions()
+		{
+			List<SpuInstruction> list = new List<SpuInstruction>();
+
+//			list.AddRange(GetPrologWriter().GetAsList());
+			list.AddRange(GetBodyWriter().GetAsList());
+//			list.AddRange(GetEpilogWriter().GetAsList());
+
+			return list;
+		}
+
 	}
 }

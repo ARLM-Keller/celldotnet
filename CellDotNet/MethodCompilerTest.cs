@@ -30,14 +30,14 @@ namespace CellDotNet
 			mc.PerformProcessing(MethodCompileState.S8AddressPatchingDone);
 
 
-			Console.WriteLine("Disassembly - prolog:");
-			Console.Write(mc.GetPrologWriter().Disassemble());
-			Console.WriteLine();
-			Console.WriteLine("Disassembly - body:");
-			Console.Write(mc.GetBodyWriter().Disassemble());
-			Console.WriteLine();
-			Console.WriteLine("Disassembly - epilog:");
-			Console.Write(mc.GetEpilogWriter().Disassemble());
+//			Console.WriteLine("Disassembly - prolog:");
+//			Console.Write(mc.GetPrologWriter().Disassemble());
+//			Console.WriteLine();
+//			Console.WriteLine("Disassembly - body:");
+//			Console.Write(mc.GetBodyWriter().Disassemble());
+//			Console.WriteLine();
+//			Console.WriteLine("Disassembly - epilog:");
+//			Console.Write(mc.GetEpilogWriter().Disassemble());
 
 			mc.GetPrologWriter().AssertNoPseudoInstructions();
 			mc.GetBodyWriter().AssertNoPseudoInstructions();

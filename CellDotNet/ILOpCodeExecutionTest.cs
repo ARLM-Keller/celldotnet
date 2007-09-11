@@ -377,11 +377,16 @@ namespace CellDotNet
 
 			CompileContext cc = new CompileContext(del1.Method);
 
+			//DEBUG
+			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
+
+//			Disassembler.DisassembleUnconditional(cc, Console.Out);
+
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			new TreeDrawer().DrawMethods(cc);
+//			new TreeDrawer().DrawMethods(cc);
 
-			Disassembler.DisassembleToConsole(cc);
+//			Disassembler.DisassembleToConsole(cc);
 
 			int[] code = cc.GetEmittedCode();
 

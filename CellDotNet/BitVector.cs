@@ -1,12 +1,18 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 
 namespace CellDotNet
 {
 	internal class BitVector : IEnumerable<int>
 	{
-		private int size = 0;
+		public int Size
+		{
+			get { return _size; }
+		}
+
+		private int _size = 0;
 
 		private uint[] vector = new uint[0];
 
@@ -21,14 +27,14 @@ namespace CellDotNet
 
 		public BitVector(BitVector v)
 		{
-			Resize(v.size);
+			Resize(v._size);
 
 			Buffer.BlockCopy(v.vector, 0, vector, 0, v.vector.Length*4);
 		}
 
 		public void Clear()
 		{
-			size = 0;
+			_size = 0;
 			vector = new uint[0];
 		}
 
@@ -37,7 +43,7 @@ namespace CellDotNet
 			if(elementnr < 0)
 				return;
 
-			if(elementnr >= size)
+			if(elementnr >= _size)
 				Resize(elementnr+1);
 
 			int index = elementnr/32;
@@ -48,8 +54,8 @@ namespace CellDotNet
 
 		public void AddAll(BitVector v)
 		{
-			if(size < v.size)
-				Resize(v.size);
+			if(_size < v._size)
+				Resize(v._size);
 
 			for (int i = 0; i < v.vector.Length; i++)
 				vector[i] |= v.vector[i];
@@ -62,12 +68,19 @@ namespace CellDotNet
 					Add(i);
 		}
 
+		public void AddAll(IEnumerable<uint> values)
+		{
+			if (values != null)
+				foreach (uint i in values)
+					Add((int)i);
+		}
+
 		public void Remove(int elementnr)
 		{
 			if (elementnr < 0)
 				throw new ArgumentOutOfRangeException();
 
-			if (elementnr >= size)
+			if (elementnr >= _size)
 				return;
 
 			int index = elementnr / 32;
@@ -127,16 +140,25 @@ namespace CellDotNet
 			return true;
 		}
 
+		public int SizeTrim()
+		{
+			for(int i = Size-1; i >= 0; i--)
+				if (Contains(i))
+					return i+1;
+
+			return 0;
+		}
+
 		private void Resize(int newSize)
 		{
-			if(newSize < size)
+			if(newSize < _size)
 				return;
 
-			size = (newSize > 2 * size) ? newSize : 2*size;
+			_size = (newSize > 2 * _size) ? newSize : 2*_size;
 
-			size = ((size-1)/32+1) * 32;
+			_size = ((_size-1)/32+1) * 32;
 
-			uint [] newVector = new uint[(size-1)/32+1];
+			uint [] newVector = new uint[(_size-1)/32+1];
 
 			for(int i = 0; i < vector.Length; i++)
 				newVector[i] = vector[i];
@@ -148,12 +170,12 @@ namespace CellDotNet
 		public uint getItem()
 		{
 			int element = 0;
-			while (element < size && ((vector[element / 32] >> (element % 32)) & 1) == 0)
+			while (element < _size && ((vector[element / 32] >> (element % 32)) & 1) == 0)
 			{
 				element++;
 			}
 
-			return element < size ? (uint) element : uint.MaxValue;
+			return element < _size ? (uint) element : uint.MaxValue;
 		}
 
 		public void And(BitVector v)
@@ -193,8 +215,8 @@ namespace CellDotNet
 
 		public static BitVector operator &(BitVector v1, BitVector v2)
 		{
-			BitVector vmin = v1.size < v2.size ? v1 : v2;
-			BitVector vmax = v1.size > v2.size ? v1 : v2;
+			BitVector vmin = v1._size < v2._size ? v1 : v2;
+			BitVector vmax = v1._size > v2._size ? v1 : v2;
 
 			BitVector result = new BitVector(vmin);
 			for (int i = 0; i < result.vector.Length; i++)
@@ -205,8 +227,8 @@ namespace CellDotNet
 
 		public static BitVector operator |(BitVector v1, BitVector v2)
 		{
-			BitVector vmin = v1.size < v2.size ? v1 : v2;
-			BitVector vmax = v1.size >= v2.size ? v1 : v2;
+			BitVector vmin = v1._size < v2._size ? v1 : v2;
+			BitVector vmax = v1._size >= v2._size ? v1 : v2;
 
 			BitVector result = new BitVector(vmax);
 			result.AddAll(vmin);
@@ -216,6 +238,9 @@ namespace CellDotNet
 
 		public bool Equals(BitVector v)
 		{
+			if (v == null)
+				return IsCountZero();
+
 			int min = Math.Min(vector.Length, v.vector.Length);
 			int max = Math.Max(vector.Length, v.vector.Length);
 
@@ -302,7 +327,7 @@ namespace CellDotNet
 			{
 				get
 				{
-					if (element < 0 || element >= vector.size)
+					if (element < 0 || element >= vector._size)
 						throw new InvalidOperationException();
 					return element;
 				}
@@ -312,7 +337,7 @@ namespace CellDotNet
 			{
 				get
 				{
-					if (element < 0 || element >= vector.size)
+					if (element < 0 || element >= vector._size)
 						throw new InvalidOperationException();
 					return element;
 				}
@@ -324,5 +349,24 @@ namespace CellDotNet
 //				throw new NotImplementedException();
 			}
 		}
+
+		public string PrintFullVector(int maxWidth)
+		{
+			StringBuilder text = new StringBuilder();
+
+//			if (maxWidth < _size)
+//				maxWidth = _size;
+
+			for (int i = 0; i < _size && i < maxWidth; i++)
+			{
+				text.Append(Contains(i) ? "1" : " ");
+			}
+
+			for (int i = _size; i < maxWidth; i++)
+				text.Append(" ");
+
+			return text.ToString();
+		}
+
 	}
 }

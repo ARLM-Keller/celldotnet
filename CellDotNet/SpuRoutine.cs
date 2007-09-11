@@ -40,6 +40,11 @@ namespace CellDotNet
 		/// </summary>
 		/// <returns></returns>
 		/// <exception cref="InvalidOperationException">If the routine does not support this operation.</exception>
+		public virtual IEnumerable<SpuInstruction> GetFinalInstructions()
+		{
+			throw new InvalidOperationException();
+		}
+
 		public virtual IEnumerable<SpuInstruction> GetInstructions()
 		{
 			throw new InvalidOperationException();

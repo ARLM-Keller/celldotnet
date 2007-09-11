@@ -38,7 +38,7 @@ namespace CellDotNet
 		{
 			BitVector b1 = new BitVector();
 
-			int[] array = new int[] { 7, 9, 333 };
+			uint[] array = new uint[] { 7, 9, 333 };
 
 			b1.AddAll(array);
 

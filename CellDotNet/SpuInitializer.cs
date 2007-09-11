@@ -104,8 +104,12 @@ namespace CellDotNet
 			_isPatched = true;
 		}
 
-
 		public override IEnumerable<SpuInstruction> GetInstructions()
+		{
+			return _writer.GetAsList();
+		}
+
+		public override IEnumerable<SpuInstruction> GetFinalInstructions()
 		{
 			if (!_isPatched)
 				throw new InvalidOperationException();
