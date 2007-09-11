@@ -279,6 +279,9 @@ namespace CellDotNet
 		[Test]
 		public void TestGetLocalStorageSize()
 		{
+			if (!SpeContext.HasSpeHardware)
+				return;
+
 			using (SpeContext sc = new SpeContext())
 				AreEqual(256*1024, sc.LocalStorageSize);
 		}
@@ -286,6 +289,9 @@ namespace CellDotNet
 		[Test]
 		public void TestGetLocalStorageArea()
 		{
+			if (!SpeContext.HasSpeHardware)
+				return;
+
 			using (SpeContext sc = new SpeContext())
 			{
 				IntPtr ls = sc.LocalStorageAddress;

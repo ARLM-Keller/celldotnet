@@ -181,8 +181,6 @@ namespace CellDotNet
 
 			_localStorageSize = UnsafeNativeMethods.spe_ls_size_get(_handle);
 			_localStorageAddress = UnsafeNativeMethods.spe_ls_area_get(_handle);
-
-			Console.WriteLine("LocalStorageSize: {0}", LocalStorageSize);
 		}
 
 		public void LoadProgram(int[] code)

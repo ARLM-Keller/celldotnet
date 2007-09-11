@@ -167,7 +167,7 @@ namespace CellDotNet
 //				degree.Clear();
 
 //				adjSet.Clear();
-				adjMatrix.clear();
+				adjMatrix.Clear();
 
 				int instNr = 0;
 				foreach (SpuBasicBlock block in basicBlocks)
@@ -660,13 +660,13 @@ namespace CellDotNet
 		private void AddEdge(uint from, uint to)
 		{
 //			if (!adjSet[from].Contains(to) && from != to)
-			if (!adjMatrix.contains((int) from, (int) to) && from != to)
+			if (!adjMatrix.Contains((int) from, (int) to) && from != to)
 				{
 //				adjSet[from].Add(to);
 //				adjSet[to].Add(from);
 
-				adjMatrix.add((int) from, (int) to);
-				adjMatrix.add((int) to, (int) from);
+				adjMatrix.Add((int) from, (int) to);
+				adjMatrix.Add((int) to, (int) from);
 
 				if (!precolored.Contains((int) from))
 				{
@@ -794,7 +794,7 @@ namespace CellDotNet
 		private bool OK(uint t, uint r)
 		{
 //			return degree[t] < K || precolored.Contains(t) || adjSet[t].Contains(r);
-			return degree[t] < K || precolored.Contains((int) t) || adjMatrix.contains((int) t, (int) r);
+			return degree[t] < K || precolored.Contains((int) t) || adjMatrix.Contains((int) t, (int) r);
 		}
 
 		private bool Conservative(BitVector rlist)
@@ -838,7 +838,7 @@ namespace CellDotNet
 				AddWorkList(u);
 			}
 //			else if (precolored.Contains(v) || adjSet[u].Contains(v))
-			else if (precolored.Contains((int) v) || adjMatrix.contains((int) u, (int) v))
+			else if (precolored.Contains((int) v) || adjMatrix.Contains((int) u, (int) v))
 			{
 				constrainedMoves.Add(move);
 				AddWorkList(u);
