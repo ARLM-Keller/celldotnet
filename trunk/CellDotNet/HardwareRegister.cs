@@ -74,8 +74,10 @@ namespace CellDotNet
 		}
 
 		// Max numbers, caller = 72, callee = 48
-		private const int numberOfCallerSaveRegister = 6; //72
-		private const int numberOfCalleeSaveRegister = 16; //48
+		private const int numberOfCallerSaveRegister = 72; //72
+		private const int numberOfCalleeSaveRegister = 48; //48
+//		private const int numberOfCallerSaveRegister = 6; //72
+//		private const int numberOfCalleeSaveRegister = 16; //48
 
 		static HardwareRegister()
 		{
