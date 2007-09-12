@@ -6,7 +6,7 @@ namespace CellDotNet
 	/// <summary>
 	/// Used to generate code to initialize an spu and call the initial method.
 	/// </summary>
-	class SpuInitializer : SpuRoutine
+	class SpuInitializer : SpuDynamicRoutine
 	{
 		private SpuInstructionWriter _writer = new SpuInstructionWriter();
 		private bool _isPatched;

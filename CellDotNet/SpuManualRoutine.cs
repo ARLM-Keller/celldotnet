@@ -8,7 +8,7 @@ namespace CellDotNet
 	/// Represents code which is not the result of a method compilation, but
 	/// rather generated "manually".
 	/// </summary>
-	class SpuManualRoutine : SpuRoutine
+	class SpuManualRoutine : SpuDynamicRoutine
 	{
 		private bool _omitEpilog = false;
 		/// <summary>

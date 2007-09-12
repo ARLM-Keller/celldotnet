@@ -36,7 +36,7 @@ namespace CellDotNet
 	/// <summary>
 	/// Data used during compilation of a method.
 	/// </summary>
-	internal class MethodCompiler : SpuRoutine
+	internal class MethodCompiler : SpuDynamicRoutine
 	{
 		private MethodCompileState _state;
 
@@ -73,7 +73,7 @@ namespace CellDotNet
 		}
 
 		private ReadOnlyCollection<MethodParameter> _parameters;
-		public ReadOnlyCollection<MethodParameter> Parameters
+		public override ReadOnlyCollection<MethodParameter> Parameters
 		{
 			get { return _parameters; }
 		}
@@ -97,7 +97,7 @@ namespace CellDotNet
 			}
 		}
 
-		public StackTypeDescription ReturnType
+		public override StackTypeDescription ReturnType
 		{
 			get { return _returnType; }
 		}

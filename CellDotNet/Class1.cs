@@ -515,13 +515,14 @@ namespace CellDotNet
 
 		private delegate int IntDelegate();
 
+		[DllImport("NonExistingLibrary")]
+		private static extern void MethodInNonExistingLibrary(int i);
+
 
 		private unsafe static void RunRasmus()
 		{
-			using (SpeContext sc =  new SpeContext())
-			{
-				Thread.Sleep(50000);
-			}
+			MethodInNonExistingLibrary(234);
+
 			return;
 
 			{

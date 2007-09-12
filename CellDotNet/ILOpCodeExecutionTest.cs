@@ -492,13 +492,13 @@ namespace CellDotNet
 
 			foreach (ObjectWithAddress o in objectsWithAddresss)
 			{
-				SpuRoutine routine = o as SpuRoutine;
-				if(routine != null)
-					routine.PerformAddressPatching();
+				SpuDynamicRoutine dynamicRoutine = o as SpuDynamicRoutine;
+				if(dynamicRoutine != null)
+					dynamicRoutine.PerformAddressPatching();
 			}
 
 			int[] code = new int[codeByteSize/4];
-			CompileContext.CopyCode(code, new SpuRoutine[] { spuinit, spum });
+			CompileContext.CopyCode(code, new SpuDynamicRoutine[] { spuinit, spum });
 
 			const int TotalSpeMem = 256*1024;
 			const int StackPointer = 256*1024 - 32;

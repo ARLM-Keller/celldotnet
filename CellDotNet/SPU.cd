@@ -5,59 +5,85 @@
     <Position X="4.25" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <FileName>ObjectWithAddress.cs</FileName>
-      <HashCode>AAAAAAAAAAAAgAAAIAAAAAAAAAAAAAAAAAAAAAAAgAA=</HashCode>
+      <HashCode>AAAAIAAAAAAAgAAAIAAAAAQAAAAAAAAAAAAAAAAAgAA=</HashCode>
     </TypeIdentifier>
     <Compartments>
       <Compartment Name="Fields" Collapsed="true" />
     </Compartments>
   </Class>
   <Class Name="CellDotNet.RegisterSizedObject">
-    <Position X="3.25" Y="3" Width="1.5" />
+    <Position X="3.75" Y="3.25" Width="1.5" />
     <TypeIdentifier>
       <FileName>RegisterSizedObject.cs</FileName>
       <HashCode>AAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
     </TypeIdentifier>
   </Class>
   <Class Name="CellDotNet.SpuRoutine">
-    <Position X="5.5" Y="3" Width="2.5" />
+    <Position X="5.5" Y="3.25" Width="2.5" />
     <TypeIdentifier>
       <FileName>SpuRoutine.cs</FileName>
-      <HashCode>AAAAAAAAAAACAAAAAAAAABAAAAAAAAAAAAAAAAAAAgA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAEAAA=</HashCode>
     </TypeIdentifier>
   </Class>
   <Class Name="CellDotNet.CalleeSavesStoreRoutine" Collapsed="true">
-    <Position X="2.25" Y="5" Width="1.5" />
+    <Position X="3" Y="7.75" Width="1.5" />
     <TypeIdentifier>
       <FileName>CalleeSavesStoreRoutine.cs</FileName>
       <HashCode>AAEAAAAAAAACgAAAAAAAABAAAAAAAAAAAAAAAAAAAIA=</HashCode>
     </TypeIdentifier>
   </Class>
-  <Class Name="CellDotNet.MethodCompiler" Collapsed="true">
-    <Position X="4.5" Y="5" Width="1.5" />
+  <Class Name="CellDotNet.MethodCompiler">
+    <Position X="4.75" Y="7.75" Width="1.5" />
     <TypeIdentifier>
       <FileName>MethodCompiler.cs</FileName>
-      <HashCode>BAAEABAAIEAGpAEAAIBQCBJAAgIBEAM4AYQABgCMAsA=</HashCode>
+      <HashCode>BACEABUAIEAGpAEAAIBQCBZAEgIAEAM4AcQAToCMAsA=</HashCode>
     </TypeIdentifier>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
   </Class>
   <Class Name="CellDotNet.SpuInitializer" Collapsed="true">
-    <Position X="6.75" Y="5" Width="1.5" />
+    <Position X="8.25" Y="7.75" Width="1.5" />
     <TypeIdentifier>
       <FileName>SpuInitializer.cs</FileName>
-      <HashCode>AAAAAAAAAAACgAAEAAAAABAAAAAAAAAAAAAAAAAAAoA=</HashCode>
+      <HashCode>AAAAAAAAAAACgAAEAAAAABAAAAAAAAAAAQAAAAAAAoA=</HashCode>
     </TypeIdentifier>
   </Class>
   <Class Name="CellDotNet.SpuManualRoutine" Collapsed="true">
-    <Position X="9" Y="5" Width="1.5" />
+    <Position X="6.5" Y="7.75" Width="1.5" />
     <TypeIdentifier>
       <FileName>SpuManualRoutine.cs</FileName>
-      <HashCode>AAAAABAAAAACgAAAAAAAABAAAAAAAAAAEAAAAAEAAoA=</HashCode>
+      <HashCode>AAAAABAAAAACgAAAAAAACBAAAAAAAAAgEQAAAAEAAoA=</HashCode>
     </TypeIdentifier>
   </Class>
   <Class Name="CellDotNet.DataObject" Collapsed="true">
-    <Position X="0.75" Y="3" Width="1.5" />
+    <Position X="2" Y="3.25" Width="1.5" />
     <TypeIdentifier>
       <FileName>DataObject.cs</FileName>
-      <HashCode>AAAAAAAAAAAAgAAAAAAAAAAAAgAAAAAAAAAAAAIAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAgAAgAAAAAAAAAAAAAAAAAAAAAAIAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CellDotNet.SpuDynamicRoutine">
+    <Position X="5.25" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>SpuRoutine.cs</FileName>
+      <HashCode>AAAAAAAAAAACAAAAAAAAABAAAAAAAAAAAYAAAAAEAgA=</HashCode>
+    </TypeIdentifier>
+    <InheritanceLine Type="CellDotNet.SpuRoutine" FixedToPoint="true">
+      <Path>
+        <Point X="6.75" Y="5.127" />
+        <Point X="6.75" Y="5.19" />
+        <Point X="5.938" Y="5.19" />
+        <Point X="5.938" Y="5.25" />
+      </Path>
+    </InheritanceLine>
+  </Class>
+  <Class Name="CellDotNet.ExternalMethod" Collapsed="true">
+    <Position X="7" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>ExternalMethod.cs</FileName>
+      <HashCode>AAAAAAAAAAAAgAAACAAAAAAQAAAAAAACAAABAAAAgAA=</HashCode>
     </TypeIdentifier>
   </Class>
 </ClassDiagram>
