@@ -105,7 +105,7 @@
     <Compile Include="SpuOpCodeAttributeTest.cs" />
     <Compile Include="SpuOpCodeEnum.cs" />
     <Compile Include="SpuOpCodeTest.cs" />
-    <Compile Include="SpuRou.cs" />
+    <Compile Include="SpuRoutine.cs" />
     <Compile Include="SpuRuntime.cs" />
     <Compile Include="SimpleLiveAnalyzer.cs" />
     <Compile Include="SimpleRegAlloc.cs" />
