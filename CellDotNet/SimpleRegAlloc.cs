@@ -9,12 +9,26 @@ namespace CellDotNet
         // returnere true hvis der forekommer spill(indtilvidre håndteres spill ikke!)
         // regnum, er altallet af registre som register allokatoren ikke bruger.
 
-//		List<SpuBasicBlock> inputBasicBlocks, NewSpillOffsetDelegate inputNewSpillOffset
-//		public bool alloc(MethodCompiler method)
-		public bool alloc(List<SpuBasicBlock> spuBasicBlocks)
+		public static bool alloc(List<SpuBasicBlock> spuBasicBlocks, RegAllocGraphColloring.NewSpillOffsetDelegate inputNewSpillOffset, Dictionary<VirtualRegister, int> inputRegisterWeight)
         {
+			Set<VirtualRegister>[] liveIn;
+			Set<VirtualRegister>[] liveOut;
+
+			IterativLivenessAnalyser.Analyse(spuBasicBlocks, out liveIn, out liveOut);
+			Dictionary<VirtualRegister, LiveInterval> regToLiveDict = GenerateLiveIntervals(liveOut);
+			Dictionary<LiveInterval, VirtualRegister> liveToRegDict = new Dictionary<LiveInterval, VirtualRegister>();
+
+			List<LiveInterval> liveIntervals = new List<LiveInterval>();
+
+			foreach (KeyValuePair<LiveInterval, VirtualRegister> pair in liveToRegDict)
+			{
+				regToLiveDict.Add(pair.Value, pair.Key);
+				liveIntervals.Add(pair.Key);
+			}
+
+			LiveInterval.sortByStart(liveIntervals);
+
 			List<SpuInstruction> code = new List<SpuInstruction>();
-			// TODO genarate codelist from method.
 
 			foreach (SpuBasicBlock block in spuBasicBlocks)
         	{
@@ -30,18 +44,17 @@ namespace CellDotNet
                 new SortedLinkedList<LiveInterval>(new LiveInterval.ComparByEnd());
 			Stack<CellRegister> freeRegisters = new Stack<CellRegister>();
 
-        	foreach (CellRegister register in HardwareRegister.getCallerSavesCellRegisters())
+			foreach (CellRegister register in HardwareRegister.getCalleeSavesCellRegisters())
+			{
+				freeRegisters.Push(register);
+			}
+			foreach (CellRegister register in HardwareRegister.getCallerSavesCellRegisters())
         	{
         		freeRegisters.Push(register);	
         	}
-//			foreach (CellRegister register in HardwareRegister.getCalleeSavesCellRegisters())
-//			{
-//				freeRegisters.Push(register);
-//			}
 
 			bool isSpill = false;
-            List<LiveInterval> liveIntervals = SimpleLiveAnalyzer.Analyze(code);
-            LiveInterval.sortByStart(liveIntervals);
+
 
 			Set<VirtualRegister> hardwareRegisters = new Set<VirtualRegister>();
 			hardwareRegisters.AddAll(HardwareRegister.VirtualHardwareRegisters);
@@ -49,7 +62,7 @@ namespace CellDotNet
             foreach (LiveInterval interval in liveIntervals)
             {
                 // ExpireOldIntervals
-				while (activeIntervals.Count > 0 && activeIntervals.Head.end < interval.start)
+				while (activeIntervals.Count > 0 && activeIntervals.Head.End < interval.Start)
                 {
                     LiveInterval li = activeIntervals.RemoveHead();
                     freeRegisters.Push(li.r.Register);
@@ -114,5 +127,30 @@ namespace CellDotNet
 			}
 			return isSpill;
         }
+
+		private static Dictionary<VirtualRegister, LiveInterval> GenerateLiveIntervals(Set<VirtualRegister>[] liveOut)
+		{
+			Dictionary<VirtualRegister, LiveInterval> liveIntevals = new Dictionary<VirtualRegister, LiveInterval>();
+
+			for (int i = 0; i < liveOut.Length; i++ )
+			{
+				foreach (VirtualRegister register in liveOut[i])
+				{
+					LiveInterval interval;
+					if (liveIntevals.TryGetValue(register, out interval))
+					{
+						interval.End = i;
+					}
+					else
+					{
+						interval = new LiveInterval();
+						interval.Start = i;
+						interval.End = i;
+						liveIntevals.Add(register, interval);
+					}
+				}
+			}
+			return liveIntevals;
+		}
     }
 }

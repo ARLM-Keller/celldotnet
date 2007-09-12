@@ -171,11 +171,13 @@ namespace CellDotNet
 			{
 				if (inst.Left.Opcode == IROpCodes.Ldc_I4)
 					_knownVariables[inst.OperandAsVariable] = inst.Left.OperandAsInt32;
+				else if (_knownVariables.ContainsKey(inst.OperandAsVariable))
+					_knownVariables.Remove(inst.OperandAsVariable);
 			}
 			else if (inst.Opcode == IROpCodes.Ldloc)
 			{
 				int knownValue;
-				if (_knownVariables.TryGetValue(inst.OperandAsVariable, out knownValue))
+				if (!inst.OperandAsVariable.Escapes.Value & _knownVariables.TryGetValue(inst.OperandAsVariable, out knownValue))
 				{
 					TreeInstruction newinst = new TreeInstruction(IROpCodes.Ldc_I4);
 					newinst.Operand = knownValue;

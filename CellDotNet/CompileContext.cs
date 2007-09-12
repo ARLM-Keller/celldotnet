@@ -658,7 +658,7 @@ namespace CellDotNet
 		/// <param name="filename"></param>
 		/// <param name="code"></param>
 		/// <param name="symbols"></param>
-		private static void WriteAssemblyToFile(string filename, int[] code, List<ObjectWithAddress> symbols)
+		public static void WriteAssemblyToFile(string filename, int[] code, List<ObjectWithAddress> symbols)
 		{
 			using (StreamWriter writer = new StreamWriter(filename, false, Encoding.ASCII))
 			{

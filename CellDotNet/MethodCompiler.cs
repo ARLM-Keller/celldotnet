@@ -213,6 +213,8 @@ namespace CellDotNet
 			}
 			CheckTreeInstructionCountIsMinimum(reader.InstructionsRead);
 
+			DetermineEscapes();
+
 			_partialEvaluator.Evaluate(this);
 
 			State = MethodCompileState.S2TreeConstructionDone;
@@ -244,12 +246,13 @@ namespace CellDotNet
 
 		#region Instruction selection preparations
 
+		// TODO to be removed
 		private void PerformInstructionSelectionPreparations()
 		{
 			if (State != MethodCompileState.S2TreeConstructionDone)
 				throw new InvalidOperationException("State != MethodCompileState.S2TreeConstructionDone");
 
-			DetermineEscapes();
+//			DetermineEscapes();
 
 			State = MethodCompileState.S3InstructionSelectionPreparationsDone;
 		}
@@ -279,12 +282,12 @@ namespace CellDotNet
 						if (obj.Opcode.IRCode == IRCode.Ldarga)
 						{
 							((MethodParameter) obj.Operand).Escapes = true;
-							((MethodParameter) obj.Operand).StackLocation = GetNewSpillOffset();
+							((MethodParameter) obj.Operand).StackLocation = GetNewSpillQuadOffset();
 						}
 						else if (obj.Opcode.IRCode == IRCode.Ldloca)
 						{
 							((MethodVariable) obj.Operand).Escapes = true;
-							((MethodVariable) obj.Operand).StackLocation = GetNewSpillOffset();
+							((MethodVariable) obj.Operand).StackLocation = GetNewSpillQuadOffset();
 						}
 					};
 			ForeachTreeInstruction(action);
@@ -427,7 +430,7 @@ namespace CellDotNet
 			AssertState(MethodCompileState.S5RegisterAllocationDone - 1);
 
 			RegAllocGraphColloring regalloc = new RegAllocGraphColloring();
-			regalloc.Alloc(SpuBasicBlocks, GetNewSpillOffset, registerWeight);
+			regalloc.Alloc(SpuBasicBlocks, GetNewSpillQuadOffset, registerWeight);
 
 //			SimpleRegAlloc regalloc = new SimpleRegAlloc();
 //			List<SpuInstruction> asm = _instructions.GetAsList();
@@ -453,7 +456,7 @@ namespace CellDotNet
 		/// For the register allocator to use to get SP offsets for spilling.
 		/// </summary>
 		/// <returns></returns>
-		public int GetNewSpillOffset()
+		public int GetNewSpillQuadOffset()
 		{
 			return _nextSpillOffset++;
 		}

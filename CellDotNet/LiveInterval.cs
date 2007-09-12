@@ -1,12 +1,24 @@
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace CellDotNet
 {
     public class LiveInterval
     {
-        public int start, end;
+		private int _start;
+		private int _end;
+
+		public int Start
+    	{
+    		get { return _start; }
+    		set { _start = value; }
+    	}
+
+    	public int End
+    	{
+    		get { return _end; }
+    		set { _end = value; }
+    	}
+
         public VirtualRegister r;
 
         public static List<LiveInterval> sortByStart(List<LiveInterval> liveIntervals)
@@ -23,19 +35,19 @@ namespace CellDotNet
             return liveIntervals;
         }
 
-        public class ComparByStart : IComparer<LiveInterval>
+		public class ComparByStart : IComparer<LiveInterval>
         {
             int IComparer<LiveInterval>.Compare(LiveInterval li1, LiveInterval li2)
             {
-                return li1.start.CompareTo(li2.start);
+                return li1._start.CompareTo(li2._start);
             }
         }
 
-        public class ComparByEnd : IComparer<LiveInterval>
+		public class ComparByEnd : IComparer<LiveInterval>
         {
             int IComparer<LiveInterval>.Compare(LiveInterval li1, LiveInterval li2)
             {
-                return li1.end.CompareTo(li2.end);
+                return li1._end.CompareTo(li2._end);
             }
         }
     }

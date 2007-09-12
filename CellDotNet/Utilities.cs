@@ -26,13 +26,12 @@ namespace CellDotNet
 			foreach (StackFrame f in frames)
 			{
 				MethodBase m = f.GetMethod();
-				object[] list = m.GetCustomAttributes(typeof (TestAttribute), false);
-				if (list.Length != 0)
+				if (m.IsDefined(typeof (TestAttribute), false))
 				{
 					return m.Name;
 				}
 			}
-			return null;
+			throw new InvalidOperationException("Not in nunit test.");
 		}
 
 		static public void AssertArgument(bool condition, string message)

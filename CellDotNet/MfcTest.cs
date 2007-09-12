@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Security.Permissions;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -27,7 +24,7 @@ namespace CellDotNet
 			AreEqual(16, depth);
 		}
 
-		[Test]
+		[Test, Ignore()]
 		public void TestDma_GetIntArray()
 		{
 			using (AlignedMemory<int> mem = SpeContext.AllocateAlignedInt32(4))
@@ -110,7 +107,7 @@ namespace CellDotNet
 			}
 		}
 
-		[Test]
+		[Test, Ignore()]
 		public void TestDma_PutIntArray()
 		{
 			using (AlignedMemory<int> mem = SpeContext.AllocateAlignedInt32(4))
