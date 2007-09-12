@@ -764,14 +764,18 @@ main:
 					if (obj.Offset == 0)
 						continue;
 
+					WriteAssemblySymbolDefinition(writer, name, obj.Offset);
+				}
+			}
+		}
 
-					writer.Write(@"
+		private static void WriteAssemblySymbolDefinition(StreamWriter writer, string name, int offset)
+		{
+			writer.Write(@"
   .globl {0}
   .type {0}, @object
   .set {0}, main + 0x{1:x}
-", name, obj.Offset);
-				}
-			}
+", name, offset);
 		}
 
 		private static void WriteAssemblyData(TextWriter writer, int[] arr, int startindex, int wordcount)

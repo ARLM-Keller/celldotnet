@@ -13,6 +13,11 @@ namespace CellDotNet
 		private int _offset;
 		private byte[] _contents;
 
+
+		public Library()
+		{
+		}
+
 		public Library(byte[] contents)
 		{
 			Utilities.AssertArgumentNotNull(contents, "contents");
@@ -27,18 +32,25 @@ namespace CellDotNet
 			set { _offset = value; }
 		}
 
-		public int Size
+		public virtual int Size
 		{
-			get { return _contents.Length; }
+			get
+			{
+				if (_contents == null)
+					throw new InvalidOperationException("The library has no contents.");
+				return _contents.Length;
+			}
 		}
 
-		public virtual LibraryMethod ResolveMethod(MethodInfo reflectionMethod)
+		public virtual LibraryMethod ResolveMethod(MethodInfo dllImportMethod)
 		{
 			throw new NotImplementedException();
 		}
 
-		public byte[] GetContents()
+		public virtual byte[] GetContents()
 		{
+			if (_contents == null)
+				throw new InvalidOperationException("The library has no contents.");
 			return _contents;
 		}
 	}
