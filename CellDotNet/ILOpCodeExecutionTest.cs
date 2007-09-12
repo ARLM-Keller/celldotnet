@@ -449,7 +449,7 @@ namespace CellDotNet
 
 			ReadOnlyCollection<MethodParameter> par = new ReadOnlyCollection<MethodParameter>(new List<MethodParameter>());
 
-			SpuManualRoutine spum = new SpuManualRoutine(false, "opcodetester");
+			ManualRoutine spum = new ManualRoutine(false, "opcodetester");
 
 			SpecialSpeObjects specialSpeObjects = new SpecialSpeObjects();
 			specialSpeObjects.SetMemorySettings(256 * 1024 - 0x20, 8 * 1024 - 0x20, 128 * 1024, 118 * 1024);

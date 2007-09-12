@@ -18,13 +18,6 @@
       <HashCode>AAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
     </TypeIdentifier>
   </Class>
-  <Class Name="CellDotNet.SpuRoutine">
-    <Position X="5.5" Y="3.25" Width="2.5" />
-    <TypeIdentifier>
-      <FileName>SpuRoutine.cs</FileName>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAEAAA=</HashCode>
-    </TypeIdentifier>
-  </Class>
   <Class Name="CellDotNet.CalleeSavesStoreRoutine" Collapsed="true">
     <Position X="3" Y="7.75" Width="1.5" />
     <TypeIdentifier>
@@ -50,13 +43,6 @@
       <HashCode>AAAAAAAAAAACgAAEAAAAABAAAAAAAAAAAQAAAAAAAoA=</HashCode>
     </TypeIdentifier>
   </Class>
-  <Class Name="CellDotNet.SpuManualRoutine" Collapsed="true">
-    <Position X="6.5" Y="7.75" Width="1.5" />
-    <TypeIdentifier>
-      <FileName>SpuManualRoutine.cs</FileName>
-      <HashCode>AAAAABAAAAACgAAAAAAACBAAAAAAAAAgEQAAAAEAAoA=</HashCode>
-    </TypeIdentifier>
-  </Class>
   <Class Name="CellDotNet.DataObject" Collapsed="true">
     <Position X="2" Y="3.25" Width="1.5" />
     <TypeIdentifier>
@@ -67,23 +53,30 @@
   <Class Name="CellDotNet.SpuDynamicRoutine">
     <Position X="5.25" Y="5.25" Width="1.5" />
     <TypeIdentifier>
-      <FileName>SpuRoutine.cs</FileName>
+      <FileName>SpuDynamicRoutine.cs</FileName>
+      <NewMemberFileName>SpuRoutine.cs</NewMemberFileName>
       <HashCode>AAAAAAAAAAACAAAAAAAAABAAAAAAAAAAAYAAAAAEAgA=</HashCode>
     </TypeIdentifier>
-    <InheritanceLine Type="CellDotNet.SpuRoutine" FixedToPoint="true">
-      <Path>
-        <Point X="6.75" Y="5.127" />
-        <Point X="6.75" Y="5.19" />
-        <Point X="5.938" Y="5.19" />
-        <Point X="5.938" Y="5.25" />
-      </Path>
-    </InheritanceLine>
   </Class>
   <Class Name="CellDotNet.ExternalMethod" Collapsed="true">
     <Position X="7" Y="5.25" Width="1.5" />
     <TypeIdentifier>
       <FileName>ExternalMethod.cs</FileName>
-      <HashCode>AAAAAAAAAAAAgAAACAAAAAAQAAAAAAACAAABAAAAgAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAgAAACAAAAAAQAAAAAAACAIABAAAEgAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CellDotNet.ManualRoutine" Collapsed="true">
+    <Position X="6.5" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>ManualRoutine.cs</FileName>
+      <HashCode>AAAAABAAAAACgAAAAAAACBAAAAAAAAAgEQAAAAEAAoA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CellDotNet.SpuRoutine">
+    <Position X="5.5" Y="3.25" Width="2.5" />
+    <TypeIdentifier>
+      <FileName>SpuRou.cs</FileName>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAEAAA=</HashCode>
     </TypeIdentifier>
   </Class>
 </ClassDiagram>
