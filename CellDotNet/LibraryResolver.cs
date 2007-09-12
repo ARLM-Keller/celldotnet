@@ -19,4 +19,15 @@ namespace CellDotNet
 //			throw new NotImplementedException();
 //		}
 	}
+
+	/// <summary>
+	/// A <see cref="LibraryResolver"/> that looks for file libraries.
+	/// </summary>
+	class StaticFileLibraryResolver : LibraryResolver
+	{
+		public override Library ResolveLibrary(string dllImportName)
+		{
+			throw new DllNotFoundException();
+		}
+	}
 }
