@@ -207,8 +207,9 @@ namespace CellDotNet
 							if (!mc.MethodBase.IsStatic)
 								throw new NotImplementedException("Only static methods are implemented.");
 						}
-						if(target.Parameters.Count > HardwareRegister.CallerSavesVirtualRegisters.Length)
-							throw new NotImplementedException("No support for more than " + HardwareRegister.CallerSavesVirtualRegisters.Length + "parameters.");
+						if (target.Parameters.Count > HardwareRegister.CallerSavesVirtualRegisters.Length)
+							throw new NotImplementedException("No support for more than " +
+							                                  HardwareRegister.CallerSavesVirtualRegisters.Length + "parameters.");
 
 						// Move parameters into hardware registers.
 						for (int i = 0; i < target.Parameters.Count; i++)
@@ -219,7 +220,12 @@ namespace CellDotNet
 						_writer.WriteBrsl(target);
 
 						if (inst.StackType != StackTypeDescription.None)
-							return HardwareRegister.GetHardwareRegister(3);
+						{
+//							VirtualRegister result = _writer.NextRegister();
+//							_writer.WriteMove(HardwareRegister.GetHardwareRegister(3), result);
+//							return result;
+							return HardwareRegister.GetVirtualHardwareRegister(CellRegister.REG_3);
+						}
 						else
 							return null;
 					}
@@ -1007,6 +1013,7 @@ namespace CellDotNet
 						MethodVariable var = ((MethodVariable) inst.Operand);
 						if (var.Escapes != null && var.Escapes.Value)
 						{
+							// This is a sanity check for stack overflow.
 							Utilities.Assert(var.StackLocation * 4 < 32 * 1024, "Immediated overflow");
 							VirtualRegister r = _writer.WriteIl(var.StackLocation * 16);
 							_writer.WriteA(r, HardwareRegister.SP, r);

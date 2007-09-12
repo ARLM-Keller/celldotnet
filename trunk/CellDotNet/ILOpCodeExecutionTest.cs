@@ -12,7 +12,7 @@ namespace CellDotNet
 	{
 		private delegate int SimpleDelegateReturn();
 
-		private delegate void SimpleDelegateRefArg(ref int a);
+//		private delegate void SimpleDelegateRefArg(ref int a);
 
 		[Test]
 		public void Test_Call()
@@ -360,7 +360,6 @@ namespace CellDotNet
 			a = a + 1;
 		}
 
-
 		[Test]
 		public void TestRefArgumentTest()
 		{
@@ -380,13 +379,22 @@ namespace CellDotNet
 			//DEBUG
 			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
 
+//			new TreeDrawer().DrawMethods(cc);
+
 //			Disassembler.DisassembleUnconditional(cc, Console.Out);
 
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-//			new TreeDrawer().DrawMethods(cc);
-
 //			Disassembler.DisassembleToConsole(cc);
+
+			try
+			{
+				cc.WriteAssemblyToFile(Utilities.GetUnitTestName()+"_asm.s");
+			}
+			catch (Exception e)
+			{
+				
+			}
 
 			int[] code = cc.GetEmittedCode();
 
@@ -466,7 +474,9 @@ namespace CellDotNet
 
 			// TODO Det håndteres muligvis ikke virtuelle moves i SimpleRegAlloc.
 			// NOTE: køre ikke på prolog og epilog.
-			new SimpleRegAlloc().alloc(spum.Writer.BasicBlocks.GetRange(1, spum.Writer.BasicBlocks.Count-2));
+//			SimpleRegAlloc.alloc(spum.Writer.BasicBlocks.GetRange(1, spum.Writer.BasicBlocks.Count-2), null, null);
+
+			new RegAllocGraphColloring().Alloc(spum.Writer.BasicBlocks.GetRange(1, spum.Writer.BasicBlocks.Count - 2), null, null);
 
 //			Console.WriteLine(spum.Writer.Disassemble());
 

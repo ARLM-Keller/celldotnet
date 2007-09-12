@@ -32,11 +32,13 @@ namespace CellDotNet
 
 //			new SpeContextTest().TestRecursion_StackOverflow_Debug();
 
-			new MfcTest().TestDma_GetIntArray_DEBUG();
+//			new MfcTest().TestDma_GetIntArray_DEBUG();
+
+//			new ILOpCodeExecutionTest().Test_Call();
 
 //			new SpeContextTest().TestFirstCellProgram();
 
-//			new SimpleProgramsTest().TestRecursiveSummation_Int();
+			new SimpleProgramsTest().TestRecursiveSummation_Int();
 
 //			new SpeContextTest().TestOutOfMemory();
 

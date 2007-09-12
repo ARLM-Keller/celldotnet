@@ -23,14 +23,14 @@ namespace CellDotNet
 					if (!liveIntervals.TryGetValue(def, out li))
 					{
 						li = new LiveInterval();
-						li.start = i;
-						li.end = i;
+						li.Start = i;
+						li.End = i;
 						li.r = def;
 						liveIntervals.Add(def, li);
 						intervallist.Add(li);
 					}
 					else
-						li.end = i;
+						li.End = i;
 				}
 				foreach (VirtualRegister r in uses)
 				{
@@ -38,14 +38,14 @@ namespace CellDotNet
 					if (!liveIntervals.TryGetValue(r, out li))
 					{
 						li = new LiveInterval();
-						li.start = i;
-						li.end = i;
+						li.Start = i;
+						li.End = i;
 						li.r = r;
 						liveIntervals.Add(r, li);
 						intervallist.Add(li);
 					}
 					else
-						li.end = i;
+						li.End = i;
 				}
 
 				switch (code[i].OpCode.Name)
@@ -61,11 +61,11 @@ namespace CellDotNet
 							break;
 						int dest = i + desti;
 						SortedLinkedList<LiveInterval>.Node<LiveInterval> n = intervallist.getNodeAt(intervallist.Count - 1);
-						while (n.Data.end >= dest)
+						while (n.Data.End >= dest)
 						{
-							n.Data.end = i;
-							if (n.Data.start > dest)
-								n.Data.start =
+							n.Data.End = i;
+							if (n.Data.Start > dest)
+								n.Data.Start =
 									dest;
 						}
 						break;

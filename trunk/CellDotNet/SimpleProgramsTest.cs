@@ -113,11 +113,17 @@ namespace CellDotNet
 
 			CompileContext cc = new CompileContext(del.Method);
 
+			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
+
+			new TreeDrawer().DrawMethods(cc);
+
+			Disassembler.DisassembleUnconditional(cc, Console.Out);
+
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-//			Disassembler.DisassembleToConsole(cc);
+			Disassembler.DisassembleToConsole(cc);
 
-//			cc.WriteAssemblyToFile(Utilities.GetUnitTestName() + "_asm.s");
+			cc.WriteAssemblyToFile(Utilities.GetUnitTestName() + "_asm.s");
 			
 			if (!SpeContext.HasSpeHardware)
 				return;
