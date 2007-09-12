@@ -16,7 +16,7 @@ namespace CellDotNet
 			specialSpeObjects.SetMemorySettings(256*1024-0x20,8*1024-0x20,128*1024,118*1024);
 
 			// The code to run just returns.
-			SpuManualRoutine routine = new SpuManualRoutine(true);
+			ManualRoutine routine = new ManualRoutine(true);
 			routine.Writer.BeginNewBasicBlock();
 			routine.Writer.WriteLoadI4(HardwareRegister.GetHardwareRegister(3), magicnum);
 			routine.Writer.WriteBi(HardwareRegister.LR);

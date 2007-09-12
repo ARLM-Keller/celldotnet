@@ -8,7 +8,7 @@ namespace CellDotNet
 	/// Represents code which is not the result of a method compilation, but
 	/// rather generated "manually".
 	/// </summary>
-	class SpuManualRoutine : SpuDynamicRoutine
+	class ManualRoutine : SpuDynamicRoutine
 	{
 		private bool _omitEpilog = false;
 		/// <summary>
@@ -16,11 +16,11 @@ namespace CellDotNet
 		/// </summary>
 		private bool _isPatchingDone;
 
-		public SpuManualRoutine(bool omitEpilog) : this(omitEpilog, null)
+		public ManualRoutine(bool omitEpilog) : this(omitEpilog, null)
 		{
 		}
 
-		public SpuManualRoutine(bool omitEpilog, string name) : base(name)
+		public ManualRoutine(bool omitEpilog, string name) : base(name)
 		{
 			_writer = new SpuInstructionWriter();
 			_omitEpilog = omitEpilog;
@@ -61,7 +61,7 @@ namespace CellDotNet
 			return Writer.GetAsList();
 		}
 
-		public void WriteProlog(int frameslots, SpuManualRoutine stackOverflow)
+		public void WriteProlog(int frameslots, ManualRoutine stackOverflow)
 		{
 			_writer.BeginNewBasicBlock();
 

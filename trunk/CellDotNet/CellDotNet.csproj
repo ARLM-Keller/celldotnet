@@ -73,6 +73,7 @@
     <Compile Include="IRTreeBuilderTest.cs" />
     <Compile Include="LivenessAnalyzer.cs" />
     <Compile Include="LocalStorageAddress.cs" />
+    <Compile Include="ManualRoutine.cs" />
     <Compile Include="MethodCompiler.cs" />
     <Compile Include="MethodCompilerTest.cs" />
     <Compile Include="MethodParameter.cs" />
@@ -98,11 +99,13 @@
     <Compile Include="RegisterSizedObject.cs" />
     <Compile Include="SimpleProgramsTest.cs" />
     <Compile Include="SpuChannel.cs" />
+    <Compile Include="SpuDynamicRoutine.cs" />
     <Compile Include="SpuOpCode.cs" />
     <Compile Include="SpuOpCodeAttribute.cs" />
     <Compile Include="SpuOpCodeAttributeTest.cs" />
     <Compile Include="SpuOpCodeEnum.cs" />
     <Compile Include="SpuOpCodeTest.cs" />
+    <Compile Include="SpuRou.cs" />
     <Compile Include="SpuRuntime.cs" />
     <Compile Include="SimpleLiveAnalyzer.cs" />
     <Compile Include="SimpleRegAlloc.cs" />
@@ -123,8 +126,6 @@
     <Compile Include="SpuInstructionTest.cs" />
     <Compile Include="SpuInstructionWriter.cs" />
     <Compile Include="SpuInstructionWriter_autogen.cs" />
-    <Compile Include="SpuManualRoutine.cs" />
-    <Compile Include="SpuRoutine.cs" />
     <Compile Include="SpuRuntimeTest.cs" />
     <Compile Include="StackLocation.cs" />
     <Compile Include="StoreLocation.cs" />

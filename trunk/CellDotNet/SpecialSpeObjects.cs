@@ -16,17 +16,17 @@ namespace CellDotNet
 		private RegisterSizedObject _stackPointerObject = new RegisterSizedObject("InitialStackPointer");
 		private RegisterSizedObject _debugValueObject = new RegisterSizedObject("DebugValue");
 		//		private RegisterSizedObject _stackSizeObject = new RegisterSizedObject("StackSize");
-		private SpuManualRoutine _stackOverflow;
-		private SpuManualRoutine _outOfMemory;
+		private ManualRoutine _stackOverflow;
+		private ManualRoutine _outOfMemory;
 
 
 		public SpecialSpeObjects()
 		{
-			_stackOverflow = new SpuManualRoutine(true, "StackOverflowHandler");
+			_stackOverflow = new ManualRoutine(true, "StackOverflowHandler");
 			_stackOverflow.Writer.BeginNewBasicBlock();
 			_stackOverflow.Writer.WriteStop(SpuStopCode.StackOverflow);
 
-			_outOfMemory = new SpuManualRoutine(true, "OomHandler");
+			_outOfMemory = new ManualRoutine(true, "OomHandler");
 			_outOfMemory.Writer.BeginNewBasicBlock();
 			_outOfMemory.Writer.WriteStop(SpuStopCode.OutOfMemory);
 		}
@@ -56,12 +56,12 @@ namespace CellDotNet
 //			get { return _stackSizeObject; }
 //		}
 
-		public SpuManualRoutine StackOverflow
+		public ManualRoutine StackOverflow
 		{
 			get { return _stackOverflow; }
 		}
 
-		public SpuManualRoutine OutOfMemory
+		public ManualRoutine OutOfMemory
 		{
 			get { return _outOfMemory; }
 		}
