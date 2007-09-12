@@ -18,6 +18,9 @@ namespace CellDotNet
 		[Test]
 		public void TestExecuteShellScript()
 		{
+			if (!HasUnixShell)
+				return;
+
 			string script = @"
 echo hej
 ";

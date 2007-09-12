@@ -523,7 +523,7 @@ namespace CellDotNet
 
 		private unsafe static void RunRasmus()
 		{
-			new LibraryTest().TestElfStaticLibrary();
+			new LibraryTest().TestHandMadeExternalMethod2();
 
 			return;
 

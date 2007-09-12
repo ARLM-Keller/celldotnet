@@ -479,7 +479,7 @@ namespace CellDotNet
 				allMethods.Add(methodkey, method);
 
 				SpuRoutine routine;
-				if (method.IsDefined(typeof(DllImportAttribute), false))
+				if (method.IsDefined(typeof (DllImportAttribute), false))
 				{
 					routine = LibMan.GetMethod((MethodInfo) method);
 				}
@@ -488,13 +488,21 @@ namespace CellDotNet
 					routine = CreateMethodCompiler(method, methodkey, instructionsToPatch, methodsToCompile);
 				}
 
+				// Patch the instructions that we've encountered earlier and that referenced this method.
+				List<TreeInstruction> patchlist;
+				string thismethodkey = CreateMethodRefKey(method);
+				if (instructionsToPatch.TryGetValue(thismethodkey, out patchlist))
+				{
+					foreach (TreeInstruction inst in patchlist)
+						inst.Operand = routine;
+				}
+
 				if (isfirst)
 				{
 					_entryPoint = routine;
 					isfirst = false;
 				}
 			}
-
 
 			State = CompileContextState.S2TreeConstructionDone;
 		}
@@ -510,7 +518,9 @@ namespace CellDotNet
 		/// <param name="methodKey"></param>
 		/// <param name="methodsToCompile"></param>
 		/// <returns></returns>
-		private MethodCompiler CreateMethodCompiler(MethodBase method, string methodKey, Dictionary<string, List<TreeInstruction>> instructionsToPatch, Dictionary<string, MethodBase> methodsToCompile)
+		private MethodCompiler CreateMethodCompiler(MethodBase method, string methodKey,
+		                                            Dictionary<string, List<TreeInstruction>> instructionsToPatch,
+		                                            Dictionary<string, MethodBase> methodsToCompile)
 		{
 			MethodCompiler mc = new MethodCompiler(method);
 			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
@@ -549,17 +559,6 @@ namespace CellDotNet
 							patchlist.Add(inst);
 						}
 					});
-
-			{
-				// Patch the instructions that we've encountered earlier and that referenced this method.
-				List<TreeInstruction> patchlist;
-				string thismethodkey = CreateMethodRefKey(method);
-				if (instructionsToPatch.TryGetValue(thismethodkey, out patchlist))
-				{
-					foreach (TreeInstruction inst in patchlist)
-						inst.Operand = mc;
-				}
-			}
 			return mc;
 		}
 
