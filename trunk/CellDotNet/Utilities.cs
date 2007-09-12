@@ -160,6 +160,23 @@ namespace CellDotNet
 			Buffer.BlockCopy(src, srcOffset*4, dest, destOffset*4, count*4);
 		}
 
+		static public byte[] WriteBigEndianBytes(int[] src)
+		{
+			byte[] buf = new byte[src.Length * 4];
+			for (int i = 0; i < src.Length; i++)
+			{
+				uint e = (uint) src[i];
+				int byteidx = i*4;
+
+				buf[byteidx] = (byte) (e >> 24);
+				buf[byteidx+1] = (byte) (e >> 16);
+				buf[byteidx + 2] = (byte)(e >> 8);
+				buf[byteidx + 3] = (byte)(e);
+			}
+
+			return buf;
+		}
+
 		static public void DumpMemory(SpeContext context, LocalStorageAddress lsa, int bytecount, TextWriter writer)
 		{
 			AssertArgument(IsQuadwordAligned(lsa), "IsQuadwordAligned(lsa): " + lsa.Value.ToString("x6"));

@@ -14,7 +14,7 @@ namespace CellDotNet
 		S2TreeConstructionDone,
 		S3InstructionSelectionDone,
 		S4RegisterAllocationDone,
-		S5MethodAddressesDetermined,
+		S5AddressesDetermined,
 		S6AddressPatchingDone,
 		S7CodeEmitted,
 		S8Complete
@@ -122,8 +122,8 @@ namespace CellDotNet
 			if (targetState >= CompileContextState.S4RegisterAllocationDone && State < CompileContextState.S4RegisterAllocationDone)
 				PerformRegisterAllocation();
 
-			if (targetState >= CompileContextState.S5MethodAddressesDetermined && State < CompileContextState.S5MethodAddressesDetermined)
-				PerformMethodAddressDetermination();
+			if (targetState >= CompileContextState.S5AddressesDetermined && State < CompileContextState.S5AddressesDetermined)
+				PerformAddressDetermination();
 
 			if (targetState >= CompileContextState.S6AddressPatchingDone && State < CompileContextState.S6AddressPatchingDone)
 				PerformAddressPatching();
@@ -150,9 +150,9 @@ namespace CellDotNet
 		/// <summary>
 		/// Determines local storage addresses for the methods.
 		/// </summary>
-		private void PerformMethodAddressDetermination()
+		private void PerformAddressDetermination()
 		{
-			AssertState(CompileContextState.S5MethodAddressesDetermined - 1);
+			AssertState(CompileContextState.S5AddressesDetermined - 1);
 
 			// Start from the beginning and lay them out sequentially.
 			int lsOffset = 0;
@@ -166,9 +166,20 @@ namespace CellDotNet
 				o.Offset = lsOffset;
 				lsOffset = Utilities.Align16(lsOffset + o.Size);
 			}
+
+
+			// Determine positions for libraries.
+			foreach (Library lib in LibMan.Libraries)
+			{
+				Utilities.Assert(lib.Size > 0, "lib.Size > 0");
+
+				lib.Offset = lsOffset;
+				lsOffset += Utilities.Align16(lib.Size);
+			}
+
 			_totalCodeSize = lsOffset;
 
-			State = CompileContextState.S5MethodAddressesDetermined;
+			State = CompileContextState.S5AddressesDetermined;
 		}
 
 		// Used in ILOpCodeExecutionTest.
@@ -306,6 +317,16 @@ namespace CellDotNet
 				_emittedCode[_specialSpeObjects.StackPointerObject.Offset / 4 + 3] = _specialSpeObjects.StackSize;
 			}
 
+			// Get external libraries.
+			foreach (Library lib in LibMan.Libraries)
+			{
+				Utilities.Assert(lib.Offset > 0, "lib.Offset > 0");
+				Utilities.Assert(lib.Offset + lib.Size <= _totalCodeSize, "lib.Offset + lib.Size <= _totalCodeSize");
+
+				byte[] contents = lib.GetContents();
+				Buffer.BlockCopy(contents, 0, _emittedCode, lib.Offset, contents.Length);
+			}
+
 			State = CompileContextState.S7CodeEmitted;
 		}
 
@@ -367,9 +388,34 @@ namespace CellDotNet
 
 		class LibraryManager
 		{
-			Dictionary<string, Library> _libraries = new Dictionary<string, Library>(StringComparer.OrdinalIgnoreCase);
-			private LibraryResolver _resolver;
+			class LibraryUsage
+			{
+				private Library _library;
+				private Dictionary<string, LibraryMethod> _usedMethods = new Dictionary<string, LibraryMethod>(StringComparer.Ordinal);
 
+				public LibraryUsage(Library library)
+				{
+					_library = library;
+				}
+
+				public Library Library
+				{
+					get { return _library; }
+				}
+
+				public void RecordUsage(LibraryMethod method)
+				{
+					LibraryMethod oldRecord;
+					if (_usedMethods.TryGetValue(method.Name, out oldRecord) && !ReferenceEquals(oldRecord, method))
+						throw new ArgumentException("A method named '" + method.Name +
+						                            "' has previously been seen, but it was another object.");
+					else
+						_usedMethods[method.Name] = method;
+				}
+			}
+
+			Dictionary<string, LibraryUsage> _libraries = new Dictionary<string, LibraryUsage>(StringComparer.OrdinalIgnoreCase);
+			private LibraryResolver _resolver;
 
 			public LibraryManager(LibraryResolver libraryResolver)
 			{
@@ -382,16 +428,30 @@ namespace CellDotNet
 				DllImportAttribute att = (DllImportAttribute)method.GetCustomAttributes(typeof(DllImportAttribute), false)[0];
 
 				string libraryName = att.Value;
-				Library lib;
-				if (!_libraries.TryGetValue(libraryName, out lib))
+				LibraryUsage libusage;
+				if (!_libraries.TryGetValue(libraryName, out libusage))
 				{
-					lib = _resolver.ResolveLibrary(libraryName);
-					_libraries.Add(libraryName, lib);
+					Library lib = _resolver.ResolveLibrary(libraryName);
+					libusage = new LibraryUsage(lib);
+					_libraries.Add(libraryName, libusage);
 				}
 
-				LibraryMethod extmethod = lib.ResolveMethod(method);
+				LibraryMethod extmethod = libusage.Library.ResolveMethod(method);
+				libusage.RecordUsage(extmethod);
 
 				return extmethod;
+			}
+
+			public ICollection<Library> Libraries
+			{
+				get
+				{
+					List<Library> libs = new List<Library>(_libraries.Count);
+					foreach (KeyValuePair<string, LibraryUsage> pair in _libraries)
+						libs.Add(pair.Value.Library);
+
+					return libs;
+				}
 			}
 		}
 
@@ -668,7 +728,7 @@ main:
 							firstSymbolBlockLine = false;
 						}
 
-						writer.Write("# {0} (0x{1:x})", symbol.Name, symbol.Offset);
+						writer.Write("# {0} (0x{1:x} - 0x{2:x} bytes)", symbol.Name, symbol.Offset, symbol.Size);
 						if (symbol.Offset > byteOffset)
 							writer.Write(" (line offset 0x" + (symbol.Offset - byteOffset).ToString("x") + ")");
 

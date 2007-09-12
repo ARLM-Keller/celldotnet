@@ -40,14 +40,20 @@ namespace CellDotNet
 		public static VirtualRegister LR;
 
 		/// <summary>
+		/// R3, the first return value register.
+		/// </summary>
+		public static readonly VirtualRegister HardwareReturnValueRegister;
+
+
+		/// <summary>
 		/// The Stack Pointer register.
 		/// </summary>
-		public static VirtualRegister SP;
+		public static readonly VirtualRegister SP;
 
 		/// <summary>
 		/// The Environment Pointer register.
 		/// </summary>
-		public static VirtualRegister EnvPtr;
+		public static readonly VirtualRegister EnvPtr;
 
 		public static CellRegister[] getCallerSavesCellRegisters()
 		{
@@ -109,6 +115,8 @@ namespace CellDotNet
 
 			SP = GetVirtualHardwareRegister((CellRegister) 1);
 
+			HardwareReturnValueRegister = GetVirtualHardwareRegister((CellRegister) 3);
+
 			EnvPtr = GetVirtualHardwareRegister((CellRegister) 2);
 		}
 
@@ -160,7 +168,6 @@ namespace CellDotNet
 			get { return _register; }
 			set { _register = value; }
 		}
-
 
 		public static VirtualRegister GetHardwareRegister(int regnum)
 		{

@@ -17,6 +17,7 @@ namespace CellDotNet
 
 		public LibraryMethod(string name, Library library, int offsetInLibrary, MethodInfo signature) : base(name)
 		{
+			Utilities.AssertArgument(!string.IsNullOrEmpty(name), "name null");
 			Utilities.AssertArgumentNotNull(library, "library");
 			Utilities.AssertArgumentNotNull(offsetInLibrary, "offsetInLibrary");
 			Utilities.AssertArgumentNotNull(signature, "signature");
