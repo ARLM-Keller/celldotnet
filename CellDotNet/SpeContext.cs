@@ -440,7 +440,7 @@ namespace CellDotNet
 			}
 			else
 			{
-				return cc.EntryPoint.MethodBase.Invoke(null, args);
+				return cc.EntryPointAsMetodCompiler.MethodBase.Invoke(null, args);
 			}
 		}
 

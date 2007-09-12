@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Reflection;
 
 namespace CellDotNet
 {
@@ -11,11 +12,23 @@ namespace CellDotNet
 	{
 		private ExternalLibrary _library;
 		private int _offsetInLibrary;
+		private StackTypeDescription _returnType;
+		private ReadOnlyCollection<MethodParameter> _parameters;
 
-		public ExternalMethod(string name, ExternalLibrary library, int offsetInLibrary) : base(name)
+		public ExternalMethod(string name, ExternalLibrary library, int offsetInLibrary, MethodInfo signature) : base(name)
 		{
 			Utilities.AssertArgumentNotNull(library, "library");
 			Utilities.AssertArgumentNotNull(offsetInLibrary, "offsetInLibrary");
+			Utilities.AssertArgumentNotNull(signature, "signature");
+
+			TypeDeriver td = new TypeDeriver();
+			_returnType = td.GetStackTypeDescription(signature.ReturnType);
+			List<MethodParameter> plist = new List<MethodParameter>();
+			foreach (ParameterInfo paraminfo in signature.GetParameters())
+			{
+				plist.Add(new MethodParameter(paraminfo, td.GetStackTypeDescription(paraminfo.ParameterType)));
+			}
+			_parameters = plist.AsReadOnly();
 
 			_library = library;
 			_offsetInLibrary = offsetInLibrary;
@@ -50,12 +63,12 @@ namespace CellDotNet
 
 		public override ReadOnlyCollection<MethodParameter> Parameters
 		{
-			get { throw new NotImplementedException(); }
+			get { return _parameters; }
 		}
 
 		public override StackTypeDescription ReturnType
 		{
-			get { throw new NotImplementedException(); }
+			get { return _returnType; }
 		}
 	}
 }
