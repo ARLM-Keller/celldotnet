@@ -79,5 +79,10 @@ namespace CellDotNet
 		{
 			Assert.Fail(message);
 		}
+
+		protected bool HasUnixShell
+		{
+			get { return SpeContext.HasSpeHardware; }
+		}
 	}
 }

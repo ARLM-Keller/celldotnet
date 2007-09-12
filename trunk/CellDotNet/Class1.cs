@@ -521,7 +521,7 @@ namespace CellDotNet
 
 		private unsafe static void RunRasmus()
 		{
-			MethodInNonExistingLibrary(234);
+			new LibraryTest().TestElfStaticLibrary();
 
 			return;
 

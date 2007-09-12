@@ -197,12 +197,16 @@ namespace CellDotNet
 				case IRCode.Call:
 					{
 						MethodCallInstruction callInst = (MethodCallInstruction) inst;
-						MethodCompiler target = callInst.TargetMethodCompiler;
+						SpuRoutine target = callInst.TargetRoutine;
 
-						if (target.MethodBase.IsConstructor)
-							throw new NotImplementedException("Constructors are not implemented.");
-						if (!target.MethodBase.IsStatic)
-							throw new NotImplementedException("Only static methods are implemented.");
+						MethodCompiler mc = callInst.TargetRoutine as MethodCompiler;
+						if (mc != null)
+						{
+							if (mc.MethodBase.IsConstructor)
+								throw new NotImplementedException("Constructors are not implemented.");
+							if (!mc.MethodBase.IsStatic)
+								throw new NotImplementedException("Only static methods are implemented.");
+						}
 						if(target.Parameters.Count > HardwareRegister.CallerSavesVirtualRegisters.Length)
 							throw new NotImplementedException("No support for more than " + HardwareRegister.CallerSavesVirtualRegisters.Length + "parameters.");
 

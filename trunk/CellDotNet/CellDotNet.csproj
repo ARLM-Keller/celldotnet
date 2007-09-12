@@ -52,6 +52,8 @@
     <Compile Include="DataObject.cs" />
     <Compile Include="Disassembler.cs" />
     <Compile Include="DisassemblerTest.cs" />
+    <Compile Include="ElfLibrary.cs" />
+    <Compile Include="ElfLibraryTest.cs" />
     <Compile Include="FlowGraph.cs" />
     <Compile Include="Graph.cs" />
     <Compile Include="GraphTest.cs" />
@@ -97,6 +99,8 @@
     <Compile Include="RegAllocGraphColloring.cs" />
     <Compile Include="RegAllocGraphColloringTest.cs" />
     <Compile Include="RegisterSizedObject.cs" />
+    <Compile Include="ShellUtilities.cs" />
+    <Compile Include="ShellUtilitiesTest.cs" />
     <Compile Include="SimpleProgramsTest.cs" />
     <Compile Include="SpuChannel.cs" />
     <Compile Include="SpuDynamicRoutine.cs" />
@@ -128,6 +132,8 @@
     <Compile Include="SpuInstructionWriter_autogen.cs" />
     <Compile Include="SpuRuntimeTest.cs" />
     <Compile Include="StackLocation.cs" />
+    <Compile Include="StaticFileLibraryResolver.cs" />
+    <Compile Include="StaticFileLibraryResolverTest.cs" />
     <Compile Include="StoreLocation.cs" />
     <Compile Include="TreeDrawer.cs" />
     <Compile Include="TypeDeriver.cs" />

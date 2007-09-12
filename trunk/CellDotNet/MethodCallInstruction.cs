@@ -47,6 +47,14 @@ namespace CellDotNet
 			get { return (MethodCompiler) Operand; }
 		}
 
+		/// <summary>
+		/// The operand cast as a <see cref="SpuRoutine"/>.
+		/// </summary>
+		public SpuRoutine TargetRoutine
+		{
+			get { return (SpuRoutine) Operand; }
+		}
+
 		private MethodInfo _intrinsicMethod;
 		/// <summary>
 		/// Intrinsic methods are exposed via this property so that the type deriver can do its job.
