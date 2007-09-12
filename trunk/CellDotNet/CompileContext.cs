@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace CellDotNet
@@ -24,7 +25,7 @@ namespace CellDotNet
 	/// </summary>
 	class CompileContext
 	{
-		private MethodCompiler _entryPoint;
+		private SpuRoutine _entryPoint;
 		private Dictionary<string, MethodCompiler> _methodDict = new Dictionary<string, MethodCompiler>();
 		private SpecialSpeObjects _specialSpeObjects;
 
@@ -39,6 +40,8 @@ namespace CellDotNet
 
 		private MethodBase _entryPointMethod;
 
+		LibraryManager _librarymanager;
+
 		public RegisterSizedObject DebugValueObject
 		{
 			get { return _specialSpeObjects.DebugValueObject; }
@@ -48,9 +51,14 @@ namespace CellDotNet
 		/// <summary>
 		/// The first method that is run.
 		/// </summary>
-		public MethodCompiler EntryPoint
+		public SpuRoutine EntryPoint
 		{
 			get { return _entryPoint; }
+		}
+
+		public MethodCompiler EntryPointAsMetodCompiler
+		{
+			get { return EntryPoint as MethodCompiler; }
 		}
 
 		public ICollection<MethodCompiler> Methods
@@ -337,6 +345,50 @@ namespace CellDotNet
 			return key;
 		}
 
+		internal void SetLibraryResolver(ExternalLibraryResolver resolver)
+		{
+			Utilities.AssertArgumentNotNull(resolver, "resolver");
+
+			if (_librarymanager != null)
+				throw new InvalidOperationException("Library resolver cannot be changed after first use.");
+			_librarymanager = new LibraryManager(resolver);
+		}
+
+		private LibraryManager LibMan
+		{
+			get
+			{
+				if (_librarymanager == null)
+					throw new InvalidOperationException("No library resolver/manager is present.");
+
+				return _librarymanager;
+			}
+		}
+
+		class LibraryManager
+		{
+			Dictionary<string, ExternalLibrary> _libraries = new Dictionary<string, ExternalLibrary>(StringComparer.OrdinalIgnoreCase);
+			private ExternalLibraryResolver _libraryResolver;
+
+
+			public LibraryManager(ExternalLibraryResolver libraryResolver)
+			{
+				Utilities.AssertArgumentNotNull(libraryResolver, "libraryResolver");
+				_libraryResolver = libraryResolver;
+			}
+
+			public ExternalMethod GetMethod(MethodInfo method)
+			{
+				Utilities.AssertNotNull(_libraryResolver, "_libraryResolver");
+
+				DllImportAttribute att = (DllImportAttribute)method.GetCustomAttributes(typeof(DllImportAttribute), false)[0];
+				ExternalLibrary lib = _libraryResolver.ResolveLibrary(att.Value);
+				ExternalMethod extmethod = lib.ResolveMethod(method);
+
+				return extmethod;
+			}
+		}
+
 		/// <summary>
 		/// Finds and build MethodCompilers for the methods that are transitively referenced from the entry method.
 		/// </summary>
@@ -355,32 +407,59 @@ namespace CellDotNet
 			while (methodsToCompile.Count > 0)
 			{
 				// Find next method.
-				string nextmethodkey = Utilities.GetFirst(methodsToCompile.Keys);
-				MethodBase method = methodsToCompile[nextmethodkey];
-				methodsToCompile.Remove(nextmethodkey);
-				allMethods.Add(nextmethodkey, method);
+				string methodkey = Utilities.GetFirst(methodsToCompile.Keys);
+				MethodBase method = methodsToCompile[methodkey];
+				methodsToCompile.Remove(methodkey);
+				allMethods.Add(methodkey, method);
 
-				// Compile.
-				MethodCompiler mc = new MethodCompiler(method);
-				mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
-				_methodDict.Add(nextmethodkey, mc);
+				SpuRoutine routine;
+				if (method.IsDefined(typeof(DllImportAttribute), false))
+				{
+					routine = LibMan.GetMethod((MethodInfo) method);
+				}
+				else
+				{
+					routine = CreateMethodCompiler(method, methodkey, instructionsToPatch, methodsToCompile);
+				}
 
 				if (isfirst)
 				{
-					_entryPoint = mc;
+					_entryPoint = routine;
 					isfirst = false;
 				}
+			}
 
-				// Find referenced methods.
-				mc.ForeachTreeInstruction(
-					delegate(TreeInstruction inst)
-         			{
-						MethodBase mr = inst.Operand as MethodBase;
+
+			State = CompileContextState.S2TreeConstructionDone;
+		}
+		
+		/// <summary>
+		/// Creates a <see cref="MethodCompiler"/> from <paramref name="method"/> while 
+		/// updating <paramref name="instructionsToPatch"/> and <paramref name="methodsToCompile"/>.
+		/// <paramref name="instructionsToPatch"/> is at the same time used to patch
+		/// previously encountered instructions that referenced this method.
+		/// </summary>
+		/// <param name="instructionsToPatch"></param>
+		/// <param name="method"></param>
+		/// <param name="methodKey"></param>
+		/// <param name="methodsToCompile"></param>
+		/// <returns></returns>
+		private MethodCompiler CreateMethodCompiler(MethodBase method, string methodKey, Dictionary<string, List<TreeInstruction>> instructionsToPatch, Dictionary<string, MethodBase> methodsToCompile)
+		{
+			MethodCompiler mc = new MethodCompiler(method);
+			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
+			_methodDict.Add(methodKey, mc);
+
+			// Find referenced methods.
+			mc.ForeachTreeInstruction(
+				delegate(TreeInstruction inst)
+					{
+						MethodBase mr = inst.OperandAsMethod;
 						if (mr == null)
 							return;
 
 						string methodkey = CreateMethodRefKey(mr);
-         				MethodCompiler calledMethod;
+						MethodCompiler calledMethod;
 						if (_methodDict.TryGetValue(methodkey, out calledMethod))
 						{
 							// We encountered the method before, so just use it.
@@ -405,22 +484,17 @@ namespace CellDotNet
 						}
 					});
 
+			{
+				// Patch the instructions that we've encountered earlier and that referenced this method.
+				List<TreeInstruction> patchlist;
+				string thismethodkey = CreateMethodRefKey(method);
+				if (instructionsToPatch.TryGetValue(thismethodkey, out patchlist))
 				{
-					// Patch the instructions that we've encountered earlier and that referenced this method.
-					List<TreeInstruction> patchlist;
-					string thismethodkey = CreateMethodRefKey(method);
-					if (instructionsToPatch.TryGetValue(thismethodkey, out patchlist))
-					{
-						foreach (TreeInstruction inst in patchlist)
-							inst.Operand = mc;
-					}
+					foreach (TreeInstruction inst in patchlist)
+						inst.Operand = mc;
 				}
 			}
-//			_entryPoint = new MethodCompiler(_entryPointMethod);
-//			_entryPoint.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
-
-
-			State = CompileContextState.S2TreeConstructionDone;
+			return mc;
 		}
 
 		#endregion

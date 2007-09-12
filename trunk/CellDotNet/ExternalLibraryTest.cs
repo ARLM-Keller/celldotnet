@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using NUnit.Framework;
 
 namespace CellDotNet
 {
 	[TestFixture]
-	public class ExternalLibraryTest
+	public class ExternalLibraryTest : UnitTest
 	{
 		[DllImport("ExternalTestLibrary1")]
 		private static extern int ExternalTestMethod1(int arg);
@@ -15,15 +16,18 @@ namespace CellDotNet
 		{
 			private ExternalMethod _method;
 
-
-			public FakeLibrary(ExternalMethod method)
+			public FakeLibrary()
 			{
-				_method = method;
 			}
 
-			public override ExternalMethod ResolveMethod(string name)
+			public override ExternalMethod ResolveMethod(MethodInfo reflectionMethod)
 			{
 				return _method;
+			}
+
+			public void SetSingleMethod(ExternalMethod method)
+			{
+				_method = method;
 			}
 		}
 
@@ -43,20 +47,20 @@ namespace CellDotNet
 		}
 
 		[Test]
-		public void TestMethod1()
+		public void TestParseAndResolveFakeMethod()
 		{
 			Converter<int, int> del = ExternalTestMethod1;
 
-			CompileContext cc = new CompileContext(del.Method);
+			FakeLibrary lib = new FakeLibrary();
+			ExternalMethod method = new ExternalMethod("TestMethod", lib, 200, del.Method);
+			lib.SetSingleMethod(method);
+			FakeLibraryResolver resolver = new FakeLibraryResolver(lib);
 
+			CompileContext cc = new CompileContext(del.Method);
+			cc.SetLibraryResolver(resolver);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-//			cc.EntryPoint
-
-			// Tjek:
-			// At den fundne externalmethod er det samme objekt som vi laver her.
-
-
+			Assert.AreSame(method, cc.EntryPoint);
 		}
 
 		[DllImport("NonExistingLibrary")]

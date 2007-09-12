@@ -41,7 +41,7 @@ namespace CellDotNet
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
-			MethodCompiler mc = cc.EntryPoint;
+			MethodCompiler mc = cc.EntryPointAsMetodCompiler;
 			IRTreeBuilder.RemoveNops(mc.Blocks);
 
 			new PartialEvaluator(fixedMethods).Evaluate(mc);
@@ -102,7 +102,7 @@ namespace CellDotNet
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
-			MethodCompiler mc = cc.EntryPoint;
+			MethodCompiler mc = cc.EntryPointAsMetodCompiler;
 			IRTreeBuilder.RemoveNops(mc.Blocks);
 
 			new PartialEvaluator(fixedMethods).Evaluate(mc);

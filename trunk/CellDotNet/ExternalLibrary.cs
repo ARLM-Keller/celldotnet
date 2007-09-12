@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace CellDotNet
 {
@@ -15,7 +16,7 @@ namespace CellDotNet
 			set { _offset = value; }
 		}
 
-		public virtual ExternalMethod ResolveMethod(string name)
+		public virtual ExternalMethod ResolveMethod(MethodInfo reflectionMethod)
 		{
 			throw new NotImplementedException();
 		}

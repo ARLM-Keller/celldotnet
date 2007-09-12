@@ -34,6 +34,7 @@
     <Compartments>
       <Compartment Name="Fields" Collapsed="true" />
       <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Properties" Collapsed="true" />
     </Compartments>
   </Class>
   <Class Name="CellDotNet.SpuInitializer" Collapsed="true">
@@ -57,6 +58,9 @@
       <NewMemberFileName>SpuRoutine.cs</NewMemberFileName>
       <HashCode>AAAAAAAAAAACAAAAAAAAABAAAAAAAAAAAYAAAAAEAgA=</HashCode>
     </TypeIdentifier>
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
   </Class>
   <Class Name="CellDotNet.ExternalMethod" Collapsed="true">
     <Position X="7" Y="5.25" Width="1.5" />
@@ -75,7 +79,8 @@
   <Class Name="CellDotNet.SpuRoutine">
     <Position X="5.5" Y="3.25" Width="2.5" />
     <TypeIdentifier>
-      <FileName>SpuRou.cs</FileName>
+      <FileName>SpuRoutine.cs</FileName>
+      <NewMemberFileName>SpuRou.cs</NewMemberFileName>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAEAAA=</HashCode>
     </TypeIdentifier>
   </Class>

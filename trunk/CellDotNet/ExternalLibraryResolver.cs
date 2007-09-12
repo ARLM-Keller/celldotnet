@@ -6,11 +6,17 @@ namespace CellDotNet
 	/// <summary>
 	/// <see cref="CompileContext"/> uses this class to find external libraries.
 	/// </summary>
-	class ExternalLibraryResolver
+	abstract class ExternalLibraryResolver
 	{
-		public virtual ExternalLibrary ResolveLibrary(string dllImportName)
-		{
-			throw new NotImplementedException();
-		}
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <exception cref="DllNotFoundException">If the library cannot be resolved.</exception>
+		/// <param name="dllImportName"></param>
+		/// <returns></returns>
+		public abstract ExternalLibrary ResolveLibrary(string dllImportName);
+//		{
+//			throw new NotImplementedException();
+//		}
 	}
 }
