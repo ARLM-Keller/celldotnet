@@ -110,6 +110,11 @@ namespace CellDotNet
 			
 		}
 
+		public static int Align4(int value)
+		{
+			return (value + 3) & ~3;
+		}
+
 		public static IntPtr Align16(IntPtr value)
 		{
 			return (IntPtr) (((long)value + 15) & ~15);
@@ -133,6 +138,11 @@ namespace CellDotNet
 		public static int Align128(int value)
 		{
 			return (value + 127) & ~127;
+		}
+
+		public static bool IsWordAligned(int offset)
+		{
+			return (offset%4) == 0;
 		}
 
 		public static bool IsQuadwordAligned(LocalStorageAddress lsa)

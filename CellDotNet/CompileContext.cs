@@ -628,6 +628,8 @@ namespace CellDotNet
 			}
 		}
 
+		#region Assembly
+
 		/// <summary>
 		/// Writes the code to the file with instructions on how to compile it.
 		/// The executable should be ready for debugging with spu-gdb.
@@ -676,10 +678,12 @@ main:
 
 				symbols.Sort(delegate(ObjectWithAddress x, ObjectWithAddress y) { return x.Offset - y.Offset; });
 
+				// Problably wont format correctly if the first symbol doesn't start at offset 0.
+				Utilities.Assert(symbols.Count == 0 || symbols[0].Offset == 0, "symbols.Count == 0 || symbols[0].Offset == 0");
 
 				// We don't want duplicate names.
 				Set<string> usedNames = new Set<string>(symbols.Count);
-				List<KeyValuePair<ObjectWithAddress, string>> symbolsWithNames = new List<KeyValuePair<ObjectWithAddress, string>>();
+				List<KeyValuePair<ObjectWithAddress, string>> sortedSymbolsWithNames = new List<KeyValuePair<ObjectWithAddress, string>>();
 				foreach (ObjectWithAddress symbol in symbols)
 				{
 					if (string.IsNullOrEmpty(symbol.Name))
@@ -703,59 +707,56 @@ main:
 					}
 
 					usedNames.Add(encodedname);
-					symbolsWithNames.Add(new KeyValuePair<ObjectWithAddress, string>(symbol, encodedname));
+					sortedSymbolsWithNames.Add(new KeyValuePair<ObjectWithAddress, string>(symbol, encodedname));
 				}
 
-
-
-				int wordOffset = 0;
-				int byteOffset = 0;
-				int nextSymIndex = 0;
-				const int wordsPerLine = 4;
-				const int bytesPerLine = wordsPerLine * 4;
-				while (wordOffset < code.Length)
+				// Write routines/objects.
+				for (int i = 0; i < sortedSymbolsWithNames.Count; i++)
 				{
-					// Comment where symbols starts.
-					bool firstSymbolBlockLine = true;
-					while (nextSymIndex < symbols.Count && symbols[nextSymIndex].Offset >= byteOffset
-						&& symbols[nextSymIndex].Offset < byteOffset + bytesPerLine)
-					{
-						ObjectWithAddress symbol = symbols[nextSymIndex];
+					KeyValuePair<ObjectWithAddress, string> pair = sortedSymbolsWithNames[i];
+					ObjectWithAddress symbol = pair.Key;
 
-						if (firstSymbolBlockLine)
+					Utilities.Assert(Utilities.IsWordAligned(symbol.Offset), "Not word-aligned.");
+
+					writer.WriteLine();
+					writer.WriteLine();
+					writer.Write("  # {0} (0x{1:x} - 0x{2:x} bytes)", symbol.Name, symbol.Offset, symbol.Size);
+
+					int roundedSize = Utilities.Align4(symbol.Size);
+					WriteAssemblyData(writer, code, symbol.Offset / 4, roundedSize / 4);
+
+					// Write padding.
+					if (i < sortedSymbolsWithNames.Count - 1)
+					{
+						ObjectWithAddress nextSymbol = sortedSymbolsWithNames[i + 1].Key;
+						if (symbol.Offset + roundedSize != nextSymbol.Offset)
 						{
 							writer.WriteLine();
-							firstSymbolBlockLine = false;
+							writer.WriteLine();
+							int paddingOffset = symbol.Offset + roundedSize;
+							int paddingSize = nextSymbol.Offset - paddingOffset;
+							WriteAssemblyData(writer, code, paddingOffset / 4, paddingSize / 4);
 						}
-
-						writer.Write("# {0} (0x{1:x} - 0x{2:x} bytes)", symbol.Name, symbol.Offset, symbol.Size);
-						if (symbol.Offset > byteOffset)
-							writer.Write(" (line offset 0x" + (symbol.Offset - byteOffset).ToString("x") + ")");
-
-						writer.WriteLine();
-						nextSymIndex++;
 					}
-
-					writer.Write("  .int ");
-					for (int i = 0; i < wordsPerLine && wordOffset + i < code.Length; i++)
-					{
-						if (i > 0)
-							writer.Write(",  ");
-						uint inst = (uint) code[wordOffset + i];
-
-							writer.Write("0x" + inst.ToString("x8"));
-					}
-					writer.WriteLine();
-
-					wordOffset += wordsPerLine;
-					byteOffset = wordOffset * 4;
 				}
+
+				// Write libraries.
+				if (sortedSymbolsWithNames.Count > 0)
+				{
+					ObjectWithAddress lastSymbol = sortedSymbolsWithNames[sortedSymbolsWithNames.Count - 1].Key;
+					int afterLastWrittenCodeIndex = (lastSymbol.Offset + Utilities.Align4(lastSymbol.Size)) / 4;
+					writer.WriteLine();
+					writer.WriteLine();
+					writer.WriteLine("  # Other code/data begins here.");
+					WriteAssemblyData(writer, code, afterLastWrittenCodeIndex, code.Length - afterLastWrittenCodeIndex);
+				}
+
 				
 				writer.WriteLine();
 				writer.WriteLine();
 
 				// Write the symbol values.
-				foreach (KeyValuePair<ObjectWithAddress, string> item in symbolsWithNames)
+				foreach (KeyValuePair<ObjectWithAddress, string> item in sortedSymbolsWithNames)
 				{
 					ObjectWithAddress obj = item.Key;
 					string name = item.Value;
@@ -772,6 +773,23 @@ main:
 				}
 			}
 		}
+
+		private static void WriteAssemblyData(TextWriter writer, int[] arr, int startindex, int wordcount)
+		{
+			for (int i = 0; i < wordcount; i++)
+			{
+				if (i % 4 == 0)
+				{
+					writer.WriteLine();
+					writer.Write("  .int ");
+				}
+				else writer.Write(", ");
+
+				writer.Write("0x" + arr[startindex + i].ToString("x8"));
+			}
+		}
+
+		#endregion
 
 		private int[] GetArgumentsImage(object[] arguments)
 		{
