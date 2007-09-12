@@ -7,31 +7,31 @@ using NUnit.Framework;
 namespace CellDotNet
 {
 	[TestFixture]
-	public class ExternalLibraryTest : UnitTest
+	public class LibraryTest : UnitTest
 	{
 		[DllImport("ExternalTestLibrary1")]
 		private static extern int ExternalTestMethod1(int arg);
 
-		class FakeLibrary : ExternalLibrary
+		class FakeLibrary : Library
 		{
-			private ExternalMethod _method;
+			private LibraryMethod _method;
 
 			public FakeLibrary()
 			{
 			}
 
-			public override ExternalMethod ResolveMethod(MethodInfo reflectionMethod)
+			public override LibraryMethod ResolveMethod(MethodInfo reflectionMethod)
 			{
 				return _method;
 			}
 
-			public void SetSingleMethod(ExternalMethod method)
+			public void SetSingleMethod(LibraryMethod method)
 			{
 				_method = method;
 			}
 		}
 
-		class FakeLibraryResolver : ExternalLibraryResolver
+		class FakeLibraryResolver : LibraryResolver
 		{
 			private FakeLibrary _library;
 
@@ -40,7 +40,7 @@ namespace CellDotNet
 				_library = library;
 			}
 
-			public override ExternalLibrary ResolveLibrary(string dllImportName)
+			public override Library ResolveLibrary(string dllImportName)
 			{
 				return _library;
 			}
@@ -52,7 +52,7 @@ namespace CellDotNet
 			Converter<int, int> del = ExternalTestMethod1;
 
 			FakeLibrary lib = new FakeLibrary();
-			ExternalMethod method = new ExternalMethod("TestMethod", lib, 200, del.Method);
+			LibraryMethod method = new LibraryMethod("TestMethod", lib, 200, del.Method);
 			lib.SetSingleMethod(method);
 			FakeLibraryResolver resolver = new FakeLibraryResolver(lib);
 

@@ -345,7 +345,7 @@ namespace CellDotNet
 			return key;
 		}
 
-		internal void SetLibraryResolver(ExternalLibraryResolver resolver)
+		internal void SetLibraryResolver(LibraryResolver resolver)
 		{
 			Utilities.AssertArgumentNotNull(resolver, "resolver");
 
@@ -367,23 +367,23 @@ namespace CellDotNet
 
 		class LibraryManager
 		{
-			Dictionary<string, ExternalLibrary> _libraries = new Dictionary<string, ExternalLibrary>(StringComparer.OrdinalIgnoreCase);
-			private ExternalLibraryResolver _libraryResolver;
+			Dictionary<string, Library> _libraries = new Dictionary<string, Library>(StringComparer.OrdinalIgnoreCase);
+			private LibraryResolver _libraryResolver;
 
 
-			public LibraryManager(ExternalLibraryResolver libraryResolver)
+			public LibraryManager(LibraryResolver libraryResolver)
 			{
 				Utilities.AssertArgumentNotNull(libraryResolver, "libraryResolver");
 				_libraryResolver = libraryResolver;
 			}
 
-			public ExternalMethod GetMethod(MethodInfo method)
+			public LibraryMethod GetMethod(MethodInfo method)
 			{
 				Utilities.AssertNotNull(_libraryResolver, "_libraryResolver");
 
 				DllImportAttribute att = (DllImportAttribute)method.GetCustomAttributes(typeof(DllImportAttribute), false)[0];
-				ExternalLibrary lib = _libraryResolver.ResolveLibrary(att.Value);
-				ExternalMethod extmethod = lib.ResolveMethod(method);
+				Library lib = _libraryResolver.ResolveLibrary(att.Value);
+				LibraryMethod extmethod = lib.ResolveMethod(method);
 
 				return extmethod;
 			}

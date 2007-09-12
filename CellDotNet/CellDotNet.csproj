@@ -52,10 +52,6 @@
     <Compile Include="DataObject.cs" />
     <Compile Include="Disassembler.cs" />
     <Compile Include="DisassemblerTest.cs" />
-    <Compile Include="ExternalLibrary.cs" />
-    <Compile Include="ExternalLibraryResolver.cs" />
-    <Compile Include="ExternalLibraryTest.cs" />
-    <Compile Include="ExternalMethod.cs" />
     <Compile Include="FlowGraph.cs" />
     <Compile Include="Graph.cs" />
     <Compile Include="GraphTest.cs" />
@@ -71,6 +67,10 @@
     <Compile Include="IROpCodes.cs" />
     <Compile Include="IRTreeBuilder.cs" />
     <Compile Include="IRTreeBuilderTest.cs" />
+    <Compile Include="Library.cs" />
+    <Compile Include="LibraryMethod.cs" />
+    <Compile Include="LibraryResolver.cs" />
+    <Compile Include="LibraryTest.cs" />
     <Compile Include="LivenessAnalyzer.cs" />
     <Compile Include="LocalStorageAddress.cs" />
     <Compile Include="ManualRoutine.cs" />

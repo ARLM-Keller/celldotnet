@@ -8,14 +8,14 @@ namespace CellDotNet
 	/// <summary>
 	/// Represents a method in an external library.
 	/// </summary>
-	class ExternalMethod : SpuRoutine
+	class LibraryMethod : SpuRoutine
 	{
-		private ExternalLibrary _library;
+		private Library _library;
 		private int _offsetInLibrary;
 		private StackTypeDescription _returnType;
 		private ReadOnlyCollection<MethodParameter> _parameters;
 
-		public ExternalMethod(string name, ExternalLibrary library, int offsetInLibrary, MethodInfo signature) : base(name)
+		public LibraryMethod(string name, Library library, int offsetInLibrary, MethodInfo signature) : base(name)
 		{
 			Utilities.AssertArgumentNotNull(library, "library");
 			Utilities.AssertArgumentNotNull(offsetInLibrary, "offsetInLibrary");
@@ -37,7 +37,7 @@ namespace CellDotNet
 		/// <summary>
 		/// The library to which this method belongs.
 		/// </summary>
-		public ExternalLibrary Library
+		public Library Library
 		{
 			get { return _library; }
 		}
