@@ -52,6 +52,10 @@
     <Compile Include="DataObject.cs" />
     <Compile Include="Disassembler.cs" />
     <Compile Include="DisassemblerTest.cs" />
+    <Compile Include="ExternalLibrary.cs" />
+    <Compile Include="ExternalLibraryResolver.cs" />
+    <Compile Include="ExternalLibraryTest.cs" />
+    <Compile Include="ExternalMethod.cs" />
     <Compile Include="FlowGraph.cs" />
     <Compile Include="Graph.cs" />
     <Compile Include="GraphTest.cs" />

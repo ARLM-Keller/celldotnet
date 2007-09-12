@@ -28,6 +28,17 @@ namespace CellDotNet
 		private Dictionary<string, MethodCompiler> _methodDict = new Dictionary<string, MethodCompiler>();
 		private SpecialSpeObjects _specialSpeObjects;
 
+		private int _totalCodeSize = -1;
+
+		private List<SpuDynamicRoutine> _spuRoutines;
+		private RegisterSizedObject _returnValueLocation;
+		private int[] _emittedCode;
+		private DataObject _argumentArea;
+
+		private CompileContextState _state;
+
+		private MethodBase _entryPointMethod;
+
 		public RegisterSizedObject DebugValueObject
 		{
 			get { return _specialSpeObjects.DebugValueObject; }
@@ -42,8 +53,6 @@ namespace CellDotNet
 			get { return _entryPoint; }
 		}
 
-		private MethodBase _entryMethod;
-
 		public ICollection<MethodCompiler> Methods
 		{
 			get { return _methodDict.Values; }
@@ -55,10 +64,8 @@ namespace CellDotNet
 			if (!entryPoint.IsStatic)
 				throw new ArgumentException("Only static methods are supported.");
 
-			_entryMethod = entryPoint;
+			_entryPointMethod = entryPoint;
 		}
-
-		private CompileContextState _state;
 
 		/// <summary>
 		/// The least common state for all referenced methods.
@@ -132,8 +139,6 @@ namespace CellDotNet
 			State = CompileContextState.S4RegisterAllocationDone;
 		}
 
-		private int _totalCodeSize = -1;
-
 		/// <summary>
 		/// Determines local storage addresses for the methods.
 		/// </summary>
@@ -188,24 +193,19 @@ namespace CellDotNet
 			{
 				if (owa is MethodCompiler)
 					((MethodCompiler) owa).PerformProcessing(MethodCompileState.S8AddressPatchingDone);
-				else if (owa is SpuRoutine)
-					((SpuRoutine) owa).PerformAddressPatching();
+				else if (owa is SpuDynamicRoutine)
+					((SpuDynamicRoutine) owa).PerformAddressPatching();
 			}
 			
 
 			State = CompileContextState.S6AddressPatchingDone;
 		}
 
-		private List<SpuRoutine> _spuRoutines;
-		private RegisterSizedObject _returnValueLocation;
-		private int[] _emittedCode;
-		private DataObject _argumentArea;
-
 		/// <summary>
 		/// Returns a list of infrastructure SPU routines, including the initalization code.
 		/// </summary>
 		/// <returns></returns>
-		private List<SpuRoutine> GetSpuRoutines()
+		private List<SpuDynamicRoutine> GetSpuRoutines()
 		{
 			Utilities.Assert(_spuRoutines != null, "_spuRoutines != null");
 			return _spuRoutines;
@@ -225,7 +225,7 @@ namespace CellDotNet
 
 			_argumentArea = DataObject.FromQuadWords(EntryPoint.Parameters.Count, "ArgumentArea");
 
-			_spuRoutines = new List<SpuRoutine>();
+			_spuRoutines = new List<SpuDynamicRoutine>();
 			SpuInitializer init = new SpuInitializer(EntryPoint, _returnValueLocation,
 				_argumentArea, EntryPoint.Parameters.Count,
 				_specialSpeObjects.StackPointerObject,
@@ -246,7 +246,7 @@ namespace CellDotNet
 		{
 			List<ObjectWithAddress> all = new List<ObjectWithAddress>();
 			// SPU routines go first, since we start execution at address 0.
-			foreach (SpuRoutine routine in GetSpuRoutines())
+			foreach (SpuDynamicRoutine routine in GetSpuRoutines())
 				all.Add(routine);
 			all.AddRange(_specialSpeObjects.GetAll());
 			foreach (MethodCompiler mc in Methods)
@@ -270,12 +270,12 @@ namespace CellDotNet
 			AssertState(CompileContextState.S7CodeEmitted - 1);
 
 			List<ObjectWithAddress> objects = GetAllObjects();
-			List<SpuRoutine> routines = new List<SpuRoutine>();
+			List<SpuDynamicRoutine> routines = new List<SpuDynamicRoutine>();
 			foreach (ObjectWithAddress o in objects)
 			{
-				SpuRoutine routine = o as SpuRoutine;
-				if (routine != null)
-					routines.Add(routine);
+				SpuDynamicRoutine dynamicRoutine = o as SpuDynamicRoutine;
+				if (dynamicRoutine != null)
+					routines.Add(dynamicRoutine);
 			}
 			_emittedCode = new int[Utilities.Align16(_totalCodeSize) / 4];
 			CopyCode(_emittedCode, routines);
@@ -307,6 +307,8 @@ namespace CellDotNet
 				throw new InvalidOperationException(string.Format("Operation is invalid for the current state. " +
 					"Current state: {0}; required state: {1}.", State, requiredState));
 		}
+
+		#region Tree construction / resolving
 
 		/// <summary>
 		/// Creates a key that can be used to identify the type.
@@ -346,7 +348,7 @@ namespace CellDotNet
 			Dictionary<string, MethodBase> methodsToCompile = new Dictionary<string, MethodBase>();
 			Dictionary<string, MethodBase> allMethods = new Dictionary<string, MethodBase>();
 			Dictionary<string, List<TreeInstruction>> instructionsToPatch = new Dictionary<string, List<TreeInstruction>>();
-			methodsToCompile.Add(CreateMethodRefKey(_entryMethod), _entryMethod);
+			methodsToCompile.Add(CreateMethodRefKey(_entryPointMethod), _entryPointMethod);
 
 			bool isfirst = true;
 
@@ -414,12 +416,14 @@ namespace CellDotNet
 					}
 				}
 			}
-//			_entryPoint = new MethodCompiler(_entryMethod);
+//			_entryPoint = new MethodCompiler(_entryPointMethod);
 //			_entryPoint.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 
 
 			State = CompileContextState.S2TreeConstructionDone;
 		}
+
+		#endregion
 
 		/// <summary>
 		/// Performs instruction selected on all the methods.
@@ -459,11 +463,11 @@ namespace CellDotNet
 			}
 		}
 
-		static internal void CopyCode(int[] targetBuffer, ICollection<SpuRoutine> objects)
+		static internal void CopyCode(int[] targetBuffer, ICollection<SpuDynamicRoutine> objects)
 		{
 			Set<int> usedOffsets = new Set<int>();
 
-			foreach (SpuRoutine routine in objects)
+			foreach (SpuDynamicRoutine routine in objects)
 			{
 				int[] code = routine.Emit();
 

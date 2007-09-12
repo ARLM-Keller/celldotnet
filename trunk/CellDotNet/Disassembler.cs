@@ -45,7 +45,7 @@ namespace CellDotNet
 			{
 				writer.WriteLine();
 
-				SpuRoutine r = o as SpuRoutine;
+				SpuDynamicRoutine r = o as SpuDynamicRoutine;
 				if (r == null)
 					continue;
 
@@ -68,7 +68,7 @@ namespace CellDotNet
 			List<ObjectWithAddress> nonRoutines = new List<ObjectWithAddress>();
 			foreach (ObjectWithAddress o in olist)
 			{
-				if (!(o is SpuRoutine))
+				if (!(o is SpuDynamicRoutine))
 					nonRoutines.Add(o);
 
 				if (o.Size == 0)
@@ -109,7 +109,7 @@ namespace CellDotNet
 			writer.WriteLine("# Code:");
 			foreach (ObjectWithAddress o in olist)
 			{
-				SpuRoutine r = o as SpuRoutine;
+				SpuDynamicRoutine r = o as SpuDynamicRoutine;
 				if (r == null)
 					continue;
 

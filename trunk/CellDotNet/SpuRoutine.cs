@@ -1,19 +1,45 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace CellDotNet
 {
-	/// <summary>
-	/// Represents anything that can be emitted as SPU code.
-	/// </summary>
 	abstract class SpuRoutine : ObjectWithAddress
 	{
 		protected SpuRoutine()
 		{
 		}
 
-		protected SpuRoutine(string name) : base(name)
+		public SpuRoutine(string name) : base(name)
 		{
+		}
+
+		public abstract ReadOnlyCollection<MethodParameter> Parameters { get; }
+		public abstract StackTypeDescription ReturnType { get; }
+	}
+
+	/// <summary>
+	/// Represents anything that can be emitted as SPU code.
+	/// </summary>
+	abstract class SpuDynamicRoutine : SpuRoutine
+	{
+		protected SpuDynamicRoutine()
+		{
+		}
+
+		protected SpuDynamicRoutine(string name) : base(name)
+		{
+		}
+
+
+		public override ReadOnlyCollection<MethodParameter> Parameters
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		public override StackTypeDescription ReturnType
+		{
+			get { throw new NotImplementedException(); }
 		}
 
 		/// <summary>
@@ -94,9 +120,12 @@ namespace CellDotNet
 					else if (inst.ObjectWithAddress != null)
 					{
 						Utilities.Assert(inst.ObjectWithAddress.Offset > 0, "Bad ObjectWithAddress offset: " + inst.ObjectWithAddress.Offset + ". Type: " + inst.ObjectWithAddress.GetType().Name);
+
 						int diff = inst.ObjectWithAddress.Offset - (Offset + curroffset);
+
 						Utilities.Assert(diff % 4 == 0, "branch offset not multiple of four bytes: " + diff);
 						Utilities.Assert(inst.OpCode != SpuOpCode.brsl || (diff < 1024*127 || diff > -1024*127), "Branch offset for brsl is not whitin bounds " + -1024*127 + " and " + 1024*127 + ": " + diff);
+
 						inst.Constant = diff >> 2; // instructions and therefore branch offsets are 4-byte aligned and the ISA uses that fact.
 					}
 

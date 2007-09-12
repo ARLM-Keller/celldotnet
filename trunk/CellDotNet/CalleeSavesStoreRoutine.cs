@@ -17,7 +17,7 @@ namespace CellDotNet
 	/// allocator clean it up a bit.
 	/// </para>
 	/// </summary>
-	class CalleeSavesStoreRoutine : SpuRoutine
+	class CalleeSavesStoreRoutine : SpuDynamicRoutine
 	{
 		private SpuInstructionWriter _writer;
 
