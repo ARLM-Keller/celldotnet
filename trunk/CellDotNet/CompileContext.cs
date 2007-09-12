@@ -359,7 +359,7 @@ namespace CellDotNet
 			get
 			{
 				if (_librarymanager == null)
-					throw new InvalidOperationException("No library resolver/manager is present.");
+					_librarymanager = new LibraryManager(new StaticFileLibraryResolver());
 
 				return _librarymanager;
 			}
@@ -368,21 +368,27 @@ namespace CellDotNet
 		class LibraryManager
 		{
 			Dictionary<string, Library> _libraries = new Dictionary<string, Library>(StringComparer.OrdinalIgnoreCase);
-			private LibraryResolver _libraryResolver;
+			private LibraryResolver _resolver;
 
 
 			public LibraryManager(LibraryResolver libraryResolver)
 			{
 				Utilities.AssertArgumentNotNull(libraryResolver, "libraryResolver");
-				_libraryResolver = libraryResolver;
+				_resolver = libraryResolver;
 			}
 
 			public LibraryMethod GetMethod(MethodInfo method)
 			{
-				Utilities.AssertNotNull(_libraryResolver, "_libraryResolver");
-
 				DllImportAttribute att = (DllImportAttribute)method.GetCustomAttributes(typeof(DllImportAttribute), false)[0];
-				Library lib = _libraryResolver.ResolveLibrary(att.Value);
+
+				string libraryName = att.Value;
+				Library lib;
+				if (!_libraries.TryGetValue(libraryName, out lib))
+				{
+					lib = _resolver.ResolveLibrary(libraryName);
+					_libraries.Add(libraryName, lib);
+				}
+
 				LibraryMethod extmethod = lib.ResolveMethod(method);
 
 				return extmethod;

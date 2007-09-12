@@ -16,10 +16,6 @@ namespace CellDotNet
 		{
 			private LibraryMethod _method;
 
-			public FakeLibrary()
-			{
-			}
-
 			public override LibraryMethod ResolveMethod(MethodInfo reflectionMethod)
 			{
 				return _method;
@@ -65,7 +61,6 @@ namespace CellDotNet
 
 		[DllImport("NonExistingLibrary")]
 		private static extern void MethodInNonExistingLibrary(int i);
-
 
 		[Test, ExpectedException(typeof(DllNotFoundException))]
 		public void TestNonExistingLibrary()
