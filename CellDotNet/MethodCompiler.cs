@@ -419,6 +419,8 @@ namespace CellDotNet
 			}
 		}
 
+		#region Register allocation
+
 		private void PerformRegisterAllocation()
 		{
 			
@@ -455,6 +457,8 @@ namespace CellDotNet
 		{
 			return _nextSpillOffset++;
 		}
+
+		#endregion
 
 		#region Prolog/epilog
 		SpuInstructionWriter _prolog;

@@ -15,9 +15,6 @@ namespace CellDotNet
 		/// <param name="dllImportName"></param>
 		/// <returns></returns>
 		public abstract Library ResolveLibrary(string dllImportName);
-//		{
-//			throw new NotImplementedException();
-//		}
 	}
 
 	/// <summary>
@@ -27,7 +24,7 @@ namespace CellDotNet
 	{
 		public override Library ResolveLibrary(string dllImportName)
 		{
-			throw new DllNotFoundException();
+			throw new DllNotFoundException("Cannot resolve library \"" + dllImportName + "\".");
 		}
 	}
 }
