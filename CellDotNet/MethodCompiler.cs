@@ -308,12 +308,12 @@ namespace CellDotNet
 			_instructions = new SpuInstructionWriter();
 
 			// Move calle-saves regs to virtual regs.
-			int calleeSavesRegisterCount = HardwareRegister.CalleeSavesVirtualRegisters.Count;
+			int calleeSavesRegisterCount = HardwareRegister.CalleeSavesRegisters.Count;
 			List<VirtualRegister> calleTemps = new List<VirtualRegister>(calleeSavesRegisterCount);
 			if (!_naked)
 			{
 				_instructions.BeginNewBasicBlock();
-				foreach (VirtualRegister register in HardwareRegister.CalleeSavesVirtualRegisters)
+				foreach (VirtualRegister register in HardwareRegister.CalleeSavesRegisters)
 				{
 					VirtualRegister temp = NextRegister();
 					registerWeight.Add(temp, 5);

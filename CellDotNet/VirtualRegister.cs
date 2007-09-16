@@ -34,6 +34,9 @@ namespace CellDotNet
         }
 
 		private bool _isRegisterSet = false;
+		/// <summary>
+		/// Indicates whether a physical register has been assigned to this virtual register.
+		/// </summary>
     	public bool IsRegisterSet
     	{
 			get { return _isRegisterSet; }

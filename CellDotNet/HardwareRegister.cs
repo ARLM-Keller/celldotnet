@@ -15,7 +15,7 @@ namespace CellDotNet
 
 		private static List<VirtualRegister> _callerSavesVirtualRegisters;
 
-		public static List<VirtualRegister> CallerSavesVirtualRegisters
+		public static List<VirtualRegister> CallerSavesRegisters
 		{
 			get { return _callerSavesVirtualRegisters; }
 		}
@@ -29,7 +29,7 @@ namespace CellDotNet
 
 		private static List<VirtualRegister> _calleeSavesVirtualRegisters;
 
-		public static List<VirtualRegister> CalleeSavesVirtualRegisters
+		public static List<VirtualRegister> CalleeSavesRegisters
 		{
 			get { return _calleeSavesVirtualRegisters; }
 		}
