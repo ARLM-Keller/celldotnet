@@ -43,7 +43,7 @@ namespace CellDotNet
 			MethodCompiler mc = new MethodCompiler(method);
 			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 
-			new TreeDrawer().DrawMethod(mc);
+//			new TreeDrawer().DrawMethod(mc);
 
 
 			mc.PerformProcessing(MethodCompileState.S4InstructionSelectionDone);

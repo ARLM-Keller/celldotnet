@@ -94,11 +94,11 @@ namespace CellDotNet
 
 				cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
 
-				Disassembler.DisassembleUnconditional(cc, Console.Out);
+//				Disassembler.DisassembleUnconditional(cc, Console.Out);
 				
 				cc.PerformProcessing(CompileContextState.S8Complete);
 
-				Disassembler.DisassembleToConsole(cc);
+//				Disassembler.DisassembleToConsole(cc);
 
 				object rv = SpeContext.UnitTestRunProgram(cc, mem.GetArea());
 				int correctVal = del(mem.GetArea());

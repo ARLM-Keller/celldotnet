@@ -13,9 +13,9 @@ namespace CellDotNet
 			get { return _virtualHardwareRegisters; }
 		}
 
-		private static VirtualRegister[] _callerSavesVirtualRegisters;
+		private static List<VirtualRegister> _callerSavesVirtualRegisters;
 
-		public static VirtualRegister[] CallerSavesVirtualRegisters
+		public static List<VirtualRegister> CallerSavesVirtualRegisters
 		{
 			get { return _callerSavesVirtualRegisters; }
 		}
@@ -27,9 +27,9 @@ namespace CellDotNet
 			get { return _scratchVirtualRegisters; }
 		}
 
-		private static VirtualRegister[] _calleeSavesVirtualRegisters;
+		private static List<VirtualRegister> _calleeSavesVirtualRegisters;
 
-		public static VirtualRegister[] CalleeSavesVirtualRegisters
+		public static List<VirtualRegister> CalleeSavesVirtualRegisters
 		{
 			get { return _calleeSavesVirtualRegisters; }
 		}
@@ -96,20 +96,20 @@ namespace CellDotNet
 				_virtualHardwareRegisters[i].Register = (CellRegister) i;
 			}
 
-			_callerSavesVirtualRegisters = new VirtualRegister[numberOfCallerSaveRegister];
+			_callerSavesVirtualRegisters = new List<VirtualRegister>(numberOfCallerSaveRegister);
 
 			_scratchVirtualRegisters = new VirtualRegister[5];
 
-			_calleeSavesVirtualRegisters = new VirtualRegister[numberOfCalleeSaveRegister];
+			_calleeSavesVirtualRegisters = new List<VirtualRegister>(numberOfCalleeSaveRegister);
 
 			for (int i = 3; i < numberOfCallerSaveRegister+3; i++)
-				_callerSavesVirtualRegisters[i - 3] = _virtualHardwareRegisters[i];
+				_callerSavesVirtualRegisters.Add(_virtualHardwareRegisters[i]);
 
 			for (int i = 75; i <= 79; i++)
 				_scratchVirtualRegisters[i - 75] = _virtualHardwareRegisters[i];
 
 			for (int i = 80; i < numberOfCalleeSaveRegister+80; i++)
-				_calleeSavesVirtualRegisters[i - 80] = _virtualHardwareRegisters[i];
+				_calleeSavesVirtualRegisters.Add(_virtualHardwareRegisters[i]);
 
 			LR = GetVirtualHardwareRegister((CellRegister) 0);
 

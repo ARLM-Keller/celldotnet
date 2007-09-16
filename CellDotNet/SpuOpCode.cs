@@ -211,6 +211,13 @@ namespace CellDotNet
 			if (name.StartsWith("st") || name == "wrch")
 				_noRegisterWrite = true;
 
+			if (name.Equals("brnz") || name.Equals("brz") ||
+				name.Equals("brhnz") || name.Equals("brhz") ||
+				name.Equals("biz") || name.Equals("binz") ||
+				name.Equals("bihz") || name.Equals("bihnz"))
+				_noRegisterWrite = true;
+
+
 			_specialFeatures = features;
 
 			switch (format)

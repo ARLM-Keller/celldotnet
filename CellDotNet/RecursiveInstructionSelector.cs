@@ -207,9 +207,9 @@ namespace CellDotNet
 							if (!mc.MethodBase.IsStatic)
 								throw new NotImplementedException("Only static methods are implemented.");
 						}
-						if (target.Parameters.Count > HardwareRegister.CallerSavesVirtualRegisters.Length)
+						if (target.Parameters.Count > HardwareRegister.CallerSavesVirtualRegisters.Count)
 							throw new NotImplementedException("No support for more than " +
-							                                  HardwareRegister.CallerSavesVirtualRegisters.Length + "parameters.");
+							                                  HardwareRegister.CallerSavesVirtualRegisters.Count + "parameters.");
 
 						// Move parameters into hardware registers.
 						for (int i = 0; i < target.Parameters.Count; i++)
