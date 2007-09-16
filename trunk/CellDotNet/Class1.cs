@@ -38,13 +38,15 @@ namespace CellDotNet
 
 //			new SpeContextTest().TestFirstCellProgram();
 
-			new SimpleProgramsTest().TestRecursiveSummation_Int();
+//			new SimpleProgramsTest().TestRecursiveSummation_Int();
 
 //			new ILOpCodeExecutionTest().Test_Ceq_I4();
 
 //			new SpeContextTest().TestOutOfMemory();
 
 //			new SimpleProgramsTest().TestRecursiveSummation_Int();
+
+			new VectorTypeTest().TestVectorIntAdd();
 
 				Console.WriteLine("Running RunKlaus done.");
 		}

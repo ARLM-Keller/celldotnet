@@ -106,6 +106,16 @@ namespace CellDotNet
 		Mfc_GetAvailableQueueEntries,
 		Mfc_Put,
 		Mfc_Get,
-		MainStorageArea_get_EffectiveAddress
+		MainStorageArea_get_EffectiveAddress,
+		VectorType_getE1,
+		VectorType_getE2,
+		VectorType_getE3,
+		VectorType_getE4,
+		VectorType_putE1,
+		VectorType_putE2,
+		VectorType_putE3,
+		VectorType_putE4,
+		VectorType_Equals,
+		VectorType_NotEquals
 	}
 }

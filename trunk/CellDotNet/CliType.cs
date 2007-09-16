@@ -1,44 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace CellDotNet
 {
-//	/// <summary>
-//	/// The basic CLI types.
-//	/// </summary>
-//	/// <remarks>
-//	/// </remarks>
-//	enum CliStackType : byte
-//	{
-//		None = 0,
-//		Int32 = 1,
-//		Int64 = 2,
-//		NativeInt = 3,
-//		F = 4,
-//		/// <summary>
-//		/// Object reference
-//		/// </summary>
-//		O = 5,
-//		/// <summary>
-//		/// The "&amp;" type.
-//		/// </summary>
-//		ManagedPointer = 6
-//	}
-
-	enum CliBasicType : byte 
-	{
-		None,
-		Integer,
-		Floating,
-		/// <summary>
-		/// Any value type other than the builtin CLI types.
-		/// </summary>
-		Valuetype,
-		ObjectType,
-		NativeInt,
-	}
-
 	/// <summary>
 	/// Sizes of numeric operands on the stack.
 	/// </summary>
@@ -49,6 +13,7 @@ namespace CellDotNet
 		TwoBytes = 2,
 		FourBytes = 4,
 		EightBytes = 8,
+		SixteenBytes = 16,
 	}
 
 	/// <summary>
@@ -59,15 +24,17 @@ namespace CellDotNet
 	struct StackTypeDescription : IEquatable<StackTypeDescription>
 	{
 		public static readonly StackTypeDescription None = new StackTypeDescription();
-		public static readonly StackTypeDescription Int32 = new StackTypeDescription(CliBasicType.Integer, CliNumericSize.FourBytes, true);
-		public static readonly StackTypeDescription Int64 = new StackTypeDescription(CliBasicType.Integer, CliNumericSize.EightBytes, true);
-		public static readonly StackTypeDescription Float32 = new StackTypeDescription(CliBasicType.Floating, CliNumericSize.FourBytes, true);
-		public static readonly StackTypeDescription Float64 = new StackTypeDescription(CliBasicType.Floating, CliNumericSize.EightBytes, true);
-		public static readonly StackTypeDescription ObjectType = new StackTypeDescription(CliBasicType.ObjectType, CliNumericSize.None, false);
-		public static readonly StackTypeDescription ValueType = new StackTypeDescription(CliBasicType.Valuetype, CliNumericSize.None, false);
-		public static readonly StackTypeDescription NativeInt = new StackTypeDescription(CliBasicType.NativeInt, CliNumericSize.None, true);
+		public static readonly StackTypeDescription Int32 = new StackTypeDescription(CliType.Int32, CliNumericSize.FourBytes, true);
+		public static readonly StackTypeDescription Int64 = new StackTypeDescription(CliType.Int64, CliNumericSize.EightBytes, true);
+		public static readonly StackTypeDescription Float32 = new StackTypeDescription(CliType.Float32, CliNumericSize.FourBytes, true);
+		public static readonly StackTypeDescription Float64 = new StackTypeDescription(CliType.Float64, CliNumericSize.EightBytes, true);
+		public static readonly StackTypeDescription Int32Vector = new StackTypeDescription(CliType.Int32Vector, CliNumericSize.SixteenBytes, true);
+		public static readonly StackTypeDescription Float32Vector = new StackTypeDescription(CliType.Float32Vector, CliNumericSize.SixteenBytes, true);
+		public static readonly StackTypeDescription ObjectType = new StackTypeDescription(CliType.ObjectType, CliNumericSize.None, false);
+		public static readonly StackTypeDescription ValueType = new StackTypeDescription(CliType.ValueType, CliNumericSize.None, false);
+		public static readonly StackTypeDescription NativeInt = new StackTypeDescription(CliType.NativeInt, CliNumericSize.None, true);
 
-		public CliBasicType _cliBasicType;
+		public CliType _cliType;
 		private bool _isSigned;
 		private CliNumericSize _numericSize;
 		private byte _indirectionLevel;
@@ -78,12 +45,12 @@ namespace CellDotNet
 		/// <summary>
 		/// For simple types.
 		/// </summary>
-		/// <param name="_cliBasicType"></param>
+		/// <param name="_cliType"></param>
 		/// <param name="_numericSize"></param>
 		/// <param name="_isSigned"></param>
-		public StackTypeDescription(CliBasicType _cliBasicType, CliNumericSize _numericSize, bool _isSigned)
+		public StackTypeDescription(CliType _cliType, CliNumericSize _numericSize, bool _isSigned)
 		{
-			this._cliBasicType = _cliBasicType;
+			this._cliType = _cliType;
 			this._isSigned = _isSigned;
 			this._numericSize = _numericSize;
 			_indirectionLevel = 0;
@@ -91,7 +58,7 @@ namespace CellDotNet
 			_complexType = null;
 			_isArray = false;
 		}
-
+		
 		static public StackTypeDescription GetStackType(CliType clitype)
 		{
 			switch (clitype)
@@ -121,7 +88,7 @@ namespace CellDotNet
 		/// <param name="complexType"></param>
 		public StackTypeDescription(TypeDescription complexType)
 		{
-			_cliBasicType = complexType.ReflectionType.IsValueType ? CliBasicType.Valuetype : CliBasicType.ObjectType;
+			_cliType = complexType.ReflectionType.IsValueType ? CliType.ValueType : CliType.ObjectType;
 			_isSigned = false;
 			_numericSize = CliNumericSize.None;
 			_indirectionLevel = 0;
@@ -130,15 +97,6 @@ namespace CellDotNet
 			_isArray = complexType.ReflectionType.IsArray;
 
 			Utilities.PretendVariableIsUsed(DebuggerDisplay);
-		}
-
-		public CliBasicType CliBasicType
-		{
-			get
-			{
-				AssertSimple();
-				return _cliBasicType;
-			}
 		}
 
 		public TypeDescription ComplexType
@@ -174,57 +132,9 @@ namespace CellDotNet
 						return CliType.NativeInt;
 				}
 
-				CliType t;
-				switch (_cliBasicType)
-				{
-					case CliBasicType.Integer:
-						switch (_numericSize)
-						{
-							case CliNumericSize.OneByte:
-							case CliNumericSize.TwoBytes:
-							case CliNumericSize.FourBytes:
-								t = CliType.Int32;
-								break;
-							case CliNumericSize.EightBytes:
-								t = CliType.Int64;
-								break;
-							default:
-								throw new Exception();
-						}
-						break;
-					case CliBasicType.Floating:
-						if (_numericSize == CliNumericSize.FourBytes)
-						{
-							t = CliType.Float32;
-							break;
-						}
-						else if (_numericSize == CliNumericSize.EightBytes)
-						{
-							t = CliType.Float64;
-							break;
-						}
-						else
-							throw new Exception();
-					case CliBasicType.Valuetype:
-						t = CliType.ValueType;
-						break;
-					case CliBasicType.ObjectType:
-						t = CliType.ObjectType;
-						break;
-					case CliBasicType.NativeInt:
-						t = CliType.NativeInt;
-						break;
-					case CliBasicType.None:
-						t = CliType.None;
-						break;
-					default:
-						throw new Exception();
-				}
-
-				return t;
+				return _cliType;
 			}
 		}
-
 
 		private string DebuggerDisplay
 		{
@@ -335,11 +245,21 @@ namespace CellDotNet
 
 		public int GetSizeWithPadding()
 		{
-			switch (CliBasicType)
+			switch (CliType)
 			{
-				case CliBasicType.Integer:
-				case CliBasicType.Floating:
-					return (int) NumericSize;
+				case CliType.Int32:
+				case CliType.Float32:
+				case CliType.Int32Vector:
+				case CliType.Float32Vector:
+					return 4;
+				case CliType.Int64:
+				case CliType.Float64:
+					return 8;
+				case CliType.None:
+				case CliType.NativeInt:
+				case CliType.ValueType:
+				case CliType.ObjectType:
+				case CliType.ManagedPointer:
 				default:
 					throw new InvalidOperationException();
 			}
@@ -430,7 +350,7 @@ namespace CellDotNet
 
 		static public bool operator==(StackTypeDescription x, StackTypeDescription y)
 		{
-			return (x._cliBasicType == y._cliBasicType) &&
+			return (x._cliType == y._cliType) &&
 			       (x._complexType == y._complexType) &&
 			       (x._indirectionLevel == y._indirectionLevel) &&
 			       (x._isManaged == y._isManaged) &&
@@ -453,7 +373,7 @@ namespace CellDotNet
 
 		public override int GetHashCode()
 		{
-			int result = _cliBasicType.GetHashCode();
+			int result = _cliType.GetHashCode();
 			result = 29*result + _isSigned.GetHashCode();
 			result = 29*result + _numericSize.GetHashCode();
 			result = 29*result + _indirectionLevel;
@@ -470,7 +390,6 @@ namespace CellDotNet
 
 		#endregion
 	}
-
 
 	/// <summary>
 	/// CLI types as available in metadata, including classes like 
@@ -492,17 +411,19 @@ namespace CellDotNet
 		NativeInt = 3,
 		Float32 = 4,
 		Float64 = 5,
+		Int32Vector = 6,
+		Float32Vector = 7,
 		/// <summary>
 		/// Any value type.
 		/// </summary>
-		ValueType = 6,
+		ValueType = 8,
 		/// <summary>
 		/// Any object type.
 		/// </summary>
-		ObjectType = 7,
+		ObjectType = 9,
 		/// <summary>
 		/// The "&amp;" type.
 		/// </summary>
-		ManagedPointer = 8,
+		ManagedPointer = 10,
 	}
 }
