@@ -388,7 +388,7 @@ namespace CellDotNet
 
 		class LibraryManager
 		{
-			class LibraryUsage
+			internal class LibraryUsage
 			{
 				private Library _library;
 				private Dictionary<string, LibraryMethod> _usedMethods = new Dictionary<string, LibraryMethod>(StringComparer.Ordinal);
@@ -411,6 +411,11 @@ namespace CellDotNet
 						                            "' has previously been seen, but it was another object.");
 					else
 						_usedMethods[method.Name] = method;
+				}
+
+				public ICollection<LibraryMethod> UsedMethods
+				{
+					get { return _usedMethods.Values; }
 				}
 			}
 
@@ -452,6 +457,11 @@ namespace CellDotNet
 
 					return libs;
 				}
+			}
+
+			public ICollection<LibraryUsage> Usage
+			{
+				get { return _libraries.Values; }
 			}
 		}
 
@@ -647,7 +657,12 @@ namespace CellDotNet
 				code = GetEmittedCode();
 
 			List<ObjectWithAddress> symbols = new List<ObjectWithAddress>(GetAllObjectsForDisassembly());
-			WriteAssemblyToFile(filename, code, symbols);
+			WriteAssemblyToFile(filename, code, symbols, LibMan);
+		}
+
+		public static void WriteAssemblyToFile(string filename, int[] code, List<ObjectWithAddress> symbols)
+		{
+			WriteAssemblyToFile(filename, code, symbols, null);
 		}
 
 		/// <summary>
@@ -657,7 +672,8 @@ namespace CellDotNet
 		/// <param name="filename"></param>
 		/// <param name="code"></param>
 		/// <param name="symbols"></param>
-		public static void WriteAssemblyToFile(string filename, int[] code, List<ObjectWithAddress> symbols)
+		/// <param name="libman">Can be null.</param>
+		private static void WriteAssemblyToFile(string filename, int[] code, List<ObjectWithAddress> symbols, LibraryManager libman)
 		{
 			using (StreamWriter writer = new StreamWriter(filename, false, Encoding.ASCII))
 			{
@@ -764,6 +780,18 @@ main:
 						continue;
 
 					WriteAssemblySymbolDefinition(writer, name, obj.Offset);
+				}
+
+				// Write used library symbols.
+				if (libman != null)
+				{
+					foreach (LibraryManager.LibraryUsage usage in libman.Usage)
+					{
+						foreach (LibraryMethod lm in usage.UsedMethods)
+						{
+							WriteAssemblySymbolDefinition(writer, lm.Name, lm.Offset);
+						}
+					}
 				}
 			}
 		}
