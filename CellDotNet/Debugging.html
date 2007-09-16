@@ -22,7 +22,7 @@
 	</head>
 	<body>
 	
-	<h3>Disassembly</h3>
+	<h3>Disassembly of generated code</h3>
 	<h4>Option 1</h4>
 	<p>Call SpeContext.WriteAssemblyToFile() to dump a CompileContext to a assembler file with instructions on how to compile it.</p>
 	<p>This also defines symbols that spu-gdb will use.</p>
@@ -52,5 +52,11 @@ spu-gcc $1.o -o $1
 			To disassemble the file, calll "spu-objdump -D &lt;unit test method name&gt;".
 		</p>
 		<p><em></em>&nbsp;</p>
+		
+		<h3>Disassembly of elf binary</h3>
+		<p>Handy for using spu_timing.</p>
+		<pre>
+spu-objdump -d my_file.asm | awk '/^ *[0-9a-f]+:/ { printf("  %-10s%-15s # %s%s\n", $6, $7, $8, $9) } /^[0-9a-f]+ / { gsub(/[<>-:]/, "", $2); printf ("\n  .global %2$s\n  .type   %2$s, @function\n  . = 0x%1$s\n%2$s:\n", $1, $2) }'
+		</pre>
 	</body>
 </html>

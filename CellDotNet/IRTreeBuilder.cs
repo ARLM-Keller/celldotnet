@@ -420,20 +420,15 @@ namespace CellDotNet
 			else
 				pushcount = 0;
 
-			object[] attribArray = methodBase.GetCustomAttributes(false);
-
-			SpuOpCodeAttribute opcodeAtt = (SpuOpCodeAttribute) Array.Find(attribArray, 
-				delegate(object obj) { return obj is SpuOpCodeAttribute; });
-			IntrinsicMethodAttribute methodAtt = (IntrinsicMethodAttribute) Array.Find(attribArray,
-				delegate(object obj) { return obj is IntrinsicMethodAttribute; });
-
 			MethodCallInstruction mci;
-			if (methodinfo != null && methodAtt != null)
+			if (methodinfo != null && methodBase.IsDefined(typeof(IntrinsicMethodAttribute), false))
 			{
+				IntrinsicMethodAttribute methodAtt = (IntrinsicMethodAttribute) methodBase.GetCustomAttributes(typeof(IntrinsicMethodAttribute), false)[0];
 				mci = new MethodCallInstruction(methodinfo, methodAtt.Intrinsic);
 			}
-			else if (opcodeAtt != null)
+			else if (methodBase.IsDefined(typeof(IntrinsicMethodAttribute), false))
 			{
+				SpuOpCodeAttribute opcodeAtt = (SpuOpCodeAttribute) methodBase.GetCustomAttributes(typeof (SpuOpCodeAttribute), false)[0];
 				SpuOpCode oc = SpuOpCode.GetOpCode(opcodeAtt.SpuOpCode);
 				mci = new MethodCallInstruction(methodinfo, oc);
 			}
