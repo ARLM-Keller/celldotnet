@@ -4,84 +4,79 @@ namespace CellDotNet
 {
 	internal class IterativLivenessAnalyser
 	{
-		public static void Analyse(List<SpuBasicBlock> basicBlocks, out Set<VirtualRegister>[] liveIn, out Set<VirtualRegister>[] liveOut)
+		public static void Analyse(List<SpuBasicBlock> basicBlocks, out Set<VirtualRegister>[] liveIn,
+		                           out Set<VirtualRegister>[] liveOut)
 		{
 			// NOTE instruktions nummereringen starter fra 0.
 
-			List<List<int>> succ = new List<List<int>>();
-			List<List<int>> pred = new List<List<int>>();
+			Dictionary<int, Set<int>> succ = new Dictionary<int, Set<int>>();
+//			Dictionary<int, Set<int>> pred = new Dictionary<int, Set<int>>();
 
-			Dictionary<SpuBasicBlock, SpuInstruction> jumpTargets = new Dictionary<SpuBasicBlock, SpuInstruction>();
-			Dictionary<SpuBasicBlock, LinkedList<SpuInstruction>> jumpSources =
-				new Dictionary<SpuBasicBlock, LinkedList<SpuInstruction>>();
+			Dictionary<SpuBasicBlock, SpuInstruction> blocks = new Dictionary<SpuBasicBlock, SpuInstruction>();
+			Dictionary<SpuBasicBlock, List<SpuInstruction>> jumpSources = new Dictionary<SpuBasicBlock, List<SpuInstruction>>();
 
-			Dictionary<SpuInstruction, int> spuinstToInt = new Dictionary<SpuInstruction, int>();
-			List<SpuInstruction> intToSpuinst = new List<SpuInstruction>();
+			List<SpuInstruction> instlist = new List<SpuInstruction>();
 
 			foreach (SpuBasicBlock bb in basicBlocks)
-				jumpSources[bb] = new LinkedList<SpuInstruction>();
+				jumpSources[bb] = new List<SpuInstruction>();
 
+			// Build predecessor and successor sets without taking jumps into account.
 			SpuInstruction predecessor = null;
-
 			int instNr = 0;
-
 			foreach (SpuBasicBlock bb in basicBlocks)
 			{
-				SpuInstruction inst = bb.Head;
+				// This could cause trouble with branches to empty blocks.
+				if (bb.Head == null)
+					continue;
+				blocks.Add(bb, bb.Head);
 
-				if (inst != null)
+				foreach (SpuInstruction inst in bb.Head.GetEnumerable())
 				{
-					jumpTargets.Add(bb, inst);
-				}
-				while (inst != null)
-				{
-					succ.Add(new List<int>());
-					pred.Add(new List<int>());
+					inst.Index = instNr;
+					instlist.Add(inst);
 
-					spuinstToInt.Add(inst, instNr);
-					intToSpuinst.Add(inst);
+					succ.Add(inst.Index, new Set<int>());
+//					pred.Add(inst.Index, new Set<int>());
 
+					// Predecessor is not set to null at the beginning of each block.
 					if (predecessor != null)
 					{
 						succ[instNr - 1].Add(instNr);
-						pred[instNr].Add(instNr - 1);
+//						pred[instNr].Add(instNr - 1);
 					}
 					if (inst.JumpTarget != null)
-						jumpSources[inst.JumpTarget].AddLast(inst);
+						jumpSources[inst.JumpTarget].Add(inst);
 
 					predecessor = inst;
-					inst = inst.Next;
 					instNr++;
 				}
 			}
 
-			int numberOfInst = instNr;
+			int numberOfInst = instlist.Count;
 
-			liveIn = new Set<VirtualRegister>[numberOfInst];
-			liveOut = new Set<VirtualRegister>[numberOfInst];
-
-			// Patch predecessore og successor with jump info
-			foreach (KeyValuePair<SpuBasicBlock, SpuInstruction> pair in jumpTargets)
+			// Add jumps to predecessor og successor info.
+			foreach (KeyValuePair<SpuBasicBlock, SpuInstruction> pair in blocks)
 			{
 				SpuBasicBlock bb = pair.Key;
-				SpuInstruction i = pair.Value;
+				SpuInstruction firstinst = pair.Value;
 
-				int iNr = spuinstToInt[i];
-				foreach (SpuInstruction s in jumpSources[bb])
+				foreach (SpuInstruction js in jumpSources[bb])
 				{
-					int sNr = spuinstToInt[s];
-					succ[sNr].Add(iNr);
-					pred[iNr].Add(sNr);
+					succ[js.Index].Add(firstinst.Index);
+//					pred[firstinst.Index].Add(js.Index);
 				}
 			}
 
+
+			liveIn = new Set<VirtualRegister>[numberOfInst];
+			liveOut = new Set<VirtualRegister>[numberOfInst];
 			for (int i = 0; i < numberOfInst; i++)
 			{
 				liveIn[i] = new Set<VirtualRegister>();
 				liveOut[i] = new Set<VirtualRegister>();
 			}
 
-			// Iterates until nochanges.
+			// Iterates until no changes.
 			bool reIterate;
 			do
 			{
@@ -89,35 +84,38 @@ namespace CellDotNet
 
 				for (int i = numberOfInst - 1; i >= 0; i--)
 				{
-					if(i == 53)
+					if (i == 53)
 						System.Console.WriteLine();
 
 					Set<VirtualRegister> oldLiveIn = liveIn[i];
+					Set<VirtualRegister> newlivein = new Set<VirtualRegister>();
+					liveIn[i] = newlivein;
 
 					Set<VirtualRegister> oldLiveOut = liveOut[i];
+					Set<VirtualRegister> newliveout = new Set<VirtualRegister>();
+					liveOut[i] = newliveout;
 
-					liveOut[i] = new Set<VirtualRegister>();
+					SpuInstruction inst = instlist[i];
+
+					// New live in.
+					bool removeDef = false;
+					if (inst.Def != null && !inst.Use.Contains(inst.Def))
+						removeDef = true;
+					newlivein.AddAll(inst.Use);
+					newlivein.AddAll(oldLiveOut);
+					if (removeDef)
+						newlivein.Remove(inst.Def);
+
 					foreach (int s in succ[i])
-						liveOut[i].AddAll(liveIn[s]);
+						newliveout.AddAll(liveIn[s]);
 
-					liveIn[i] = new Set<VirtualRegister>();
-					liveIn[i].AddAll(liveOut[i]);
-
-					SpuInstruction inst = intToSpuinst[i];
-
-					if (inst.Def != null)
-						liveIn[i].Remove(inst.Def);
-
-					// Treate callersaves register as if they vere defined by the call instruction
+					// Treat caller saves register as if they were defined by the call instruction.
 					if (inst.IsCall())
-						foreach (VirtualRegister register in HardwareRegister.CallerSavesVirtualRegisters)
-							liveIn[i].Add(register);
-
-					foreach (VirtualRegister register in inst.Use)
-						liveIn[i].Add(register);
+						foreach (VirtualRegister register in HardwareRegister.CallerSavesRegisters)
+							newlivein.Add(register);
 
 					if (!reIterate)
-						reIterate |= !oldLiveIn.Equals(liveIn[i]) || !oldLiveOut.Equals(liveOut[i]);
+						reIterate = !oldLiveIn.Equals(newlivein) || !oldLiveOut.Equals(newliveout);
 				}
 			} while (reIterate);
 		}

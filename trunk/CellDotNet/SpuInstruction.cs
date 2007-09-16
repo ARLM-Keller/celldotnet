@@ -12,6 +12,35 @@ namespace CellDotNet
     {
 		private static int SpuInstructionCount = 0;
 
+    	private int _constant;
+
+    	private VirtualRegister _ra;
+
+    	private VirtualRegister _rb;
+
+    	private VirtualRegister _rc;
+
+    	private VirtualRegister _rt;
+
+    	private SpuInstruction _next;
+
+    	private SpuInstruction _prev;
+
+    	private object _jumpTargetOrObjectWithAddress;
+
+    	private SpuOpCode _opcode;
+
+    	private int _index;
+
+		/// <summary>
+		/// A number that can be used at will by transformations.
+		/// </summary>
+    	public int Index
+    	{
+    		get { return _index; }
+    		set { _index = value; }
+    	}
+
     	public int SpuInstructionNumber
     	{
     		get { return _spuInstructionNumber; }
@@ -31,41 +60,31 @@ namespace CellDotNet
 			return "#" + _spuInstructionNumber;
 		}
 
-        private SpuOpCode _opcode;
-
-        public SpuOpCode OpCode
+    	public SpuOpCode OpCode
         {
             get { return _opcode; }
             set { _opcode = value; }
         }
 
-        private int _constant;
-
-        public int Constant
+    	public int Constant
         {
             get { return _constant; }
             set { _constant = value; }
         }
 
-        private VirtualRegister _ra;
-
-        public VirtualRegister Ra
+    	public VirtualRegister Ra
         {
             get { return _ra; }
             set { _ra = value; }
         }
 
-        private VirtualRegister _rb;
-
-        public VirtualRegister Rb
+    	public VirtualRegister Rb
         {
             get { return _rb; }
             set { _rb = value; }
         }
 
-        private VirtualRegister _rc;
-
-        public VirtualRegister Rc
+    	public VirtualRegister Rc
         {
             get { return _rc; }
             set { _rc = value; }
@@ -85,9 +104,7 @@ namespace CellDotNet
             }
         }
 
-        private VirtualRegister _rt;
-
-        public VirtualRegister Rt
+    	public VirtualRegister Rt
         {
 			//Selvom rt ikke bruges til at returnere værdier, så bruges det stadig af f.eks. stqd
 //			get { return (OpCode.NoRegisterWrite)? null : _rt; }
@@ -95,15 +112,13 @@ namespace CellDotNet
 			set { _rt = value; }
         }
 
-    	private SpuInstruction _next;
     	public SpuInstruction Next
     	{
 			get { return _next; }
 			set { _next = value; }
     	}
 
-		private SpuInstruction _prev;
-		public SpuInstruction Prev
+    	public SpuInstruction Prev
 		{
 			get { return _prev; }
 			set { _prev = value;}
@@ -128,7 +143,7 @@ namespace CellDotNet
     		get
     		{
 //				if (_opcode == SpuOpCode.brsl)
-//					return new List<VirtualRegister>(HardwareRegister.CallerSavesVirtualRegisters);
+//					return new List<VirtualRegister>(HardwareRegister.CallerSavesRegisters);
 
     			List<VirtualRegister> use = new List<VirtualRegister>();
 				if (Ra != null) use.Add(_ra);
@@ -139,8 +154,7 @@ namespace CellDotNet
     		}
     	}
 
-    	private object _jumpTargetOrObjectWithAddress;
-		/// <summary>
+    	/// <summary>
 		/// A local branch target. This cannot be set while <see cref="ObjectWithAddress"/> is set.
 		/// </summary>
 		public SpuBasicBlock JumpTarget

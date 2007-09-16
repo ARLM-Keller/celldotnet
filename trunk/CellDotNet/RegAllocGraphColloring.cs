@@ -201,7 +201,7 @@ namespace CellDotNet
 
 				callerSavesRegister = new BitVector();
 
-				foreach (VirtualRegister register in HardwareRegister.CallerSavesVirtualRegisters)
+				foreach (VirtualRegister register in HardwareRegister.CallerSavesRegisters)
 					callerSavesRegister.Add((int)regToInt[register]);
 
 				// END NOTE.
@@ -761,7 +761,7 @@ namespace CellDotNet
 					//						liveIn[inst].AddAll(inst.Use);
 
 					if(inst.IsCall())
-						foreach (VirtualRegister register in HardwareRegister.CallerSavesVirtualRegisters)
+						foreach (VirtualRegister register in HardwareRegister.CallerSavesRegisters)
 							liveIn[i].Remove((int) regToInt[register]);
 
 					foreach (VirtualRegister register in inst.Use)
