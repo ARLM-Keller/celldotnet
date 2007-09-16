@@ -657,7 +657,7 @@ namespace CellDotNet
 				case IRCode.Conv_I4:
 					{
 						StackTypeDescription srctype = lefttype;
-						if (srctype.CliBasicType == CliBasicType.NativeInt)
+						if (srctype.CliType == CliType.NativeInt)
 							return vrleft;
 
 						throw new NotSupportedException();
@@ -1157,6 +1157,8 @@ namespace CellDotNet
 
 			public static VirtualRegister GenerateIntrinsicMethod(SpuInstructionWriter writer, SpuIntrinsicMethod method, List<VirtualRegister> childregs)
 			{
+				//TODO make asertion for the number of element ind childregs, compare to the required number of regs.
+
 				switch (method)
 				{
 					case SpuIntrinsicMethod.Runtime_Stop:
@@ -1173,6 +1175,53 @@ namespace CellDotNet
 					case SpuIntrinsicMethod.MainStorageArea_get_EffectiveAddress:
 						// The address is the only component.
 						return childregs[0];
+					case SpuIntrinsicMethod.VectorType_getE1:
+						return writer.WriteRotqbyi(childregs[0], 0*4);
+					case SpuIntrinsicMethod.VectorType_getE2:
+						return writer.WriteRotqbyi(childregs[0], 1*4);
+					case SpuIntrinsicMethod.VectorType_getE3:
+						return writer.WriteRotqbyi(childregs[0], 2*4);
+					case SpuIntrinsicMethod.VectorType_getE4:
+						return writer.WriteRotqbyi(childregs[0], 3*4);
+					case SpuIntrinsicMethod.VectorType_putE1:
+						{
+							VirtualRegister index = writer.WriteIl(0);
+							VirtualRegister cwdreg = writer.WriteCwd(index, 0);
+							return writer.WriteShufb(childregs[0], childregs[1], cwdreg);
+						}
+					case SpuIntrinsicMethod.VectorType_putE2:
+						{
+							VirtualRegister index = writer.WriteIl(1*4);
+							VirtualRegister cwdreg = writer.WriteCwd(index, 0);
+							return writer.WriteShufb(childregs[0], childregs[1], cwdreg);
+						}
+					case SpuIntrinsicMethod.VectorType_putE3:
+						{
+							VirtualRegister index = writer.WriteIl(2*4);
+							VirtualRegister cwdreg = writer.WriteCwd(index, 0);
+							return writer.WriteShufb(childregs[0], childregs[1], cwdreg);
+						}
+					case SpuIntrinsicMethod.VectorType_putE4:
+						{
+							VirtualRegister index = writer.WriteIl(3*4);
+							VirtualRegister cwdreg = writer.WriteCwd(index, 0);
+							return writer.WriteShufb(childregs[0], childregs[1], cwdreg);
+						}
+					case SpuIntrinsicMethod.VectorType_Equals:
+						{
+							VirtualRegister r1 = writer.WriteCeq(childregs[0], childregs[1]);
+							VirtualRegister r2 = writer.WriteGb(r1);
+							VirtualRegister r3 = writer.WriteCeqi(r2, 0x0f);
+							return writer.WriteAndi(r3, 1);
+						}
+					case SpuIntrinsicMethod.VectorType_NotEquals:
+						{
+							VirtualRegister r1 = writer.WriteCeq(childregs[0], childregs[1]);
+							VirtualRegister r2 = writer.WriteGb(r1);
+							VirtualRegister r3 = writer.WriteCeqi(r2, 0x0f);
+							VirtualRegister r4 = writer.WriteAndi(r3, 1);
+							return writer.WriteXori(r4, 0x01);
+						}
 					default:
 						throw new ArgumentException();
 				}

@@ -426,7 +426,7 @@ namespace CellDotNet
 				IntrinsicMethodAttribute methodAtt = (IntrinsicMethodAttribute) methodBase.GetCustomAttributes(typeof(IntrinsicMethodAttribute), false)[0];
 				mci = new MethodCallInstruction(methodinfo, methodAtt.Intrinsic);
 			}
-			else if (methodBase.IsDefined(typeof(IntrinsicMethodAttribute), false))
+			else if (methodBase.IsDefined(typeof(SpuOpCodeAttribute), false))
 			{
 				SpuOpCodeAttribute opcodeAtt = (SpuOpCodeAttribute) methodBase.GetCustomAttributes(typeof (SpuOpCodeAttribute), false)[0];
 				SpuOpCode oc = SpuOpCode.GetOpCode(opcodeAtt.SpuOpCode);

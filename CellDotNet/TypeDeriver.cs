@@ -480,6 +480,10 @@ namespace CellDotNet
 			{
 				std = s_metadataCilTypes[realtype];
 			}
+			else if(realtype == typeof(Int32Vector))
+				std = StackTypeDescription.Int32Vector;
+			else if(realtype == typeof(Float32Vector))
+				std = StackTypeDescription.Float32Vector;
 			else if (realtype == typeof(void))
 				std = StackTypeDescription.None;
 			else if (realtype.IsArray)

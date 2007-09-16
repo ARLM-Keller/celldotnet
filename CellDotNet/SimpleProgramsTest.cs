@@ -115,13 +115,13 @@ namespace CellDotNet
 
 			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
 
-			new TreeDrawer().DrawMethods(cc);
+//			new TreeDrawer().DrawMethods(cc);
 
-			Disassembler.DisassembleUnconditional(cc, Console.Out);
+//			Disassembler.DisassembleUnconditional(cc, Console.Out);
 
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			Disassembler.DisassembleToConsole(cc);
+//			Disassembler.DisassembleToConsole(cc);
 
 			cc.WriteAssemblyToFile(Utilities.GetUnitTestName() + "_asm.s", arg);
 			

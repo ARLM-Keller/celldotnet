@@ -843,6 +843,13 @@ main:
 					buf = BitConverter.GetBytes((float)val);
 				else if (val is double)
 					buf = BitConverter.GetBytes((double)val);
+				else if (val is Int32Vector)
+				{
+					// TODO Ought to pin buf.
+					buf = new byte[16];
+					IntPtr ptr = Marshal.UnsafeAddrOfPinnedArrayElement(buf, 0);
+					Marshal.StructureToPtr(val, ptr, false);
+				}
 				else if (val is MainStorageArea)
 					buf = BitConverter.GetBytes(((MainStorageArea)val).EffectiveAddress);
 				else

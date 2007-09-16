@@ -142,6 +142,8 @@
     <Compile Include="TypeDescription.cs" />
     <Compile Include="UnitTest.cs" />
     <Compile Include="Utilities.cs" />
+    <Compile Include="VectorTypes.cs" />
+    <Compile Include="VectorTypeTest.cs" />
     <Compile Include="VirtualRegister.cs" />
     <Compile Include="Set.cs" />
     <Compile Include="TreeInstruction.cs" />

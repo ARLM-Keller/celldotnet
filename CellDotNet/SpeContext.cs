@@ -237,6 +237,10 @@ namespace CellDotNet
 					break;
 				case CliType.Float32:
 					return DmaGetValue<float>(lsAddress);
+				case CliType.Float32Vector:
+					return DmaGetValue<Float32Vector>(lsAddress);
+				case CliType.Int32Vector:
+					return DmaGetValue<Int32Vector>(lsAddress);
 				case CliType.Float64:
 				case CliType.ValueType:
 				case CliType.ObjectType:
@@ -274,7 +278,14 @@ namespace CellDotNet
 					val = *((float*)ptr) as T?;
 					return val.Value;
 				default:
-					throw new NotSupportedException("Type not handled.");
+					if (typeof(T).Equals(typeof(Int32Vector)) || typeof(T).Equals(typeof(Float32Vector)))
+					{
+						return (T) Marshal.PtrToStructure(ptr, typeof(T));
+					}
+					else
+					{
+						throw new NotSupportedException("Type not handled.");
+					}
 			}
 		}
 
