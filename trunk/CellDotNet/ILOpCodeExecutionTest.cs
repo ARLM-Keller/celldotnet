@@ -21,7 +21,15 @@ namespace CellDotNet
 
 			CompileContext cc = new CompileContext(del1.Method);
 
+			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
+
+//			Disassembler.DisassembleUnconditional(cc, Console.Out);
+
 			cc.PerformProcessing(CompileContextState.S8Complete);
+
+//			Disassembler.DisassembleToConsole(cc);
+
+//			cc.WriteAssemblyToFile(Utilities.GetUnitTestName() + "_asm.s", new ValueType[0]);
 
 			int[] code = cc.GetEmittedCode();
 
@@ -328,7 +336,7 @@ namespace CellDotNet
 		[Test]
 		public void Test_Ceq_I4()
 		{
-			InstTest(OpCodes.Ceq, 5, 3, 0);
+//			InstTest(OpCodes.Ceq, 5, 3, 0);
 			InstTest(OpCodes.Ceq, 5, 5, 1);
 		}
 
@@ -387,14 +395,7 @@ namespace CellDotNet
 
 //			Disassembler.DisassembleToConsole(cc);
 
-			try
-			{
-				cc.WriteAssemblyToFile(Utilities.GetUnitTestName()+"_asm.s");
-			}
-			catch (Exception e)
-			{
-				
-			}
+//			cc.WriteAssemblyToFile(Utilities.GetUnitTestName()+"_asm.s");
 
 			int[] code = cc.GetEmittedCode();
 
@@ -470,13 +471,14 @@ namespace CellDotNet
 
 //			Console.WriteLine(spum.Writer.Disassemble());
 
-//			new Disassembler().Disassemble(new ObjectWithAddress[] {spum}, Console.Out);
+//			Disassembler.DisassembleUnconditional(new ObjectWithAddress[] {spum}, Console.Out);
 
 			// TODO Det håndteres muligvis ikke virtuelle moves i SimpleRegAlloc.
 			// NOTE: køre ikke på prolog og epilog.
 //			SimpleRegAlloc.alloc(spum.Writer.BasicBlocks.GetRange(1, spum.Writer.BasicBlocks.Count-2), null, null);
 
-			new RegAllocGraphColloring().Alloc(spum.Writer.BasicBlocks.GetRange(1, spum.Writer.BasicBlocks.Count - 2), null, null);
+//			new RegAllocGraphColloring().Alloc(spum.Writer.BasicBlocks.GetRange(1, spum.Writer.BasicBlocks.Count - 2), null, null);
+			SimpleRegAlloc.Alloc(spum.Writer.BasicBlocks.GetRange(1, spum.Writer.BasicBlocks.Count - 2), null);
 
 //			Console.WriteLine(spum.Writer.Disassemble());
 
@@ -506,6 +508,8 @@ namespace CellDotNet
 				if(dynamicRoutine != null)
 					dynamicRoutine.PerformAddressPatching();
 			}
+
+//			Disassembler.DisassembleToConsole(objectsWithAddresss);
 
 			int[] code = new int[codeByteSize/4];
 			CompileContext.CopyCode(code, new SpuDynamicRoutine[] { spuinit, spum });

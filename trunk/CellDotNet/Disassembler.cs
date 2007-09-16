@@ -40,7 +40,11 @@ namespace CellDotNet
 		public static void DisassembleUnconditional(CompileContext compileContext, TextWriter writer)
 		{
 			IEnumerable<ObjectWithAddress> objects = compileContext.GetAllObjectsForDisassembly();
+			DisassembleUnconditional(objects, writer);
+		}
 
+		public static void DisassembleUnconditional(IEnumerable<ObjectWithAddress> objects, TextWriter writer)
+		{
 			foreach (ObjectWithAddress o in objects)
 			{
 				writer.WriteLine();
@@ -51,6 +55,7 @@ namespace CellDotNet
 
 				DisassembleInstructions(r.GetInstructions(), 0, writer);
 			}
+			writer.WriteLine();
 		}
 
 		public void Disassemble(IEnumerable<ObjectWithAddress> objects, TextWriter writer)

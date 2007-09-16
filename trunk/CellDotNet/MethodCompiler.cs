@@ -308,7 +308,7 @@ namespace CellDotNet
 			_instructions = new SpuInstructionWriter();
 
 			// Move calle-saves regs to virtual regs.
-			int calleeSavesRegisterCount = HardwareRegister.CalleeSavesVirtualRegisters.Length;
+			int calleeSavesRegisterCount = HardwareRegister.CalleeSavesVirtualRegisters.Count;
 			List<VirtualRegister> calleTemps = new List<VirtualRegister>(calleeSavesRegisterCount);
 			if (!_naked)
 			{
@@ -429,10 +429,11 @@ namespace CellDotNet
 			
 			AssertState(MethodCompileState.S5RegisterAllocationDone - 1);
 
-			RegAllocGraphColloring regalloc = new RegAllocGraphColloring();
-			regalloc.Alloc(SpuBasicBlocks, GetNewSpillQuadOffset, registerWeight);
+//			RegAllocGraphColloring regalloc = new RegAllocGraphColloring();
+//			regalloc.Alloc(SpuBasicBlocks, GetNewSpillQuadOffset, registerWeight);
 
-//			SimpleRegAlloc regalloc = new SimpleRegAlloc();
+			SimpleRegAlloc.Alloc(SpuBasicBlocks, GetNewSpillQuadOffset);
+
 //			List<SpuInstruction> asm = _instructions.GetAsList();
 //			regalloc.alloc(asm, 16);
 

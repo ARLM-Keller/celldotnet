@@ -123,7 +123,7 @@ namespace CellDotNet
 
 			Disassembler.DisassembleToConsole(cc);
 
-			cc.WriteAssemblyToFile(Utilities.GetUnitTestName() + "_asm.s");
+			cc.WriteAssemblyToFile(Utilities.GetUnitTestName() + "_asm.s", arg);
 			
 			if (!SpeContext.HasSpeHardware)
 				return;

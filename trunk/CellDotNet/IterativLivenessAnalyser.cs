@@ -89,6 +89,9 @@ namespace CellDotNet
 
 				for (int i = numberOfInst - 1; i >= 0; i--)
 				{
+					if(i == 53)
+						System.Console.WriteLine();
+
 					Set<VirtualRegister> oldLiveIn = liveIn[i];
 
 					Set<VirtualRegister> oldLiveOut = liveOut[i];
@@ -105,12 +108,13 @@ namespace CellDotNet
 					if (inst.Def != null)
 						liveIn[i].Remove(inst.Def);
 
-					foreach (VirtualRegister register in inst.Use)
-						liveIn[i].Add(register);
-
+					// Treate callersaves register as if they vere defined by the call instruction
 					if (inst.IsCall())
 						foreach (VirtualRegister register in HardwareRegister.CallerSavesVirtualRegisters)
 							liveIn[i].Add(register);
+
+					foreach (VirtualRegister register in inst.Use)
+						liveIn[i].Add(register);
 
 					if (!reIterate)
 						reIterate |= !oldLiveIn.Equals(liveIn[i]) || !oldLiveOut.Equals(liveOut[i]);

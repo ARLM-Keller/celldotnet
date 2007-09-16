@@ -40,11 +40,13 @@ namespace CellDotNet
 
 			new SimpleProgramsTest().TestRecursiveSummation_Int();
 
+//			new ILOpCodeExecutionTest().Test_Ceq_I4();
+
 //			new SpeContextTest().TestOutOfMemory();
 
 //			new SimpleProgramsTest().TestRecursiveSummation_Int();
 
-			Console.WriteLine("Running RunKlaus done.");
+				Console.WriteLine("Running RunKlaus done.");
 		}
 
 		private static void GenericExperiment()

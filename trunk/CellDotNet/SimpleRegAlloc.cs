@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace CellDotNet
 {
@@ -9,7 +10,7 @@ namespace CellDotNet
         // returnere true hvis der forekommer spill(indtilvidre håndteres spill ikke!)
         // regnum, er altallet af registre som register allokatoren ikke bruger.
 
-		public static bool alloc(List<SpuBasicBlock> spuBasicBlocks, RegAllocGraphColloring.NewSpillOffsetDelegate inputNewSpillOffset, Dictionary<VirtualRegister, int> inputRegisterWeight)
+		public static bool Alloc(List<SpuBasicBlock> spuBasicBlocks, RegAllocGraphColloring.NewSpillOffsetDelegate inputNewSpillOffset)
         {
 			Set<VirtualRegister>[] liveIn;
 			Set<VirtualRegister>[] liveOut;
@@ -20,10 +21,16 @@ namespace CellDotNet
 
 			List<LiveInterval> liveIntervals = new List<LiveInterval>();
 
-			foreach (KeyValuePair<LiveInterval, VirtualRegister> pair in liveToRegDict)
+			SortedLinkedList<SortedLinkedList<LiveInterval>> hardwareIntervals = new SortedLinkedList<SortedLinkedList<LiveInterval>>(new ListComparator());
+
+
+			foreach (KeyValuePair<VirtualRegister, LiveInterval> pair in regToLiveDict)
 			{
-				regToLiveDict.Add(pair.Value, pair.Key);
-				liveIntervals.Add(pair.Key);
+				if (!pair.Key.IsRegisterSet)
+				{
+					liveToRegDict.Add(pair.Value, pair.Key);
+					liveIntervals.Add(pair.Value);
+				}
 			}
 
 			LiveInterval.sortByStart(liveIntervals);
@@ -40,18 +47,86 @@ namespace CellDotNet
 				}
         	}
 
-            SortedLinkedList<LiveInterval> activeIntervals =
-                new SortedLinkedList<LiveInterval>(new LiveInterval.ComparByEnd());
-			Stack<CellRegister> freeRegisters = new Stack<CellRegister>();
+			Set<VirtualRegister> spilledRegister = new Set<VirtualRegister>();
 
-			foreach (CellRegister register in HardwareRegister.getCalleeSavesCellRegisters())
+
+			Dictionary<VirtualRegister, SortedLinkedList<LiveInterval>> hardRegToList = new Dictionary<VirtualRegister, SortedLinkedList<LiveInterval>>();
+
+			Dictionary<SortedLinkedList<LiveInterval>, VirtualRegister> ListToHardReg = new Dictionary<SortedLinkedList<LiveInterval>, VirtualRegister>();
+
+			SortedLinkedList<LiveInterval> overlapingHardReg = new SortedLinkedList<LiveInterval>(new LiveInterval.ComparByEnd());
+
+			Dictionary<VirtualRegister, LiveInterval> currentIntervals = new Dictionary<VirtualRegister, LiveInterval>();
+
+			foreach (VirtualRegister register in HardwareRegister.CallerSavesVirtualRegisters)
 			{
-				freeRegisters.Push(register);
+				hardRegToList[register] = new SortedLinkedList<LiveInterval>(new LiveInterval.ComparByStart());
+				currentIntervals[register] = new LiveInterval();
+				currentIntervals[register].Start = -1;
+				currentIntervals[register].End = -1;
+				currentIntervals[register].r = register;
 			}
-			foreach (CellRegister register in HardwareRegister.getCallerSavesCellRegisters())
-        	{
-        		freeRegisters.Push(register);	
-        	}
+
+			foreach (VirtualRegister register in HardwareRegister.CalleeSavesVirtualRegisters)
+			{
+				hardRegToList[register] = new SortedLinkedList<LiveInterval>(new LiveInterval.ComparByStart());
+				currentIntervals[register] = new LiveInterval();
+				currentIntervals[register].Start = -1;
+				currentIntervals[register].End = -1;
+				currentIntervals[register].r = register;
+			}
+
+			
+			// Genarate hardware register "intervals"
+			for(int i = 0; i < code.Count; i++)
+			{
+				foreach (VirtualRegister register in code[i].Use)
+				{
+					if (HardwareRegister.CalleeSavesVirtualRegisters.Contains(register) ||
+					    HardwareRegister.CallerSavesVirtualRegisters.Contains(register))
+					{
+						currentIntervals[register].End = i;
+					}
+				}
+
+				if (code[i].Def != null && (HardwareRegister.CalleeSavesVirtualRegisters.Contains(code[i].Def) ||
+						HardwareRegister.CallerSavesVirtualRegisters.Contains(code[i].Def)))
+				{
+					hardRegToList[code[i].Def].Add(currentIntervals[code[i].Def]);
+					currentIntervals[code[i].Def] = new LiveInterval();
+					currentIntervals[code[i].Def].Start = i;
+					currentIntervals[code[i].Def].End = i;
+					currentIntervals[code[i].Def].r = code[i].Def;
+				}
+
+//				if(in)
+			}
+
+			foreach (KeyValuePair<VirtualRegister, LiveInterval> pair in currentIntervals)
+				hardRegToList[pair.Key].Add(pair.Value);
+
+
+			foreach (KeyValuePair<VirtualRegister, SortedLinkedList<LiveInterval>> pair in hardRegToList)
+			{
+				hardwareIntervals.Add(pair.Value);
+				ListToHardReg.Add(pair.Value, pair.Key);
+			}
+
+
+			SortedLinkedList<LiveInterval> activeIntervals =
+                new SortedLinkedList<LiveInterval>(new LiveInterval.ComparByEnd());
+
+
+//			Stack<CellRegister> freeRegisters = new Stack<CellRegister>();
+
+//			foreach (CellRegister register in HardwareRegister.getCalleeSavesCellRegisters())
+//			{
+//				freeRegisters.Push(register);
+//			}
+//			foreach (CellRegister register in HardwareRegister.getCallerSavesCellRegisters())
+//        	{
+//        		freeRegisters.Push(register);	
+//        	}
 
 			bool isSpill = false;
 
@@ -59,46 +134,242 @@ namespace CellDotNet
 			Set<VirtualRegister> hardwareRegisters = new Set<VirtualRegister>();
 			hardwareRegisters.AddAll(HardwareRegister.VirtualHardwareRegisters);
 
+// 				new SimpleRegAlloc().hardwareIntervalsToString(hardwareIntervals)
+
             foreach (LiveInterval interval in liveIntervals)
             {
                 // ExpireOldIntervals
 				while (activeIntervals.Count > 0 && activeIntervals.Head.End < interval.Start)
                 {
                     LiveInterval li = activeIntervals.RemoveHead();
-                    freeRegisters.Push(li.r.Register);
+
+                	SortedLinkedList<LiveInterval> list;
+
+					if(hardRegToList.TryGetValue(HardwareRegister.GetHardwareRegister((int) li.r.Register), out list))
+						hardwareIntervals.Add(list);
                 }
 
-				if (freeRegisters.Count == 0)
+				while (hardwareIntervals.Head != null && hardwareIntervals.Head.Head != null &&
+					hardwareIntervals.Head.Head.Start <= interval.Start)
 				{
-					//TODO der skal laves plads på stakken.
-					throw new Exception("Spill is not implemented.");
+					SortedLinkedList<LiveInterval> list = hardwareIntervals.RemoveHead();
+					LiveInterval i = list.RemoveHead();
 
-					/*
-						// SpillAtInterval
-						isSpill = true;
-						LiveInterval spill = activeIntervals.Tail;
-						if (spill.end > interval.end)
-						{
-							interval.r.Location = spill.r.Location;
-							spill.r.Location = new StackLocation(); // Bør implementeres som en factory på "mothoden"
-							activeIntervals.RemoveTail();
-							activeIntervals.Add(interval);
-						}
-						else
-						{
-							interval.r.Location = new StackLocation(); // Bør implementeres som en factory på "mothoden"
-						}
-					 */
+					while(i != null && i.End < interval.Start)
+						i = list.RemoveHead();
+
+					if(i != null)
+						overlapingHardReg.Add(i);
+					else
+						hardwareIntervals.Add(list);
 				}
-				else
+
+				while (overlapingHardReg.Head != null && overlapingHardReg.Head.End < interval.Start)
 				{
-					if (!hardwareRegisters.Contains(interval.r))
+					LiveInterval i = overlapingHardReg.RemoveHead();
+
+					SortedLinkedList<LiveInterval> list = hardRegToList[i.r];
+
+					while(list.Head != null && list.Head.End < interval.Start)
+						list.RemoveHead();
+
+					if(list.Head != null && list.Head.Start <= interval.Start)
+						overlapingHardReg.Add(list.Head);
+					else
+						hardwareIntervals.Add(list);
+				}
+
+
+
+
+//				while (hardwareIntervals.Head != null && hardwareIntervals.Head.Head != null &&
+//					hardwareIntervals.Head.Head.End <= interval.Start)
+//				{
+//					SortedLinkedList<LiveInterval> list = hardwareIntervals.RemoveHead();
+//					list.RemoveHead();
+//					hardwareIntervals.Add(list);
+//				}
+
+//				foreach (SortedLinkedList<LiveInterval> list in hardwareIntervals)
+//					while (list.Head != null && list.Head.End < interval.Start)
+//					{
+//						hardwareIntervals.Remove(list);
+//						list.RemoveHead();
+//						hardwareIntervals.Add(list);
+//					}
+
+            	bool toBeSpilled = true;
+
+				if (hardwareIntervals.Count != 0)
+				{
+					foreach (SortedLinkedList<LiveInterval> list in hardwareIntervals)
 					{
-						interval.r.Register = freeRegisters.Pop();
+						if (list.Head == null || list.Head.Start > interval.End)
+						{
+							interval.r.Register = ListToHardReg[list].Register;
+							hardwareIntervals.Remove(list);
+							toBeSpilled = false;
+							break;
+						}
+					}
+				}
+            	if (toBeSpilled)
+				{
+					// SpillAtInterval
+					isSpill = true;
+					LiveInterval spill = activeIntervals.Tail;
+					if (spill != null && spill.End > interval.End)
+					{
+						interval.r.Location = spill.r.Location;
+						spilledRegister.Add(spill.r);
+						activeIntervals.RemoveTail();
 						activeIntervals.Add(interval);
+					}
+					else
+					{
+						spilledRegister.Add(interval.r);
 					}
 				}
             }
+
+			if (spilledRegister.Count > 0 && inputNewSpillOffset == null)
+				throw new Exception("SimpleRegAlloc needs to spill, but no stack offset were given.");
+
+			Dictionary<VirtualRegister, int> spillOffset = new Dictionary<VirtualRegister, int>();
+			foreach (VirtualRegister register in spilledRegister)
+				spillOffset.Add(register, inputNewSpillOffset());
+
+			foreach (SpuBasicBlock block in spuBasicBlocks)
+			{
+				SpuInstruction inst = block.Head;
+				SpuInstruction prevInst = null;
+
+				while (inst != null)
+				{
+					if (inst.Def != null && spilledRegister.Contains(inst.Def))
+					{
+						VirtualRegister vt = HardwareRegister.GetVirtualHardwareRegister((CellRegister) 79);
+
+						inst.Rt = vt;
+
+						SpuInstruction stor = new SpuInstruction(SpuOpCode.stqd);
+
+						stor.Rt = vt;
+						stor.Constant = spillOffset[inst.Def];
+						stor.Ra = HardwareRegister.SP;
+
+						SpuInstruction next = inst.Next;
+						inst.Next = stor;
+						stor.Prev = inst;
+						stor.Next = next;
+						if (next != null)
+							next.Prev = stor;
+					}
+					if (inst.Ra != null && spilledRegister.Contains(inst.Ra))
+					{
+						VirtualRegister vt = HardwareRegister.GetVirtualHardwareRegister((CellRegister)78);
+
+						inst.Ra = vt;
+
+						SpuInstruction load = new SpuInstruction(SpuOpCode.lqd);
+
+						load.Rt = vt;
+						load.Constant = spillOffset[inst.Ra];
+						load.Ra = HardwareRegister.SP;
+
+						if (prevInst != null)
+						{
+							prevInst.Next = load;
+							load.Prev = prevInst;
+						}
+						else
+						{
+							block.Head = load;
+						}
+
+						load.Next = inst;
+						inst.Prev = load;
+					}
+					if (inst.Rb!= null && spilledRegister.Contains(inst.Rb))
+					{
+						VirtualRegister vt = HardwareRegister.GetVirtualHardwareRegister((CellRegister)77);
+
+						inst.Rb = vt;
+
+						SpuInstruction load = new SpuInstruction(SpuOpCode.lqd);
+
+						load.Rt = vt;
+						load.Constant = spillOffset[inst.Rb];
+						load.Ra = HardwareRegister.SP;
+
+						if (prevInst != null)
+						{
+							prevInst.Next = load;
+							load.Prev = prevInst;
+						}
+						else
+						{
+							block.Head = load;
+						}
+
+						load.Next = inst;
+						inst.Prev = load;
+					}
+					if (inst.Rc != null && spilledRegister.Contains(inst.Rc))
+					{
+						VirtualRegister vt = HardwareRegister.GetVirtualHardwareRegister((CellRegister)76);
+
+						inst.Rc = vt;
+
+						SpuInstruction load = new SpuInstruction(SpuOpCode.lqd);
+
+						load.Rt = vt;
+						load.Constant = spillOffset[inst.Rc];
+						load.Ra = HardwareRegister.SP;
+
+						if (prevInst != null)
+						{
+							prevInst.Next = load;
+							load.Prev = prevInst;
+						}
+						else
+						{
+							block.Head = load;
+						}
+
+						load.Next = inst;
+						inst.Prev = load;
+					}
+					if (inst.Rt != null && spilledRegister.Contains(inst.Rt))
+					{
+						VirtualRegister vt = HardwareRegister.GetVirtualHardwareRegister((CellRegister)79);
+
+						inst.Rt = vt;
+
+						SpuInstruction load = new SpuInstruction(SpuOpCode.lqd);
+
+						load.Rt = vt;
+						load.Constant = spillOffset[inst.Rt];
+						load.Ra = HardwareRegister.SP;
+
+						if (prevInst != null)
+						{
+							prevInst.Next = load;
+							load.Prev = prevInst;
+						}
+						else
+						{
+							block.Head = load;
+						}
+
+						load.Next = inst;
+						inst.Prev = load;
+					}
+
+					prevInst = inst;
+					inst = prevInst.Next;
+				}
+			}
 
 			// To be safe, we insert the VirtualRegister representing the hardware registers.
 			foreach (SpuBasicBlock block in spuBasicBlocks)
@@ -136,6 +407,9 @@ namespace CellDotNet
 			{
 				foreach (VirtualRegister register in liveOut[i])
 				{
+					if(register.Number == 1)
+						Console.WriteLine();
+
 					LiveInterval interval;
 					if (liveIntevals.TryGetValue(register, out interval))
 					{
@@ -144,13 +418,44 @@ namespace CellDotNet
 					else
 					{
 						interval = new LiveInterval();
-						interval.Start = i;
-						interval.End = i;
+						interval.Start = i+1;
+						interval.End = i+1;
+						interval.r = register;
 						liveIntevals.Add(register, interval);
 					}
 				}
 			}
 			return liveIntevals;
 		}
+
+    	private class ListComparator : IComparer<SortedLinkedList<LiveInterval>>
+    	{
+    		public int Compare(SortedLinkedList<LiveInterval> x, SortedLinkedList<LiveInterval> y)
+    		{
+				if(y == null || y.Count == 0)
+					return -1;
+
+				if(x == null || x.Count == 0)
+					return 1;
+
+				if(x[0].Start < y[0].Start)
+					return -1;
+				else if(x[0].Start > y[0].Start)
+					return 1;
+				else
+					return 0;
+    		}
+    	}
+		public string hardwareIntervalsToString(SortedLinkedList<SortedLinkedList<LiveInterval>> hardwareIntervals)
+		{
+			StringBuilder result = new StringBuilder();
+
+			foreach (SortedLinkedList<LiveInterval> list in hardwareIntervals)
+			{
+				result.AppendLine(list.ToString());
+			}
+			return result.ToString();
+		}
+
     }
 }

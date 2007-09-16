@@ -470,34 +470,53 @@ namespace CellDotNet
 						else
 						{
 							//TODO brug Ori som move
-							SpuInstruction inst1 = new SpuInstruction(SpuOpCode.il);
-							inst1.Rt = HardwareRegister.GetHardwareRegister(79);
-							inst1.Constant = 0;
+							// rt, ra, const
+//							WriteOri(dest, src, 0);
 
-							SpuInstruction inst2 = new SpuInstruction(SpuOpCode.or);
-							inst2.Rt = inst.Def;
-							inst2.Ra = inst.Use[0];
-							inst2.Rb = inst1.Rt;
+							SpuInstruction instOri = new SpuInstruction(SpuOpCode.ori);
+							instOri.Ra = inst.Ra;
+							instOri.Rt = inst.Rt;
+							instOri.Constant = 0;
 
-							inst1.Next = inst2;
-							inst2.Prev = inst1;
-
-							inst1.Prev = inst.Prev;
-							inst2.Next = inst.Next;
-
-							if (inst.Prev != null)
-							{
-								inst.Prev.Next = inst1;
-							}
+							instOri.Next = inst.Next;
+							instOri.Prev = inst.Prev;
+							
+							if(inst.Prev != null)
+								inst.Prev.Next = instOri;
 							else
-							{
-								block.Head = inst1;
-							}
+								block.Head = instOri;
 
-							if(inst.Next != null)
-							{
-								inst.Next.Prev = inst2;
-							}
+							if (inst.Next != null)
+								inst.Next.Prev = instOri;
+
+//							SpuInstruction inst1 = new SpuInstruction(SpuOpCode.il);
+//							inst1.Rt = HardwareRegister.GetHardwareRegister(79);
+//							inst1.Constant = 0;
+//
+//							SpuInstruction inst2 = new SpuInstruction(SpuOpCode.or);
+//							inst2.Rt = inst.Def;
+//							inst2.Ra = inst.Use[0];
+//							inst2.Rb = inst1.Rt;
+//
+//							inst1.Next = inst2;
+//							inst2.Prev = inst1;
+//
+//							inst1.Prev = inst.Prev;
+//							inst2.Next = inst.Next;
+//
+//							if (inst.Prev != null)
+//							{
+//								inst.Prev.Next = inst1;
+//							}
+//							else
+//							{
+//								block.Head = inst1;
+//							}
+//
+//							if(inst.Next != null)
+//							{
+//								inst.Next.Prev = inst2;
+//							}
 						}
 					}
 					inst = inst.Next;

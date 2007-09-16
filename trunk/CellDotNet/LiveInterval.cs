@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace CellDotNet
@@ -20,6 +21,8 @@ namespace CellDotNet
     	}
 
         public VirtualRegister r;
+
+		public VirtualRegister asignedRegister;
 
         public static List<LiveInterval> sortByStart(List<LiveInterval> liveIntervals)
         {
@@ -50,5 +53,11 @@ namespace CellDotNet
                 return li1._end.CompareTo(li2._end);
             }
         }
+
+		public override string ToString()
+		{
+			return r + " from " + _start + " to " + _end;
+		}
+
     }
 }
