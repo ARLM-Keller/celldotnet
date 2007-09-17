@@ -45,7 +45,7 @@ namespace CellDotNet
 			{
 				routine.PerformAddressPatching();
 				List<SpuInstruction> list = routine.Writer.GetAsList();
-				int[] routineCode = SpuInstruction.emit(list);
+				int[] routineCode = SpuInstruction.Emit(list);
 				Buffer.BlockCopy(routineCode, 0, code, routine.Offset, routineCode.Length * 4);
 			}
 

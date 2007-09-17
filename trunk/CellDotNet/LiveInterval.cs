@@ -10,6 +10,11 @@ namespace CellDotNet
 
     	private VirtualRegister _virtualRegister;
 
+		/// <summary>
+		/// The virtual register which is live in the interval.
+		/// It can be a pure virtual register or a hardware register, depending on precoloring and
+		/// the allocator.
+		/// </summary>
     	public VirtualRegister VirtualRegister
     	{
     		get { return _virtualRegister; }
@@ -39,7 +44,10 @@ namespace CellDotNet
     		set { _end = value; }
     	}
 
-#warning Make this obsolete. and use Register instead.
+		/// <summary>
+		/// This is only to be used by the graph coloring allocator since it's read-write,
+		/// and the linear allocator works by changing the <see cref="VirtualRegister"/>'s <see cref="CellRegister"/> property.
+		/// </summary>
         public VirtualRegister r;
 
         public static List<LiveInterval> sortByStart(List<LiveInterval> liveIntervals)
@@ -58,7 +66,7 @@ namespace CellDotNet
 
 		public class ComparByStart : IComparer<LiveInterval>
         {
-            int IComparer<LiveInterval>.Compare(LiveInterval li1, LiveInterval li2)
+            public int Compare(LiveInterval li1, LiveInterval li2)
             {
             	return li1._start - li2._start;
             }
@@ -68,7 +76,7 @@ namespace CellDotNet
 
 		public class ComparByEnd : IComparer<LiveInterval>
         {
-            int IComparer<LiveInterval>.Compare(LiveInterval li1, LiveInterval li2)
+            public int Compare(LiveInterval li1, LiveInterval li2)
             {
 				return li1._end - li2._end;
 			}

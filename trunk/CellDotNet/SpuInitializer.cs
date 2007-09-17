@@ -73,7 +73,7 @@ namespace CellDotNet
 			_writer.WriteStqd(zeroreg, HardwareRegister.SP, 0);
 
 			for (int i = 0; i < argumentcount; i++)
-				_writer.WriteLoad(HardwareRegister.GetVirtualHardwareRegister((CellRegister)i+3), new ObjectOffset(argumentValueLocation, i*16));
+				_writer.WriteLoad(HardwareRegister.GetHardwareRegister((CellRegister)i+3), new ObjectOffset(argumentValueLocation, i*16));
 
 			// Branch to method and set LR.
 			_writer.WriteBranchAndSetLink(SpuOpCode.brsl, initialMethod);
@@ -95,7 +95,7 @@ namespace CellDotNet
 
 		public override int[] Emit()
 		{
-			return SpuInstruction.emit(_writer.GetAsList());			
+			return SpuInstruction.Emit(_writer.GetAsList());			
 		}
 
 		public override void PerformAddressPatching()

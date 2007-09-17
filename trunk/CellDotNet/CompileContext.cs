@@ -189,17 +189,11 @@ namespace CellDotNet
 			int lsOffset = 0;
 			foreach (ObjectWithAddress o in objects)
 			{
-//				if (o is MethodCompiler)
-//				{
-//					((MethodCompiler)o).PerformProcessing(MethodCompileState.S6PrologAndEpilogDone);
-//				}
-
 				o.Offset = lsOffset;
 				lsOffset = Utilities.Align16(lsOffset + o.Size);
 			}
 			return lsOffset;
 		}
-
 
 		/// <summary>
 		/// Substitute label and method addresses for calls.
@@ -618,7 +612,15 @@ namespace CellDotNet
 
 			foreach (SpuDynamicRoutine routine in objects)
 			{
-				int[] code = routine.Emit();
+				int[] code;
+				try
+				{
+					code = routine.Emit();
+				}
+				catch (InvalidOperationException e)
+				{
+					throw new InvalidOperationException("An error occurred during Emit for the routine '" + routine.Name + "'.", e);
+				}
 
 				try
 				{

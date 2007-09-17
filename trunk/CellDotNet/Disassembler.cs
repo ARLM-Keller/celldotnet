@@ -37,12 +37,36 @@ namespace CellDotNet
 			Disassemble(objects, writer);
 		}
 
+		public static void DisassembleUnconditionalToConsole(SpuDynamicRoutine routine)
+		{
+			StringWriter sw = new StringWriter();
+			DisassembleUnconditional(routine, sw);
+			Console.Write(sw.GetStringBuilder());			
+		}
+
+		public static void DisassembleUnconditionalToConsole(CompileContext compileContext)
+		{
+			StringWriter sw = new StringWriter();
+			DisassembleUnconditional(compileContext, sw);
+			Console.Write(sw.GetStringBuilder());
+		}
+
 		public static void DisassembleUnconditional(CompileContext compileContext, TextWriter writer)
 		{
 			IEnumerable<ObjectWithAddress> objects = compileContext.GetAllObjectsForDisassembly();
 			DisassembleUnconditional(objects, writer);
 		}
 
+		public static void DisassembleUnconditional(SpuDynamicRoutine routine, TextWriter writer)
+		{
+			DisassembleUnconditional(new SpuDynamicRoutine[] { routine }, writer);
+		}
+
+		/// <summary>
+		/// This one doesn't puke if address patching has not been performed.
+		/// </summary>
+		/// <param name="objects"></param>
+		/// <param name="writer"></param>
 		public static void DisassembleUnconditional(IEnumerable<ObjectWithAddress> objects, TextWriter writer)
 		{
 			foreach (ObjectWithAddress o in objects)
@@ -52,6 +76,10 @@ namespace CellDotNet
 				SpuDynamicRoutine r = o as SpuDynamicRoutine;
 				if (r == null)
 					continue;
+
+				writer.WriteLine();
+				writer.WriteLine("# Name: {0}\r\n# Type: {1}.", 
+					!string.IsNullOrEmpty(r.Name) ? r.Name : "(none)", r.GetType().Name);
 
 				DisassembleInstructions(r.GetInstructions(), 0, writer);
 			}
@@ -191,7 +219,7 @@ namespace CellDotNet
 						// Currently this only need to handle move.
 						if (inst.OpCode == SpuOpCode.move)
 						{
-							tw.Write("{0} {1}, {2}    {3}", inst.OpCode.Name, inst.Rt, inst.Ra, inst.SpuInstructionNumber);
+							tw.Write("{0} {1}, {2}   # no. {3}", inst.OpCode.Name, inst.Rt, inst.Ra, inst.SpuInstructionNumber);
 						}
 						else
 						{

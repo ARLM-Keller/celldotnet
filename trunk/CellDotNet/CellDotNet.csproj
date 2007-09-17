@@ -69,6 +69,7 @@
     <Compile Include="IROpCodes.cs" />
     <Compile Include="IRTreeBuilder.cs" />
     <Compile Include="IRTreeBuilderTest.cs" />
+    <Compile Include="IterativeLivenessAnalyzerTest.cs" />
     <Compile Include="IterativLivenessAnalyser.cs" />
     <Compile Include="Library.cs" />
     <Compile Include="LibraryMethod.cs" />

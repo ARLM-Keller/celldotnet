@@ -118,6 +118,13 @@ namespace CellDotNet
 		{
 			Converter<int, int> del = delegate(int input) { return AddI(input, 10); };
 
+//			MethodCompiler mc = new MethodCompiler(del.Method);
+////			mc.PerformProcessing(MethodCompileState.S4InstructionSelectionDone);
+////			Disassembler.DisassembleUnconditionalToConsole(mc);
+//			mc.PerformProcessing(MethodCompileState.S5RegisterAllocationDone);
+////			new SimpleRegAlloc().Allocate();
+//			return;
+
 			CompileContext cc = new CompileContext(del.Method);
 
 			cc.PerformProcessing(CompileContextState.S8Complete);

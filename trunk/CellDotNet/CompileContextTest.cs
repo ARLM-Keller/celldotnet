@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -65,8 +66,15 @@ namespace CellDotNet
 		public void TestEmptyMethod()
 		{
 			SimpleDelegate del = delegate { };
+
 			CompileContext cc = new CompileContext(del.Method);
+//			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
 			cc.PerformProcessing(CompileContextState.S8Complete);
+			return;
+
+			StringWriter sw = new StringWriter();
+			Disassembler.DisassembleUnconditional(cc, sw);
+			Console.WriteLine(sw.GetStringBuilder());
 		}
 	}
 }

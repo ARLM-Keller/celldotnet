@@ -41,18 +41,20 @@ namespace CellDotNet
 			_parameters = parameters;
 
 			_unimplementedOpCodes = new List<IROpCode>();
-			
+
 			// These two are used to patch up branch instructions after instruction selection.
 			_branchInstructions = new List<KeyValuePair<SpuInstruction, IRBasicBlock>>();
 			_spubasicblocks = new Dictionary<IRBasicBlock, SpuBasicBlock>();
 
-			WriteFirstBasicBlock();
+			// The moves are currently performed by the linear register allocator.
+//			WriteFirstBasicBlock();
 
 			foreach (IRBasicBlock bb in _basicBlocks)
 			{
+				_writer.BeginNewBasicBlock();
+
 				_writer.WriteNop();
 
-				_writer.BeginNewBasicBlock();
 				_spubasicblocks.Add(bb, _writer.CurrentBlock);
 				foreach (TreeInstruction root in bb.Roots)
 				{
@@ -74,6 +76,7 @@ namespace CellDotNet
 				throw new NotImplementedException(msg);
 			}
 
+			// Patch generated branch instructions with their target spu basic blocks.
 			foreach (KeyValuePair<SpuInstruction, IRBasicBlock> pair in _branchInstructions)
 			{
 				SpuBasicBlock target;
@@ -224,7 +227,7 @@ namespace CellDotNet
 //							VirtualRegister result = _writer.NextRegister();
 //							_writer.WriteMove(HardwareRegister.GetHardwareRegister(3), result);
 //							return result;
-							return HardwareRegister.GetVirtualHardwareRegister(CellRegister.REG_3);
+							return HardwareRegister.GetHardwareRegister(CellRegister.REG_3);
 						}
 						else
 							return null;
