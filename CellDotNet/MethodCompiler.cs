@@ -215,7 +215,7 @@ namespace CellDotNet
 
 			DetermineEscapes();
 
-//			_partialEvaluator.Evaluate(this);
+			_partialEvaluator.Evaluate(this);
 
 			State = MethodCompileState.S2TreeConstructionDone;
 		}
