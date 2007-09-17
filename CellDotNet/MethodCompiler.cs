@@ -258,8 +258,7 @@ namespace CellDotNet
 		}
 
 		/// <summary>
-		/// Determines escapes in the tree and allocates virtual registers to them if they haven't
-		/// already got them.
+		/// Determines escapes in the tree and allocates virtual registers to them.
 		/// </summary>
 		private void DetermineEscapes()
 		{
@@ -269,11 +268,13 @@ namespace CellDotNet
 				if (var.VirtualRegister == null)
 					var.VirtualRegister = NextRegister();
 			}
+
+			int argnum = 0;
 			foreach (MethodParameter p in Parameters)
 			{
 				p.Escapes = false;
-				if (p.VirtualRegister == null)
-					p.VirtualRegister = NextRegister();
+				// The linear register allocator needs us to do the precoloring somewhere like here.
+				p.VirtualRegister = HardwareRegister.GetHardwareArgumentRegister(argnum++);
 			}
 
 			Action<TreeInstruction> action =
