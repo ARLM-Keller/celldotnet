@@ -249,9 +249,10 @@ namespace CellDotNet
 			{
 				case CliType.Int32:
 				case CliType.Float32:
+					return 4;
 				case CliType.Int32Vector:
 				case CliType.Float32Vector:
-					return 4;
+					return 16;
 				case CliType.Int64:
 				case CliType.Float64:
 					return 8;

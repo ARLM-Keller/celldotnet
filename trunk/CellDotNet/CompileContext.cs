@@ -845,7 +845,7 @@ main:
 					buf = BitConverter.GetBytes((float)val);
 				else if (val is double)
 					buf = BitConverter.GetBytes((double)val);
-				else if (val is Int32Vector)
+				else if (val is Int32Vector || val is Float32Vector)
 				{
 					// TODO Ought to pin buf.
 					buf = new byte[16];

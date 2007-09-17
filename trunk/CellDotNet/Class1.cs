@@ -46,7 +46,9 @@ namespace CellDotNet
 
 //			new SimpleProgramsTest().TestRecursiveSummation_Int();
 
-			new VectorTypeTest().TestVectorIntAdd();
+//			new VectorTypeTest().TestVectorIntGetPutElement();
+
+			new VectorTypeTest().TestVectorIntArray();
 
 				Console.WriteLine("Running RunKlaus done.");
 		}

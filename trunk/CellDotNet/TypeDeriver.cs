@@ -251,7 +251,10 @@ namespace CellDotNet
 					t = inst.Left.StackType;
 					break;
 				case IRCode.Cpobj: // cpobj
+					throw new NotImplementedException(inst.Opcode.IRCode.ToString());
 				case IRCode.Ldobj: // ldobj
+					t = inst.Left.StackType.Dereference();
+					break;
 				case IRCode.Ldstr: // ldstr
 				case IRCode.Castclass: // castclass
 				case IRCode.Isinst: // isinst
@@ -262,8 +265,10 @@ namespace CellDotNet
 				case IRCode.Ldsfld: // ldsfld
 				case IRCode.Ldsflda: // ldsflda
 				case IRCode.Stsfld: // stsfld
-				case IRCode.Stobj: // stobj
 					throw new NotImplementedException(inst.Opcode.IRCode.ToString());
+				case IRCode.Stobj: // stobj
+					t = StackTypeDescription.None;
+					break;
 				case IRCode.Conv_Ovf_I8_Un: // conv.ovf.i8.un
 				case IRCode.Conv_I8: // conv.i8
 				case IRCode.Conv_Ovf_I8: // conv.ovf.i8
@@ -454,6 +459,8 @@ namespace CellDotNet
 			dict.Add(typeof(UIntPtr), StackTypeDescription.NativeInt);
 			dict.Add(typeof(float), StackTypeDescription.Float32);
 			dict.Add(typeof(double), StackTypeDescription.Float64);
+			dict.Add(typeof(Int32Vector), StackTypeDescription.Int32Vector);
+			dict.Add(typeof(Float32Vector), StackTypeDescription.Float32Vector);
 
 			return dict;
 		}
@@ -490,7 +497,9 @@ namespace CellDotNet
 			{
 				Type elementtype = realtype.GetElementType();
 
-				if (realtype.GetArrayRank() != 1 || !elementtype.IsValueType || !elementtype.IsPrimitive)
+				if (realtype.GetArrayRank() != 1)
+					throw new NotSupportedException("Only 1D arrays are supported.");
+				if (!elementtype.IsValueType || !(elementtype.IsPrimitive || elementtype.Equals(typeof(Int32Vector))))
 					throw new NotSupportedException("Only 1D primitive value type arrays are supported.");
 
 				StackTypeDescription elementstd = s_metadataCilTypes[elementtype];
