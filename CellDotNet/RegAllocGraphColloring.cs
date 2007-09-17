@@ -104,7 +104,7 @@ namespace CellDotNet
 		private List<SpuInstruction> intToSpuInst = new List<SpuInstruction>();
 		private Dictionary<SpuInstruction, int> spuinstToInt = new Dictionary<SpuInstruction, int>();
 
-		private BitVector callerSavesRegister;
+		private BitVector callerSavesRegister = new BitVector();
 
 		public delegate int NewSpillOffsetDelegate();
 
@@ -302,74 +302,74 @@ namespace CellDotNet
 
 					// DEBUG output
 
-					Console.WriteLine("Degrees.");
-					foreach (VirtualRegister r in regToInt.Keys)
-					{
-						if (!precolored.Contains((int)regToInt[r]))
-							Console.Write("{0}: {1} ", r, degree[regToInt[r]]);
-					}
-					Console.WriteLine();
-
-					Console.WriteLine("simplifyWorklist:");
-					foreach (uint u in simplifyWorklist)
-						Console.Write(intToReg[(int)u] + " ");
-					Console.WriteLine();
-
-					Console.WriteLine("freezeWorklist:");
-					foreach (uint u in freezeWorklist)
-						Console.Write(intToReg[(int)u] + " ");
-					Console.WriteLine();
-
-					Console.WriteLine("spillWorklist:");
-					foreach (uint u in spillWorklist)
-						Console.Write(intToReg[(int)u] + " ");
-					Console.WriteLine();
-
-					Console.WriteLine("spilledNodes:");
-					foreach (uint u in spilledNodes)
-						Console.Write(intToReg[(int)u] + " ");
-					Console.WriteLine();
-
-					Console.WriteLine("coalescedNodes:");
-					foreach (int u in coalescedNodes)
-						Console.Write(intToReg[(int)u] + " ");
-					Console.WriteLine();
-
-					Console.WriteLine("coloredNodes:");
-					foreach (int u in coloredNodes)
-						Console.Write(intToReg[(int)u] + " ");
-					Console.WriteLine();
-
-					Console.WriteLine("selectStack:");
-					foreach (uint u in selectStack)
-						Console.Write(intToReg[(int)u] + " ");
-					Console.WriteLine();
-
-
-					Console.WriteLine("coalescedMoves:");
-					foreach (int i in coalescedMoves)
-						Console.Write(intToSpuInst[i] + " ");
-					Console.WriteLine();
-
-					Console.WriteLine("constrainedMoves:");
-					foreach (int i in constrainedMoves)
-						Console.Write(intToSpuInst[i] + " ");
-					Console.WriteLine();
-
-					Console.WriteLine("frozenMoves:");
-					foreach (int i in frozenMoves)
-						Console.Write(intToSpuInst[i] + " ");
-					Console.WriteLine();
-
-					Console.WriteLine("worklistMoves:");
-					foreach (int i in worklistMoves)
-						Console.Write(intToSpuInst[i] + " ");
-					Console.WriteLine();
-
-					Console.WriteLine("activeMoves:");
-					foreach (int i in activeMoves)
-						Console.Write(intToSpuInst[i] + " ");
-					Console.WriteLine();
+//					Console.WriteLine("Degrees.");
+//					foreach (VirtualRegister r in regToInt.Keys)
+//					{
+//						if (!precolored.Contains((int)regToInt[r]))
+//							Console.Write("{0}: {1} ", r, degree[regToInt[r]]);
+//					}
+//					Console.WriteLine();
+//
+//					Console.WriteLine("simplifyWorklist:");
+//					foreach (uint u in simplifyWorklist)
+//						Console.Write(intToReg[(int)u] + " ");
+//					Console.WriteLine();
+//
+//					Console.WriteLine("freezeWorklist:");
+//					foreach (uint u in freezeWorklist)
+//						Console.Write(intToReg[(int)u] + " ");
+//					Console.WriteLine();
+//
+//					Console.WriteLine("spillWorklist:");
+//					foreach (uint u in spillWorklist)
+//						Console.Write(intToReg[(int)u] + " ");
+//					Console.WriteLine();
+//
+//					Console.WriteLine("spilledNodes:");
+//					foreach (uint u in spilledNodes)
+//						Console.Write(intToReg[(int)u] + " ");
+//					Console.WriteLine();
+//
+//					Console.WriteLine("coalescedNodes:");
+//					foreach (int u in coalescedNodes)
+//						Console.Write(intToReg[(int)u] + " ");
+//					Console.WriteLine();
+//
+//					Console.WriteLine("coloredNodes:");
+//					foreach (int u in coloredNodes)
+//						Console.Write(intToReg[(int)u] + " ");
+//					Console.WriteLine();
+//
+//					Console.WriteLine("selectStack:");
+//					foreach (uint u in selectStack)
+//						Console.Write(intToReg[(int)u] + " ");
+//					Console.WriteLine();
+//
+//
+//					Console.WriteLine("coalescedMoves:");
+//					foreach (int i in coalescedMoves)
+//						Console.Write(intToSpuInst[i] + " ");
+//					Console.WriteLine();
+//
+//					Console.WriteLine("constrainedMoves:");
+//					foreach (int i in constrainedMoves)
+//						Console.Write(intToSpuInst[i] + " ");
+//					Console.WriteLine();
+//
+//					Console.WriteLine("frozenMoves:");
+//					foreach (int i in frozenMoves)
+//						Console.Write(intToSpuInst[i] + " ");
+//					Console.WriteLine();
+//
+//					Console.WriteLine("worklistMoves:");
+//					foreach (int i in worklistMoves)
+//						Console.Write(intToSpuInst[i] + " ");
+//					Console.WriteLine();
+//
+//					Console.WriteLine("activeMoves:");
+//					foreach (int i in activeMoves)
+//						Console.Write(intToSpuInst[i] + " ");
+//					Console.WriteLine();
 
 //					using (StreamWriter writer = new StreamWriter("adjMatrix.txt", false, Encoding.ASCII))
 //					{

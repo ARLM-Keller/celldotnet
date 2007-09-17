@@ -115,7 +115,9 @@ namespace CellDotNet
 		VectorType_putE2,
 		VectorType_putE3,
 		VectorType_putE4,
-		VectorType_Equals,
-		VectorType_NotEquals
+		IntVectorType_Equals,
+		IntVectorType_NotEquals,
+		FloatVectorType_Equals,
+		FloatVectorType_NotEquals
 	}
 }

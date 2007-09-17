@@ -2,41 +2,82 @@ using System;
 
 namespace CellDotNet
 {
-	internal struct Float32Vector
+	public struct Float32Vector
 	{
+		private float e1, e2, e3, e4;
+
+		public Float32Vector(float e1, float e2, float e3, float e4)
+		{
+			this.e1 = e1;
+			this.e2 = e2;
+			this.e3 = e3;
+			this.e4 = e4;
+		}
+
 		[SpuOpCode(SpuOpCodeEnum.Fa)]
 		[return: SpuInstructionPart(SpuInstructionPart.Rt)]
 		public static Float32Vector operator +(
-			[SpuInstructionPart(SpuInstructionPart.Ra)]Float32Vector x,
-			[SpuInstructionPart(SpuInstructionPart.Rb)]Float32Vector y)
+			[SpuInstructionPart(SpuInstructionPart.Ra)]Float32Vector v1,
+			[SpuInstructionPart(SpuInstructionPart.Rb)]Float32Vector v2)
 		{
-			Utilities.PretendVariableIsUsed(x);
-			Utilities.PretendVariableIsUsed(y);
-			throw new InvalidOperationException();
+			Float32Vector r = new Float32Vector();
+
+			r.e1 = v1.e1 + v2.e1;
+			r.e2 = v1.e2 + v2.e2;
+			r.e3 = v1.e3 + v2.e3;
+			r.e4 = v1.e4 + v2.e4;
+
+			return r;
 		}
 
 		[SpuOpCode(SpuOpCodeEnum.Fs)]
 		[return: SpuInstructionPart(SpuInstructionPart.Rt)]
 		public static Float32Vector operator -(
-			[SpuInstructionPart(SpuInstructionPart.Ra)]Float32Vector x,
-			[SpuInstructionPart(SpuInstructionPart.Rb)]Float32Vector y)
+			[SpuInstructionPart(SpuInstructionPart.Ra)]Float32Vector v1,
+			[SpuInstructionPart(SpuInstructionPart.Rb)]Float32Vector v2)
 		{
-			Utilities.PretendVariableIsUsed(x);
-			Utilities.PretendVariableIsUsed(y);
-			throw new InvalidOperationException();
+			Float32Vector r = new Float32Vector();
+
+			r.e1 = v1.e1 - v2.e1;
+			r.e2 = v1.e2 - v2.e2;
+			r.e3 = v1.e3 - v2.e3;
+			r.e4 = v1.e4 - v2.e4;
+
+			return r;
 		}
 
 		[SpuOpCode(SpuOpCodeEnum.Fm)]
 		[return: SpuInstructionPart(SpuInstructionPart.Rt)]
 		public static Float32Vector operator *(
-			[SpuInstructionPart(SpuInstructionPart.Ra)]Float32Vector x,
-			[SpuInstructionPart(SpuInstructionPart.Rb)]Float32Vector y)
+			[SpuInstructionPart(SpuInstructionPart.Ra)]Float32Vector v1,
+			[SpuInstructionPart(SpuInstructionPart.Rb)]Float32Vector v2)
 		{
-			Utilities.PretendVariableIsUsed(x);
-			Utilities.PretendVariableIsUsed(y);
-			throw new InvalidOperationException();
+			Float32Vector r = new Float32Vector();
+
+			r.e1 = v1.e1 * v2.e1;
+			r.e2 = v1.e2 * v2.e2;
+			r.e3 = v1.e3 * v2.e3;
+			r.e4 = v1.e4 * v2.e4;
+
+			return r;
 		}
 
+		[IntrinsicMethod(SpuIntrinsicMethod.FloatVectorType_Equals)]
+		public static bool operator ==(Float32Vector v1, Float32Vector v2)
+		{
+			return v1.e1 == v2.e1 && v1.e2 == v2.e2 && v1.e3 == v2.e3 && v1.e4 == v2.e4;
+		}
+
+		[IntrinsicMethod(SpuIntrinsicMethod.FloatVectorType_NotEquals)]
+		public static bool operator !=(Float32Vector v1, Float32Vector v2)
+		{
+			return !(v1 == v2);
+		}
+
+		public override string ToString()
+		{
+			return "{" + e1 + ", " + e2 + ", " + e3 + ", " + e4 + "}";
+		}
 	}
 
 	public struct Int32Vector
@@ -70,26 +111,26 @@ namespace CellDotNet
 		[SpuOpCode(SpuOpCodeEnum.Sf)]
 		[return: SpuInstructionPart(SpuInstructionPart.Rt)]
 		public static Int32Vector operator -(
-			[SpuInstructionPart(SpuInstructionPart.Ra)]Int32Vector x,
-			[SpuInstructionPart(SpuInstructionPart.Rb)]Int32Vector y)
+			[SpuInstructionPart(SpuInstructionPart.Rb)]Int32Vector v1,
+			[SpuInstructionPart(SpuInstructionPart.Ra)]Int32Vector v2)
 		{
 			Int32Vector r;
 
-			r.e1 = x.e1 - x.e1;
-			r.e2 = x.e2 - x.e2;
-			r.e3 = x.e3 - x.e3;
-			r.e4 = x.e4 - x.e4;
+			r.e1 = v1.e1 - v2.e1;
+			r.e2 = v1.e2 - v2.e2;
+			r.e3 = v1.e3 - v2.e3;
+			r.e4 = v1.e4 - v2.e4;
 
 			return r;
 		}
 
-		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_Equals)]
+		[IntrinsicMethod(SpuIntrinsicMethod.IntVectorType_Equals)]
 		public static bool operator ==(Int32Vector v1, Int32Vector v2)
 		{
 			return v1.e1 == v2.e1 && v1.e2 == v2.e2 && v1.e3 == v2.e3 && v1.e4 == v2.e4;
 		}
 
-		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_NotEquals)]
+		[IntrinsicMethod(SpuIntrinsicMethod.IntVectorType_NotEquals)]
 		public static bool operator !=(Int32Vector v1, Int32Vector v2)
 		{
 			return !(v1 == v2);

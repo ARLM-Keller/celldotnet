@@ -515,6 +515,9 @@ namespace CellDotNet
 				case IRCode.Stelem_R4:
 					stindOpcode = IROpCodes.Stind_R4;
 					break;
+				case IRCode.Stelem:
+					stindOpcode = IROpCodes.Stobj;
+					break;
 				default:
 					throw new NotSupportedException("Unsupported array opcode: " + storeInst.Opcode);
 			}
@@ -530,6 +533,7 @@ namespace CellDotNet
 			TreeInstruction stindParent = new TreeInstruction(stindOpcode);
 			stindParent.Left = ldelemachild;
 			stindParent.Right = valueInst;
+			stindParent.Operand = storeInst.Operand; // Element type.
 
 			typederiver.DeriveType(ldelemachild);
 			typederiver.DeriveType(stindParent);

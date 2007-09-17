@@ -686,6 +686,15 @@ namespace CellDotNet
 				case IRCode.Cpobj:
 					break;
 				case IRCode.Ldobj:
+					if (lefttype.CliType.Equals(CliType.ManagedPointer))
+					{
+						switch (lefttype.Dereference().CliType)
+						{
+							case CliType.Int32Vector:
+							case CliType.Float32Vector:
+								return _writer.WriteLqd(vrleft, 0);
+						}
+					}
 					break;
 				case IRCode.Ldstr:
 					break;
@@ -714,6 +723,16 @@ namespace CellDotNet
 				case IRCode.Stsfld:
 					break;
 				case IRCode.Stobj:
+					if (lefttype.CliType.Equals(CliType.ManagedPointer))
+					{
+						switch (lefttype.Dereference().CliType)
+						{
+							case CliType.Int32Vector:
+							case CliType.Float32Vector:
+								_writer.WriteStqd(vrright, vrleft, 0);
+								return null;
+						}
+					}
 					break;
 				case IRCode.Conv_Ovf_I1_Un:
 					break;
@@ -758,6 +777,8 @@ namespace CellDotNet
 						int elementByteSize = elementtype.GetSizeWithPadding();
 						if (elementByteSize == 4)
 							bytesize = _writer.WriteShli(elementcount, 2);
+						else if (elementByteSize == 16)
+							bytesize = _writer.WriteShli(elementcount, 4);
 						else
 							throw new NotSupportedException("Element size of " + elementByteSize + " is not supported.");
 
@@ -813,6 +834,8 @@ namespace CellDotNet
 						VirtualRegister byteoffset;
 						if (elementsize == 4)
 							byteoffset = _writer.WriteShli(index, 2);
+						else if (elementsize == 16)
+							byteoffset = _writer.WriteShli(index, 4);
 						else
 							throw new NotImplementedException();
 
@@ -1190,7 +1213,7 @@ namespace CellDotNet
 						{
 							VirtualRegister index = writer.WriteIl(0);
 							VirtualRegister cwdreg = writer.WriteCwd(index, 0);
-							return writer.WriteShufb(childregs[0], childregs[1], cwdreg);
+							return writer.WriteShufb(childregs[0], childregs[1], cwdreg);	
 						}
 					case SpuIntrinsicMethod.VectorType_putE2:
 						{
@@ -1210,14 +1233,14 @@ namespace CellDotNet
 							VirtualRegister cwdreg = writer.WriteCwd(index, 0);
 							return writer.WriteShufb(childregs[0], childregs[1], cwdreg);
 						}
-					case SpuIntrinsicMethod.VectorType_Equals:
+					case SpuIntrinsicMethod.IntVectorType_Equals:
 						{
 							VirtualRegister r1 = writer.WriteCeq(childregs[0], childregs[1]);
 							VirtualRegister r2 = writer.WriteGb(r1);
 							VirtualRegister r3 = writer.WriteCeqi(r2, 0x0f);
 							return writer.WriteAndi(r3, 1);
 						}
-					case SpuIntrinsicMethod.VectorType_NotEquals:
+					case SpuIntrinsicMethod.IntVectorType_NotEquals:
 						{
 							VirtualRegister r1 = writer.WriteCeq(childregs[0], childregs[1]);
 							VirtualRegister r2 = writer.WriteGb(r1);
@@ -1225,7 +1248,22 @@ namespace CellDotNet
 							VirtualRegister r4 = writer.WriteAndi(r3, 1);
 							return writer.WriteXori(r4, 0x01);
 						}
-					default:
+						case SpuIntrinsicMethod.FloatVectorType_Equals:
+							{
+								VirtualRegister r1 = writer.WriteFceq(childregs[0], childregs[1]);
+								VirtualRegister r2 = writer.WriteGb(r1);
+								VirtualRegister r3 = writer.WriteCeqi(r2, 0x0f);
+								return writer.WriteAndi(r3, 1);
+							}
+						case SpuIntrinsicMethod.FloatVectorType_NotEquals:
+							{
+								VirtualRegister r1 = writer.WriteFceq(childregs[0], childregs[1]);
+								VirtualRegister r2 = writer.WriteGb(r1);
+								VirtualRegister r3 = writer.WriteCeqi(r2, 0x0f);
+								VirtualRegister r4 = writer.WriteAndi(r3, 1);
+								return writer.WriteXori(r4, 0x01);
+							}
+						default:
 						throw new ArgumentException();
 				}
 			}
