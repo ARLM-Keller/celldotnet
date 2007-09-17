@@ -35,14 +35,14 @@ namespace CellDotNet
 			// Save LR in caller's frame.
 			prolog.WriteStqd(HardwareRegister.LR, HardwareRegister.SP, 1);
 
-			prolog.WriteMove(HardwareRegister.SP, HardwareRegister.GetVirtualHardwareRegister((CellRegister)75));
+			prolog.WriteMove(HardwareRegister.SP, HardwareRegister.GetHardwareRegister((CellRegister)75));
 
 			// Establish new SP.
 			prolog.WriteAi(HardwareRegister.SP, HardwareRegister.SP, -frameSlots*16);
 
 			if (stackOverflow != null)
 			{
-				VirtualRegister isNotOverflow = HardwareRegister.GetVirtualHardwareRegister((CellRegister) 76);
+				VirtualRegister isNotOverflow = HardwareRegister.GetHardwareRegister((CellRegister) 76);
 
 				prolog.WriteCgti(isNotOverflow, HardwareRegister.SP, 0);
 
@@ -54,7 +54,7 @@ namespace CellDotNet
 			}
 
 			// Store SP at new frame's Back Chain.
-			prolog.WriteStqd(HardwareRegister.GetVirtualHardwareRegister((CellRegister)75), HardwareRegister.SP, 0);
+			prolog.WriteStqd(HardwareRegister.GetHardwareRegister((CellRegister)75), HardwareRegister.SP, 0);
 		}
 	}
 }

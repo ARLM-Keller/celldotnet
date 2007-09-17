@@ -102,7 +102,7 @@ namespace CellDotNet
 			get { return _returnType; }
 		}
 
-		private bool _naked;
+		private bool _naked = true;
 
 		public bool Naked
 		{
@@ -215,7 +215,7 @@ namespace CellDotNet
 
 			DetermineEscapes();
 
-			_partialEvaluator.Evaluate(this);
+//			_partialEvaluator.Evaluate(this);
 
 			State = MethodCompileState.S2TreeConstructionDone;
 		}
@@ -426,13 +426,21 @@ namespace CellDotNet
 
 		private void PerformRegisterAllocation()
 		{
-			
 			AssertState(MethodCompileState.S5RegisterAllocationDone - 1);
+
 
 //			RegAllocGraphColloring regalloc = new RegAllocGraphColloring();
 //			regalloc.Alloc(SpuBasicBlocks, GetNewSpillQuadOffset, registerWeight);
 
-			SimpleRegAlloc.Alloc(SpuBasicBlocks, GetNewSpillQuadOffset);
+			Console.WriteLine("Disassemble before register allocation:");
+			Disassembler.DisassembleUnconditionalToConsole(this);
+
+			new SimpleRegAlloc().Allocate(SpuBasicBlocks, GetNewSpillQuadOffset);
+
+			Console.WriteLine("Disassemble after register allocation:");
+			Disassembler.DisassembleUnconditionalToConsole(this);
+
+//			SimpleRegAlloc.Alloc(SpuBasicBlocks, GetNewSpillQuadOffset);
 
 //			List<SpuInstruction> asm = _instructions.GetAsList();
 //			regalloc.alloc(asm, 16);
@@ -565,14 +573,14 @@ namespace CellDotNet
 
 			try
 			{
-				prologbin = SpuInstruction.emit(GetPrologWriter().GetAsList());
-				bodybin = SpuInstruction.emit(GetBodyWriter().GetAsList());
-				epilogbin = SpuInstruction.emit(GetEpilogWriter().GetAsList());
+				prologbin = SpuInstruction.Emit(GetPrologWriter().GetAsList());
+				bodybin = SpuInstruction.Emit(GetBodyWriter().GetAsList());
+				epilogbin = SpuInstruction.Emit(GetEpilogWriter().GetAsList());
 			}
 			catch (BadSpuInstructionException e)
 			{
 				throw new BadSpuInstructionException(
-					string.Format("An error occurred during emit for method {0}.", _methodBase.Name), e);
+					string.Format("An error occurred during Emit for method {0}.", _methodBase.Name), e);
 			}
 
 			int[] combined = new int[prologbin.Length + bodybin.Length + epilogbin.Length];

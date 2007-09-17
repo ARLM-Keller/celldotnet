@@ -67,7 +67,13 @@ namespace CellDotNet
 		static public void Assert(bool condition, string message)
 		{
 			if (!condition)
-				throw new Exception(message); // Should we use another exception?
+				throw new DebugAssertException(message);
+		}
+
+		static public void AssertOperation(bool condition, string message)
+		{
+			if (!condition)
+				throw new InvalidOperationException(message);
 		}
 
 		#endregion

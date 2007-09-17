@@ -371,29 +371,15 @@ namespace CellDotNet
 		[Test]
 		public void TestRefArgumentTest()
 		{
-//			SimpleDelegateRefArg del2 = delegate(ref int a) { a =  a + 1; };
-//
-//			SimpleDelegateReturn del1 = delegate()
-//			                      	{
-//			                      		int i = 5;
-//										del2(ref i);
-//			                      		return i;
-//			                      	};
 			SimpleDelegateReturn del1 = f1;
 
 
 			CompileContext cc = new CompileContext(del1.Method);
 
-			//DEBUG
 			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
-
-//			new TreeDrawer().DrawMethods(cc);
-
-//			Disassembler.DisassembleUnconditional(cc, Console.Out);
+			Disassembler.DisassembleUnconditionalToConsole(cc);
 
 			cc.PerformProcessing(CompileContextState.S8Complete);
-
-//			Disassembler.DisassembleToConsole(cc);
 
 //			cc.WriteAssemblyToFile(Utilities.GetUnitTestName()+"_asm.s");
 
@@ -463,28 +449,23 @@ namespace CellDotNet
 			SpecialSpeObjects specialSpeObjects = new SpecialSpeObjects();
 			specialSpeObjects.SetMemorySettings(256 * 1024 - 0x20, 8 * 1024 - 0x20, 128 * 1024, 118 * 1024);
 
-			spum.WriteProlog(2, specialSpeObjects.StackOverflow);
+			// Currently (20070917) the linear register allocator only uses calle saves registers, so
+			// it will always spill some.
+			spum.WriteProlog(10, specialSpeObjects.StackOverflow);
 
 			sel.GenerateCode(basicBlocks, par, spum.Writer);
 
 			spum.WriteEpilog();
 
-//			Console.WriteLine(spum.Writer.Disassemble());
-
-//			Disassembler.DisassembleUnconditional(new ObjectWithAddress[] {spum}, Console.Out);
-
 			// TODO Det håndteres muligvis ikke virtuelle moves i SimpleRegAlloc.
 			// NOTE: køre ikke på prolog og epilog.
-//			SimpleRegAlloc.alloc(spum.Writer.BasicBlocks.GetRange(1, spum.Writer.BasicBlocks.Count-2), null, null);
-
-//			new RegAllocGraphColloring().Alloc(spum.Writer.BasicBlocks.GetRange(1, spum.Writer.BasicBlocks.Count - 2), null, null);
-			SimpleRegAlloc.Alloc(spum.Writer.BasicBlocks.GetRange(1, spum.Writer.BasicBlocks.Count - 2), null);
-
-//			Console.WriteLine(spum.Writer.Disassemble());
-
+			{
+				int nextspillOffset = 3;
+				new SimpleRegAlloc().Allocate(spum.Writer.BasicBlocks.GetRange(1, spum.Writer.BasicBlocks.Count - 2),
+											  delegate { return nextspillOffset++; });
+				
+			}
 			RegAllocGraphColloring.RemoveRedundantMoves(spum.Writer.BasicBlocks);
-
-//			Console.WriteLine(spum.Writer.Disassemble());
 
 			SpuInitializer spuinit = new SpuInitializer(spum, returnAddressObject, null, 0, specialSpeObjects.StackPointerObject, specialSpeObjects.NextAllocationStartObject, specialSpeObjects.AllocatableByteCountObject);
 
@@ -497,19 +478,12 @@ namespace CellDotNet
 
 			int codeByteSize = CompileContext.LayoutObjects(objectsWithAddresss);
 
-//			spum.Offset = 1024;
-//			spuinit.Offset = 0;
-//			spum.PerformAddressPatching();
-//			spuinit.PerformAddressPatching();
-
 			foreach (ObjectWithAddress o in objectsWithAddresss)
 			{
 				SpuDynamicRoutine dynamicRoutine = o as SpuDynamicRoutine;
 				if(dynamicRoutine != null)
 					dynamicRoutine.PerformAddressPatching();
 			}
-
-//			Disassembler.DisassembleToConsole(objectsWithAddresss);
 
 			int[] code = new int[codeByteSize/4];
 			CompileContext.CopyCode(code, new SpuDynamicRoutine[] { spuinit, spum });
@@ -525,13 +499,10 @@ namespace CellDotNet
 
 			code[specialSpeObjects.StackPointerObject.Offset/4] = specialSpeObjects.InitialStackPointer;
 			code[specialSpeObjects.StackPointerObject.Offset/4 + 1] = specialSpeObjects.StackSize;
-			// NOTE: SpuAbiUtilities.WriteProlog() is dependending on that the two larst words is >= stackSize.
+			// NOTE: SpuAbiUtilities.WriteProlog() is dependending on that the two last words being >= stackSize.
 			code[specialSpeObjects.StackPointerObject.Offset/4 + 2] = specialSpeObjects.StackSize;
 			code[specialSpeObjects.StackPointerObject.Offset/4 + 3] = specialSpeObjects.StackSize;
 
-//			Disassembler.DisassembleToConsole(objectsWithAddresss);
-
-//			CompileContext.WriteAssemblyToFile(Utilities.GetUnitTestName()+"_asm.s", code, objectsWithAddresss);
 
 			if (!SpeContext.HasSpeHardware)
 				return;

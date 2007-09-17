@@ -48,10 +48,12 @@ namespace CellDotNet
     	{
     		get
     		{
+				Utilities.AssertOperation(_isRegisterSet, "_isRegisterSet: A hardware register has not been assigned.");
     			return _register;
     		}
 			set
 			{
+				Utilities.AssertOperation(!_isRegisterSet, "!_isRegisterSet: This register already has an assigned hardware register.");
 				_isRegisterSet = true;
 				_register = value;
 			}
@@ -63,9 +65,7 @@ namespace CellDotNet
 		/// <returns></returns>
 		public override string ToString()
 		{
-			if (Location is HardwareRegister) //TODO old
-				return "$" + ((HardwareRegister)Location).Register;
-			else if (_isRegisterSet)
+			if (_isRegisterSet)
 				return "$" + Register;
 			else if (Number != 0)
 				return "$$" + Number;

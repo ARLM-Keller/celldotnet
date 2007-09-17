@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace CellDotNet
 {
-	internal class HardwareRegister : StoreLocation
+	internal class HardwareRegister// : StoreLocation
 	{
 		// arrays implementere IList, og array bliver redonly når der bruges som IList.
 		private static VirtualRegister[] _virtualHardwareRegisters;
@@ -111,53 +111,13 @@ namespace CellDotNet
 			for (int i = 80; i < numberOfCalleeSaveRegister+80; i++)
 				_calleeSavesVirtualRegisters.Add(_virtualHardwareRegisters[i]);
 
-			LR = GetVirtualHardwareRegister((CellRegister) 0);
+			LR = GetHardwareRegister((CellRegister) 0);
 
-			SP = GetVirtualHardwareRegister((CellRegister) 1);
+			SP = GetHardwareRegister((CellRegister) 1);
 
-			HardwareReturnValueRegister = GetVirtualHardwareRegister((CellRegister) 3);
+			HardwareReturnValueRegister = GetHardwareRegister((CellRegister) 3);
 
-			EnvPtr = GetVirtualHardwareRegister((CellRegister) 2);
-		}
-
-		public static VirtualRegister GetVirtualHardwareRegister(CellRegister cr)
-		{
-			return _virtualHardwareRegisters[(int) cr];
-		}
-
-		// TODO Skal udfases, bruges kun af SimpleRegAlloc
-		private static HardwareRegister[] s_cellRegisters;
-
-		public static IList<HardwareRegister> GetCellRegisters()
-		{
-			if (s_cellRegisters == null)
-			{
-				List<HardwareRegister> regs = new List<HardwareRegister>();
-
-				for (int i = 0; i <= 127; i++)
-				{
-					HardwareRegister hr = new HardwareRegister();
-					hr.Register = i;
-					regs.Add(hr);
-				}
-				s_cellRegisters = regs.ToArray();
-			}
-
-			return s_cellRegisters;
-		}
-
-		// TODO Skal udfases, bruges kun af SimpleRegAlloc
-		public static Stack<StoreLocation> GetCellRegistersAsStack()
-		{
-			Stack<StoreLocation> regsStack = new Stack<StoreLocation>();
-			IList<HardwareRegister> regs = GetCellRegisters();
-
-			for (int i = regs.Count - 1; i >= 0; i--)
-			{
-				regsStack.Push(regs[i]);
-			}
-
-			return regsStack;
+			EnvPtr = GetHardwareRegister((CellRegister) 2);
 		}
 
 		// TODO skal udfases
@@ -174,7 +134,12 @@ namespace CellDotNet
 			if (regnum < 0 || regnum > 127)
 				throw new ArgumentOutOfRangeException("regnum", regnum, "0 <= x <= 127");
 
-			return GetVirtualHardwareRegister((CellRegister) regnum);
+			return GetHardwareRegister((CellRegister) regnum);
+		}
+
+		public static VirtualRegister GetHardwareRegister(CellRegister cr)
+		{
+			return _virtualHardwareRegisters[(int) cr];
 		}
 
 		public static VirtualRegister GetHardwareArgumentRegister(int argumentnum)

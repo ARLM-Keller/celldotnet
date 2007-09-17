@@ -125,8 +125,7 @@ namespace CellDotNet
 			cc.SetLibraryResolver(resolver);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(0, cc.Methods.Count);
-			Assert.AreSame(libmethod, cc.EntryPoint);
+			AreEqual(1, cc.Methods.Count);
 
 			cc.WriteAssemblyToFile("externalmethod.s", 5);
 

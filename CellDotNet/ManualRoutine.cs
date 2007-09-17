@@ -44,7 +44,7 @@ namespace CellDotNet
 
 		public override int[] Emit()
 		{
-			int[] bodybin = SpuInstruction.emit(Writer.GetAsList());
+			int[] bodybin = SpuInstruction.Emit(Writer.GetAsList());
 			return bodybin;
 		}
 

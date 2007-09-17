@@ -52,7 +52,7 @@ namespace CellDotNet
         {
 			Utilities.AssertArgumentNotNull(opcode, "opcode");
 			_spuInstructionNumber = ++SpuInstructionCount;
-			this._opcode = opcode;
+			_opcode = opcode;
         }
 
 		public override string ToString()
@@ -188,7 +188,7 @@ namespace CellDotNet
 			}
 		}
 
-        public int emit()
+        public int Emit()
         {
 			switch (_opcode.Format)
 			{
@@ -233,18 +233,25 @@ namespace CellDotNet
 				return new BadSpuInstructionException(this);
 		}
 
-		public static int[] emit(List<SpuInstruction> code)
+		public static int[] Emit(List<SpuInstruction> code)
 		{
 			List<int> bincode = new List<int>(code.Count);
 
 			int instnum = 0;
+
 			foreach (SpuInstruction inst in code)
 			{
-				bincode.Add(inst.emit());
+				try
+				{
+					bincode.Add(inst.Emit());
+				}
+				catch (InvalidOperationException e)
+				{
+					throw new InvalidOperationException(
+						"An error occurred while emitting instruction no. " + instnum + " (" + inst.OpCode.Name + "): " + e.Message, e);
+				}
 				instnum++;
 			}
-
-			Utilities.PretendVariableIsUsed(instnum);
 
 			return bincode.ToArray();
 		}

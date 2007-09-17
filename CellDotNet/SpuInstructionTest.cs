@@ -13,7 +13,7 @@ namespace CellDotNet
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.brsl);
 			inst.Constant = 50;
 			inst.Rt = HardwareRegister.GetHardwareRegister(3);
-			AreEqual(Convert.ToInt32("001100110" + "0000000000110010" + "0000011", 2), inst.emit());
+			AreEqual("001100110" + "0000000000110010" + "0000011", Convert.ToString(inst.Emit(), 2).PadLeft(32, '0'));
 		}
 	}
 }

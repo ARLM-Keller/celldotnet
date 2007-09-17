@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -17,8 +19,14 @@ namespace CellDotNet
 			                     	};
 
 			CompileContext cc = new CompileContext(del.Method);
-			cc.PerformProcessing(CompileContextState.S6AddressPatchingDone);
+			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
 
+
+//			StringWriter sw = new StringWriter();
+//			Disassembler.DisassembleUnconditional(cc, sw);
+//			Console.WriteLine(sw.GetStringBuilder());
+
+			cc.PerformProcessing(CompileContextState.S6AddressPatchingDone);
 //			Disassembler.DisassembleToConsole(cc);
 		}
 	}

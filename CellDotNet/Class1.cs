@@ -262,7 +262,7 @@ namespace CellDotNet
 
 			return;
 
-//			int[] bincode = SpuInstruction.emit(mc.GetBodyWriter().GetAsList());
+//			int[] bincode = SpuInstruction.Emit(mc.GetBodyWriter().GetAsList());
 //
 //			SpeContext ctx = new SpeContext();
 //			ctx.LoadProgram(bincode);
@@ -335,7 +335,7 @@ namespace CellDotNet
 			List<SpuInstruction> asm = ilist.GetAsList();
 //			regalloc.alloc(asm, 16); //Out dated
 
-			int[] bincode = SpuInstruction.emit(asm);
+			int[] bincode = SpuInstruction.Emit(asm);
 			int[] testbincode = new int[10];
 
 			testbincode[0] = 0;
@@ -525,72 +525,35 @@ namespace CellDotNet
 		private static extern void MethodInNonExistingLibrary(int i);
 
 
+		struct S
+		{
+			private int i;
+
+			public static S Do(S arg)
+			{
+				Op(arg);
+				arg.i++;
+				return arg;
+			}
+
+			public static int c = 3;
+
+			private static void Op(S arg)
+			{
+				c++;
+			}
+		}
+
 		private unsafe static void RunRasmus()
 		{
-			new LibraryTest().TestHandMadeExternalMethod2();
+//			S s;
+//			Converter<S, S> del = S.Do;
+
+//			new LibraryTest().TestHandMadeExternalMethod2();
 
 			return;
-
-			{
-				int[] realarray = new int[50];
-
-				int[] fakearray;
-				const int fakestartindex = 10;
-				fixed (int* p = realarray)
-				{
-					Console.WriteLine("Dump real array - 4: ");
-					DumpMem(p - 4, 6);
-
-					int* fakeStartPtr = p + fakestartindex;
-					if (((int)fakeStartPtr - (int) p) < 16)
-						throw new Exception("Diff: " + ((int)fakeStartPtr - (int) p) + " bytes.");
-//					int offset = memcpy(fakeStartPtr, p, 0);
-					Console.WriteLine("real ptr   : " + ((int)p).ToString("x"));
-					Console.WriteLine("fake start : " + ((int)fakeStartPtr).ToString("x"));
-					Console.WriteLine("fake diff  : " + ((int)fakeStartPtr - (int)p));
-//					Console.WriteLine("new ptr    : " + offset.ToString("x"));
-//					return;
-
-					*(fakeStartPtr - 1) = *(p - 1);
-					*(fakeStartPtr - 2) = *(p - 2);
-					*(fakeStartPtr - 3) = *(p - 3);
-					*(fakeStartPtr - 4) = *(p - 4);
-
-					*(fakeStartPtr - 1) = 40;
-
-					Console.WriteLine("Dump fake array - 4: ");
-					DumpMem(fakeStartPtr - 4, 6);
-
-					fakearray = memcpy(fakeStartPtr, p, 0);
-					Console.WriteLine("is null: " + (fakearray == null));
-					Console.WriteLine("length: " + fakearray.Length);
-					Console.WriteLine("length from offset -1: " + *(fakeStartPtr - 1));
-
-					Console.WriteLine("Dump fake ptr - 4: ");
-					DumpMem(fakeStartPtr - 4, 6);
-					Console.WriteLine("Dump fake array - 4: ");
-					fixed (int* p2 = fakearray)
-						DumpMem(p2 - 4, 6);
-
-					//					Console.WriteLine("real ptr   : " + ((int)p).ToString("x"));
-
-				}
-			}
 		}
 
-		static unsafe void DumpMem(int* start, int wordcount)
-		{
-			Console.WriteLine("At offset " + ((int)start).ToString("x") + ": ");
-			string s = "";
-			for (int i = 0; i < wordcount; i++)
-			{
-				if (i > 0)
-					s += " ";
-				s += (*(start + i)).ToString("x8");
-			}
-
-			Console.WriteLine(s);
-		}
 
 		[DllImport("libc")]
 //		private static extern unsafe int memcpy(void* dest, void* src, int bytecount);

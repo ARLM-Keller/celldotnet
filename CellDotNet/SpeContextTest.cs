@@ -65,7 +65,7 @@ namespace CellDotNet
 //			Console.WriteLine("Disassembly after remove of redundant moves: ");
 //			Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
-			int[] bincode = SpuInstruction.emit(mc.GetBodyWriter().GetAsList());
+			int[] bincode = SpuInstruction.Emit(mc.GetBodyWriter().GetAsList());
 
 			if (!SpeContext.HasSpeHardware)
 				return;
@@ -150,7 +150,7 @@ namespace CellDotNet
 			SpuInstructionWriter writer = new SpuInstructionWriter();
 			writer.BeginNewBasicBlock();
 			writer.WriteStop(stopcode);
-			int[] code = SpuInstruction.emit(writer.GetAsList());
+			int[] code = SpuInstruction.Emit(writer.GetAsList());
 
 			if (!SpeContext.HasSpeHardware)
 				throw new T();
@@ -168,7 +168,7 @@ namespace CellDotNet
 			SpuInstructionWriter writer = new SpuInstructionWriter();
 			writer.BeginNewBasicBlock();
 			writer.WriteStop();
-			int[] code = SpuInstruction.emit(writer.GetAsList());
+			int[] code = SpuInstruction.Emit(writer.GetAsList());
 
 			if (!SpeContext.HasSpeHardware)
 				return;
@@ -255,20 +255,17 @@ namespace CellDotNet
 
 		private static void OutOfMemory()
 		{
-			int[] arraya = new int[32 * 1024];
-			int[] arrayb = new int[16 * 1024];
-			int[] arrayc = new int[32 * 1024];
-			Utilities.PretendVariableIsUsed(arraya);
-			Utilities.PretendVariableIsUsed(arrayb);
-			Utilities.PretendVariableIsUsed(arrayc);
-		}
+			// The allocation of the arrays is the important thing here;
+			// the other stuff is just to prevent c# from optimizing it all away.
+			int[] sizes = new int[3];
+			sizes[0] = 32*1024;
+			sizes[1] = 16*1024;
+			sizes[2] = 32*1024;
 
-		private static void NotOutOfMemory()
-		{
-			int[] arraya = new int[32 * 1024];
-			int[] arrayb = new int[16 * 1024];
-			Utilities.PretendVariableIsUsed(arraya);
-			Utilities.PretendVariableIsUsed(arrayb);
+			int[] arraya = new int[sizes[0]];
+			int[] arrayb = new int[sizes[1]];
+			int[] arrayc = new int[sizes[2]];
+			sizes[0] = arraya[0] + arrayb[0] + arrayc[0];
 		}
 
 		[Test, ExpectedException(typeof(SpeOutOfMemoryException))]
@@ -277,6 +274,12 @@ namespace CellDotNet
 			BasicTestDelegate del = OutOfMemory;
 
 			CompileContext cc = new CompileContext(del.Method);
+
+			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
+			Disassembler.DisassembleUnconditionalToConsole(cc);
+
+
+
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			if (!SpeContext.HasSpeHardware)
@@ -288,12 +291,40 @@ namespace CellDotNet
 			}
 		}
 
+		private static void NotOutOfMemory()
+		{
+			int[] arraya = new int[32 * 1024];
+			int[] arrayb = new int[16 * 1024];
+			Utilities.PretendVariableIsUsed(arraya);
+			Utilities.PretendVariableIsUsed(arrayb);
+		}
+
+//		private static void NotOutOfMemory()
+//		{
+//			int[] sizes = new int[2];
+//
+//			int[] arraya = new int[32 * 1024];
+//			int[] arrayb = new int[16 * 1024];
+//
+//			sizes[0] = arraya[0] + arrayb[0];
+//		}
+//
 		[Test]
 		public void TestNotOutOfMemory()
 		{
 			BasicTestDelegate del = NotOutOfMemory;
 
+//			MethodCompiler mc = new MethodCompiler(del.Method);
+//			mc.PerformProcessing(MethodCompileState.S4InstructionSelectionDone);
+//			Disassembler.DisassembleUnconditionalToConsole(mc);
+//			return;
+
 			CompileContext cc = new CompileContext(del.Method);
+
+			
+			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
+			Disassembler.DisassembleUnconditionalToConsole(cc);
+
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			if (!SpeContext.HasSpeHardware)
