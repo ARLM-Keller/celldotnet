@@ -391,6 +391,18 @@ namespace CellDotNet
 			return varr[2];
 		}
 
+		public static Float32Vector ArrayIntVectorFunc2(Float32Vector v1, Float32Vector v2)
+		{
+			Float32Vector[] varr = new Float32Vector[3];
+
+			varr[0] = v1;
+			varr[1] = v2;
+
+			varr[2] = varr[0] + varr[1];
+
+			return varr[2];
+		}
+
 		public static Int32Vector ArrayIntVectorFunc3(Int32Vector v1, Int32Vector v2)
 		{
 			Int32Vector[] varr = new Int32Vector[100];

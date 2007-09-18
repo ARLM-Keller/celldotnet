@@ -47,7 +47,7 @@ namespace CellDotNet
 			_spubasicblocks = new Dictionary<IRBasicBlock, SpuBasicBlock>();
 
 			// The moves are currently performed by the linear register allocator.
-//			WriteFirstBasicBlock();
+			WriteFirstBasicBlock();
 
 			foreach (IRBasicBlock bb in _basicBlocks)
 			{
@@ -93,8 +93,6 @@ namespace CellDotNet
 		/// </summary>
 		private void WriteFirstBasicBlock()
 		{
-			const int FirstArgumentRegister = 3;
-
 			if (_parameters.Count > 72)
 				throw new NotSupportedException("More than 72 arguments is not supported.");
 			if (_parameters.Count == 0)
@@ -105,7 +103,7 @@ namespace CellDotNet
 			{
 				MethodParameter parameter = _parameters[i];
 
-				VirtualRegister src = HardwareRegister.GetHardwareRegister(FirstArgumentRegister + i);
+				VirtualRegister src = HardwareRegister.GetHardwareArgumentRegister(i);
 
 				_writer.WriteMove(src, parameter.VirtualRegister);
 			}

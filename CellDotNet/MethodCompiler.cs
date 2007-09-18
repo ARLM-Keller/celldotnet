@@ -433,13 +433,13 @@ namespace CellDotNet
 //			RegAllocGraphColloring regalloc = new RegAllocGraphColloring();
 //			regalloc.Alloc(SpuBasicBlocks, GetNewSpillQuadOffset, registerWeight);
 
-			Console.WriteLine("Disassemble before register allocation:");
-			Disassembler.DisassembleUnconditionalToConsole(this);
+//			Console.WriteLine("Disassemble before register allocation:");
+//			Disassembler.DisassembleUnconditionalToConsole(this);
 
 			new SimpleRegAlloc().Allocate(SpuBasicBlocks, GetNewSpillQuadOffset);
 
-			Console.WriteLine("Disassemble after register allocation:");
-			Disassembler.DisassembleUnconditionalToConsole(this);
+//			Console.WriteLine("Disassemble after register allocation:");
+//			Disassembler.DisassembleUnconditionalToConsole(this);
 
 //			SimpleRegAlloc.Alloc(SpuBasicBlocks, GetNewSpillQuadOffset);
 
