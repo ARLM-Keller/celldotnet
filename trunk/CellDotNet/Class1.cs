@@ -526,32 +526,11 @@ namespace CellDotNet
 		[DllImport("NonExistingLibrary")]
 		private static extern void MethodInNonExistingLibrary(int i);
 
-
-		struct S
-		{
-			private int i;
-
-			public static S Do(S arg)
-			{
-				Op(arg);
-				arg.i++;
-				return arg;
-			}
-
-			public static int c = 3;
-
-			private static void Op(S arg)
-			{
-				c++;
-			}
-		}
-
 		private unsafe static void RunRasmus()
 		{
-//			S s;
-//			Converter<S, S> del = S.Do;
 
-//			new LibraryTest().TestHandMadeExternalMethod2();
+
+
 
 			return;
 		}

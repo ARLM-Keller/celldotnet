@@ -167,16 +167,6 @@ namespace CellDotNet
 			if (!HasUnixShell)
 				return;
 
-//			string ccode = @"
-//
-//int TestElfStaticLibrary(int arg1, int arg2) {
-//        return arg1 + arg2; 
-//}
-//
-//";
-//			string libname = "ElfStaticLibrary";
-//			string compilecommand = "spu-gcc -O3 ElfStaticLibrary.c -c -static";
-
 			AdderDelegate del = TestElfStaticLibrary;
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);

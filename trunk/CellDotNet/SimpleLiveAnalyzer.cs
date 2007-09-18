@@ -9,7 +9,7 @@ namespace CellDotNet
 		{
 			Dictionary<VirtualRegister, LiveInterval> liveIntervals = new Dictionary<VirtualRegister, LiveInterval>();
 
-			SortedLinkedList<LiveInterval> intervallist = new SortedLinkedList<LiveInterval>(new LiveInterval.ComparByEnd());
+			SortedLinkedList<LiveInterval> intervallist = new SortedLinkedList<LiveInterval>(new LiveInterval.CompareByEnd());
 
 			for (int i = 0; i < code.Count; i++)
 			{

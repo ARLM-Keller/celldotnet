@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace CellDotNet
 {
@@ -14,7 +13,7 @@ namespace CellDotNet
 		// returnere true hvis der forekommer spill(indtilvidre håndteres spill ikke!)
 		// regnum, er altallet af registre som register allokatoren ikke bruger.
 
-		class RegisterPool
+		private class RegisterPool
 		{
 			/// <summary>
 			/// The registers that currently are available for use.
@@ -42,13 +41,13 @@ namespace CellDotNet
 			}
 
 			public List<VirtualRegister> GetAllUsedCalleeSavesRegisters()
-		{
+			{
 				// Currently they're all callee, so return everything.
 				List<VirtualRegister> l = new List<VirtualRegister>();
 				foreach (CellRegister cr in _usedRegisters)
-			{
+				{
 					l.Add(HardwareRegister.GetHardwareRegister(cr));
-			}
+				}
 
 				// Just to make the code look nicer.
 				l.Sort(delegate(VirtualRegister x, VirtualRegister y) { return x.Register - y.Register; });
@@ -63,8 +62,7 @@ namespace CellDotNet
 				_usedRegisters.Add(reg);
 
 				return reg;
-				}
-
+			}
 
 
 			/// <summary>
@@ -73,7 +71,7 @@ namespace CellDotNet
 			/// </summary>
 			/// <param name="register"></param>
 			public void MarkPrecoloredRegisterUsed(CellRegister register)
-		{
+			{
 				if (register >= CellRegister.REG_80)
 					Utilities.Assert(_availableRegisters.Contains(register), "_availableRegisters.Contains(register)");
 				Utilities.Assert(!_usedRegisters.Contains(register), "!_usedPrecoloredRegisters.Contains(register)");
@@ -109,14 +107,14 @@ namespace CellDotNet
 					MarkPrecoloredRegisterEndOfUsage(register);
 				else
 					_availableRegisters.Add(register);
-					}
-				}
+			}
+		}
 
 		/// <summary>
 		/// A set of intervals that is sorted by interval end.
 		/// </summary>
-		class ActiveIntervalSet
-				{
+		private class ActiveIntervalSet
+		{
 			/// <summary>
 			/// The head is the one that with the earliest end.
 			/// </summary>
@@ -130,21 +128,21 @@ namespace CellDotNet
 			public void Add(LiveInterval interval)
 			{
 				_list.Add(interval);
-				_list.Sort(LiveInterval.ComparByEnd.Instance);
+				_list.Sort(LiveInterval.CompareByEnd.Instance);
 			}
 
 			public int Count
 			{
 				get { return _list.Count; }
-				}
+			}
 
 			public LiveInterval PeekStart()
-				{
+			{
 				return _list[0];
-				}
+			}
 
 			public LiveInterval RemoveStart()
-				{
+			{
 				if (_list.Count == 0)
 					throw new InvalidOperationException();
 
@@ -152,14 +150,14 @@ namespace CellDotNet
 				_list.RemoveAt(0);
 
 				return i;
-				}
+			}
 		}
 
 		private RegisterPool _registerPool;
 		private ActiveIntervalSet _active;
 
 		public void Allocate(List<SpuBasicBlock> spuBasicBlocks,
-						 RegAllocGraphColloring.NewSpillOffsetDelegate inputNewSpillOffset)
+		                     RegAllocGraphColloring.NewSpillOffsetDelegate inputNewSpillOffset)
 		{
 			_registerPool = new RegisterPool();
 			_active = new ActiveIntervalSet();
@@ -174,19 +172,19 @@ namespace CellDotNet
 				if (interval.VirtualRegister.IsRegisterSet)
 				{
 					_registerPool.MarkPrecoloredRegisterUsed(interval.VirtualRegister.Register);
-						}
+				}
 				else if (_active.Count > 46)
 				{
 					SpillAtInterval(interval);
-					}
-					else
-					{
+				}
+				else
+				{
 					// Assign new register.
 					Utilities.Assert(!interval.VirtualRegister.IsRegisterSet, "!interval.VirtualRegister.IsRegisterSet");
 					interval.VirtualRegister.Register = _registerPool.GetFreeRegister();
 					_active.Add(interval);
-					}
 				}
+			}
 
 
 			// Store callee saves.
@@ -216,28 +214,28 @@ namespace CellDotNet
 				int offset = pair.Value;
 
 				loadWriter.WriteLqd(hwreg, HardwareRegister.SP, offset);
-					}
+			}
 			spuBasicBlocks.Add(loadWriter.CurrentBlock);
 
 			RegAllocGraphColloring.RemoveRedundantMoves(spuBasicBlocks);
-						}
+		}
 
 		internal static List<LiveInterval> CreateSortedLiveIntervals(List<SpuBasicBlock> spuBasicBlocks)
-					{
+		{
 			Set<VirtualRegister>[] liveIn;
 			Set<VirtualRegister>[] liveOut;
 			IterativLivenessAnalyser.Analyse(spuBasicBlocks, out liveIn, out liveOut, true);
-			
-			
+
+
 //			PrintLiveOut(liveOut, spuBasicBlocks);
 
 			List<LiveInterval> intlist = new List<LiveInterval>(GenerateLiveIntervals(liveOut).Values);
-//			intlist.Sort(LiveInterval.ComparByStart.Instance);
+//			intlist.Sort(LiveInterval.CompareByStart.Instance);
 
 			// This "advanced" sort is simply to get nicer prints.
 			intlist.Sort(delegate(LiveInterval x, LiveInterval y)
 			             	{
-			             		int diff = LiveInterval.ComparByStart.Instance.Compare(x, y);
+			             		int diff = LiveInterval.CompareByStart.Instance.Compare(x, y);
 			             		if (diff != 0)
 			             			return diff;
 
@@ -245,37 +243,37 @@ namespace CellDotNet
 			             		       (y.VirtualRegister.IsRegisterSet ? y.VirtualRegister.Register : 0);
 			             	});
 
-			PrintLiveIntervals(liveOut.Length, intlist);
+//			PrintLiveIntervals(liveOut.Length, intlist);
 			return intlist;
-						}
+		}
 
 		private static void PrintLiveOut(Set<VirtualRegister>[] liveOut, List<SpuBasicBlock> spuBasicBlocks)
-						{
+		{
 			List<SpuInstruction> instlist = new List<SpuInstruction>();
 			foreach (SpuBasicBlock bb in spuBasicBlocks)
 			{
 				instlist.AddRange(bb.Head.GetEnumerable());
-						}
+			}
 
 			StringWriter sw = new StringWriter();
 			sw.WriteLine("Live out:");
 			for (int i = 0; i < liveOut.Length; i++)
-					{
+			{
 				sw.Write("{0,2} {1}:", i, instlist[i].OpCode.Name);
 				foreach (VirtualRegister reg in liveOut[i])
-						{
+				{
 					sw.Write(" " + reg);
-						}
+				}
 				sw.WriteLine();
-						}
+			}
 			Console.WriteLine(sw.GetStringBuilder());
-					}
+		}
 
 		private static void PrintLiveIntervals(int instcount, List<LiveInterval> intlist)
-						{
+		{
 			StringWriter sw = new StringWriter();
 			foreach (LiveInterval interval in intlist)
-						{
+			{
 				int precount = interval.Start;
 				int count = (interval.End + 1) - interval.Start;
 
@@ -284,24 +282,24 @@ namespace CellDotNet
 				sw.Write(new string(' ', precount));
 				sw.Write(new string('-', count));
 				sw.WriteLine();
-					}
+			}
 			Console.WriteLine("Intervals for {0} instructions:", instcount);
 			Console.Write(sw.GetStringBuilder());
-				}
+		}
 
 		private void SpillAtInterval(LiveInterval interval)
-			{
+		{
 			throw new NotImplementedException("Cannot spill. Need to implement SpillAtInterval.");
-					}
+		}
 
 		private void ExpireOldIntervals(LiveInterval currentInterval)
-					{
+		{
 			while (_active.Count > 0 && _active.PeekStart().End < currentInterval.Start)
-					{
+			{
 				LiveInterval removed = _active.RemoveStart();
 				_registerPool.AddFreeRegister(removed.VirtualRegister.Register);
-					}
-					}
+			}
+		}
 
 //		public static bool Alloc(List<SpuBasicBlock> spuBasicBlocks,
 //		                         RegAllocGraphColloring.NewSpillOffsetDelegate inputNewSpillOffset)
@@ -325,7 +323,7 @@ namespace CellDotNet
 //				if (!pair.Key.IsRegisterSet)
 //					liveIntervals.Add(pair.Value);
 //			}
-//			liveIntervals.Sort(LiveInterval.ComparByStart.Instance);
+//			liveIntervals.Sort(LiveInterval.CompareByStart.Instance);
 //
 //
 //			List<SpuInstruction> code = new List<SpuInstruction>();
@@ -355,7 +353,7 @@ namespace CellDotNet
 //
 //			foreach (VirtualRegister register in HardwareRegister.CallerSavesRegisters)
 //			{
-//				hardRegToList[register] = new SortedLinkedList<LiveInterval>(new LiveInterval.ComparByStart());
+//				hardRegToList[register] = new SortedLinkedList<LiveInterval>(new LiveInterval.CompareByStart());
 //				currentIntervals[register] = new LiveInterval();
 //				currentIntervals[register].Start = -1;
 //				currentIntervals[register].End = -1;
@@ -364,7 +362,7 @@ namespace CellDotNet
 //
 //			foreach (VirtualRegister register in HardwareRegister.CalleeSavesRegisters)
 //			{
-//				hardRegToList[register] = new SortedLinkedList<LiveInterval>(new LiveInterval.ComparByStart());
+//				hardRegToList[register] = new SortedLinkedList<LiveInterval>(new LiveInterval.CompareByStart());
 //				currentIntervals[register] = new LiveInterval();
 //				currentIntervals[register].Start = -1;
 //				currentIntervals[register].End = -1;
@@ -725,5 +723,5 @@ namespace CellDotNet
 
 			return liveIntervals;
 		}
-			}
+	}
 }
