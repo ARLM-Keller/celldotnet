@@ -445,7 +445,6 @@ namespace CellDotNet
 			Execution(w, expectedValue);
 		}
 
-
 		private static void Execution<T>(ILWriter ilcode, T expectedValue) where T : struct
 		{
 			RegisterSizedObject returnAddressObject = new RegisterSizedObject("ReturnObject");
