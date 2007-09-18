@@ -39,12 +39,23 @@ namespace CellDotNet
 
 		public void WriteInt32(int i)
 		{
-			_writer.Write(i);
+			_writer.Write(EncodeLittleEndian(i));
 		}
 
 		public void WriteFloat(float f1)
 		{
-			_writer.Write(RecursiveInstructionSelector.ReinterpretAsUInt(f1));
+			_writer.Write(EncodeLittleEndian((f1)));
+		}
+
+		private static byte[] EncodeLittleEndian(float f)
+		{
+			uint u = RecursiveInstructionSelector.ReinterpretAsUInt(f);
+			return new byte[] { (byte)(u & 0xff), (byte)((u >> 8) & 0xff), (byte)((u >> 16) & 0xff), (byte)((u >> 24) & 0xff) };
+		}
+
+		private static byte[] EncodeLittleEndian(int u)
+		{
+			return new byte[] { (byte)(u & 0xff), (byte)((u >> 8) & 0xff), (byte)((u >> 16) & 0xff), (byte)((u >> 24) & 0xff) };
 		}
 
 		public byte[] ToByteArray()

@@ -55,7 +55,7 @@ namespace CellDotNet
 			w.WriteOpcode(OpCodes.Ldc_I4_7);
 			w.WriteOpcode(OpCodes.Ret);
 
-			Execution(w, 7);
+			TestExecution(w, 7);
 		}
 
 		// NOTE: this function requires short form branch instruction as argument.
@@ -80,9 +80,9 @@ namespace CellDotNet
 			w.WriteOpcode(OpCodes.Ret);
 
 			if(branch)
-				Execution(w, 2);
+				TestExecution(w, 2);
 			else
-				Execution(w, 1);
+				TestExecution(w, 1);
 		}
 
 		[Test]
@@ -102,7 +102,7 @@ namespace CellDotNet
 			
 			w.WriteOpcode(OpCodes.Ret);
 
-			Execution(w, 2);
+			TestExecution(w, 2);
 		}
 
 		[Test]
@@ -127,7 +127,7 @@ namespace CellDotNet
 
 			w.WriteOpcode(OpCodes.Ret);
 
-			Execution(w, 2);
+			TestExecution(w, 2);
 
 			w = new ILWriter();
 
@@ -148,7 +148,7 @@ namespace CellDotNet
 
 			w.WriteOpcode(OpCodes.Ret);
 
-			Execution(w, 1);
+			TestExecution(w, 1);
 		}
 
 		[Test]
@@ -173,7 +173,7 @@ namespace CellDotNet
 
 			w.WriteOpcode(OpCodes.Ret);
 
-			Execution(w, 1);
+			TestExecution(w, 1);
 
 			w = new ILWriter();
 
@@ -194,7 +194,7 @@ namespace CellDotNet
 
 			w.WriteOpcode(OpCodes.Ret);
 
-			Execution(w, 2);
+			TestExecution(w, 2);
 		}
 
 		[Test]
@@ -276,6 +276,17 @@ namespace CellDotNet
 		}
 
 		[Test]
+		public void Test_Ldc_I4()
+		{
+			ILWriter w = new ILWriter();
+			w.WriteOpcode(OpCodes.Ldc_I4);
+			w.WriteInt32(0xabcdef);
+			w.WriteOpcode(OpCodes.Ret);
+
+			TestExecution(w, 0xabcdef);
+		}
+
+		[Test]
 		public void Test_Add_I4()
 		{
 			ILWriter w = new ILWriter();
@@ -285,7 +296,7 @@ namespace CellDotNet
 			w.WriteOpcode(OpCodes.Add);
 			w.WriteOpcode(OpCodes.Ret);
 
-			Execution(w, 10);
+			TestExecution(w, 10);
 		}
 
 		[Test]
@@ -298,13 +309,24 @@ namespace CellDotNet
 			w.WriteOpcode(OpCodes.Sub);
 			w.WriteOpcode(OpCodes.Ret);
 
-			Execution(w, 4);
+			TestExecution(w, 4);
 		}
 
 		[Test]
 		public void Test_Mul_I4()
 		{
 			ExecuteAndVerifyBinaryOperator(OpCodes.Mul, 5, 3, 15);
+		}
+
+		[Test]
+		public void Test_Ldc_R4()
+		{
+			ILWriter w = new ILWriter();
+			w.WriteOpcode(OpCodes.Ldc_R4);
+			w.WriteFloat(4.5f);
+			w.WriteOpcode(OpCodes.Ret);
+
+			TestExecution(w, 4.5f);
 		}
 
 		[Test]
@@ -322,7 +344,7 @@ namespace CellDotNet
 		[Test]
 		public void Test_Mul_R4()
 		{
-			ExecuteAndVerifyBinaryOperator(OpCodes.Mul, 3.5f, 4f, 3.5f * 7.5f);
+			ExecuteAndVerifyBinaryOperator(OpCodes.Mul, 3.5f, 4f, 3.5f * 4f);
 		}
 
 		[Test]
@@ -428,7 +450,7 @@ namespace CellDotNet
 			w.WriteOpcode(opcode);
 			w.WriteOpcode(OpCodes.Ret);
 
-			Execution(w, expectedValue);
+			TestExecution(w, expectedValue);
 		}
 
 		public void ExecuteAndVerifyBinaryOperator(OpCode opcode, float f1, float f2, float expectedValue)
@@ -442,10 +464,10 @@ namespace CellDotNet
 			w.WriteOpcode(opcode);
 			w.WriteOpcode(OpCodes.Ret);
 
-			Execution(w, expectedValue);
+			TestExecution(w, expectedValue);
 		}
 
-		private static void Execution<T>(ILWriter ilcode, T expectedValue) where T : struct
+		private static void TestExecution<T>(ILWriter ilcode, T expectedValue) where T : struct
 		{
 			RegisterSizedObject returnAddressObject = new RegisterSizedObject("ReturnObject");
 
@@ -468,7 +490,7 @@ namespace CellDotNet
 				var.VirtualRegister = new VirtualRegister();
 			}
 
-//			new TreeDrawer().DrawMethod(basicBlocks);
+			new TreeDrawer().DrawMethod(basicBlocks);
 
 			RecursiveInstructionSelector sel = new RecursiveInstructionSelector();
 
