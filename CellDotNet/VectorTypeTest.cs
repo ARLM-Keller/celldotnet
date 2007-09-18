@@ -20,7 +20,7 @@ namespace CellDotNet
 
 		private static int SimpleVectorTestFunc(Int32Vector v1)
 		{
-			return Int32Vector.getE3(v1);
+			return Int32Vector.GetE3(v1);
 		}
 
 		[Test]
@@ -50,13 +50,13 @@ namespace CellDotNet
 		private static int GetElementIntVectorFun(Int32Vector v, int i)
 		{
 			if (i == 1)
-				return Int32Vector.getE1(v);
+				return Int32Vector.GetE1(v);
 			else if (i == 2)
-				return Int32Vector.getE2(v);
+				return Int32Vector.GetE2(v);
 			else if (i == 3)
-				return Int32Vector.getE3(v);
+				return Int32Vector.GetE3(v);
 			else if (i == 4)
-				return Int32Vector.getE4(v);
+				return Int32Vector.GetE4(v);
 			else
 				return -1;
 		}
@@ -96,10 +96,10 @@ namespace CellDotNet
 
 		private static Int32Vector GetPutElementIntVectorFun(Int32Vector vin, Int32Vector vout)
 		{
-			vout = Int32Vector.putE1(vout, Int32Vector.getE1(vin));
-			vout = Int32Vector.putE2(vout, Int32Vector.getE2(vin));
-			vout = Int32Vector.putE3(vout, Int32Vector.getE3(vin));
-			vout = Int32Vector.putE4(vout, Int32Vector.getE4(vin));
+			vout = Int32Vector.PutE1(vout, Int32Vector.GetE1(vin));
+			vout = Int32Vector.PutE2(vout, Int32Vector.GetE2(vin));
+			vout = Int32Vector.PutE3(vout, Int32Vector.GetE3(vin));
+			vout = Int32Vector.PutE4(vout, Int32Vector.GetE4(vin));
 			return vout;
 		}
 
