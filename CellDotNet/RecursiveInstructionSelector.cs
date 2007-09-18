@@ -164,17 +164,16 @@ namespace CellDotNet
 					return _writer.WriteLoadI4(0);
 				case IRCode.Ldc_I4:
 					return _writer.WriteLoadI4((int) inst.Operand);
-//					VirtualRegister dbgr = _writer.WriteLoadI4((int) inst.Operand);
-//					_writer.WriteDebugStop(dbgr, _specialSpeObjects.DebugValueObject);
-//					return dbgr;
 				case IRCode.Ldc_I8:
 					break;
 				case IRCode.Ldc_R4:
 					{
 						uint val = ReinterpretAsUInt((float) inst.Operand);
-						VirtualRegister reg = _writer.WriteIlhu((int) ((val >> 16) & 0xffff));
-						_writer.WriteIohl(reg, (int) (val & 0xffff));
-						return reg;
+						return _writer.WriteLoadI4((int) val);
+
+//						VirtualRegister reg = _writer.WriteIlhu((int) ((val >> 16) & 0xffff));
+//						_writer.WriteIohl(reg, (int) (val & 0xffff));
+//						return reg;
 					}
 				case IRCode.Ldc_R8:
 					break;
@@ -675,7 +674,7 @@ namespace CellDotNet
 					{
 						case CliType.Int32:
 						case CliType.NativeInt:
-							return _writer.WriteCsflt(vrleft, 0);
+							return _writer.WriteCsflt(vrleft, 155);
 						case CliType.Int64:
 							break;
 					}
