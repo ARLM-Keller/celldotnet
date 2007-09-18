@@ -20,7 +20,7 @@ namespace CellDotNet
 
 		static public string GetUnitTestName()
 		{
-			StackTrace st = new StackTrace(1);
+			StackTrace st = new StackTrace(0);
 			StackFrame[] frames = st.GetFrames();
 
 			foreach (StackFrame f in frames)
