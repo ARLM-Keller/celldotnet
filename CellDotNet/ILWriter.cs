@@ -7,7 +7,7 @@ namespace CellDotNet
 {
 	/// <summary>
 	/// Handy class for hand-made IL for use in unit testing.
-	/// Currently it does not work with opcodes that references things such as locals,
+	/// Currently it does not support opcodes that references things such as locals,
 	/// parameters, types etc.
 	/// </summary>
 	class ILWriter
@@ -40,6 +40,11 @@ namespace CellDotNet
 		public void WriteInt32(int i)
 		{
 			_writer.Write(i);
+		}
+
+		public void WriteFloat(float f1)
+		{
+			_writer.Write(f1);
 		}
 
 		public byte[] ToByteArray()

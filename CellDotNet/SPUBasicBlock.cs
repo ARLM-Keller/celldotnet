@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+
 namespace CellDotNet
 {
 	class SpuBasicBlock
@@ -22,6 +25,19 @@ namespace CellDotNet
 			}
 
 			return c;
+		}
+
+		[Obsolete("Only for debugging.")]
+		public string Disassembly
+		{
+			get
+			{
+				if (Head == null)
+					return "(empty)";
+				StringWriter sw = new StringWriter();
+				Disassembler.DisassembleInstructions(Head.GetEnumerable(), 0, sw);
+				return sw.GetStringBuilder().ToString();
+			}
 		}
 
 		private int _offset;
