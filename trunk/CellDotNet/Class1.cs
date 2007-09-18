@@ -518,23 +518,14 @@ namespace CellDotNet
 			Console.WriteLine();
 		}
 
-		unsafe private static void RefIntMethod(int* i) { }
-
-
-		private delegate int IntDelegate();
-
-		[DllImport("NonExistingLibrary")]
-		private static extern void MethodInNonExistingLibrary(int i);
-
 		private static void RunRasmus()
 		{
-			new ILOpCodeExecutionTest().Test_Ceq_I4();
-//			new SimpleProgramsTest().TestMethodCall();
+			Converter<int, float> del = delegate(int input) { return (float) input; };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+			new TreeDrawer().DrawMethod((MethodCompiler)cc.EntryPoint);
+			cc.WriteAssemblyToFile("rasmus.s", 5);
 		}
-
-
-		[DllImport("libc")]
-//		private static extern unsafe int memcpy(void* dest, void* src, int bytecount);
-		private static extern unsafe int[] memcpy(void* dest, void* src, int bytecount);
 	}
 }

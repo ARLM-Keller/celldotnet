@@ -166,7 +166,13 @@ namespace CellDotNet
 			AreNotEqual(0, correctval, "Zero isn't good.");
 
 			CompileContext cc = new CompileContext(del.Method);
+
+			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
+			Disassembler.DisassembleUnconditionalToConsole((SpuDynamicRoutine)cc.EntryPoint);
+
 			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			Disassembler.DisassembleToConsole(cc);
 
 //			cc.WriteAssemblyToFile(Utilities.GetUnitTestName() + "_asm.s", arg);
 			
@@ -189,7 +195,7 @@ namespace CellDotNet
 		{
 			if (level == 0)
 				return 0;
-			else if ((level & 1) == 1)
+			else if ((level & 3) == 1)
 				return level + RecursiveSummation_Int(level - 1);
 			else
 				return RecursiveSummation_Int(level - 1);
@@ -206,9 +212,18 @@ namespace CellDotNet
 
 			const int arg = 15;
 			float correctval = del(arg);
+			AreNotEqual(0f, correctval, "Zero isn't good.");
 
 			CompileContext cc = new CompileContext(del.Method);
+
+			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
+			Disassembler.DisassembleUnconditionalToConsole((SpuDynamicRoutine) cc.EntryPoint);
+
 			cc.PerformProcessing(CompileContextState.S8Complete);
+
+
+			Disassembler.DisassembleToConsole(cc);
+
 
 			if (!SpeContext.HasSpeHardware)
 				return;
@@ -229,10 +244,10 @@ namespace CellDotNet
 		{
 			if (level == 0)
 				return 0;
-			else if ((level & 2) == 1)
-				return level + RecursiveSummation_Int(level - 1);
+			else if ((level & 3) == 1)
+				return level + RecursiveSummation_Float(level - 1);
 			else
-				return RecursiveSummation_Int(level - 1);
+				return RecursiveSummation_Float(level - 1);
 		}
 	}
 }

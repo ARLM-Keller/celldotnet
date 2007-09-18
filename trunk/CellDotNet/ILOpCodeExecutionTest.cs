@@ -348,6 +348,20 @@ namespace CellDotNet
 		}
 
 		[Test]
+		public void Test_Conv_I4_R4()
+		{
+			ILWriter w = new ILWriter();
+
+			int i = 5;
+			w.WriteOpcode(OpCodes.Ldc_I4);
+			w.WriteInt32(i);
+			w.WriteOpcode(OpCodes.Conv_R4);
+			w.WriteOpcode(OpCodes.Ret);
+
+			TestExecution(w, (float) i);
+		}
+
+		[Test]
 		public void Test_And()
 		{
 			ExecuteAndVerifyBinaryOperator(OpCodes.And, 0x0f0, 0xf00, 0x000);
