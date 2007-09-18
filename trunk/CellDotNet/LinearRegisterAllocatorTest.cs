@@ -6,7 +6,7 @@ using NUnit.Framework;
 namespace CellDotNet
 {
 	[TestFixture]
-	public class SimpleRegAllocTest : UnitTest
+	public class LinearRegisterAllocatorTest : UnitTest
 	{
 		[Test]
 		public void TestLiveIntervals()
@@ -29,7 +29,7 @@ namespace CellDotNet
 			Disassembler.DisassembleInstructions(w.GetAsList(), 0, sw);
 			Console.WriteLine(sw.GetStringBuilder());
 
-			List<LiveInterval> intlist = SimpleRegAlloc.CreateSortedLiveIntervals(w.BasicBlocks);
+			List<LiveInterval> intlist = LinearRegisterAllocator.CreateSortedLiveIntervals(w.BasicBlocks);
 			Dictionary <VirtualRegister, LiveInterval> intdict = new Dictionary<VirtualRegister, LiveInterval>();
 			foreach (LiveInterval i in intlist)
 				intdict[i.VirtualRegister] = i;

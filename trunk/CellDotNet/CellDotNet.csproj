@@ -74,6 +74,8 @@
     <Compile Include="LibraryMethod.cs" />
     <Compile Include="LibraryResolver.cs" />
     <Compile Include="LibraryTest.cs" />
+    <Compile Include="LinearRegisterAllocator.cs" />
+    <Compile Include="LinearRegisterAllocatorTest.cs" />
     <Compile Include="LivenessAnalyzer.cs" />
     <Compile Include="LocalStorageAddress.cs" />
     <Compile Include="ManualRoutine.cs" />
@@ -113,8 +115,6 @@
     <Compile Include="SpuRoutine.cs" />
     <Compile Include="SpuRuntime.cs" />
     <Compile Include="SimpleLiveAnalyzer.cs" />
-    <Compile Include="SimpleRegAlloc.cs" />
-    <Compile Include="SimpleRegAllocTest.cs" />
     <Compile Include="SortedLinkedList.cs" />
     <Compile Include="SpecialSpeObjects.cs" />
     <Compile Include="SpeContext.cs" />
