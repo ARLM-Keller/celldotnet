@@ -78,6 +78,26 @@ namespace CellDotNet
 		{
 			return "{" + e1 + ", " + e2 + ", " + e3 + ", " + e4 + "}";
 		}
+
+		public override bool Equals(object obj)
+		{
+			if (!(obj is Float32Vector)) return false;
+			Float32Vector float32Vector = (Float32Vector) obj;
+			if (e1 != float32Vector.e1) return false;
+			if (e2 != float32Vector.e2) return false;
+			if (e3 != float32Vector.e3) return false;
+			if (e4 != float32Vector.e4) return false;
+			return true;
+		}
+
+		public override int GetHashCode()
+		{
+			int result = e1.GetHashCode();
+			result = 29*result + e2.GetHashCode();
+			result = 29*result + e3.GetHashCode();
+			result = 29*result + e4.GetHashCode();
+			return result;
+		}
 	}
 
 	public struct Int32Vector
@@ -137,52 +157,52 @@ namespace CellDotNet
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE1)]
-		public static int getE1(Int32Vector v)
+		public static int GetE1(Int32Vector v)
 		{
 			return v.e1;
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE2)]
-		public static int getE2(Int32Vector v)
+		public static int GetE2(Int32Vector v)
 		{
 			return v.e2;
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE3)]
-		public static int getE3(Int32Vector v)
+		public static int GetE3(Int32Vector v)
 		{
 			return v.e3;
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE4)]
-		public static int getE4(Int32Vector v)
+		public static int GetE4(Int32Vector v)
 		{
 			return v.e4;
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_putE1)]
-		public static Int32Vector putE1(Int32Vector v, Int32 i)
+		public static Int32Vector PutE1(Int32Vector v, Int32 i)
 		{
 			Int32Vector r = new Int32Vector(i, v.e2, v.e3, v.e4);
 			return r;
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_putE2)]
-		public static Int32Vector putE2(Int32Vector v, Int32 i)
+		public static Int32Vector PutE2(Int32Vector v, Int32 i)
 		{
 			Int32Vector r = new Int32Vector(v.e1, i, v.e3, v.e4);
 			return r;
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_putE3)]
-		public static Int32Vector putE3(Int32Vector v, Int32 i)
+		public static Int32Vector PutE3(Int32Vector v, Int32 i)
 		{
 			Int32Vector r = new Int32Vector(v.e1, v.e2, i, v.e4);
 			return r;
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_putE4)]
-		public static Int32Vector putE4(Int32Vector v, Int32 i)
+		public static Int32Vector PutE4(Int32Vector v, Int32 i)
 		{
 			Int32Vector r = new Int32Vector(v.e1, v.e2, v.e3, i);
 			return r;
@@ -191,6 +211,26 @@ namespace CellDotNet
 		public override string ToString()
 		{
 			return "{" + e1 + ", " + e2 + ", " + e3 + ", " + e4 +  "}";
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (!(obj is Int32Vector)) return false;
+			Int32Vector int32Vector = (Int32Vector) obj;
+			if (e1 != int32Vector.e1) return false;
+			if (e2 != int32Vector.e2) return false;
+			if (e3 != int32Vector.e3) return false;
+			if (e4 != int32Vector.e4) return false;
+			return true;
+		}
+
+		public override int GetHashCode()
+		{
+			int result = e1;
+			result = 29*result + e2;
+			result = 29*result + e3;
+			result = 29*result + e4;
+			return result;
 		}
 	}
 }
