@@ -559,7 +559,9 @@ namespace CellDotNet
 			bblist.Add(_epilog.BasicBlocks[0]);
 
 
-			PerformAddressPatching(bblist, _epilog.BasicBlocks[0]);
+			// The 2nd last basicblock contains the inner epilog(restor callee saves register), 
+			// which is generated in the register allocator.
+			PerformAddressPatching(bblist, bblist[bblist.Count - 2]);
 
 
 			State = MethodCompileState.S8AddressPatchingDone;

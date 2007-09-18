@@ -108,7 +108,7 @@ namespace CellDotNet
 			}
 		}
 
-		static private unsafe uint ReinterpretAsUInt(float f)
+		static internal unsafe uint ReinterpretAsUInt(float f)
 		{
 			return *((uint*) &f);
 		}

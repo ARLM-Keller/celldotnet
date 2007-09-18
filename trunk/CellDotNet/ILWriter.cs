@@ -44,7 +44,7 @@ namespace CellDotNet
 
 		public void WriteFloat(float f1)
 		{
-			_writer.Write(f1);
+			_writer.Write(RecursiveInstructionSelector.ReinterpretAsUInt(f1));
 		}
 
 		public byte[] ToByteArray()

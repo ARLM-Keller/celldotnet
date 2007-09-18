@@ -528,7 +528,8 @@ namespace CellDotNet
 
 		private static void RunRasmus()
 		{
-			new SimpleProgramsTest().TestMethodCall();
+			new ILOpCodeExecutionTest().Test_Ceq_I4();
+//			new SimpleProgramsTest().TestMethodCall();
 		}
 
 
