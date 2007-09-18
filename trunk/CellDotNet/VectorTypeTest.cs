@@ -18,22 +18,15 @@ namespace CellDotNet
 
 		private delegate int IntDelegateInt32VInt(Int32Vector v1, int i);
 
-		private static int SimpleVectorTestFunc(Int32Vector v1)
-		{
-			return Int32Vector.GetE3(v1);
-		}
-
 		[Test]
 		public void TestSimple()
 		{
-			IntDelegateInt32V del = SimpleVectorTestFunc;
+			IntDelegateInt32V del = delegate(Int32Vector input) { return Int32Vector.GetE3(input); };
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			Int32Vector v1 = new Int32Vector();
-
-			v1.e3 = 17;
+			Int32Vector v1 = new Int32Vector(0, 0, 17, 0);
 
 			int PPUresult = del(v1);
 
@@ -47,24 +40,23 @@ namespace CellDotNet
 			}
 		}
 
-		private static int GetElementIntVectorFun(Int32Vector v, int i)
-		{
-			if (i == 1)
-				return Int32Vector.GetE1(v);
-			else if (i == 2)
-				return Int32Vector.GetE2(v);
-			else if (i == 3)
-				return Int32Vector.GetE3(v);
-			else if (i == 4)
-				return Int32Vector.GetE4(v);
-			else
-				return -1;
-		}
-
 		[Test]
 		public void TestVectorIntGetElement()
 		{
-			IntDelegateInt32VInt del = GetElementIntVectorFun;
+			IntDelegateInt32VInt del = 
+				delegate(Int32Vector v, int i)
+					{
+						if (i == 1)
+							return Int32Vector.GetE1(v);
+						else if (i == 2)
+							return Int32Vector.GetE2(v);
+						else if (i == 3)
+							return Int32Vector.GetE3(v);
+						else if (i == 4)
+							return Int32Vector.GetE4(v);
+						else
+							return -1;
+					};
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -93,20 +85,18 @@ namespace CellDotNet
 			}
 		}
 
-
-		private static Int32Vector GetPutElementIntVectorFun(Int32Vector vin, Int32Vector vout)
-		{
-			vout = Int32Vector.PutE1(vout, Int32Vector.GetE1(vin));
-			vout = Int32Vector.PutE2(vout, Int32Vector.GetE2(vin));
-			vout = Int32Vector.PutE3(vout, Int32Vector.GetE3(vin));
-			vout = Int32Vector.PutE4(vout, Int32Vector.GetE4(vin));
-			return vout;
-		}
-
 		[Test]
 		public void TestVectorIntGetPutElement()
 		{
-			Int32VDelegateInt32VInt32V del = GetPutElementIntVectorFun;
+			Int32VDelegateInt32VInt32V del =
+				delegate(Int32Vector vin, Int32Vector vout)
+					{
+						vout = Int32Vector.PutE1(vout, Int32Vector.GetE1(vin));
+						vout = Int32Vector.PutE2(vout, Int32Vector.GetE2(vin));
+						vout = Int32Vector.PutE3(vout, Int32Vector.GetE3(vin));
+						vout = Int32Vector.PutE4(vout, Int32Vector.GetE4(vin));
+						return vout;
+					};
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -130,20 +120,10 @@ namespace CellDotNet
 			}
 		}
 
-		public static Int32Vector AddVectorFunc(Int32Vector v1, Int32Vector v2)
-		{
-			return v1 + v2;
-		}
-
-		public static Int32Vector SubVectorFunc(Int32Vector v1, Int32Vector v2)
-		{
-			return v1 - v2;
-		}
-
 		[Test]
 		public void TestVectorIntAdd()
 		{
-			Int32VDelegateInt32VInt32V del = AddVectorFunc;
+			Int32VDelegateInt32VInt32V del = delegate(Int32Vector arg1, Int32Vector arg2) { return arg1 + arg2; };
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -176,7 +156,7 @@ namespace CellDotNet
 		[Test]
 		public void TestVectorIntSub()
 		{
-			Int32VDelegateInt32VInt32V del = SubVectorFunc;
+			Int32VDelegateInt32VInt32V del = delegate(Int32Vector arg1, Int32Vector arg2) { return arg1 - arg2; };
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -201,15 +181,10 @@ namespace CellDotNet
 			}
 		}
 
-		public static bool EqualVectorFunc(Int32Vector v1, Int32Vector v2)
-		{
-			return v1 == v2;
-		}
-
-		[Test, Ignore()]
+		[Test, Ignore("Currently we can't handle bools.")]
 		public void TestVectorIntEqual()
 		{
-			BoolDelegateInt32VInt32V del = EqualVectorFunc;
+			BoolDelegateInt32VInt32V del = delegate(Int32Vector arg1, Int32Vector arg2) { return arg1 == arg2; };
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -234,25 +209,10 @@ namespace CellDotNet
 			}
 		}
 
-		public static Float32Vector AddVectorFunc(Float32Vector v1, Float32Vector v2)
-		{
-			return v1 + v2;
-		}
-
-		public static Float32Vector SubVectorFunc(Float32Vector v1, Float32Vector v2)
-		{
-			return v1 - v2;
-		}
-
-		public static Float32Vector MulVectorFunc(Float32Vector v1, Float32Vector v2)
-		{
-			return v1 * v2;
-		}
-
 		[Test]
 		public void TestVectorFloatAdd()
 		{
-			Float32VDelegateFloat32VFloat32V del = AddVectorFunc;
+			Float32VDelegateFloat32VFloat32V del = delegate(Float32Vector arg1, Float32Vector arg2) { return arg2 + arg1; };
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -285,7 +245,7 @@ namespace CellDotNet
 		[Test]
 		public void TestVectorFloatSub()
 		{
-			Float32VDelegateFloat32VFloat32V del = SubVectorFunc;
+			Float32VDelegateFloat32VFloat32V del = delegate(Float32Vector arg1, Float32Vector arg2) { return arg1 - arg2; };
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -313,7 +273,7 @@ namespace CellDotNet
 		[Test]
 		public void TestVectorFloatMul()
 		{
-			Float32VDelegateFloat32VFloat32V del = MulVectorFunc;
+			Float32VDelegateFloat32VFloat32V del = delegate(Float32Vector arg1, Float32Vector arg2) { return arg1 * arg2; };
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -338,15 +298,14 @@ namespace CellDotNet
 			}
 		}
 
-		public static bool EqualFloatVectorFunc(Float32Vector v1, Float32Vector v2)
-		{
-			return v1 == v2;
-		}
-
-		[Test, Ignore()]
+		[Test, Ignore("Currently we can't handle bools.")]
 		public void TestVectorFloatEqual()
 		{
-			BoolDelegateFloat32VFloat32V del = EqualFloatVectorFunc;
+			BoolDelegateFloat32VFloat32V del =
+				delegate(Float32Vector arg1, Float32Vector arg2)
+				{
+					return arg1 == arg2;
+				};
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -371,27 +330,7 @@ namespace CellDotNet
 			}
 		}
 
-		public static Int32Vector ArrayIntVectorFunc1(Int32Vector v1)
-		{
-			Int32Vector[] varr = new Int32Vector[1];
-
-			varr[0] = v1;
-			return varr[0];
-		}
-
-		public static Int32Vector ArrayIntVectorFunc2(Int32Vector v1, Int32Vector v2)
-		{
-			Int32Vector[] varr = new Int32Vector[3];
-
-			varr[0] = v1;
-			varr[1] = v2;
-
-			varr[2] = varr[0] + varr[1];
-
-			return varr[2];
-		}
-
-		public static Float32Vector ArrayIntVectorFunc2(Float32Vector v1, Float32Vector v2)
+		private static Float32Vector ArrayIntVectorFunc2(Float32Vector v1, Float32Vector v2)
 		{
 			Float32Vector[] varr = new Float32Vector[3];
 
@@ -403,23 +342,16 @@ namespace CellDotNet
 			return varr[2];
 		}
 
-		public static Int32Vector ArrayIntVectorFunc3(Int32Vector v1, Int32Vector v2)
-		{
-			Int32Vector[] varr = new Int32Vector[100];
-
-			varr[14] = v2;
-
-			for (int i = 0; i < 100; i++)
-				if(i != 14)
-					varr[i] = v1;
-
-			return varr[14];
-		}
-
 		[Test]
 		public void TestVectorIntArraySimple()
 		{
-			Int32VDelegateInt32V del1 = ArrayIntVectorFunc1;
+			Int32VDelegateInt32V del1 = delegate(Int32Vector vec)
+			{
+				Int32Vector[] varr = new Int32Vector[1];
+
+				varr[0] = vec;
+				return varr[0];
+			};
 			
 			CompileContext cc = new CompileContext(del1.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -447,7 +379,18 @@ namespace CellDotNet
 		[Test]
 		public void TestVectorIntArray()
 		{
-			Int32VDelegateInt32VInt32V del = ArrayIntVectorFunc2;
+			Int32VDelegateInt32VInt32V del =
+				delegate(Int32Vector arg1, Int32Vector arg2)
+					{
+						Int32Vector[] varr = new Int32Vector[3];
+
+						varr[0] = arg1;
+						varr[1] = arg2;
+
+						varr[2] = varr[0] + varr[1];
+
+						return varr[2];
+					};
 
 			CompileContext cc = new CompileContext(del.Method);
 
@@ -480,7 +423,19 @@ namespace CellDotNet
 		[Test]
 		public void TestVectorIntArrayOverWrite()
 		{
-			Int32VDelegateInt32VInt32V del = ArrayIntVectorFunc3;
+			Int32VDelegateInt32VInt32V del =
+				delegate(Int32Vector arg1, Int32Vector arg2)
+					{
+						Int32Vector[] varr = new Int32Vector[100];
+
+						varr[14] = arg2;
+
+						for (int i = 0; i < 100; i++)
+							if (i != 14)
+								varr[i] = arg1;
+
+						return varr[14];
+					};
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
