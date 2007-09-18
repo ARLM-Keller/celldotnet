@@ -304,56 +304,74 @@ namespace CellDotNet
 		[Test]
 		public void Test_Mul_I4()
 		{
-			InstTest(OpCodes.Mul, 5, 3, 15);
+			ExecuteAndVerifyBinaryOperator(OpCodes.Mul, 5, 3, 15);
+		}
+
+		[Test]
+		public void Test_Add_R4()
+		{
+			ExecuteAndVerifyBinaryOperator(OpCodes.Add, 3.5f, 4f, 7.5f);
+		}
+
+		[Test]
+		public void Test_Sub_R4()
+		{
+			ExecuteAndVerifyBinaryOperator(OpCodes.Sub, 5.5f, 4f, 1.5f);
+		}
+
+		[Test]
+		public void Test_Mul_R4()
+		{
+			ExecuteAndVerifyBinaryOperator(OpCodes.Mul, 3.5f, 4f, 3.5f * 7.5f);
 		}
 
 		[Test]
 		public void Test_And()
 		{
-			InstTest(OpCodes.And, 0x0f0, 0xf00, 0x000);
-			InstTest(OpCodes.And, 0x0ff, 0xff0, 0x0f0);
+			ExecuteAndVerifyBinaryOperator(OpCodes.And, 0x0f0, 0xf00, 0x000);
+			ExecuteAndVerifyBinaryOperator(OpCodes.And, 0x0ff, 0xff0, 0x0f0);
 		}
 
 		[Test]
 		public void Test_Or()
 		{
-			InstTest(OpCodes.Or, 0xf00, 0x0f0, 0xff0);
+			ExecuteAndVerifyBinaryOperator(OpCodes.Or, 0xf00, 0x0f0, 0xff0);
 		}
 
 		[Test]
 		public void Test_Shl()
 		{
 			const int num = 0x300f0; // Uses both halfwords.
-			InstTest(OpCodes.Shl, num, 5, num << 5);
+			ExecuteAndVerifyBinaryOperator(OpCodes.Shl, num, 5, num << 5);
 		}
 
 		[Test]
 		public void Test_Xor()
 		{
-			InstTest(OpCodes.Xor, 0xff0, 0x0f0, 0xf00);
+			ExecuteAndVerifyBinaryOperator(OpCodes.Xor, 0xff0, 0x0f0, 0xf00);
 		}
 		
 		[Test]
 		public void Test_Ceq_I4()
 		{
-//			InstTest(OpCodes.Ceq, 5, 3, 0);
-			InstTest(OpCodes.Ceq, 5, 5, 1);
+//			ExecuteAndVerifyBinaryOperator(OpCodes.Ceq, 5, 3, 0);
+			ExecuteAndVerifyBinaryOperator(OpCodes.Ceq, 5, 5, 1);
 		}
 
 		[Test]
 		public void Test_Cgt_I4()
 		{
-			InstTest(OpCodes.Cgt, 5, 3, 1);
-			InstTest(OpCodes.Cgt, 5, 5, 0);
-			InstTest(OpCodes.Cgt, 5, 7, 0);
+			ExecuteAndVerifyBinaryOperator(OpCodes.Cgt, 5, 3, 1);
+			ExecuteAndVerifyBinaryOperator(OpCodes.Cgt, 5, 5, 0);
+			ExecuteAndVerifyBinaryOperator(OpCodes.Cgt, 5, 7, 0);
 		}
 
 		[Test, Ignore("Enable when division works.")]
 		public void Test_Div_Un()
 		{
-			InstTest(OpCodes.Div_Un, 16, 4, 4);
-//			InstTest(OpCodes.Div_Un, 16, 5, 3);
-//			InstTest(OpCodes.Div_Un, 2, 7, 0);
+			ExecuteAndVerifyBinaryOperator(OpCodes.Div_Un, 16, 4, 4);
+//			ExecuteAndVerifyBinaryOperator(OpCodes.Div_Un, 16, 5, 3);
+//			ExecuteAndVerifyBinaryOperator(OpCodes.Div_Un, 2, 7, 0);
 		}
 
 		private static int f1()
@@ -399,7 +417,7 @@ namespace CellDotNet
 			}
 		}
 
-		public void InstTest(OpCode opcode, int i1, int i2, int expectedValue)
+		public void ExecuteAndVerifyBinaryOperator(OpCode opcode, int i1, int i2, int expectedValue)
 		{
 			ILWriter w = new ILWriter();
 
@@ -413,11 +431,24 @@ namespace CellDotNet
 			Execution(w, expectedValue);
 		}
 
+		public void ExecuteAndVerifyBinaryOperator(OpCode opcode, float f1, float f2, float expectedValue)
+		{
+			ILWriter w = new ILWriter();
+
+			w.WriteOpcode(OpCodes.Ldc_R4);
+			w.WriteFloat(f1);
+			w.WriteOpcode(OpCodes.Ldc_R4);
+			w.WriteFloat(f2);
+			w.WriteOpcode(opcode);
+			w.WriteOpcode(OpCodes.Ret);
+
+			Execution(w, expectedValue);
+		}
+
 
 		private static void Execution<T>(ILWriter ilcode, T expectedValue) where T : struct
 		{
 			RegisterSizedObject returnAddressObject = new RegisterSizedObject("ReturnObject");
-//			returnAddressObject.Offset = Utilities.Align16(0x1000);
 
 			IRTreeBuilder builder = new IRTreeBuilder();
 			List<MethodVariable> vars = new List<MethodVariable>();

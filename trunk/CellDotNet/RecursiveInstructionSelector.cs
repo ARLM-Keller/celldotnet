@@ -557,6 +557,8 @@ namespace CellDotNet
 						case CliType.Int32:
 						case CliType.NativeInt:
 							return _writer.WriteA(vrleft, vrright);
+						case CliType.Float32:
+							return _writer.WriteFa(vrleft, vrright);
 					}
 					break;
 				case IRCode.Sub:
@@ -565,6 +567,8 @@ namespace CellDotNet
 						case CliType.Int32:
 						case CliType.NativeInt:
 							return _writer.WriteSf(vrright, vrleft);
+						case CliType.Float32:
+							return _writer.WriteFs(vrleft, vrright);
 					}
 					break;
 				case IRCode.Mul:
@@ -585,6 +589,8 @@ namespace CellDotNet
 							VirtualRegister rt = _writer.WriteA(t1, t2);
 							_writer.WriteA(rt, rt, t3);
 							return rt;
+						case CliType.Float32:
+							return  _writer.WriteFm(vrleft, vrright);
 					}
 					break;
 				case IRCode.Div:

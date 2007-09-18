@@ -96,9 +96,23 @@ namespace CellDotNet
 			AreEqual(correctVal, del2());
 		}
 
-		// **************************************************
-		// TestRecursiveSummation_Int
-		// **************************************************
+//		[Test]
+//		public void TestReturnConditional()
+//		{
+//			Converter<int, int> del = 
+//				delegate(int input)
+//					{
+//						// Tests that 
+//						if (input == 1)
+//							return 10;
+//						else
+//							return 20;
+//					};
+//			int arg = 1;
+//			CompileContext cc = new CompileContext(del.Method);
+//
+//			AreEqual(del(arg), (int) SpeContext.UnitTestRunProgram(cc, arg));
+//		}
 
 		#region Method call
 
@@ -113,7 +127,8 @@ namespace CellDotNet
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			cc.WriteAssemblyToFile("TestMethodCall.s", arg);
+//			cc.WriteAssemblyToFile("TestMethodCall.s", arg);
+			Disassembler.DisassembleToConsole(cc);
 
 			if (!SpeContext.HasSpeHardware)
 				return;
@@ -136,6 +151,10 @@ namespace CellDotNet
 		}
 
 		#endregion
+
+		// **************************************************
+		// TestRecursiveSummation_Int
+		// **************************************************
 
 		[Test]
 		public void TestRecursiveSummation_Int()
