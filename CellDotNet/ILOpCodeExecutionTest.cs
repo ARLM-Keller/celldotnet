@@ -461,7 +461,7 @@ namespace CellDotNet
 			// NOTE: køre ikke på prolog og epilog.
 			{
 				int nextspillOffset = 3;
-				new SimpleRegAlloc().Allocate(spum.Writer.BasicBlocks.GetRange(1, spum.Writer.BasicBlocks.Count - 2),
+				new LinearRegisterAllocator().Allocate(spum.Writer.BasicBlocks.GetRange(1, spum.Writer.BasicBlocks.Count - 2),
 											  delegate { return nextspillOffset++; });
 				
 			}

@@ -439,7 +439,7 @@ namespace CellDotNet
 //			Console.WriteLine("Disassemble before register allocation:");
 //			Disassembler.DisassembleUnconditionalToConsole(this);
 
-			new SimpleRegAlloc().Allocate(SpuBasicBlocks, GetNewSpillQuadOffset);
+			new LinearRegisterAllocator().Allocate(SpuBasicBlocks, GetNewSpillQuadOffset);
 
 //			Console.WriteLine("Disassemble after register allocation:");
 //			Disassembler.DisassembleUnconditionalToConsole(this);

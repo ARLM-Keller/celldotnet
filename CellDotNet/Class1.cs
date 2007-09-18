@@ -333,7 +333,7 @@ namespace CellDotNet
 			Console.WriteLine(ilist.Disassemble());
 			
 
-			SimpleRegAlloc regalloc = new SimpleRegAlloc();
+			LinearRegisterAllocator regalloc = new LinearRegisterAllocator();
 			List<SpuInstruction> asm = ilist.GetAsList();
 //			regalloc.alloc(asm, 16); //Out dated
 

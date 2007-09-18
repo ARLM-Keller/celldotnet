@@ -7,7 +7,7 @@ namespace CellDotNet
 	/// <summary>
 	/// A simple linear scan register allocator based on http://www.research.ibm.com/jalapeno/papers/toplas99.pdf.
 	/// </summary>
-	internal class SimpleRegAlloc
+	internal class LinearRegisterAllocator
 	{
 		// TODO Registre allokatoren bør arbejde på hele metoden.
 		// returnere true hvis der forekommer spill(indtilvidre håndteres spill ikke!)
@@ -427,7 +427,7 @@ namespace CellDotNet
 //			Set<VirtualRegister> hardwareRegisters = new Set<VirtualRegister>();
 //			hardwareRegisters.AddAll(HardwareRegister.VirtualHardwareRegisters);
 //
-//// 				new SimpleRegAlloc().hardwareIntervalsToString(hardwareIntervals)
+//// 				new LinearRegisterAllocator().hardwareIntervalsToString(hardwareIntervals)
 //
 //			foreach (LiveInterval interval in liveIntervals)
 //			{
@@ -524,7 +524,7 @@ namespace CellDotNet
 //			}
 //
 //			if (spilledRegister.Count > 0 && inputNewSpillOffset == null)
-//				throw new Exception("SimpleRegAlloc needs to spill, but no stack offset was given.");
+//				throw new Exception("LinearRegisterAllocator needs to spill, but no stack offset was given.");
 //
 //			Dictionary<VirtualRegister, int> spillOffset = new Dictionary<VirtualRegister, int>();
 //			foreach (VirtualRegister register in spilledRegister)

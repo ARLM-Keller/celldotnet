@@ -122,7 +122,7 @@ namespace CellDotNet
 ////			mc.PerformProcessing(MethodCompileState.S4InstructionSelectionDone);
 ////			Disassembler.DisassembleUnconditionalToConsole(mc);
 //			mc.PerformProcessing(MethodCompileState.S5RegisterAllocationDone);
-////			new SimpleRegAlloc().Allocate();
+////			new LinearRegisterAllocator().Allocate();
 //			return;
 
 			CompileContext cc = new CompileContext(del.Method);
