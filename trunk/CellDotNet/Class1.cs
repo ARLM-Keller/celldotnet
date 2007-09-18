@@ -526,13 +526,9 @@ namespace CellDotNet
 		[DllImport("NonExistingLibrary")]
 		private static extern void MethodInNonExistingLibrary(int i);
 
-		private unsafe static void RunRasmus()
+		private static void RunRasmus()
 		{
-
-
-
-
-			return;
+			new SimpleProgramsTest().TestMethodCall();
 		}
 
 

@@ -100,30 +100,56 @@ namespace CellDotNet
 		// TestRecursiveSummation_Int
 		// **************************************************
 
+		#region Method call
+
+		[Test]
+		public void TestMethodCall()
+		{
+			Converter<int, int> del = MethodCallMethod;
+
+			const int arg = 15;
+			int correctval = del(arg);
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			cc.WriteAssemblyToFile("TestMethodCall.s", arg);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			using (SpeContext sc = new SpeContext())
+			{
+				object rv = sc.RunProgram(cc, arg);
+				AreEqual(correctval, (int)rv);
+			}
+		}
+
+		static int ReturnInt(int i)
+		{
+			return i;
+		}
+
+		static int MethodCallMethod(int level)
+		{
+			return 3 + ReturnInt(10);
+		}
+
+		#endregion
+
 		[Test]
 		public void TestRecursiveSummation_Int()
 		{
 			Converter<int, int> del = RecursiveSummation_Int;
 
 			const int arg = 15;
-
 			int correctval = del(arg);
-
-//			Console.WriteLine("TestRecursiveSummation_Int: {0}", correctval);
+			AreNotEqual(0, correctval, "Zero isn't good.");
 
 			CompileContext cc = new CompileContext(del.Method);
-
-			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
-
-//			new TreeDrawer().DrawMethods(cc);
-
-//			Disassembler.DisassembleUnconditional(cc, Console.Out);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-//			Disassembler.DisassembleToConsole(cc);
-
-			cc.WriteAssemblyToFile(Utilities.GetUnitTestName() + "_asm.s", arg);
+//			cc.WriteAssemblyToFile(Utilities.GetUnitTestName() + "_asm.s", arg);
 			
 			if (!SpeContext.HasSpeHardware)
 				return;

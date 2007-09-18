@@ -215,7 +215,7 @@ namespace CellDotNet
 
 			DetermineEscapes();
 
-			_partialEvaluator.Evaluate(this);
+//			_partialEvaluator.Evaluate(this);
 
 			State = MethodCompileState.S2TreeConstructionDone;
 		}
@@ -269,12 +269,15 @@ namespace CellDotNet
 					var.VirtualRegister = NextRegister();
 			}
 
-			int argnum = 0;
+//			int argnum = 0;
 			foreach (MethodParameter p in Parameters)
 			{
 				p.Escapes = false;
-				// The linear register allocator needs us to do the precoloring somewhere like here.
-				p.VirtualRegister = HardwareRegister.GetHardwareArgumentRegister(argnum++);
+				// XX The linear register allocator needs us to do the precoloring somewhere like here.
+//				p.VirtualRegister = HardwareRegister.GetHardwareArgumentRegister(argnum++);
+
+				// The linear register allocator will move physical argument registers into these virtual registers.
+				p.VirtualRegister = NextRegister();
 			}
 
 			Action<TreeInstruction> action =
@@ -433,13 +436,13 @@ namespace CellDotNet
 //			RegAllocGraphColloring regalloc = new RegAllocGraphColloring();
 //			regalloc.Alloc(SpuBasicBlocks, GetNewSpillQuadOffset, registerWeight);
 
-//			Console.WriteLine("Disassemble before register allocation:");
-//			Disassembler.DisassembleUnconditionalToConsole(this);
+			Console.WriteLine("Disassemble before register allocation:");
+			Disassembler.DisassembleUnconditionalToConsole(this);
 
 			new SimpleRegAlloc().Allocate(SpuBasicBlocks, GetNewSpillQuadOffset);
 
-//			Console.WriteLine("Disassemble after register allocation:");
-//			Disassembler.DisassembleUnconditionalToConsole(this);
+			Console.WriteLine("Disassemble after register allocation:");
+			Disassembler.DisassembleUnconditionalToConsole(this);
 
 //			SimpleRegAlloc.Alloc(SpuBasicBlocks, GetNewSpillQuadOffset);
 

@@ -104,7 +104,6 @@ namespace CellDotNet
 				MethodParameter parameter = _parameters[i];
 
 				VirtualRegister src = HardwareRegister.GetHardwareArgumentRegister(i);
-
 				_writer.WriteMove(src, parameter.VirtualRegister);
 			}
 		}
