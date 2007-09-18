@@ -102,7 +102,7 @@ namespace CellDotNet
 
 	public struct Int32Vector
 	{
-		public Int32 e1, e2, e3, e4;
+		private int e1, e2, e3, e4;
 
 		public Int32Vector(int e1, int e2, int e3, int e4)
 		{
@@ -166,6 +166,15 @@ namespace CellDotNet
 		public static int GetE2(Int32Vector v)
 		{
 			return v.e2;
+		}
+
+		/// <summary>
+		/// An experiment - would be nice to have...
+		/// </summary>
+		public int E3
+		{
+			[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE3)]
+			get { return e3; }
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE3)]
