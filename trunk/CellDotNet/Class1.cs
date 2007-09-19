@@ -32,7 +32,7 @@ namespace CellDotNet
 
 //			new SpeContextTest().TestRecursion_StackOverflow_Debug();
 
-//			new MfcTest().TestDma_GetIntArray_DEBUG();
+			new MfcTest().TestDma_GetIntArray();
 
 //			new ILOpCodeExecutionTest().Test_Call();
 
@@ -48,7 +48,9 @@ namespace CellDotNet
 
 //			new VectorTypeTest().TestVectorIntGetPutElement();
 
-			new VectorTypeTest().TestVectorIntArray();
+//			new VectorTypeTest().TestVectorIntArray();
+
+//			new MfcTest().TestDma_GetIntArray_DEBUG();
 
 				Console.WriteLine("Running RunKlaus done.");
 		}

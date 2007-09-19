@@ -53,12 +53,13 @@ namespace CellDotNet
 
 				CompileContext cc = new CompileContext(del.Method);
 				cc.PerformProcessing(CompileContextState.S8Complete);
+
 //				Disassembler.DisassembleToConsole(cc);
-//				cc.WriteAssemblyToFile("dma.s", mem.GetArea());
+				cc.WriteAssemblyToFile("TestDma_GetIntArray_asm.s", mem.GetArea());
 
 				object rv = SpeContext.UnitTestRunProgram(cc, mem.GetArea());
-				int correctVal = del(mem.GetArea());
-				AreEqual(20, correctVal);
+//				int correctVal = del(mem.GetArea());
+//				AreEqual(20, correctVal);
 				AreEqual(20, (int)rv);
 			}
 		}
@@ -79,31 +80,35 @@ namespace CellDotNet
 					{
 						int[] arr = new int[4];
 
-						uint tag = 1;
-						Mfc.Get(arr, input, 4, tag);
-						Mfc.WaitForDmaCompletion(tag);
+						Mfc.Get_DEBUG(arr, input, 4, 1);
+						Mfc.WaitForDmaCompletion(1);
 
-						int sum = 0;
-						for (int i = 0; i < 4; i++)
-							sum += arr[i];
+//						int sum = 0;
+//						for (int i = 0; i < 4; i++)
+//							sum += arr[i];
 
-						return sum;
+						return 1;
 					};
 
 				CompileContext cc = new CompileContext(del.Method);
 
 				cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
 
-//				Disassembler.DisassembleUnconditional(cc, Console.Out);
+				Disassembler.DisassembleUnconditional(cc, Console.Out);
 				
 				cc.PerformProcessing(CompileContextState.S8Complete);
 
-//				Disassembler.DisassembleToConsole(cc);
+				Disassembler.DisassembleToConsole(cc);
+
+				cc.WriteAssemblyToFile("TestDma_GetIntArray_DEBUG_asm.s", mem.GetArea());
 
 				object rv = SpeContext.UnitTestRunProgram(cc, mem.GetArea());
-				int correctVal = del(mem.GetArea());
-				AreEqual(20, correctVal);
-				AreEqual(20, (int)rv);
+
+				Console.WriteLine("Result: {0}", (int)rv);
+
+//				int correctVal = del(mem.GetArea());
+//				AreEqual(20, correctVal);
+//				AreEqual(20, (int)rv);
 			}
 		}
 
@@ -156,15 +161,17 @@ namespace CellDotNet
 	public struct MainStorageArea
 	{
 		private uint _effectiveAddress;
-		internal uint EffectiveAddress
-		{
-			[IntrinsicMethod(SpuIntrinsicMethod.MainStorageArea_get_EffectiveAddress)]
-			get { return _effectiveAddress; }
-		}
 
 		internal MainStorageArea(IntPtr effectiveAddress)
 		{
 			_effectiveAddress = (uint) effectiveAddress;
 		}
+
+		[IntrinsicMethod(SpuIntrinsicMethod.MainStorageArea_get_EffectiveAddress)]
+		public static uint GetEffectiveAddress(MainStorageArea ma)
+		{
+			return ma._effectiveAddress;
+		}
+
 	}
 }
