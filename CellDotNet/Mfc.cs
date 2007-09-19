@@ -32,14 +32,27 @@ namespace CellDotNet
 
 			if (SpuRuntime.IsRunningOnSpu)
 			{
-				Get(ref target[0], ea.EffectiveAddress, bytecount, 0xfffff, 0, 0);
+				Get(ref target[0], MainStorageArea.GetEffectiveAddress(ea), bytecount, 0xfffff, 0, 0); //TODO få styr på tag
 			}
 			else
 			{
-				AssertValidEffectiveAddress(ea.EffectiveAddress, bytecount);
-				Marshal.Copy((IntPtr) ea.EffectiveAddress, target, 0, count);
+				AssertValidEffectiveAddress(MainStorageArea.GetEffectiveAddress(ea), bytecount);
+				Marshal.Copy((IntPtr)MainStorageArea.GetEffectiveAddress(ea), target, 0, count);
 			}
 		}
+
+		static public void Get_DEBUG(int[] target, MainStorageArea ea, short count, uint tag)
+		{
+			int bytecount = count * 4;
+			Get(ref target[0], MainStorageArea.GetEffectiveAddress(ea), bytecount, 0xfffff, 0, 0);
+		}
+
+		[IntrinsicMethod(SpuIntrinsicMethod.Runtime_Stop)]
+		static void Stop()
+		{
+			
+		}
+
 
 		private static void AssertValidEffectiveAddress(uint address, int bytecount)
 		{
@@ -63,12 +76,12 @@ namespace CellDotNet
 
 			if (SpuRuntime.IsRunningOnSpu)
 			{
-				Put(ref source[0], ea.EffectiveAddress, bytecount, 0xfffff, 0, 0);
+				Put(ref source[0], MainStorageArea.GetEffectiveAddress(ea), bytecount, 0xfffff, 0, 0);
 			}
 			else
 			{
-				AssertValidEffectiveAddress(ea.EffectiveAddress, bytecount);
-				Marshal.Copy(source, 0, (IntPtr) ea.EffectiveAddress, count);
+				AssertValidEffectiveAddress(MainStorageArea.GetEffectiveAddress(ea), bytecount);
+				Marshal.Copy(source, 0, (IntPtr)MainStorageArea.GetEffectiveAddress(ea), count);
 			}
 		}
 
@@ -125,8 +138,9 @@ namespace CellDotNet
 			WriteChannel(SpuWriteChannel.MFC_LSA, ref lsStart);
 			WriteChannel(SpuWriteChannel.MFC_EAL, ea);
 			WriteChannel(SpuWriteChannel.MFC_Size, (uint) byteCount);
-			WriteChannel(SpuWriteChannel.MFC_TagID, tag);
+			WriteChannel(SpuWriteChannel.MFC_TagID, tag & 0x1f);
 			WriteChannel(SpuWriteChannel.MFC_CmdAndClassID, cmd);
+
 		}
 
 		static private void Put(ref int lsStart, uint ea, int byteCount, uint tag, uint tid, uint rid)

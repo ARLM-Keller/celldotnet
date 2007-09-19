@@ -853,7 +853,7 @@ main:
 					Marshal.StructureToPtr(val, ptr, false);
 				}
 				else if (val is MainStorageArea)
-					buf = BitConverter.GetBytes(((MainStorageArea)val).EffectiveAddress);
+					buf = BitConverter.GetBytes(MainStorageArea.GetEffectiveAddress((MainStorageArea)val));
 				else
 					throw new ArgumentException("Unsupported argument datatype: " + val.GetType().Name);
 

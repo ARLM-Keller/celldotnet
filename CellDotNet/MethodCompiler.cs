@@ -215,7 +215,7 @@ namespace CellDotNet
 
 			DetermineEscapes();
 
-//			_partialEvaluator.Evaluate(this);
+			_partialEvaluator.Evaluate(this);
 
 			State = MethodCompileState.S2TreeConstructionDone;
 		}
@@ -299,6 +299,8 @@ namespace CellDotNet
 
 		#endregion
 
+		private SpuBasicBlock _innerEpilog = new SpuBasicBlock();
+
 		private int _virtualRegisterNum = -1000; // Arbitrary...
 		private VirtualRegister NextRegister()
 		{
@@ -355,8 +357,87 @@ namespace CellDotNet
 //					_instructions.WriteMove(calleTemps[regnum - 80], HardwareRegister.GetHardwareRegister(regnum));
 //				}
 			}
+
 			State = MethodCompileState.S4InstructionSelectionDone;
 		}
+
+		private void PerformInstructionOptimazation()
+		{
+			List<SpuInstruction> jumpInsts = new List<SpuInstruction>();
+
+			Dictionary<SpuBasicBlock, Set<SpuInstruction>> branchSourcesForConditionalBranch = new Dictionary<SpuBasicBlock, Set<SpuInstruction>>();
+			Dictionary<SpuBasicBlock, List<SpuInstruction>> branchSources = new Dictionary<SpuBasicBlock, List<SpuInstruction>>();
+
+			// Maps to basic block number.
+			List<int> posibleRemoveableBranche = new List<int>();
+
+
+			for (int i = 0; i < SpuBasicBlocks.Count; i++ )
+			{
+				SpuBasicBlock block = SpuBasicBlocks[i];
+
+				SpuInstruction inst = block.Head;
+
+				while (inst != null)
+				{
+					if(inst.JumpTarget != null)
+					{
+						int target = SpuBasicBlocks.IndexOf(inst.JumpTarget);
+						// Looks for the firste non empty basic block
+						while (target < SpuBasicBlocks.Count && SpuBasicBlocks[target].Head == null)
+							target++;
+
+						if (i < SpuBasicBlocks.Count)
+						{
+							SpuInstruction targetInst = SpuBasicBlocks[target].Head;
+
+							if(targetInst.OpCode == SpuOpCode.br || targetInst.OpCode == SpuOpCode.ret)
+							{
+								posibleRemoveableBranche.Add(target);
+
+								if (targetInst.OpCode == SpuOpCode.ret)
+										targetInst.JumpTarget = _innerEpilog;
+
+								if(!branchSourcesForConditionalBranch.ContainsKey(SpuBasicBlocks[target]))
+									branchSourcesForConditionalBranch[SpuBasicBlocks[target]] = new Set<SpuInstruction>();
+
+								branchSourcesForConditionalBranch[SpuBasicBlocks[target]].Add(inst);
+							}
+						}
+					}
+				}
+			}
+
+			while (branchSourcesForConditionalBranch.Count != 0)
+			{
+				SpuBasicBlock targetBlock = Utilities.GetFirst(branchSourcesForConditionalBranch.Keys);
+
+				while(branchSourcesForConditionalBranch[targetBlock].Count != 0)
+				{
+					SpuInstruction srcInst = Utilities.GetFirst(branchSourcesForConditionalBranch[targetBlock]);
+
+					SpuBasicBlock newTarget = targetBlock.Head.JumpTarget;
+
+					srcInst.JumpTarget = newTarget;
+
+					branchSourcesForConditionalBranch[targetBlock].Remove(srcInst);
+
+					if (branchSourcesForConditionalBranch[targetBlock].Count == 0)
+						branchSourcesForConditionalBranch.Remove(targetBlock);
+
+					if (branchSourcesForConditionalBranch.ContainsKey(newTarget))
+						branchSourcesForConditionalBranch[newTarget].Add(srcInst);
+				}
+			}
+
+			posibleRemoveableBranche.Sort();
+			posibleRemoveableBranche.Reverse();
+
+			foreach (int i in posibleRemoveableBranche)
+				if(i + 1 < SpuBasicBlocks.Count && SpuBasicBlocks[i].Head.JumpTarget == SpuBasicBlocks[i+1])
+					SpuBasicBlocks.RemoveAt(i);
+		}
+
 
 		/// <summary>
 		/// This is only for unit test
@@ -439,7 +520,7 @@ namespace CellDotNet
 //			Console.WriteLine("Disassemble before register allocation:");
 //			Disassembler.DisassembleUnconditionalToConsole(this);
 
-			new LinearRegisterAllocator().Allocate(SpuBasicBlocks, GetNewSpillQuadOffset);
+			new LinearRegisterAllocator().Allocate(SpuBasicBlocks, GetNewSpillQuadOffset, _innerEpilog);
 
 //			Console.WriteLine("Disassemble after register allocation:");
 //			Disassembler.DisassembleUnconditionalToConsole(this);

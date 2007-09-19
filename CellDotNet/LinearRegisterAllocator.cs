@@ -157,7 +157,7 @@ namespace CellDotNet
 		private ActiveIntervalSet _active;
 
 		public void Allocate(List<SpuBasicBlock> spuBasicBlocks,
-		                     RegAllocGraphColloring.NewSpillOffsetDelegate inputNewSpillOffset)
+		                     RegAllocGraphColloring.NewSpillOffsetDelegate inputNewSpillOffset, SpuBasicBlock innerEpilog)
 		{
 			_registerPool = new RegisterPool();
 			_active = new ActiveIntervalSet();
@@ -207,7 +207,11 @@ namespace CellDotNet
 
 			// Load callee saves.
 			SpuInstructionWriter loadWriter = new SpuInstructionWriter();
-			loadWriter.BeginNewBasicBlock();
+			if(innerEpilog == null)
+				loadWriter.BeginNewBasicBlock();
+			else
+				loadWriter.AppendBasicBlock(innerEpilog);
+
 			foreach (KeyValuePair<VirtualRegister, int> pair in calleesWithOffset)
 			{
 				VirtualRegister hwreg = pair.Key;

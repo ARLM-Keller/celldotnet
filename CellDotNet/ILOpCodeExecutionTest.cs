@@ -23,11 +23,11 @@ namespace CellDotNet
 
 			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
 
-//			Disassembler.DisassembleUnconditional(cc, Console.Out);
+			Disassembler.DisassembleUnconditional(cc, Console.Out);
 
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-//			Disassembler.DisassembleToConsole(cc);
+			Disassembler.DisassembleToConsole(cc);
 
 //			cc.WriteAssemblyToFile(Utilities.GetUnitTestName() + "_asm.s", new ValueType[0]);
 
@@ -528,7 +528,7 @@ namespace CellDotNet
 			{
 				int nextspillOffset = 3;
 				new LinearRegisterAllocator().Allocate(spum.Writer.BasicBlocks.GetRange(1, spum.Writer.BasicBlocks.Count - 2),
-											  delegate { return nextspillOffset++; });
+											  delegate { return nextspillOffset++; }, null);
 				
 			}
 			RegAllocGraphColloring.RemoveRedundantMoves(spum.Writer.BasicBlocks);

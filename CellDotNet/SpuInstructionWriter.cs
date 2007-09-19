@@ -52,13 +52,26 @@ namespace CellDotNet
 		}
 
 		/// <summary>
-		/// Marks the start of a new <see cref="SpuBasicBlock"/>. You need to call this on a new instance
-		/// before using the WriteXXX methods.
+		/// Marks the start of a new <see cref="SpuBasicBlock"/>. You need to call this or <see cref="AppendBasicBlock"/> on a new instance
+		/// before using the WriteXXX methods
 		/// </summary>
 		public void BeginNewBasicBlock()
 		{
 			_basicBlocks.Add(new SpuBasicBlock());
 			_lastInstruction = null;
+		}
+
+		/// <summary>
+		/// Appends a <see cref="SpuBasicBlock"/>. You need to call this or <see cref="BeginNewBasicBlock"/> on a new instance
+		/// before using the WriteXXX methods
+		/// </summary>
+		public void AppendBasicBlock(SpuBasicBlock basicBlock)
+		{
+			_basicBlocks.Add(basicBlock);
+			_lastInstruction = basicBlock.Head;
+			if(_lastInstruction != null)
+				while (_lastInstruction.Next != null)
+					_lastInstruction = _lastInstruction.Next;
 		}
 
 		public SpuBasicBlock CurrentBlock
