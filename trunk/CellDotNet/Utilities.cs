@@ -8,7 +8,7 @@ using NUnit.Framework;
 
 namespace CellDotNet
 {
-	static class Utilities
+	public static class Utilities
 	{
 		#region Asserts.
 
@@ -150,7 +150,7 @@ namespace CellDotNet
 			return (offset%4) == 0;
 		}
 
-		public static bool IsQuadwordAligned(LocalStorageAddress lsa)
+		internal static bool IsQuadwordAligned(LocalStorageAddress lsa)
 		{
 			return IsQuadwordAligned(lsa.Value);
 		}
@@ -192,7 +192,7 @@ namespace CellDotNet
 			return buf;
 		}
 
-		static public void DumpMemory(SpeContext context, LocalStorageAddress lsa, int bytecount, TextWriter writer)
+		static internal void DumpMemory(SpeContext context, LocalStorageAddress lsa, int bytecount, TextWriter writer)
 		{
 			AssertArgument(IsQuadwordAligned(lsa), "IsQuadwordAligned(lsa): " + lsa.Value.ToString("x6"));
 
@@ -202,7 +202,7 @@ namespace CellDotNet
 			DumpMemory(mem, lsa.Value / 4, lsa, bytecount, writer);
 		}
 
-		static public void DumpMemory(int[] memDump, int arrayOffset, LocalStorageAddress arrayOffsetAddress, int bytecount, TextWriter writer)
+		static internal void DumpMemory(int[] memDump, int arrayOffset, LocalStorageAddress arrayOffsetAddress, int bytecount, TextWriter writer)
 		{
 			int bytesPerLine = 16;
 			for (int i = 0; i < Math.Min(memDump.Length, bytecount / 4); i++)

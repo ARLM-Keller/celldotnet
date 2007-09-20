@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -52,6 +53,9 @@ namespace CellDotNet
 					string.Format("Could not find ELF section for virtual address 0x{0:x}.", elfsymbol.VirtualAddress));
 
 			int fileoffset = section.FileOffset + (elfsymbol.VirtualAddress - section.VirtualAddress);
+
+			Trace.WriteLine(string.Format("Resolved ELF symbol '{0}' to file offset 0x{1:x} and virtual address 0x{2:x}.", 
+				symbolname, fileoffset, elfsymbol.VirtualAddress));
 
 			return new LibraryMethod(symbolname, this, fileoffset, dllImportMethod);
 		}
@@ -153,7 +157,16 @@ spu-objdump -h {0} | awk '/^ +[0-9]/ {{ print $2,$3,$4,$6}}'
 			foreach (string line in lines)
 			{
 				string[] arr = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-				Utilities.Assert(arr.Length == 3, "Not three elements.");
+				if (arr.Length == 2)
+				{
+					// Probably a weak symbol without value.
+					if (arr[0] == "w")
+						continue;
+					else
+						throw new Exception("Bad output line.");
+				}
+
+				Utilities.Assert(arr.Length == 3, "Not three elements in line.");
 
 				int virtualAddress = Convert.ToInt32(arr[0], 16);
 				char symbolType = arr[1][0];

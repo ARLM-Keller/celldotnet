@@ -23,18 +23,29 @@ namespace CellDotNet
 
 		public MainStorageArea GetArea()
 		{
-			if (!_arrayHandle.IsAllocated)
-				throw new InvalidOperationException();
-
-			IntPtr ptr = Marshal.UnsafeAddrOfPinnedArrayElement(_arraySegment.Array, _arraySegment.Offset);
+			IntPtr ptr = GetIntPtr();
 			MainStorageArea area = new MainStorageArea(ptr);
 
 			return area;
 		}
 
+		public IntPtr GetIntPtr()
+		{
+			if (!_arrayHandle.IsAllocated)
+				throw new InvalidOperationException();
+
+			return Marshal.UnsafeAddrOfPinnedArrayElement(_arraySegment.Array, _arraySegment.Offset);
+		}
+
 		public ArraySegment<T> ArraySegment
 		{
 			get { return _arraySegment; }
+		}
+
+		public T this[int index]
+		{
+			get { return _arraySegment.Array[_arraySegment.Offset + index]; }
+			set { _arraySegment.Array[_arraySegment.Offset + index] = value; }
 		}
 
 		public void Dispose()
@@ -53,7 +64,7 @@ namespace CellDotNet
 		}
 	}
 
-	internal class SpeContext : IDisposable
+	public class SpeContext : IDisposable
 	{
 		private const uint SPE_TAG_ALL = 1;
 		private const uint SPE_TAG_ANY = 2;
@@ -113,7 +124,7 @@ namespace CellDotNet
 		private IntPtr _handle;
 
 		private int _localStorageSize = -1;
-		private IntPtr _localStorageAddress;
+		private IntPtr _localStorageMappedAddress;
 		private RegisterSizedObject _debugValueObject;
 
 		public int LocalStorageSize
@@ -121,12 +132,12 @@ namespace CellDotNet
 			get { return _localStorageSize; }
 		}
 
-		public IntPtr LocalStorageAddress
+		public IntPtr LocalStorageMappedAddress
 		{
-			get { return _localStorageAddress; }
+			get { return _localStorageMappedAddress; }
 		}
 
-		public RegisterSizedObject DebugValueObject
+		internal RegisterSizedObject DebugValueObject
 		{
 			set {_debugValueObject = value; }
 			get { return _debugValueObject;}
@@ -180,7 +191,7 @@ namespace CellDotNet
 				throw new Exception();
 
 			_localStorageSize = UnsafeNativeMethods.spe_ls_size_get(_handle);
-			_localStorageAddress = UnsafeNativeMethods.spe_ls_area_get(_handle);
+			_localStorageMappedAddress = UnsafeNativeMethods.spe_ls_area_get(_handle);
 		}
 
 		public void LoadProgram(int[] code)
@@ -188,11 +199,9 @@ namespace CellDotNet
 			AssertContext();
 
 			IntPtr dataBufMain = IntPtr.Zero;
-
-			// Save a copy of the code for optional disassembly.
-//			string unittestname = Utilities.GetUnitTestName();
-//			if (!string.IsNullOrEmpty(unittestname))
-//				code.WriteAssemblyToFile(unittestname + ".s");
+			Utilities.AssertArgumentNotNull(code, "code");
+			int codeBufSize = Utilities.Align16(code.Length * 4);
+			Utilities.AssertArgument(codeBufSize < LocalStorageSize, "codeBufSize < LocalStorageSize");
 
 			try
 			{
@@ -202,22 +211,7 @@ namespace CellDotNet
 
 				Marshal.Copy(code, 0, dataBuf, code.Length);
 
-				int codeBufSize = ((code.Length*4)/16 + 1)*16;
-
-				uint DMA_tag = 1;
-				spe_mfcio_get(0, dataBuf, codeBufSize, DMA_tag, 0, 0);
-
-
-				Console.WriteLine("Waiting for DMA to finish.");
-
-				// TODO mask skal sættes til noget fornuftigt
-				uint tag_status = 0;
-				int waitresult = UnsafeNativeMethods.spe_mfcio_tag_status_read(_handle, 0, SPE_TAG_ALL, ref tag_status);
-
-				Console.WriteLine("DMA done.");
-
-				if (waitresult == -1)
-					throw new LibSpeException("spe_mfcio_status_tag_read failed.");
+				DmaGetLarge(dataBuf, codeBufSize, (LocalStorageAddress) 0);
 			} 
 			finally
 			{
@@ -226,7 +220,35 @@ namespace CellDotNet
 			}
 		}
 
-		public object DmaGetValue(StackTypeDescription datatype, LocalStorageAddress lsAddress)
+		/// <summary>
+		/// Transfers the data to LS.
+		/// </summary>
+		/// <param name="buffer"></param>
+		/// <param name="transferSize"></param>
+		/// <param name="lsa"></param>
+		private void DmaGetLarge(IntPtr buffer, int transferSize, LocalStorageAddress lsa)
+		{
+			const int MaxDmaSize = 16 * 1024;
+			for (int offset = 0; offset < transferSize; offset += MaxDmaSize)
+			{
+				uint DMA_tag = 1;
+				IntPtr bufptr = (IntPtr)((int)buffer + offset);
+				int size = Math.Min(transferSize - offset, MaxDmaSize);
+				spe_mfcio_get(lsa.Value + offset, bufptr, size, DMA_tag, 0, 0);
+
+				Console.WriteLine("Waiting for DMA to finish.");
+
+				// TODO mask skal sættes til noget fornuftigt
+				uint tag_status = 0;
+				int waitresult = UnsafeNativeMethods.spe_mfcio_tag_status_read(_handle, 0, SPE_TAG_ALL, ref tag_status);
+				if (waitresult == -1)
+					throw new LibSpeException("spe_mfcio_status_tag_read failed.");
+
+				Console.WriteLine("DMA done.");
+			}
+		}
+
+		internal object DmaGetValue(StackTypeDescription datatype, LocalStorageAddress lsAddress)
 		{
 			switch (datatype.CliType)
 			{
@@ -255,7 +277,7 @@ namespace CellDotNet
 		/// Gets a value type from the specified local storage address.
 		/// </summary>
 		/// <param name="lsAddress"></param>
-		public unsafe T DmaGetValue<T>(LocalStorageAddress lsAddress) where T : struct
+		internal unsafe T DmaGetValue<T>(LocalStorageAddress lsAddress) where T : struct
 		{
 			byte* buf = stackalloc byte[31];
 			IntPtr ptr = Utilities.Align16((IntPtr) buf);
@@ -294,7 +316,7 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="lsAddress"></param>
 		/// <param name="value"></param>
-		public unsafe void DmaPutValue(LocalStorageAddress lsAddress, ValueType value)
+		internal unsafe void DmaPutValue(LocalStorageAddress lsAddress, ValueType value)
 		{
 			uint DMA_tag = 1;
 			byte* buf = stackalloc byte[31];
@@ -326,7 +348,7 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="lsAddress"></param>
 		/// <param name="value"></param>
-		public void DmaPutValue<T>(LocalStorageAddress lsAddress, T value) where T : struct
+		internal void DmaPutValue<T>(LocalStorageAddress lsAddress, T value) where T : struct
 		{
 			DmaPutValue(lsAddress, (ValueType) value);
 		}
@@ -433,6 +455,20 @@ namespace CellDotNet
 		}
 
 		/// <summary>
+		/// TODO: Rename and/or change signature.
+		/// </summary>
+		/// <param name="cc"></param>
+		/// <param name="args"></param>
+		/// <returns></returns>
+		public static object RunProgramX(CompileContext cc, params object[] args)
+		{
+			using (SpeContext sc = new SpeContext())
+			{
+				return sc.RunProgram(cc, args);
+			}
+		}
+
+		/// <summary>
 		/// This method can be used to execute a method even on windows. It will attempt to 
 		/// perform DMA ops as an SPE would.
 		/// </summary>
@@ -536,6 +572,11 @@ namespace CellDotNet
 		public static AlignedMemory<int> AllocateAlignedInt32(int count)
 		{
 			return AllocateAlignedFourByteElementArray<int>(count, 4);
+		}
+
+		public static AlignedMemory<float> AllocateAlignedFloat(int count)
+		{
+			return AllocateAlignedFourByteElementArray<float>(count, 4);
 		}
 
 		/// <summary>

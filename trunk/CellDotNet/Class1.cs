@@ -522,6 +522,9 @@ namespace CellDotNet
 
 		private static void RunRasmus()
 		{
+			new ShellUtilitiesTest().TestExecuteShellScript();
+			return;
+
 			Converter<int, float> del = delegate(int input) { return (float) input; };
 
 			CompileContext cc = new CompileContext(del.Method);

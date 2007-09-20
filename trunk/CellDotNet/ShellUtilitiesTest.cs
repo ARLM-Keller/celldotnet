@@ -22,10 +22,10 @@ namespace CellDotNet
 				return;
 
 			string script = @"
-echo hej
+echo -e hey\\nhey2
 ";
 			string output = ShellUtilities.ExecuteShellScript(script);
-			AreEqual("hej\n", output);
+			AreEqual("hey\nhey2\n\n", output);
 		}
 	}
 }

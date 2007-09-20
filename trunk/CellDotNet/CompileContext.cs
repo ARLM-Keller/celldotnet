@@ -7,7 +7,7 @@ using System.Text;
 
 namespace CellDotNet
 {
-	enum CompileContextState
+	public enum CompileContextState
 	{
 		S0None,
 		S1Initial,
@@ -23,7 +23,7 @@ namespace CellDotNet
 	/// <summary>
 	/// This class acts as a driver and store for the compilation process.
 	/// </summary>
-	class CompileContext
+	public class CompileContext
 	{
 		private SpuRoutine _entryPoint;
 		private Dictionary<string, MethodCompiler> _methodDict = new Dictionary<string, MethodCompiler>();
@@ -42,7 +42,7 @@ namespace CellDotNet
 
 		LibraryManager _librarymanager;
 
-		public RegisterSizedObject DebugValueObject
+		internal RegisterSizedObject DebugValueObject
 		{
 			get { return _specialSpeObjects.DebugValueObject; }
 			set { throw new Exception("");}
@@ -51,17 +51,17 @@ namespace CellDotNet
 		/// <summary>
 		/// The first method that is run.
 		/// </summary>
-		public SpuRoutine EntryPoint
+		internal SpuRoutine EntryPoint
 		{
 			get { return _entryPoint; }
 		}
 
-		public MethodCompiler EntryPointAsMetodCompiler
+		internal MethodCompiler EntryPointAsMetodCompiler
 		{
 			get { return EntryPoint as MethodCompiler; }
 		}
 
-		public ICollection<MethodCompiler> Methods
+		internal ICollection<MethodCompiler> Methods
 		{
 			get { return _methodDict.Values; }
 		}
@@ -183,7 +183,7 @@ namespace CellDotNet
 		}
 
 		// Used in ILOpCodeExecutionTest.
-		public static int LayoutObjects(IEnumerable<ObjectWithAddress> objects)
+		internal static int LayoutObjects(IEnumerable<ObjectWithAddress> objects)
 		{
 			// Start from the beginning and lay them out sequentially.
 			int lsOffset = 0;
@@ -662,7 +662,7 @@ namespace CellDotNet
 			WriteAssemblyToFile(filename, code, symbols, LibMan);
 		}
 
-		public static void WriteAssemblyToFile(string filename, int[] code, List<ObjectWithAddress> symbols)
+		internal static void WriteAssemblyToFile(string filename, int[] code, List<ObjectWithAddress> symbols)
 		{
 			WriteAssemblyToFile(filename, code, symbols, null);
 		}
@@ -853,7 +853,14 @@ main:
 					Marshal.StructureToPtr(val, ptr, false);
 				}
 				else if (val is MainStorageArea)
-					buf = BitConverter.GetBytes(MainStorageArea.GetEffectiveAddress((MainStorageArea)val));
+				{
+					uint ea = MainStorageArea.GetEffectiveAddress((MainStorageArea)val);
+					if (!Utilities.IsQuadwordAligned((int)ea))
+						throw new ArgumentException("A MainStorageAddress passed as an argument is not quadword-aligned.");
+					buf = BitConverter.GetBytes(ea);
+				}
+				else if (val is IntPtr)
+					buf = BitConverter.GetBytes((int) (IntPtr) val);
 				else
 					throw new ArgumentException("Unsupported argument datatype: " + val.GetType().Name);
 

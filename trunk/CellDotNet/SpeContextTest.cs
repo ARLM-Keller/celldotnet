@@ -356,7 +356,7 @@ namespace CellDotNet
 
 			using (SpeContext sc = new SpeContext())
 			{
-				IntPtr ls = sc.LocalStorageAddress;
+				IntPtr ls = sc.LocalStorageMappedAddress;
 				AreNotEqual((IntPtr)0, ls);
 			}
 		}

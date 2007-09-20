@@ -5,7 +5,7 @@ using NUnit.Framework;
 namespace CellDotNet
 {
 	[TestFixture]
-	class ElfLibraryTest : UnitTest
+	public class ElfLibraryTest : UnitTest
 	{
 		[Test]
 		public void TestParseElfSections()

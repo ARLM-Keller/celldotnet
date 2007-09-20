@@ -40,9 +40,11 @@ namespace CellDotNet
 				p.StartInfo.RedirectStandardError = true;
 				p.Start();
 				StringBuilder sb = new StringBuilder();
-				while (!p.HasExited && !p.StandardOutput.EndOfStream)
+
+				while (!p.HasExited)
 				{
-					sb.AppendLine(p.StandardOutput.ReadLine());
+					sb.AppendLine(p.StandardOutput.ReadToEnd());
+
 					if (p.StandardError.Peek() != -1)
 					{
 						string alloutput = p.StandardError.ReadToEnd();
