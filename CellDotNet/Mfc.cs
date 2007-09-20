@@ -44,7 +44,7 @@ namespace CellDotNet
 		static public void Get_DEBUG(int[] target, MainStorageArea ea, short count, uint tag)
 		{
 			int bytecount = count * 4;
-			Get(ref target[0], MainStorageArea.GetEffectiveAddress(ea), bytecount, 0xfffff, 0, 0);
+			Get(ref target[0], MainStorageArea.GetEffectiveAddress(ea), bytecount, tag, 0, 0);
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.Runtime_Stop)]
@@ -76,7 +76,7 @@ namespace CellDotNet
 
 			if (SpuRuntime.IsRunningOnSpu)
 			{
-				Put(ref source[0], MainStorageArea.GetEffectiveAddress(ea), bytecount, 0xfffff, 0, 0);
+				Put(ref source[0], MainStorageArea.GetEffectiveAddress(ea), bytecount, tag, 0, 0);
 			}
 			else
 			{
@@ -115,14 +115,16 @@ namespace CellDotNet
 
 		static public void WaitForDmaCompletion(uint tagMask)
 		{
-			const int SPE_TAG_ALL = 1;
-//			const int SPE_TAG_ANY = 2;
+			const int SPE_TAG_ALL = 2;
+			const int SPE_TAG_ANY = 1;
 //			const int SPE_TAG_IMMEDIATE = 3;
 
 			if (SpuRuntime.IsRunningOnSpu)
 			{
 				WriteChannel(SpuWriteChannel.MFC_WrTagMask, tagMask);
+				//TODO skal der ventes på en eller alle DMA'er i den givende tag maske?
 				WriteChannel(SpuWriteChannel.MFC_WrTagUpdate, SPE_TAG_ALL);
+				int r = ReadChannel(SpuReadChannel.MFC_RdTagStat);
 			}
 		}
 
@@ -149,13 +151,13 @@ namespace CellDotNet
 				throw new InvalidOperationException();
 
 			// MFC_CMD_WORD(_tid, _rid, _cmd) (((_tid)<<24)|((_rid)<<16)|(_cmd))
-			uint cmd = (uint)MfcDmaCommand.Get;
+			uint cmd = (uint)MfcDmaCommand.Put;
 			cmd |= (tid << 24) | (rid << 16);
 
 			WriteChannel(SpuWriteChannel.MFC_LSA, ref lsStart);
 			WriteChannel(SpuWriteChannel.MFC_EAL, ea);
 			WriteChannel(SpuWriteChannel.MFC_Size, (uint)byteCount);
-			WriteChannel(SpuWriteChannel.MFC_TagID, tag);
+			WriteChannel(SpuWriteChannel.MFC_TagID, tag & 0x1f);
 			WriteChannel(SpuWriteChannel.MFC_CmdAndClassID, cmd);
 		}
 

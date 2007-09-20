@@ -24,7 +24,7 @@ namespace CellDotNet
 			AreEqual(16, depth);
 		}
 
-		[Test, Ignore()]
+		[Test]
 		public void TestDma_GetIntArray()
 		{
 			using (AlignedMemory<int> mem = SpeContext.AllocateAlignedInt32(4))
@@ -41,8 +41,9 @@ namespace CellDotNet
 						int[] arr = new int[4];
 
 						uint tag = 1;
+						uint tagmask = (uint)1<<31;
 						Mfc.Get(arr, input, 4, tag);
-						Mfc.WaitForDmaCompletion(tag);
+						Mfc.WaitForDmaCompletion(tagmask);
 
 						int sum = 0;
 						for (int i = 0; i < 4; i++)
@@ -65,14 +66,14 @@ namespace CellDotNet
 		}
 
 		[Test, Ignore()]
-		public void TestDma_GetIntArray_DEBUG()
+		public unsafe void TestDma_GetIntArray_DEBUG()
 		{
 			using (AlignedMemory<int> mem = SpeContext.AllocateAlignedInt32(4))
 			{
 				// Create elements whose sum is twenty.
 				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
 				{
-					mem.ArraySegment.Array[i] = 5;
+					mem.ArraySegment.Array[i] = 10;
 				}
 
 				Converter<MainStorageArea, int> del =
@@ -81,13 +82,13 @@ namespace CellDotNet
 						int[] arr = new int[4];
 
 						Mfc.Get_DEBUG(arr, input, 4, 1);
-						Mfc.WaitForDmaCompletion(1);
+						Mfc.WaitForDmaCompletion(0xffffffff);
 
-//						int sum = 0;
-//						for (int i = 0; i < 4; i++)
-//							sum += arr[i];
+						int sum = 0;
+						for (int i = 0; i < 4; i++)
+							sum += arr[i];
 
-						return 1;
+						return sum;
 					};
 
 				CompileContext cc = new CompileContext(del.Method);
@@ -102,9 +103,14 @@ namespace CellDotNet
 
 				cc.WriteAssemblyToFile("TestDma_GetIntArray_DEBUG_asm.s", mem.GetArea());
 
-				object rv = SpeContext.UnitTestRunProgram(cc, mem.GetArea());
+				if(!SpeContext.HasSpeHardware)
+					return;
 
-				Console.WriteLine("Result: {0}", (int)rv);
+				object rv = new SpeContext().RunProgram(cc, mem.GetArea());
+
+				Console.WriteLine("Result: {0:x}", MainStorageArea.GetEffectiveAddress(mem.GetArea()));
+
+				Console.WriteLine("Result: {0:x}", (int)rv);
 
 //				int correctVal = del(mem.GetArea());
 //				AreEqual(20, correctVal);
@@ -112,7 +118,7 @@ namespace CellDotNet
 			}
 		}
 
-		[Test, Ignore()]
+		[Test]
 		public void TestDma_PutIntArray()
 		{
 			using (AlignedMemory<int> mem = SpeContext.AllocateAlignedInt32(4))
@@ -122,32 +128,37 @@ namespace CellDotNet
 					{
 						int[] arr = new int[4];
 						for (int i = 0; i < 4; i++)
-							arr[i] = 5;
+							arr[i] = i;
 
 						uint tag = 1;
+						uint tagMask = (uint)1<<31;
 						Mfc.Put(arr, input, 4, tag);
-						Mfc.WaitForDmaCompletion(tag);
+						Mfc.WaitForDmaCompletion(tagMask);
 					};
 
 				CompileContext cc = new CompileContext(del.Method);
 				cc.PerformProcessing(CompileContextState.S8Complete);
-////				Disassembler.DisassembleToConsole(cc);
-//				cc.WriteAssemblyToFile("dma.s", mem.GetArea());
+//				Disassembler.DisassembleToConsole(cc);
+//				cc.WriteAssemblyToFile("TestDma_PutIntArray_asm.s", mem.GetArea());
 
 				// Run locally.
-				del(mem.GetArea());
+//				del(mem.GetArea());
 				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
 				{
-					AreEqual(5, mem.ArraySegment.Array[i]);
+//					AreEqual(5, mem.ArraySegment.Array[i]);
 					mem.ArraySegment.Array[i] = 0;
 				}
 
 				// Run on spu.
 				object rv = SpeContext.UnitTestRunProgram(cc, mem.GetArea());
+
+				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
+					Console.WriteLine("mem.ArraySegment.Array[{0}] = {1}", i, mem.ArraySegment.Array[i]);
+
 				IsNull(rv);
 
 				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
-					AreEqual(5, mem.ArraySegment.Array[i]);
+					AreEqual(i-mem.ArraySegment.Offset, mem.ArraySegment.Array[i]);
 			}
 		}
 	}

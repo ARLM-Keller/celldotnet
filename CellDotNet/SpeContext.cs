@@ -558,6 +558,7 @@ namespace CellDotNet
 				bytesToAllocate = paddedByteCount + 16;
 
 			T[] arr = new T[bytesToAllocate / elementSize];
+
 			GCHandle gchandle = GCHandle.Alloc(arr, GCHandleType.Pinned);
 
 			// Find an aligned element.
@@ -570,6 +571,10 @@ namespace CellDotNet
 
 			int segmentStartIndex = (int) (alignedAddress - arrayStartAddress) / elementSize;
 			ArraySegment<T> segment = new ArraySegment<T>(arr, segmentStartIndex, count);
+
+//			Console.WriteLine("Array base addr     : {0:x} {1}", arrayStartAddress, arrayStartAddress); //DEBUG
+//			Console.WriteLine("Array align addr    : {0:x} {1}", alignedAddress, alignedAddress); //DEBUG
+//			Console.WriteLine("Array segment index : {0}", segmentStartIndex); //DEBUG
 
 			return new AlignedMemory<T>(gchandle, segment);
 		}
