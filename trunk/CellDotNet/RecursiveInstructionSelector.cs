@@ -539,10 +539,7 @@ namespace CellDotNet
 							throw new InvalidIRTreeException("Invalid level of indirection for stind. Stack type: " + lefttype);
 						VirtualRegister ptr = vrleft;
 
-						VirtualRegister loadedvalue = _writer.WriteLqd(ptr, 0);
-						VirtualRegister mask = _writer.WriteCwd(ptr, 0);
-						VirtualRegister combined = _writer.WriteShufb(vrright, loadedvalue, mask);
-						_writer.WriteStqd(combined, ptr, 0);
+						_writer.WriteStore4(ptr, 0, 0, vrright);
 						return null;
 					}
 				case IRCode.Stind_I8:
@@ -713,38 +710,32 @@ namespace CellDotNet
 					break;
 				case IRCode.Throw:
 					break;
-				case IRCode.Ldfld:
-					break;
 				case IRCode.Ldflda:
 					break;
+				case IRCode.Ldfld:
+					{
+						FieldInfo field = inst.OperandAsField;
+						Type vt = field.DeclaringType;
+
+						int qwoffset;
+						int wordoffset;
+						GetStructFieldData(lefttype, vt, field, out qwoffset, out wordoffset);
+
+						_writer.WriteLoad4(vrleft, qwoffset, wordoffset);
+						return null;
+					}
 				case IRCode.Stfld:
 					{
-						if (lefttype != StackTypeDescription.ValueType || !lefttype.IsManagedPointer)
-							break;
-
-						Type vt = lefttype.ComplexType.ReflectionType;
 						FieldInfo field = inst.OperandAsField;
+						Type vt = field.DeclaringType;
 
-						int byteoffset = (int) Marshal.OffsetOf(vt, field.Name);
+						int qwoffset;
+						int wordoffset;
+						GetStructFieldData(lefttype, vt, field, out qwoffset, out wordoffset);
 
-						StackTypeDescription fieldtype = new TypeDeriver().GetStackTypeDescription(field.FieldType);
-						if (fieldtype == StackTypeDescription.None || 
-							fieldtype == StackTypeDescription.ValueType || 
-							fieldtype == StackTypeDescription.ObjectType)
-							break;
-
-						if (fieldtype.NumericSize != CliNumericSize.FourBytes)
-							break;
-						int valuesize = (int) fieldtype.NumericSize;
-
-						// We don't do unaligned.
-						if (byteoffset % valuesize != 0)
-							break;
-
-						int slotnum = byteoffset / 16;
-						int slotoffset = byteoffset % 16;
+						_writer.WriteStore4(vrleft, qwoffset, wordoffset, vrright);
+						return null;
 					}
-					break;
 				case IRCode.Ldsfld:
 					break;
 				case IRCode.Ldsflda:
@@ -1105,7 +1096,6 @@ namespace CellDotNet
 						}
 						return null;
 					}
-					break;
 				case IRCode.Constrained:
 				case IRCode.Cpblk:
 				case IRCode.Initblk:
@@ -1121,6 +1111,32 @@ namespace CellDotNet
 
 			_unimplementedOpCodes.Add(inst.Opcode);
 			return new VirtualRegister(-1);
+		}
+
+		private void GetStructFieldData(StackTypeDescription referenceType, Type structType, FieldInfo field, out int qwoffset, out int wordoffset)
+		{
+			if (!referenceType.IsManagedPointer || referenceType.Dereference().CliType != CliType.ValueType)
+				throw new NotSupportedException();
+
+
+			int byteoffset = (int) Marshal.OffsetOf(structType, field.Name);
+
+			StackTypeDescription fieldtype = new TypeDeriver().GetStackTypeDescription(field.FieldType);
+			if (fieldtype == StackTypeDescription.None || 
+			    fieldtype == StackTypeDescription.ValueType || 
+			    fieldtype == StackTypeDescription.ObjectType)
+				throw new NotSupportedException();
+
+			if (fieldtype.NumericSize != CliNumericSize.FourBytes)
+				throw new NotSupportedException();
+			int valuesize = (int) fieldtype.NumericSize;
+
+			// We don't do unaligned.
+			if (byteoffset % valuesize != 0)
+				throw new NotSupportedException();
+
+			qwoffset = byteoffset / 16;
+			wordoffset = byteoffset % 16;
 		}
 
 

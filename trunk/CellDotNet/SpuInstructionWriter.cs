@@ -372,6 +372,38 @@ namespace CellDotNet
 		}
 
 		/// <summary>
+		/// Stores the 4-bytes <paramref name="value"/>.
+		/// It is stored in the quadword which is <paramref name="pointerQwOffset"/> quadwords offset from <paramref name="ptr"/>
+		/// in the word which is determined by the low four bits of the address (<paramref name="ptr"/>) plus <paramref name="wordNumberAddend"/>.
+		/// <para>Use this one to store to a fixed offset.</para>
+		/// </summary>
+		/// <param name="ptr"></param>
+		/// <param name="pointerQwOffset"></param>
+		/// <param name="value"></param>
+		/// <param name="wordNumberAddend"></param>
+		public void WriteStore4(VirtualRegister ptr, int pointerQwOffset, int wordNumberAddend, VirtualRegister value)
+		{
+			VirtualRegister loadedvalue = WriteLqd(ptr, pointerQwOffset);
+			VirtualRegister mask = WriteCwd(ptr, wordNumberAddend);
+			VirtualRegister combined = WriteShufb(value, loadedvalue, mask);
+			WriteStqd(combined, ptr, pointerQwOffset);
+		}
+
+		public VirtualRegister WriteLoad4(VirtualRegister ptr, int pointerQwOffset, int wordNumber)
+		{
+			VirtualRegister quad = WriteLqd(ptr, pointerQwOffset);
+
+			Utilities.AssertArgumentRange(wordNumber >= 0 && wordNumber <= 3, "wordNumber", "wordNumber >= 0 && wordNumber <= 3");
+
+			throw new Exception();
+			// Move word to preferred slot.
+			// We're going to use shlqby (Shift Left Quadword by Bytes),
+			// so we have to clear bit 27 from the byte offset.
+//			VirtualRegister addrMod16 = WriteAndi(byteoffset, 0xf);
+//			return WriteShl(quad, addrMod16);
+		}
+
+		/// <summary>
 		/// This will generate an instruction that must be patched with a <see cref="SpuBasicBlock"/>.
 		/// </summary>
 		public void WriteStqr(VirtualRegister rt, ObjectWithAddress address)
@@ -544,18 +576,6 @@ namespace CellDotNet
 
 		#endregion
 		
-		public void WriteNop()
-		{
-			SpuInstruction inst = new SpuInstruction(SpuOpCode.nop);
-			AddInstruction(inst);
-		}
-
-		public void WriteLnop()
-		{
-			SpuInstruction inst = new SpuInstruction(SpuOpCode.lnop);
-			AddInstruction(inst);
-		}
-
 		public void WriteDivU(VirtualRegister dividend, VirtualRegister divisor, VirtualRegister quotient, VirtualRegister remainder)
 		{
 			WriteIl(remainder, 0);

@@ -173,7 +173,8 @@ namespace CellDotNet
 				}
 				bodynewdest.AppendLine("AddInstruction(inst);");
 				bodyolddest.AppendLine("AddInstruction(inst);");
-				bodynewdest.AppendLine("return inst.Rt;");
+				if (!opcode.NoRegisterWrite)
+					bodynewdest.AppendLine("return inst.Rt;");
 
 				// Put it together.
 
@@ -188,7 +189,7 @@ namespace CellDotNet
 		}}
 ";
 				// GetQualifiedOpcodeFieldName(opcode)
-				tw.Write(methodformat, opcode.Title, ocname, declnewdest, "VirtualRegister", GetQualifiedOpcodeFieldName(opcode), bodynewdest);
+				tw.Write(methodformat, opcode.Title, ocname, declnewdest, opcode.NoRegisterWrite ? "void" : "VirtualRegister", GetQualifiedOpcodeFieldName(opcode), bodynewdest);
 				if (declolddest.Length != declnewdest.Length)
 					tw.Write(methodformat, opcode.Title, ocname, declolddest, "void", GetQualifiedOpcodeFieldName(opcode), bodyolddest);
 			}

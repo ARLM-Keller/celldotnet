@@ -183,9 +183,11 @@ namespace CellDotNet
 			QWStruct correctval = del(0);
 			CompileContext cc = new CompileContext(del.Method);
 
-			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
-			new TreeDrawer().DrawMethod(cc.EntryPointAsMetodCompiler);
+//			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
+//			new TreeDrawer().DrawMethod(cc.EntryPointAsMetodCompiler);
 			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			Disassembler.DisassembleToConsole(cc);
 
 			AreEqual(correctval, (QWStruct) SpeContext.UnitTestRunProgram(cc, 0));
 		}

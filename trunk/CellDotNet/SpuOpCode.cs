@@ -210,11 +210,12 @@ namespace CellDotNet
 			// HACK: Shitty way to determine this.
 			if (name.StartsWith("st") || name == "wrch")
 				_noRegisterWrite = true;
-
-			if (name.Equals("brnz") || name.Equals("brz") ||
-				name.Equals("brhnz") || name.Equals("brhz") ||
-				name.Equals("biz") || name.Equals("binz") ||
-				name.Equals("bihz") || name.Equals("bihnz"))
+			if (name == "brnz" || name == "brz" ||
+				name == "brhnz" || name == "brhz" ||
+				name == "biz" || name == "binz" ||
+				name == "bihz" || name == "bihnz")
+				_noRegisterWrite = true;
+			if (name == "nop" || name == "lnop")
 				_noRegisterWrite = true;
 
 
@@ -578,8 +579,8 @@ namespace CellDotNet
 				new SpuOpCode("shlqbii", "Shift Left Quadword by Bits Immediate", SpuInstructionFormat.RI7, "00111111011");
 		public static readonly SpuOpCode shlqby =
 				new SpuOpCode("shlqby", "Shift Left Quadword by Bytes", SpuInstructionFormat.RR, "00111011111");
-		public static readonly SpuOpCode sqlqbyi =
-				new SpuOpCode("sqlqbyi", "Shift Left Quadword by Bytes Immediate", SpuInstructionFormat.RI7, "00111111111");
+		public static readonly SpuOpCode shlqbyi =
+				new SpuOpCode("shlqbyi", "Shift Left Quadword by Bytes Immediate", SpuInstructionFormat.RI7, "00111111111");
 		public static readonly SpuOpCode shlqbybi =
 				new SpuOpCode("shlqbybi", "Shift Left Quadword by Bytes from Bit Shift Count", SpuInstructionFormat.RR, "00111001111");
 		public static readonly SpuOpCode roth =
