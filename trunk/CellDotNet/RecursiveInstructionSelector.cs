@@ -721,8 +721,7 @@ namespace CellDotNet
 						int wordoffset;
 						GetStructFieldData(lefttype, vt, field, out qwoffset, out wordoffset);
 
-						_writer.WriteLoad4(vrleft, qwoffset, wordoffset);
-						return null;
+						return _writer.WriteLoad4(vrleft, qwoffset, wordoffset);
 					}
 				case IRCode.Stfld:
 					{

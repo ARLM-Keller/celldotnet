@@ -15,774 +15,774 @@ namespace CellDotNet
 		/// <summary>
 		/// Load Quadword (d-form)
 		/// </summary>
-		Lqd = 1,
+		Lqd,
 		/// <summary>
 		/// Load Quadword (x-form)
 		/// </summary>
-		Lqx = 2,
+		Lqx,
 		/// <summary>
 		/// Load Quadword (a-form)
 		/// </summary>
-		Lqa = 3,
+		Lqa,
 		/// <summary>
 		/// Load Quadword Instruction Relative (a-form)
 		/// </summary>
-		Lqr = 4,
+		Lqr,
 		/// <summary>
 		/// Store Quadword (d-form)
 		/// </summary>
-		Stqd = 5,
+		Stqd,
 		/// <summary>
 		/// Store Quadword (x-form)
 		/// </summary>
-		Stqx = 6,
+		Stqx,
 		/// <summary>
 		/// Store Quadword (a-form)
 		/// </summary>
-		Stqa = 7,
+		Stqa,
 		/// <summary>
 		/// Store Quadword Instruction Relative (a-form)
 		/// </summary>
-		Stqr = 8,
+		Stqr,
 		/// <summary>
 		/// Generate Controls for Byte Insertion (d-form)
 		/// </summary>
-		Cbd = 9,
+		Cbd,
 		/// <summary>
 		/// Generate Controls for Byte Insertion (x-form)
 		/// </summary>
-		Cbx = 10,
+		Cbx,
 		/// <summary>
 		/// Generate Controls for Halfword Insertion (d-form)
 		/// </summary>
-		Chd = 11,
+		Chd,
 		/// <summary>
 		/// Generate Controls for Halfword Insertion (x-form)
 		/// </summary>
-		Chx = 12,
+		Chx,
 		/// <summary>
 		/// Generate Controls for Word Insertion (d-form)
 		/// </summary>
-		Cwd = 13,
+		Cwd,
 		/// <summary>
 		/// Generate Controls for Word Insertion (x-form)
 		/// </summary>
-		Cwx = 14,
+		Cwx,
 		/// <summary>
 		/// Generate Controls for Doubleword Insertion (d-form)
 		/// </summary>
-		Cdd = 15,
+		Cdd,
 		/// <summary>
 		/// Generate Controls for Doubleword Insertion (x-form)
 		/// </summary>
-		Cdx = 16,
+		Cdx,
 		/// <summary>
 		/// Immediate Load Halfword
 		/// </summary>
-		Ilh = 17,
+		Ilh,
 		/// <summary>
 		/// Immediate Load Halfword Upper
 		/// </summary>
-		Ilhu = 18,
+		Ilhu,
 		/// <summary>
 		/// Immediate Load Word
 		/// </summary>
-		Il = 19,
+		Il,
 		/// <summary>
 		/// Immediate Load Address
 		/// </summary>
-		Ila = 20,
+		Ila,
 		/// <summary>
 		/// Immediate Or Halfword Lower
 		/// </summary>
-		Iohl = 21,
+		Iohl,
 		/// <summary>
 		/// Form Select Mask for Bytes Immediate
 		/// </summary>
-		Fsmbi = 22,
+		Fsmbi,
 		/// <summary>
 		/// Add Halfword
 		/// </summary>
-		Ah = 23,
+		Ah,
 		/// <summary>
 		/// Add Halfword Immediate
 		/// </summary>
-		Ahi = 24,
+		Ahi,
 		/// <summary>
 		/// Add Word
 		/// </summary>
-		A = 25,
+		A,
 		/// <summary>
 		/// Add Word Immediate
 		/// </summary>
-		Ai = 26,
+		Ai,
 		/// <summary>
 		/// Subtract from Halfword
 		/// </summary>
-		Sfh = 27,
+		Sfh,
 		/// <summary>
 		/// Subtract from Halfword Immediate
 		/// </summary>
-		Sfhi = 28,
+		Sfhi,
 		/// <summary>
 		/// Subtract from Word
 		/// </summary>
-		Sf = 29,
+		Sf,
 		/// <summary>
 		/// Subtract from Word Immediate
 		/// </summary>
-		Sfi = 30,
+		Sfi,
 		/// <summary>
 		/// Add Extended
 		/// </summary>
-		Addx = 31,
+		Addx,
 		/// <summary>
 		/// Carry Generate
 		/// </summary>
-		Cg = 32,
+		Cg,
 		/// <summary>
 		/// Carry Generate Extended
 		/// </summary>
-		Cgx = 33,
+		Cgx,
 		/// <summary>
 		/// Subtract from Extended
 		/// </summary>
-		Sfx = 34,
+		Sfx,
 		/// <summary>
 		/// Borrow Generate
 		/// </summary>
-		Bg = 35,
+		Bg,
 		/// <summary>
 		/// Borrow Generate Extended
 		/// </summary>
-		Bgx = 36,
+		Bgx,
 		/// <summary>
 		/// Multiply
 		/// </summary>
-		Mpy = 37,
+		Mpy,
 		/// <summary>
 		/// Multiply Unsigned
 		/// </summary>
-		Mpyu = 38,
+		Mpyu,
 		/// <summary>
 		/// Multiply Immediate
 		/// </summary>
-		Mpyi = 39,
+		Mpyi,
 		/// <summary>
 		/// Multiply Unsigned Immediate
 		/// </summary>
-		Mpyui = 40,
+		Mpyui,
 		/// <summary>
 		/// Multiply and Add
 		/// </summary>
-		Mpya = 41,
+		Mpya,
 		/// <summary>
 		/// Multiply High
 		/// </summary>
-		Mpyh = 42,
+		Mpyh,
 		/// <summary>
 		/// Multiply and Shift Right
 		/// </summary>
-		Mpys = 43,
+		Mpys,
 		/// <summary>
 		/// Multiply High High
 		/// </summary>
-		Mpyhh = 44,
+		Mpyhh,
 		/// <summary>
 		/// Multiply High High and Add
 		/// </summary>
-		Mpyhha = 45,
+		Mpyhha,
 		/// <summary>
 		/// Multiply High High Unsigned
 		/// </summary>
-		Mpyhhu = 46,
+		Mpyhhu,
 		/// <summary>
 		/// Multiply High High Unsigned and Add
 		/// </summary>
-		Mpyhhau = 47,
+		Mpyhhau,
 		/// <summary>
 		/// Count Leading Zeros
 		/// </summary>
-		Clz = 48,
+		Clz,
 		/// <summary>
 		/// Count Ones in Bytes
 		/// </summary>
-		Cntb = 49,
+		Cntb,
 		/// <summary>
 		/// Form Select Mask for Bytes
 		/// </summary>
-		Fsmb = 50,
+		Fsmb,
 		/// <summary>
 		/// Form Select Mask for Halfwords
 		/// </summary>
-		Fsmh = 51,
+		Fsmh,
 		/// <summary>
 		/// Form Select Mask for Words
 		/// </summary>
-		Fsm = 52,
+		Fsm,
 		/// <summary>
 		/// Gather Bits from Bytes
 		/// </summary>
-		Gbb = 53,
+		Gbb,
 		/// <summary>
 		/// Gather Bits from Halfwords
 		/// </summary>
-		Gbh = 54,
+		Gbh,
 		/// <summary>
 		/// Gather Bits from Words
 		/// </summary>
-		Gb = 55,
+		Gb,
 		/// <summary>
 		/// Average Bytes
 		/// </summary>
-		Avgb = 56,
+		Avgb,
 		/// <summary>
 		/// Absolute Differences of Bytes
 		/// </summary>
-		Absdb = 57,
+		Absdb,
 		/// <summary>
 		/// Sum Bytes into Halfwords
 		/// </summary>
-		Sumb = 58,
+		Sumb,
 		/// <summary>
 		/// Extend Sign Byte to Halfword
 		/// </summary>
-		Xsbh = 59,
+		Xsbh,
 		/// <summary>
 		/// Extend Sign Halfword to Word
 		/// </summary>
-		Xshw = 60,
+		Xshw,
 		/// <summary>
 		/// Extend Sign Word to Doubleword
 		/// </summary>
-		Xswd = 61,
+		Xswd,
 		/// <summary>
 		/// And
 		/// </summary>
-		And = 62,
+		And,
 		/// <summary>
 		/// And with Complement
 		/// </summary>
-		Andc = 63,
+		Andc,
 		/// <summary>
 		/// And Byte Immediate
 		/// </summary>
-		Andbi = 64,
+		Andbi,
 		/// <summary>
 		/// And Halfword Immediate
 		/// </summary>
-		Andhi = 65,
+		Andhi,
 		/// <summary>
 		/// And Word Immediate
 		/// </summary>
-		Andi = 66,
+		Andi,
 		/// <summary>
 		/// Or
 		/// </summary>
-		Or = 67,
+		Or,
 		/// <summary>
 		/// Or with Complement
 		/// </summary>
-		Orc = 68,
+		Orc,
 		/// <summary>
 		/// Or Byte Immediate
 		/// </summary>
-		Orbi = 69,
+		Orbi,
 		/// <summary>
 		/// Or Halfword Immediate
 		/// </summary>
-		Orhi = 70,
+		Orhi,
 		/// <summary>
 		/// Or Word Immediate
 		/// </summary>
-		Ori = 71,
+		Ori,
 		/// <summary>
 		/// Or Across
 		/// </summary>
-		Orx = 72,
+		Orx,
 		/// <summary>
 		/// Exclusive Or
 		/// </summary>
-		Xor = 73,
+		Xor,
 		/// <summary>
 		/// Exclusive Or Byte Immediate
 		/// </summary>
-		Xorbi = 74,
+		Xorbi,
 		/// <summary>
 		/// Exclusive Or Halfword Immediate
 		/// </summary>
-		Xorhi = 75,
+		Xorhi,
 		/// <summary>
 		/// Exclusive Or Word Immediate
 		/// </summary>
-		Xori = 76,
+		Xori,
 		/// <summary>
 		/// Nand
 		/// </summary>
-		Nand = 77,
+		Nand,
 		/// <summary>
 		/// Nor
 		/// </summary>
-		Nor = 78,
+		Nor,
 		/// <summary>
 		/// Equivalent
 		/// </summary>
-		Eqv = 79,
+		Eqv,
 		/// <summary>
 		/// Select Bits
 		/// </summary>
-		Selb = 80,
+		Selb,
 		/// <summary>
 		/// Shuffle Bytes
 		/// </summary>
-		Shufb = 81,
+		Shufb,
 		/// <summary>
 		/// Shift Left Halfword
 		/// </summary>
-		Shlh = 82,
+		Shlh,
 		/// <summary>
 		/// Shift Left Halfword Immediate
 		/// </summary>
-		Shlhi = 83,
+		Shlhi,
 		/// <summary>
 		/// Shift Left Word
 		/// </summary>
-		Shl = 84,
+		Shl,
 		/// <summary>
 		/// Shift Left Word Immediate
 		/// </summary>
-		Shli = 85,
+		Shli,
 		/// <summary>
 		/// Shift Left Quadword by Bits
 		/// </summary>
-		Shlqbi = 86,
+		Shlqbi,
 		/// <summary>
 		/// Shift Left Quadword by Bits Immediate
 		/// </summary>
-		Shlqbii = 87,
+		Shlqbii,
 		/// <summary>
 		/// Shift Left Quadword by Bytes
 		/// </summary>
-		Shlqby = 88,
+		Shlqby,
 		/// <summary>
 		/// Shift Left Quadword by Bytes Immediate
 		/// </summary>
-		Sqlqbyi = 89,
+		Shlqbyi,
 		/// <summary>
 		/// Shift Left Quadword by Bytes from Bit Shift Count
 		/// </summary>
-		Shlqbybi = 90,
+		Shlqbybi,
 		/// <summary>
 		/// Rotate Halfword
 		/// </summary>
-		Roth = 91,
+		Roth,
 		/// <summary>
 		/// Rotate Halfword Immediate
 		/// </summary>
-		Rothi = 92,
+		Rothi,
 		/// <summary>
 		/// Rotate Word
 		/// </summary>
-		Rot = 93,
+		Rot,
 		/// <summary>
 		/// Rotate Word Immediate
 		/// </summary>
-		Roti = 94,
+		Roti,
 		/// <summary>
 		/// Rotate Quadword by Bytes
 		/// </summary>
-		Rotqby = 95,
+		Rotqby,
 		/// <summary>
 		/// Rotate Quadword by Bytes Immediate
 		/// </summary>
-		Rotqbyi = 96,
+		Rotqbyi,
 		/// <summary>
 		/// Rotate Quadword by Bytes from Bit Shift Count
 		/// </summary>
-		Rotqbybi = 97,
+		Rotqbybi,
 		/// <summary>
 		/// Rotate Quadword by Bits
 		/// </summary>
-		Rotqbi = 98,
+		Rotqbi,
 		/// <summary>
 		/// Rotate Quadword by Bits Immediate
 		/// </summary>
-		Rotqbii = 99,
+		Rotqbii,
 		/// <summary>
 		/// Rotate and Mask Halfword
 		/// </summary>
-		Rothm = 100,
+		Rothm,
 		/// <summary>
 		/// Rotate and Mask Halfword Immediate
 		/// </summary>
-		Rothmi = 101,
+		Rothmi,
 		/// <summary>
 		/// Rotate and Mask Word
 		/// </summary>
-		Rotm = 102,
+		Rotm,
 		/// <summary>
 		/// Rotate and Mask Word Immediate
 		/// </summary>
-		Rotmi = 103,
+		Rotmi,
 		/// <summary>
 		/// Rotate and Mask Quadword by Bytes
 		/// </summary>
-		Rotqmby = 104,
+		Rotqmby,
 		/// <summary>
 		/// Rotate and Mask Quadword by Bytes Immediate
 		/// </summary>
-		Rotqmbyi = 105,
+		Rotqmbyi,
 		/// <summary>
 		/// Rotate and Mask Quadword Bytes from Bit Shift Count
 		/// </summary>
-		Rotqmbybi = 106,
+		Rotqmbybi,
 		/// <summary>
 		/// Rotate and Mask Quadword by Bits
 		/// </summary>
-		Rotqmbi = 107,
+		Rotqmbi,
 		/// <summary>
 		/// Rotate and Mask Quadword by Bits Immediate
 		/// </summary>
-		Rotqmbii = 108,
+		Rotqmbii,
 		/// <summary>
 		/// Rotate and Mask Algebraic Halfword
 		/// </summary>
-		Rotmah = 109,
+		Rotmah,
 		/// <summary>
 		/// Rotate and Mask Algebraic Halfword Immediate
 		/// </summary>
-		Rotmahi = 110,
+		Rotmahi,
 		/// <summary>
 		/// Rotate and Mask Algebraic Word
 		/// </summary>
-		Rotma = 111,
+		Rotma,
 		/// <summary>
 		/// Rotate and Mask Algebraic Word Immediate
 		/// </summary>
-		Rotmai = 112,
+		Rotmai,
 		/// <summary>
 		/// Halt If Equal
 		/// </summary>
-		Heq = 113,
+		Heq,
 		/// <summary>
 		/// Halt If Equal Immediate
 		/// </summary>
-		Heqi = 114,
+		Heqi,
 		/// <summary>
 		/// Halt If Greater Than
 		/// </summary>
-		Hgt = 115,
+		Hgt,
 		/// <summary>
 		/// Halt If Greater Than Immediate
 		/// </summary>
-		Hgti = 116,
+		Hgti,
 		/// <summary>
 		/// Halt If Logically Greater Than
 		/// </summary>
-		Hlgt = 117,
+		Hlgt,
 		/// <summary>
 		/// Halt If Logically Greater Than Immediate
 		/// </summary>
-		Hlgti = 118,
+		Hlgti,
 		/// <summary>
 		/// Compare Equal Byte
 		/// </summary>
-		Ceqb = 119,
+		Ceqb,
 		/// <summary>
 		/// Compare Equal Byte Immediate
 		/// </summary>
-		Ceqbi = 120,
+		Ceqbi,
 		/// <summary>
 		/// Compare Equal Halfword
 		/// </summary>
-		Ceqh = 121,
+		Ceqh,
 		/// <summary>
 		/// Compare Equal Halfword Immediate
 		/// </summary>
-		Ceqhi = 122,
+		Ceqhi,
 		/// <summary>
 		/// Compare Equal Word
 		/// </summary>
-		Ceq = 123,
+		Ceq,
 		/// <summary>
 		/// Compare Equal Word Immediate
 		/// </summary>
-		Ceqi = 124,
+		Ceqi,
 		/// <summary>
 		/// Compare Greater Than Byte
 		/// </summary>
-		Cgtb = 125,
+		Cgtb,
 		/// <summary>
 		/// Compare Greater Than Byte Immediate
 		/// </summary>
-		Cgtbi = 126,
+		Cgtbi,
 		/// <summary>
 		/// Compare Greater Than Halfword
 		/// </summary>
-		Cgth = 127,
+		Cgth,
 		/// <summary>
 		/// Compare Greater Than Halfword Immediate
 		/// </summary>
-		Cgthi = 128,
+		Cgthi,
 		/// <summary>
 		/// Compare Greater Than Word
 		/// </summary>
-		Cgt = 129,
+		Cgt,
 		/// <summary>
 		/// Compare Greater Than Word Immediate
 		/// </summary>
-		Cgti = 130,
+		Cgti,
 		/// <summary>
 		/// Compare Logical Greater Than Byte
 		/// </summary>
-		Clgtb = 131,
+		Clgtb,
 		/// <summary>
 		/// Compare Logical Greater Than Byte Immediate
 		/// </summary>
-		Clgtbi = 132,
+		Clgtbi,
 		/// <summary>
 		/// Compare Logical Greater Than Halfword
 		/// </summary>
-		Clgth = 133,
+		Clgth,
 		/// <summary>
 		/// Compare Logical Greater Than Halfword Immediate
 		/// </summary>
-		Clgthi = 134,
+		Clgthi,
 		/// <summary>
 		/// Compare Logical Greater Than Word
 		/// </summary>
-		Clgt = 135,
+		Clgt,
 		/// <summary>
 		/// Compare Logical Greater Than Word Immediate
 		/// </summary>
-		Clgti = 136,
+		Clgti,
 		/// <summary>
 		/// Branch Relative
 		/// </summary>
-		Br = 137,
+		Br,
 		/// <summary>
 		/// Branch Absolute
 		/// </summary>
-		Bra = 138,
+		Bra,
 		/// <summary>
 		/// Branch Relative and Set Link
 		/// </summary>
-		Brsl = 139,
+		Brsl,
 		/// <summary>
 		/// Branch Absolute and Set Link
 		/// </summary>
-		Brasl = 140,
+		Brasl,
 		/// <summary>
 		/// Branch Indirect
 		/// </summary>
-		Bi = 141,
+		Bi,
 		/// <summary>
 		/// Interrupt Return
 		/// </summary>
-		Iret = 142,
+		Iret,
 		/// <summary>
 		/// Branch Indirect and Set Link if External Data
 		/// </summary>
-		Bisled = 143,
+		Bisled,
 		/// <summary>
 		/// Branch Indirect and Set Link
 		/// </summary>
-		Bisl = 144,
+		Bisl,
 		/// <summary>
 		/// Branch If Not Zero Word
 		/// </summary>
-		Brnz = 145,
+		Brnz,
 		/// <summary>
 		/// Branch If Zero Word
 		/// </summary>
-		Brz = 146,
+		Brz,
 		/// <summary>
 		/// Branch If Not Zero Halfword
 		/// </summary>
-		Brhnz = 147,
+		Brhnz,
 		/// <summary>
 		/// Branch If Zero Halfword
 		/// </summary>
-		Brhz = 148,
+		Brhz,
 		/// <summary>
 		/// Branch Indirect If Zero
 		/// </summary>
-		Biz = 149,
+		Biz,
 		/// <summary>
 		/// Branch Indirect If Not Zero
 		/// </summary>
-		Binz = 150,
+		Binz,
 		/// <summary>
 		/// Branch Indirect If Zero Halfword
 		/// </summary>
-		Bihz = 151,
+		Bihz,
 		/// <summary>
 		/// Branch Indirect If Not Zero Halfword
 		/// </summary>
-		Bihnz = 152,
+		Bihnz,
 		/// <summary>
 		/// Floating Add
 		/// </summary>
-		Fa = 153,
+		Fa,
 		/// <summary>
 		/// Double Floating Add
 		/// </summary>
-		Dfa = 154,
+		Dfa,
 		/// <summary>
 		/// Floating Subtract
 		/// </summary>
-		Fs = 155,
+		Fs,
 		/// <summary>
 		/// Double Floating Subtract
 		/// </summary>
-		Dfs = 156,
+		Dfs,
 		/// <summary>
 		/// Floating Multiply
 		/// </summary>
-		Fm = 157,
+		Fm,
 		/// <summary>
 		/// Double Floating Multiply
 		/// </summary>
-		Dfm = 158,
+		Dfm,
 		/// <summary>
 		/// Floating Multiply and Add
 		/// </summary>
-		Fma = 159,
+		Fma,
 		/// <summary>
 		/// Double Floating Multiply and Add
 		/// </summary>
-		Dfma = 160,
+		Dfma,
 		/// <summary>
 		/// Floating Negative Multiply and Subtract
 		/// </summary>
-		Fnms = 161,
+		Fnms,
 		/// <summary>
 		/// Double Floating Negative Multiply and Subtract
 		/// </summary>
-		Dfnms = 162,
+		Dfnms,
 		/// <summary>
 		/// Floating Multiply and Subtract
 		/// </summary>
-		Fms = 163,
+		Fms,
 		/// <summary>
 		/// Double Floating Multiply and Subtract
 		/// </summary>
-		Dfms = 164,
+		Dfms,
 		/// <summary>
 		/// Double Floating Negative Multiply and Add
 		/// </summary>
-		Dfnma = 165,
+		Dfnma,
 		/// <summary>
 		/// Floating Reciprocal Estimate
 		/// </summary>
-		Frest = 166,
+		Frest,
 		/// <summary>
 		/// Floating Reciprocal Absolute Square Root Estimate
 		/// </summary>
-		Frsqest = 167,
+		Frsqest,
 		/// <summary>
 		/// Floating Interpolate
 		/// </summary>
-		Fi = 168,
+		Fi,
 		/// <summary>
 		/// Convert Signed Integer to Floating
 		/// </summary>
-		Csflt = 169,
+		Csflt,
 		/// <summary>
 		/// Convert Floating to Signed Integer
 		/// </summary>
-		Cflts = 170,
+		Cflts,
 		/// <summary>
 		/// Convert Unsigned Integer to Floating
 		/// </summary>
-		Cuflt = 171,
+		Cuflt,
 		/// <summary>
 		/// Convert Floating to Unsigned Integer
 		/// </summary>
-		Cfltu = 172,
+		Cfltu,
 		/// <summary>
 		/// Floating Round Double to Single
 		/// </summary>
-		Frds = 173,
+		Frds,
 		/// <summary>
 		/// Floating Extend Single to Double
 		/// </summary>
-		Fesd = 174,
+		Fesd,
 		/// <summary>
 		/// Double Floating Compare Equal
 		/// </summary>
-		Dfceq = 175,
+		Dfceq,
 		/// <summary>
 		/// Double Floating Compare Magnitude Equal
 		/// </summary>
-		Dfcmeq = 176,
+		Dfcmeq,
 		/// <summary>
 		/// Double Floating Compare Greater Than
 		/// </summary>
-		Dfcgt = 177,
+		Dfcgt,
 		/// <summary>
 		/// Double Floating Compare Magnitude Greater Than
 		/// </summary>
-		Dfcmgt = 178,
+		Dfcmgt,
 		/// <summary>
 		/// Double Floating Test Special Value
 		/// </summary>
-		Dftsv = 179,
+		Dftsv,
 		/// <summary>
 		/// Floating Compare Equal
 		/// </summary>
-		Fceq = 180,
+		Fceq,
 		/// <summary>
 		/// Floating Compare Magnitude Equal
 		/// </summary>
-		Fcmeq = 181,
+		Fcmeq,
 		/// <summary>
 		/// Floating Compare Greater Than
 		/// </summary>
-		Fcgt = 182,
+		Fcgt,
 		/// <summary>
 		/// Floating Compare Magnitude Greater Than
 		/// </summary>
-		Fcmgt = 183,
+		Fcmgt,
 		/// <summary>
 		/// Floating-Point Status and Control Register Write
 		/// </summary>
-		Fscrwr = 184,
+		Fscrwr,
 		/// <summary>
 		/// Floating-Point Status and Control Register Read
 		/// </summary>
-		Fscrrd = 185,
+		Fscrrd,
 		/// <summary>
 		/// Stop and Signal
 		/// </summary>
-		Stop = 186,
+		Stop,
 		/// <summary>
 		/// No Operation (Load)
 		/// </summary>
-		Lnop = 187,
+		Lnop,
 		/// <summary>
 		/// No Operation (Execute)
 		/// </summary>
-		Nop = 188,
+		Nop,
 		/// <summary>
 		/// Read Channel
 		/// </summary>
-		Rdch = 189,
+		Rdch,
 		/// <summary>
 		/// Read Channel Count
 		/// </summary>
-		Rchcnt = 190,
+		Rchcnt,
 		/// <summary>
 		/// Write Channel
 		/// </summary>
-		Wrch = 191,
+		Wrch,
 		/// <summary>
 		/// Move (pseudo)
 		/// </summary>
-		Move = 192,
+		Move,
 		/// <summary>
 		/// Function return (pseudo)
 		/// </summary>
-		Ret = 193,
+		Ret,
 	}
 }

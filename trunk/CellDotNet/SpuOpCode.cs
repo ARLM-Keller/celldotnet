@@ -287,14 +287,14 @@ namespace CellDotNet
 
 				s_enumCodeMap = new Dictionary<SpuOpCodeEnum, SpuOpCode>();
 				FieldInfo[] fields = typeof (SpuOpCodeEnum).GetFields(BindingFlags.Static | BindingFlags.Public);
-				foreach (FieldInfo fi in fields)
+				foreach (FieldInfo fieldInfo in fields)
 				{
 					SpuOpCode oc;
-					SpuOpCodeEnum val = (SpuOpCodeEnum) fi.GetValue(null);
+					SpuOpCodeEnum val = (SpuOpCodeEnum) fieldInfo.GetValue(null);
 					if (val == SpuOpCodeEnum.None)
 						continue;
 
-					if (!opcodenames.TryGetValue(fi.Name, out oc))
+					if (!opcodenames.TryGetValue(fieldInfo.Name, out oc))
 						throw new Exception("Enum names must match opcode names.");
 
 					s_enumCodeMap.Add(val, oc);
