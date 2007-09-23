@@ -86,6 +86,103 @@ namespace CellDotNet
 		}
 
 		[Test]
+		public void TestVectorIntGetElement_New()
+		{
+			IntDelegateInt32VInt del =
+				delegate(Int32Vector v, int i)
+				{
+					if (i == 1)
+						return v.E1;
+					else if (i == 2)
+						return v.E2;
+					else if (i == 3)
+						return v.E3;
+					else if (i == 4)
+						return v.E4;
+					else
+						return -1;
+				};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			Int32Vector v1 = new Int32Vector(3, 9, 13, -42);
+
+			int rPPU1 = del(v1, 1);
+			int rPPU2 = del(v1, 2);
+			int rPPU3 = del(v1, 3);
+			int rPPU4 = del(v1, 4);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			using (SpeContext sc = new SpeContext())
+			{
+				object rSPU1 = sc.RunProgram(cc, v1, 1);
+				object rSPU2 = sc.RunProgram(cc, v1, 2);
+				object rSPU3 = sc.RunProgram(cc, v1, 3);
+				object rSPU4 = sc.RunProgram(cc, v1, 4);
+
+				AreEqual(rPPU1, (int)rSPU1);
+				AreEqual(rPPU2, (int)rSPU2);
+				AreEqual(rPPU3, (int)rSPU3);
+				AreEqual(rPPU4, (int)rSPU4);
+			}
+		}
+
+		private delegate TReturn Func<T1, T2, TReturn>(T1 arg1, T2 arg2);
+
+		#region TestVectorInt_RefArgument
+
+		static private void ReplaceArgument(ref Int32Vector v1, Int32Vector v2)
+		{
+			v1 = v2;
+		}
+
+		/// <summary>
+		/// This one is non-trivial, since the ldarg on the ref argument will be supplemented with an ldobj.
+		/// </summary>
+		[Test]
+		public void TestVectorInt_RefArgument()
+		{
+			Func<Int32Vector, Int32Vector, Int32Vector> del = 
+				delegate(Int32Vector arg1, Int32Vector arg2)
+					{
+						ReplaceArgument(ref arg2, arg1);
+						return arg2;
+					};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			Int32Vector v1 = new Int32Vector(1, 2, 3, 4);
+			Int32Vector v2 = new Int32Vector(5, 6, 7, 8);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			AreEqual(del(v1, v2), (Int32Vector) SpeContext.UnitTestRunProgram(cc, v1, v2));
+		}
+
+		#endregion
+
+		[Test]
+		public void TestVectorInt_GetElement()
+		{
+			Converter<Int32Vector, int> del = delegate(Int32Vector input) { return input.E3; };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			Int32Vector v = new Int32Vector(3, 4, 5, 6);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			AreEqual(del(v), (int) SpeContext.UnitTestRunProgram(cc, v));
+		}
+
+		[Test]
 		public void TestVectorIntGetPutElement()
 		{
 			Int32VDelegateInt32VInt32V del =

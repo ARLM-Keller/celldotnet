@@ -148,5 +148,46 @@ namespace CellDotNet
 			int retval = del2();
 			AreEqual(60, retval);
 		}
+
+		struct QWStruct
+		{
+			public int i1;
+			public int i2;
+			public float f1;
+			public float f2;
+
+			public QWStruct(int i1, int i2, float f1, float f2)
+			{
+				this.i1 = i1;
+				this.i2 = i2;
+				this.f1 = f1;
+				this.f2 = f2;
+			}
+		}
+
+		[Test]
+		public void TestStruct()
+		{
+			Converter<int, QWStruct> del = 
+				delegate
+					{
+						QWStruct s = new QWStruct();
+						s.i1 = 1;
+						s.i2 = 2;
+						s.f1 = 3f;
+						s.f2 = 4f;
+
+						return s;
+					};
+
+			QWStruct correctval = del(0);
+			CompileContext cc = new CompileContext(del.Method);
+
+			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
+			new TreeDrawer().DrawMethod(cc.EntryPointAsMetodCompiler);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(correctval, (QWStruct) SpeContext.UnitTestRunProgram(cc, 0));
+		}
 	}
 }
