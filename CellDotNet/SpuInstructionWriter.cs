@@ -389,18 +389,21 @@ namespace CellDotNet
 			WriteStqd(combined, ptr, pointerQwOffset);
 		}
 
+		/// <summary>
+		/// Loads a word from a static offset from a pointer.
+		/// </summary>
+		/// <param name="ptr"></param>
+		/// <param name="pointerQwOffset"></param>
+		/// <param name="wordNumber"></param>
+		/// <returns></returns>
 		public VirtualRegister WriteLoad4(VirtualRegister ptr, int pointerQwOffset, int wordNumber)
 		{
-			VirtualRegister quad = WriteLqd(ptr, pointerQwOffset);
-
 			Utilities.AssertArgumentRange(wordNumber >= 0 && wordNumber <= 3, "wordNumber", "wordNumber >= 0 && wordNumber <= 3");
 
-			throw new Exception();
+			VirtualRegister quad = WriteLqd(ptr, pointerQwOffset);
+
 			// Move word to preferred slot.
-			// We're going to use shlqby (Shift Left Quadword by Bytes),
-			// so we have to clear bit 27 from the byte offset.
-//			VirtualRegister addrMod16 = WriteAndi(byteoffset, 0xf);
-//			return WriteShl(quad, addrMod16);
+			return WriteShlqbyi(quad, wordNumber * 4);
 		}
 
 		/// <summary>
