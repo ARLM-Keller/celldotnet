@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 
 namespace CellDotNet
@@ -213,11 +214,70 @@ namespace CellDotNet
 			}
 			CheckTreeInstructionCountIsMinimum(reader.InstructionsRead);
 
+			// This one should be before escape determination, since some of the address ops might be removed.
+			RemoveAddressOperations();
+
 			DetermineEscapes();
 
 			_partialEvaluator.Evaluate(this);
 
+
 			State = MethodCompileState.S2TreeConstructionDone;
+		}
+
+		/// <summary>
+		/// Removes opcodes which take addresses of instances of well-known immutable structs which we would like
+		/// to stay in registers: The vector types.
+		/// </summary>
+		private void RemoveAddressOperations()
+		{
+			ForeachTreeInstruction(
+				delegate(TreeInstruction obj)
+					{
+						// Replace instance method calls (ld*, call) on vector types with (ldarg, ldobj, call)
+						// so that vector instance methods operate on values instead of pointers.
+
+						MethodCallInstruction mci = obj as MethodCallInstruction;
+						if (mci != null && (mci.Opcode == IROpCodes.IntrinsicMethod || mci.Opcode == IROpCodes.SpuInstructionMethod) &&
+							!mci.IntrinsicMethod.IsStatic && !mci.IntrinsicMethod.IsConstructor)
+						{
+							MethodBase method = mci.IntrinsicMethod;
+							TreeInstruction ldthis = mci.Parameters[0];
+							StackTypeDescription thistype = ldthis.StackType;
+
+							bool isDefiningTypeInstanceMethodCall = method.DeclaringType == ldthis.OperandAsVariable.ReflectionType.GetElementType();
+							bool canRemoveAddressOp = isDefiningTypeInstanceMethodCall && ldthis.OperandAsVariable != null && 
+								thistype.IsManagedPointer && thistype.Dereference().IsImmutableSingleRegisterType;
+
+							if (!canRemoveAddressOp)
+								return;
+
+							if (ldthis.Opcode == IROpCodes.Ldloca || ldthis.Opcode == IROpCodes.Ldarga)
+							{
+								// Load value instead of address.
+								MethodVariable var = ldthis.OperandAsVariable;
+								if (ldthis.Opcode == IROpCodes.Ldloca)
+									ldthis = new TreeInstruction(IROpCodes.Ldloc);
+								else
+									ldthis = new TreeInstruction(IROpCodes.Ldarg);
+								ldthis.Operand = var;
+
+								mci.Parameters[0] = ldthis;
+							}
+							else
+							{
+								Utilities.Assert(ldthis.Opcode == IROpCodes.Ldloc || ldthis.Opcode == IROpCodes.Ldarg,
+									"ldthis.Opcode == IROpCodes.Ldloc || ldthis.Opcode == IROpCodes.Ldarg");
+
+								// Insert an ldobj before the method call.
+								TreeInstruction ldobj = new TreeInstruction(IROpCodes.Ldobj);
+								ldobj.Operand = thistype.Dereference();
+								ldobj.Left = ldthis;
+
+								mci.Parameters[0] = ldobj;
+							}
+						}
+					});
 		}
 
 		/// <summary>
@@ -252,8 +312,6 @@ namespace CellDotNet
 			if (State != MethodCompileState.S2TreeConstructionDone)
 				throw new InvalidOperationException("State != MethodCompileState.S2TreeConstructionDone");
 
-//			DetermineEscapes();
-
 			State = MethodCompileState.S3InstructionSelectionPreparationsDone;
 		}
 
@@ -267,14 +325,18 @@ namespace CellDotNet
 				var.Escapes = false;
 				if (var.VirtualRegister == null)
 					var.VirtualRegister = NextRegister();
+
+				// Custom mutable structs always go on the stack.
+				if (var.StackType == StackTypeDescription.ValueType && !var.StackType.IsImmutableSingleRegisterType)
+				{
+					var.Escapes = true;
+					var.StackLocation = GetNewSpillQuadOffset(var.StackType.ComplexType.QuadWordCount);
+				}
 			}
 
-//			int argnum = 0;
 			foreach (MethodParameter p in Parameters)
 			{
 				p.Escapes = false;
-				// XX The linear register allocator needs us to do the precoloring somewhere like here.
-//				p.VirtualRegister = HardwareRegister.GetHardwareArgumentRegister(argnum++);
 
 				// The linear register allocator will move physical argument registers into these virtual registers.
 				p.VirtualRegister = NextRegister();
@@ -286,12 +348,14 @@ namespace CellDotNet
 						if (obj.Opcode.IRCode == IRCode.Ldarga)
 						{
 							((MethodParameter) obj.Operand).Escapes = true;
-							((MethodParameter) obj.Operand).StackLocation = GetNewSpillQuadOffset();
+							if (((MethodParameter) obj.Operand).StackLocation == 0)
+								((MethodParameter) obj.Operand).StackLocation = GetNewSpillQuadOffset();
 						}
 						else if (obj.Opcode.IRCode == IRCode.Ldloca)
 						{
 							((MethodVariable) obj.Operand).Escapes = true;
-							((MethodVariable) obj.Operand).StackLocation = GetNewSpillQuadOffset();
+							if (((MethodVariable)obj.Operand).StackLocation == 0)
+								((MethodVariable) obj.Operand).StackLocation = GetNewSpillQuadOffset();
 						}
 					};
 			ForeachTreeInstruction(action);
@@ -546,13 +610,21 @@ namespace CellDotNet
 		}
 
 		private int _nextSpillOffset = 2; // Start by pointing to start of Local Variable Space.
+
 		/// <summary>
-		/// For the register allocator to use to get SP offsets for spilling.
+		/// For escaping variables and for the register allocator to use to get SP offsets for spilling.
 		/// </summary>
 		/// <returns></returns>
 		public int GetNewSpillQuadOffset()
 		{
 			return _nextSpillOffset++;
+		}
+
+		public int GetNewSpillQuadOffset(int count)
+		{
+			int offset = _nextSpillOffset;
+			_nextSpillOffset += count;
+			return offset;
 		}
 
 		#endregion

@@ -285,7 +285,6 @@ namespace CellDotNet
 				treeinst.Offset = reader.Offset;
 
 				// Replace variable and parameter references with our own types.
-				// Do not determine escapes here, since it may change later.
 				if (treeinst.Opcode.IRCode == IRCode.Ldloc || treeinst.Opcode.IRCode == IRCode.Stloc ||
 				    treeinst.Opcode.IRCode == IRCode.Ldloca)
 				{

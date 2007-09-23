@@ -133,6 +133,11 @@ namespace CellDotNet
 			get { return _operand as MethodVariable; }
 		}
 
+		public FieldInfo OperandAsField
+		{
+			get { return _operand as FieldInfo; }
+		}
+
 		#endregion
 
 		private int _offset = -1;

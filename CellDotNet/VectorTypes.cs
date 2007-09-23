@@ -168,13 +168,28 @@ namespace CellDotNet
 			return v.e2;
 		}
 
-		/// <summary>
-		/// An experiment - would be nice to have...
-		/// </summary>
+		public int E1
+		{
+			[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE1)]
+			get { return e1; }
+		}
+
+		public int E2
+		{
+			[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE2)]
+			get { return e2; }
+		}
+
 		public int E3
 		{
 			[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE3)]
 			get { return e3; }
+		}
+
+		public int E4
+		{
+			[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE4)]
+			get { return e4; }
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE3)]

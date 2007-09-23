@@ -520,17 +520,70 @@ namespace CellDotNet
 			Console.WriteLine();
 		}
 
-		private static void RunRasmus()
+		private static Guid g = Guid.NewGuid();
+
+		struct MyStruct
 		{
-			new ShellUtilitiesTest().TestExecuteShellScript();
+			public int i1;
+			public int l1;
+
+
+			public MyStruct(int i1)
+			{
+				this.i1 = i1;
+				l1 = 3;
+			}
+
+			public MyStruct ACopy
+			{
+				get { return this;}
+			}
+
+			public int I1
+			{
+				get { return i1; }
+			}
+		}
+
+//		private delegate void xx();
+
+		static void Method2(ref Int32Vector arg)
+		{
+			int i = arg.E2;
+//			return new MyStruct(arg.I1);
+		}
+
+//		static void Method2(ref MyStruct arg)
+//		{
+//			arg = arg.ACopy;
+////			return new MyStruct(arg.I1);
+//		}
+
+		private unsafe static void RunRasmus()
+		{
+//			MyStruct[] arr = new MyStruct[4];
+//			int i1 = arr[1].I1;
+			Guid g1 = Guid.NewGuid();
+			Guid g2 = g1;
+			MethodBase cm = MethodInfo.GetCurrentMethod();
+			Console.WriteLine(cm.Name);
+
+			Int32Vector v = new Int32Vector(3, 5, 1, 1);
+
+			MethodBase m = typeof(Class1).GetMethod("Method2", BindingFlags.Static | BindingFlags.NonPublic);
+			MethodCompiler mc = new MethodCompiler(m);
+			
+//			List<IRBasicBlock> blocks = new IRTreeBuilder().BuildBasicBlocks(m);
+			new TreeDrawer().DrawMethod(mc);
+//			MethodBase m = MethodInfo.GetCurrentMethod();
+
+//			xx del = RunRasmus;
+
+//			Console.WriteLine("str: " + sizeof(MyStruct));
+//			MyStruct s = new MyStruct();
+//			Console.WriteLine("offset: " + Marshal.OffsetOf(typeof (MyStruct), "l1"));
 			return;
 
-			Converter<int, float> del = delegate(int input) { return (float) input; };
-
-			CompileContext cc = new CompileContext(del.Method);
-			cc.PerformProcessing(CompileContextState.S8Complete);
-			new TreeDrawer().DrawMethod((MethodCompiler)cc.EntryPoint);
-			cc.WriteAssemblyToFile("rasmus.s", 5);
 		}
 	}
 }

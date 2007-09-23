@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace CellDotNet
 {
@@ -67,9 +68,9 @@ namespace CellDotNet
 				string msg = string.Format(
 					"Instruction selection encountered {0} IR instructions " + 
 					"which are not currently supported, or their operand types are not supported.\r\n" + 
-					"The instructions are:\r\n", _unimplementedOpCodes.Count);
+					"The instructions opcodes are:\r\n", _unimplementedOpCodes.Count);
 
-				List<string> ocnames = _unimplementedOpCodes.ConvertAll<string>(
+				List<string> ocnames = new List<IROpCode>(Utilities.RemoveDuplicates(_unimplementedOpCodes)).ConvertAll<string>(
 					delegate(IROpCode input) { return input.Name; });
 				msg += string.Join(", ", ocnames.ToArray()) + ".";
 
@@ -717,6 +718,32 @@ namespace CellDotNet
 				case IRCode.Ldflda:
 					break;
 				case IRCode.Stfld:
+					{
+						if (lefttype != StackTypeDescription.ValueType || !lefttype.IsManagedPointer)
+							break;
+
+						Type vt = lefttype.ComplexType.ReflectionType;
+						FieldInfo field = inst.OperandAsField;
+
+						int byteoffset = (int) Marshal.OffsetOf(vt, field.Name);
+
+						StackTypeDescription fieldtype = new TypeDeriver().GetStackTypeDescription(field.FieldType);
+						if (fieldtype == StackTypeDescription.None || 
+							fieldtype == StackTypeDescription.ValueType || 
+							fieldtype == StackTypeDescription.ObjectType)
+							break;
+
+						if (fieldtype.NumericSize != CliNumericSize.FourBytes)
+							break;
+						int valuesize = (int) fieldtype.NumericSize;
+
+						// We don't do unaligned.
+						if (byteoffset % valuesize != 0)
+							break;
+
+						int slotnum = byteoffset / 16;
+						int slotoffset = byteoffset % 16;
+					}
 					break;
 				case IRCode.Ldsfld:
 					break;
@@ -725,7 +752,7 @@ namespace CellDotNet
 				case IRCode.Stsfld:
 					break;
 				case IRCode.Stobj:
-					if (lefttype.CliType.Equals(CliType.ManagedPointer))
+					if (lefttype.CliType == CliType.ManagedPointer)
 					{
 						switch (lefttype.Dereference().CliType)
 						{
@@ -1053,7 +1080,7 @@ namespace CellDotNet
 				case IRCode.Stloc:
 					{
 						MethodVariable var = ((MethodVariable) inst.Operand);
-						if (var.Escapes != null && var.Escapes.Value)
+						if (var.Escapes ?? false)
 							_writer.WriteStqd(vrleft, HardwareRegister.SP, var.StackLocation);
 						else
 							_writer.WriteMove(vrleft, var.VirtualRegister);
@@ -1066,6 +1093,19 @@ namespace CellDotNet
 				case IRCode.Volatile:
 //				case IRCode.Tail:
 				case IRCode.Initobj:
+					{
+						StackTypeDescription t = (StackTypeDescription) inst.Operand;
+
+						int slotcount = t.ComplexType.QuadWordCount;
+						VirtualRegister zero = _writer.WriteIl(0);
+						MethodVariable var = (MethodVariable) inst.Left.Operand;
+						for (int i = 0; i < slotcount; i++)
+						{
+							_writer.WriteStqd(zero, HardwareRegister.SP, var.StackLocation + i);
+						}
+						return null;
+					}
+					break;
 				case IRCode.Constrained:
 				case IRCode.Cpblk:
 				case IRCode.Initblk:

@@ -118,6 +118,18 @@ namespace CellDotNet
 		}
 
 		/// <summary>
+		/// When this returns true, we can perform some operations in registers. The CLI basic types are not 
+		/// covered by this property; it is for the vector types.
+		/// </summary>
+		public bool IsImmutableSingleRegisterType
+		{
+			get
+			{
+				return this == Int32Vector || this == Float32Vector;
+			}
+		}
+
+		/// <summary>
 		/// You probably shouldn't use this property.
 		/// </summary>
 		internal CliType CliType

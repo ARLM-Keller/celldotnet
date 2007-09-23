@@ -255,13 +255,15 @@ namespace CellDotNet
 				case IRCode.Ldobj: // ldobj
 					t = inst.Left.StackType.Dereference();
 					break;
+				case IRCode.Stfld: // stfld
+					t = StackTypeDescription.None;
+					break;
+				case IRCode.Ldfld: // ldfld
 				case IRCode.Ldstr: // ldstr
 				case IRCode.Castclass: // castclass
 				case IRCode.Isinst: // isinst
 				case IRCode.Unbox: // unbox
-				case IRCode.Ldfld: // ldfld
 				case IRCode.Ldflda: // ldflda
-				case IRCode.Stfld: // stfld
 				case IRCode.Ldsfld: // ldsfld
 				case IRCode.Ldsflda: // ldsflda
 				case IRCode.Stsfld: // stsfld
@@ -424,6 +426,8 @@ namespace CellDotNet
 				case IRCode.Localloc: // localloc
 					throw new NotImplementedException();
 				case IRCode.Initobj: // initobj
+					t = StackTypeDescription.None;
+					break;
 				case IRCode.Constrained: // constrained.
 				case IRCode.Cpblk: // cpblk
 				case IRCode.Initblk: // initblk

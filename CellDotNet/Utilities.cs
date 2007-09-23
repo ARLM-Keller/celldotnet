@@ -224,6 +224,14 @@ namespace CellDotNet
 				writer.Write(" {0:x2} {1:x2} {2:x2} {3:x2}", val >> 0x18, (val >> 0x10) & 0xff, (val >> 8) & 0xff, val & 0xff);
 			}
 			writer.WriteLine();
+
+		}
+
+		public static Set<T> RemoveDuplicates<T>(IEnumerable<T> e)
+		{
+			Set<T> s = new Set<T>();
+			s.AddAll(e);
+			return s;
 		}
 	}
 }

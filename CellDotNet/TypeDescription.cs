@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace CellDotNet
 {
@@ -23,6 +24,17 @@ namespace CellDotNet
 		public Type ReflectionType
 		{
 			get { return _reflectionType; }
+		}
+
+		/// <summary>
+		/// Returns the number of quadwords that instances of the type takes up.
+		/// </summary>
+		public int QuadWordCount
+		{
+			get
+			{
+				return Utilities.Align16(Marshal.SizeOf(_reflectionType)) / 16;
+			}
 		}
 
 		public TypeDescription(Type type)
