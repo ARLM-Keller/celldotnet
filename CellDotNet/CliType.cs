@@ -216,7 +216,7 @@ namespace CellDotNet
 		private void AssertSimple()
 		{
 			if (IsArray || IndirectionLevel > 0)
-				throw new InvalidOperationException("Invalid operation since this is not a simple type.");
+				throw new InvalidOperationException("Invalid operation since this is not a simple type (" + this + ").");
 		}
 
 		/// <summary>
