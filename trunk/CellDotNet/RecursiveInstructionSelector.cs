@@ -656,6 +656,14 @@ namespace CellDotNet
 				case IRCode.Conv_I1:
 					break;
 				case IRCode.Conv_I2:
+					switch (lefttype.CliType)
+					{
+						case CliType.Int32:
+						case CliType.NativeInt:
+							VirtualRegister r1 = _writer.WriteIla(0xffff); //Loads 18 bits without sign extend.
+							VirtualRegister r2 = _writer.WriteAnd(r1, vrleft);
+							return _writer.WriteXshw(r2);
+					}
 					break;
 				case IRCode.Conv_I4:
 					{

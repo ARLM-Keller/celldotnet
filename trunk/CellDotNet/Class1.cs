@@ -24,6 +24,13 @@ namespace CellDotNet
 			}
 		}
 
+		public static int TEST()
+		{
+			int[] arr = new int[10];
+
+			return arr.Length;
+		}
+
 		private static void RunKlaus()
 		{
 //			new ILOpCodeExecutionTest().TestRefArgumentTest();

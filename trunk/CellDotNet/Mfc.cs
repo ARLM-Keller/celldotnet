@@ -7,6 +7,11 @@ namespace CellDotNet
 	/// <summary>
 	/// Contains static methods for DMA operations by an SPE. 
 	/// <para>It closely mirrors the functionality of libspe.</para>
+	/// Note: The synchronus wrapper methods <code>Get(int[] target, MainStorageArea ea)</code>
+	/// and <code>Put(int[] target, MainStorageArea ea)</code> uses taggroup <code>31</code>.
+	/// To avoid dedlock do not use tag <code>31</code> while using both the wrapped an
+	/// non-wrapped <code>Get</code> and <code>Put</code>.
+	/// 
 	/// </summary>
 	static class Mfc
 	{
@@ -24,6 +29,12 @@ namespace CellDotNet
 		static unsafe public void Put(void *ls, int ea, int size, uint tag, uint tid, uint rid)
 		{
 			throw new InvalidOperationException();			
+		}
+
+		static public void Get(int[] target, MainStorageArea ea)
+		{
+			Get(target, ea, (short) target.Length, 31);
+			WaitForDmaCompletion(1);
 		}
 
 		static public void Get(int[] target, MainStorageArea ea, short count, uint tag)
@@ -68,6 +79,12 @@ namespace CellDotNet
 				Utilities.Assert(address % 1 == 0, "address % 1 == 0");
 			else 
 				throw new ArgumentOutOfRangeException();
+		}
+
+		static public void Put(int[] target, MainStorageArea ea)
+		{
+			Put(target, ea, (short)target.Length, 31);
+			WaitForDmaCompletion(1);
 		}
 
 		static public void Put(int[] source, MainStorageArea ea, short count, uint tag)
