@@ -168,7 +168,7 @@ namespace CellDotNet
 		[Test]
 		public void TestStruct()
 		{
-			Converter<int, QWStruct> del = 
+			Converter<int, float> del = 
 				delegate
 					{
 						QWStruct s = new QWStruct();
@@ -177,10 +177,10 @@ namespace CellDotNet
 						s.f1 = 3f;
 						s.f2 = 4f;
 
-						return s;
+						return s.i1 + s.i2 + s.f1 + s.f2;
 					};
 
-			QWStruct correctval = del(0);
+			float correctval = del(0);
 			CompileContext cc = new CompileContext(del.Method);
 
 //			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
@@ -189,7 +189,7 @@ namespace CellDotNet
 
 			Disassembler.DisassembleToConsole(cc);
 
-			AreEqual(correctval, (QWStruct) SpeContext.UnitTestRunProgram(cc, 0));
+			AreEqual(correctval, (float) SpeContext.UnitTestRunProgram(cc, 0));
 		}
 	}
 }

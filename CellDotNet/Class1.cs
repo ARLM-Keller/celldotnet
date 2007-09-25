@@ -561,6 +561,10 @@ namespace CellDotNet
 
 		private unsafe static void RunRasmus()
 		{
+
+			new VectorTypeTest().TestVectorInt_GetElement();
+			return;
+
 //			MyStruct[] arr = new MyStruct[4];
 //			int i1 = arr[1].I1;
 			Guid g1 = Guid.NewGuid();

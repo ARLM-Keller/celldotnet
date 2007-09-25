@@ -245,7 +245,7 @@ namespace CellDotNet
 							TreeInstruction ldthis = mci.Parameters[0];
 							StackTypeDescription thistype = ldthis.StackType;
 
-							bool isDefiningTypeInstanceMethodCall = method.DeclaringType == ldthis.OperandAsVariable.ReflectionType.GetElementType();
+							bool isDefiningTypeInstanceMethodCall = method.DeclaringType == ldthis.OperandAsVariable.ReflectionType;
 							bool canRemoveAddressOp = isDefiningTypeInstanceMethodCall && ldthis.OperandAsVariable != null && 
 								thistype.IsManagedPointer && thistype.Dereference().IsImmutableSingleRegisterType;
 
