@@ -267,7 +267,7 @@ namespace CellDotNet
 				case CliType.ValueType:
 				case CliType.ObjectType:
 				case CliType.ManagedPointer:
-					throw new NotImplementedException();
+					throw new NotSupportedException();
 			}
 			throw new NotSupportedException("Data type is not supported: " + datatype);
 		}

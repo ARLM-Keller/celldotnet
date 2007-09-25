@@ -74,6 +74,31 @@ namespace CellDotNet
 			return !(v1 == v2);
 		}
 
+		public float E1
+		{
+			[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE1)]
+			get { return e1; }
+		}
+
+		public float E2
+		{
+			[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE2)]
+			get { return e2; }
+		}
+
+		public float E3
+		{
+			[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE3)]
+			get { return e3; }
+		}
+
+		public float E4
+		{
+			[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE4)]
+			get { return e4; }
+		}
+
+
 		public override string ToString()
 		{
 			return "{" + e1 + ", " + e2 + ", " + e3 + ", " + e4 + "}";
@@ -154,18 +179,6 @@ namespace CellDotNet
 		public static bool operator !=(Int32Vector v1, Int32Vector v2)
 		{
 			return !(v1 == v2);
-		}
-
-		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE1)]
-		public static int GetE1(Int32Vector v)
-		{
-			return v.e1;
-		}
-
-		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE2)]
-		public static int GetE2(Int32Vector v)
-		{
-			return v.e2;
 		}
 
 		public int E1

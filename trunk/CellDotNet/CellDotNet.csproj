@@ -162,4 +162,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <PostBuildEvent>copy $(TargetPath) \\ps3\halland\celldotnet</PostBuildEvent>
+  </PropertyGroup>
 </Project>
