@@ -398,7 +398,7 @@ namespace CellDotNet
 		/// <returns></returns>
 		public VirtualRegister WriteLoad4(VirtualRegister ptr, int pointerQwOffset, int wordNumber)
 		{
-			Utilities.AssertArgumentRange(wordNumber >= 0 && wordNumber <= 3, "wordNumber", "wordNumber >= 0 && wordNumber <= 3");
+			Utilities.AssertArgumentRange(wordNumber >= 0 && wordNumber <= 3, "wordNumber", wordNumber, "wordNumber >= 0 && wordNumber <= 3");
 
 			VirtualRegister quad = WriteLqd(ptr, pointerQwOffset);
 

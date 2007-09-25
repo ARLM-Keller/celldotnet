@@ -153,43 +153,43 @@ namespace CellDotNet
 		{
 			public int i1;
 			public int i2;
-			public float f1;
-			public float f2;
+			public int i3;
+			public int i4;
 
-			public QWStruct(int i1, int i2, float f1, float f2)
+			public QWStruct(int i1, int i2, int i3, int i4)
 			{
 				this.i1 = i1;
 				this.i2 = i2;
-				this.f1 = f1;
-				this.f2 = f2;
+				this.i3 = i3;
+				this.i4 = i4;
 			}
 		}
 
 		[Test]
 		public void TestStruct()
 		{
-			Converter<int, float> del = 
+			Converter<int, int> del = 
 				delegate
 					{
 						QWStruct s = new QWStruct();
 						s.i1 = 1;
 						s.i2 = 2;
-						s.f1 = 3f;
-						s.f2 = 4f;
+						s.i3 = 11;
+						s.i4 = 12;
 
-						return s.i1 + s.i2 + s.f1 + s.f2;
+						return s.i1 + s.i2 + s.i3 + s.i4;
 					};
 
-			float correctval = del(0);
+			int correctval = del(0);
 			CompileContext cc = new CompileContext(del.Method);
 
-//			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
-//			new TreeDrawer().DrawMethod(cc.EntryPointAsMetodCompiler);
+			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
+			new TreeDrawer().DrawMethod(cc.EntryPointAsMetodCompiler);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			Disassembler.DisassembleToConsole(cc);
 
-			AreEqual(correctval, (float) SpeContext.UnitTestRunProgram(cc, 0));
+			AreEqual(correctval, (int) SpeContext.UnitTestRunProgram(cc, 0));
 		}
 	}
 }

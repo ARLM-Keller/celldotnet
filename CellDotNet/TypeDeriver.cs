@@ -259,6 +259,8 @@ namespace CellDotNet
 					t = StackTypeDescription.None;
 					break;
 				case IRCode.Ldfld: // ldfld
+					t = GetStackTypeDescription(inst.OperandAsField.FieldType);
+					break;
 				case IRCode.Ldstr: // ldstr
 				case IRCode.Castclass: // castclass
 				case IRCode.Isinst: // isinst

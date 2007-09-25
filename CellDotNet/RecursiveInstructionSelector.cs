@@ -1143,7 +1143,7 @@ namespace CellDotNet
 				throw new NotSupportedException();
 
 			qwoffset = byteoffset / 16;
-			wordoffset = byteoffset % 16;
+			wordoffset = (byteoffset % 16) / 4;
 		}
 
 
