@@ -568,33 +568,7 @@ namespace CellDotNet
 
 		private unsafe static void RunRasmus()
 		{
-
-			new VectorTypeTest().TestVectorInt_GetElement();
-			return;
-
-//			MyStruct[] arr = new MyStruct[4];
-//			int i1 = arr[1].I1;
-			Guid g1 = Guid.NewGuid();
-			Guid g2 = g1;
-			MethodBase cm = MethodInfo.GetCurrentMethod();
-			Console.WriteLine(cm.Name);
-
-			Int32Vector v = new Int32Vector(3, 5, 1, 1);
-
-			MethodBase m = typeof(Class1).GetMethod("Method2", BindingFlags.Static | BindingFlags.NonPublic);
-			MethodCompiler mc = new MethodCompiler(m);
-			
-//			List<IRBasicBlock> blocks = new IRTreeBuilder().BuildBasicBlocks(m);
-			new TreeDrawer().DrawMethod(mc);
-//			MethodBase m = MethodInfo.GetCurrentMethod();
-
-//			xx del = RunRasmus;
-
-//			Console.WriteLine("str: " + sizeof(MyStruct));
-//			MyStruct s = new MyStruct();
-//			Console.WriteLine("offset: " + Marshal.OffsetOf(typeof (MyStruct), "l1"));
-			return;
-
+			new ShellUtilitiesTest().TestExecuteCommand();
 		}
 	}
 }

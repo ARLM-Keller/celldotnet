@@ -381,10 +381,10 @@ namespace CellDotNet
 		/// <param name="pointerQwOffset"></param>
 		/// <param name="value"></param>
 		/// <param name="wordNumberAddend"></param>
-		public void WriteStore4(VirtualRegister ptr, int pointerQwOffset, int wordNumberAddend, VirtualRegister value)
+		public void WriteStoreWord(VirtualRegister ptr, int pointerQwOffset, int wordNumberAddend, VirtualRegister value)
 		{
 			VirtualRegister loadedvalue = WriteLqd(ptr, pointerQwOffset);
-			VirtualRegister mask = WriteCwd(ptr, wordNumberAddend);
+			VirtualRegister mask = WriteCwd(ptr, wordNumberAddend * 4);
 			VirtualRegister combined = WriteShufb(value, loadedvalue, mask);
 			WriteStqd(combined, ptr, pointerQwOffset);
 		}
@@ -396,14 +396,17 @@ namespace CellDotNet
 		/// <param name="pointerQwOffset"></param>
 		/// <param name="wordNumber"></param>
 		/// <returns></returns>
-		public VirtualRegister WriteLoad4(VirtualRegister ptr, int pointerQwOffset, int wordNumber)
+		public VirtualRegister WriteLoadWord(VirtualRegister ptr, int pointerQwOffset, int wordNumber)
 		{
 			Utilities.AssertArgumentRange(wordNumber >= 0 && wordNumber <= 3, "wordNumber", wordNumber, "wordNumber >= 0 && wordNumber <= 3");
 
 			VirtualRegister quad = WriteLqd(ptr, pointerQwOffset);
 
-			// Move word to preferred slot.
-			return WriteShlqbyi(quad, wordNumber * 4);
+			// Move word to preferred slot if necessary.
+			if (wordNumber != 0)
+				return WriteShlqbyi(quad, wordNumber * 4);
+			else
+				return quad;
 		}
 
 		/// <summary>

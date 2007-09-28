@@ -539,7 +539,7 @@ namespace CellDotNet
 							throw new InvalidIRTreeException("Invalid level of indirection for stind. Stack type: " + lefttype);
 						VirtualRegister ptr = vrleft;
 
-						_writer.WriteStore4(ptr, 0, 0, vrright);
+						_writer.WriteStoreWord(ptr, 0, 0, vrright);
 						return null;
 					}
 				case IRCode.Stind_I8:
@@ -729,7 +729,7 @@ namespace CellDotNet
 						int wordoffset;
 						GetStructFieldData(lefttype, vt, field, out qwoffset, out wordoffset);
 
-						return _writer.WriteLoad4(vrleft, qwoffset, wordoffset);
+						return _writer.WriteLoadWord(vrleft, qwoffset, wordoffset);
 					}
 				case IRCode.Stfld:
 					{
@@ -740,7 +740,8 @@ namespace CellDotNet
 						int wordoffset;
 						GetStructFieldData(lefttype, vt, field, out qwoffset, out wordoffset);
 
-						_writer.WriteStore4(vrleft, qwoffset, wordoffset, vrright);
+//						_writer.WriteStoreWord(vrleft, qwoffset, 0, vrright);
+						_writer.WriteStoreWord(vrleft, qwoffset, wordoffset, vrright);
 						return null;
 					}
 				case IRCode.Ldsfld:
@@ -1068,8 +1069,9 @@ namespace CellDotNet
 						{
 							// This is a sanity check for stack overflow.
 							Utilities.Assert(var.StackLocation * 4 < 32 * 1024, "Immediated overflow");
-							VirtualRegister r = _writer.WriteIl(var.StackLocation * 16);
-							_writer.WriteA(r, HardwareRegister.SP, r);
+//							VirtualRegister r = _writer.WriteIl(var.StackLocation * 16);
+//							_writer.WriteA(r, HardwareRegister.SP, r);
+							VirtualRegister r = _writer.WriteAi(HardwareRegister.SP, var.StackLocation * 16);
 							return r;
 						}
 						else
@@ -1096,10 +1098,9 @@ namespace CellDotNet
 
 						int slotcount = t.ComplexType.QuadWordCount;
 						VirtualRegister zero = _writer.WriteIl(0);
-						MethodVariable var = (MethodVariable) inst.Left.Operand;
 						for (int i = 0; i < slotcount; i++)
 						{
-							_writer.WriteStqd(zero, HardwareRegister.SP, var.StackLocation + i);
+							_writer.WriteStqd(zero, vrleft, i);
 						}
 						return null;
 					}

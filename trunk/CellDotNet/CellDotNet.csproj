@@ -163,6 +163,6 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>copy $(TargetPath) \\ps3\halland\celldotnet</PostBuildEvent>
+    <PostBuildEvent>copy $(TargetPath) \\ps3\homes\celldotnet</PostBuildEvent>
   </PropertyGroup>
 </Project>

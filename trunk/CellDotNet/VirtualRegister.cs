@@ -66,7 +66,14 @@ namespace CellDotNet
 		public override string ToString()
 		{
 			if (_isRegisterSet)
-				return "$" + Register;
+			{
+				if (Register == CellRegister.REG_1)
+					return "$SP";
+				else if (Register == CellRegister.REG_0)
+					return "$LR";
+				else
+					return "$" + Register;
+			}
 			else if (Number != 0)
 				return "$$" + Number;
 			else

@@ -12,8 +12,6 @@ namespace CellDotNet
 	{
 		private delegate int SimpleDelegateReturn();
 
-//		private delegate void SimpleDelegateRefArg(ref int a);
-
 		[Test]
 		public void Test_Call()
 		{
@@ -23,13 +21,7 @@ namespace CellDotNet
 
 			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
 
-			Disassembler.DisassembleUnconditional(cc, Console.Out);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
-
-			Disassembler.DisassembleToConsole(cc);
-
-//			cc.WriteAssemblyToFile(Utilities.GetUnitTestName() + "_asm.s", new ValueType[0]);
 
 			int[] code = cc.GetEmittedCode();
 
