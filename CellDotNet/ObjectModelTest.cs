@@ -166,7 +166,7 @@ namespace CellDotNet
 		}
 
 		[Test]
-		public void TestStruct()
+		public void TestStruct_Field()
 		{
 			Converter<int, int> del = 
 				delegate
@@ -181,19 +181,88 @@ namespace CellDotNet
 					};
 
 			int correctval = del(0);
+
 			CompileContext cc = new CompileContext(del.Method);
-
-			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
-			new TreeDrawer().DrawMethod(cc.EntryPointAsMetodCompiler);
 			cc.PerformProcessing(CompileContextState.S8Complete);
-//			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
-
-			Disassembler.DisassembleUnconditionalToConsole(cc);
-
-			cc.PerformProcessing(CompileContextState.S8Complete);
-			cc.WriteAssemblyToFile("TestStruct.s", 0);
 
 			AreEqual(correctval, (int) SpeContext.UnitTestRunProgram(cc, 0));
+		}
+
+		[Test]
+		public void TestStruct_FieldsCleared()
+		{
+			Converter<int, int> del =
+				delegate
+				{
+					QWStruct s = new QWStruct();
+
+					return s.i1 + s.i2 + s.i3 + s.i4;
+				};
+
+			int correctval = del(0);
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(correctval, (int)SpeContext.UnitTestRunProgram(cc, 0));
+		}
+
+		struct QWStruct_Big
+		{
+			public int i1;
+			public int i2;
+			public int i3;
+			public int i4;
+			public int i5;
+			public int i6;
+			public int i7;
+			public int i8;
+		}
+
+		[Test]
+		public void TestStruct_Field_Big()
+		{
+			Converter<int, int> del =
+				delegate
+				{
+					QWStruct_Big s = new QWStruct_Big();
+					s.i1 = 1;
+					s.i2 = 2;
+					s.i3 = 101;
+					s.i4 = 102;
+					s.i5 = 1001;
+					s.i6 = 1002;
+					s.i7 = 10001;
+					s.i8 = 10002;
+
+					return s.i1 + s.i2 + s.i3 + s.i4 + s.i5 + s.i6 + s.i7 + s.i8;
+				};
+
+			int correctval = del(0);
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(correctval, (int)SpeContext.UnitTestRunProgram(cc, 0));
+		}
+
+		[Test]
+		public void TestStruct_FieldsCleared_Big()
+		{
+			Converter<int, int> del =
+				delegate
+				{
+					QWStruct_Big s = new QWStruct_Big();
+
+					return s.i1 + s.i2 + s.i3 + s.i4 + s.i5 + s.i6 + s.i7 + s.i8;
+				};
+
+			int correctval = del(0);
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(correctval, (int)SpeContext.UnitTestRunProgram(cc, 0));
 		}
 	}
 }
