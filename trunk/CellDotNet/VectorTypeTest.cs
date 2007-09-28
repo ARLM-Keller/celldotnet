@@ -6,8 +6,6 @@ namespace CellDotNet
 	[TestFixture]
 	public class VectorTypeTest : UnitTest
 	{
-		private delegate int IntDelegateInt32V(Int32Vector v1);
-
 		private delegate Int32Vector Int32VDelegateInt32V(Int32Vector v1);
 
 		private delegate Int32Vector Int32VDelegateInt32VInt32V(Int32Vector v1, Int32Vector v2);
@@ -17,28 +15,6 @@ namespace CellDotNet
 		private delegate bool BoolDelegateFloat32VFloat32V(Float32Vector v1, Float32Vector v2);
 
 		private delegate int IntDelegateInt32VInt(Int32Vector v1, int i);
-
-		[Test]
-		public void TestSimple()
-		{
-			IntDelegateInt32V del = delegate(Int32Vector input) { return Int32Vector.GetE3(input); };
-
-			CompileContext cc = new CompileContext(del.Method);
-			cc.PerformProcessing(CompileContextState.S8Complete);
-
-			Int32Vector v1 = new Int32Vector(0, 0, 17, 0);
-
-			int PPUresult = del(v1);
-
-			if (!SpeContext.HasSpeHardware)
-				return;
-
-			using (SpeContext sc = new SpeContext())
-			{
-				object rv = sc.RunProgram(cc, v1);
-				AreEqual(PPUresult, (int)rv);
-			}
-		}
 
 		[Test]
 		public void TestVectorInt_GetElement()
