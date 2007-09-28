@@ -34,7 +34,7 @@ namespace CellDotNet
 		static public void Get(int[] target, MainStorageArea ea)
 		{
 			Get(target, ea, (short) target.Length, 31);
-			WaitForDmaCompletion(1);
+			WaitForDmaCompletion(uint.MaxValue);
 		}
 
 		static public void Get(int[] target, MainStorageArea ea, short count, uint tag)

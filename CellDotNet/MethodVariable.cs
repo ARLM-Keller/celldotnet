@@ -40,6 +40,9 @@ namespace CellDotNet
 		}
 
 		private int _stacklocation;
+		/// <summary>
+		/// Position of the variable on the stack, relative to the stack pointer. Measured in quadwords.
+		/// </summary>
 		public int StackLocation
 		{
 			get { return _stacklocation; }

@@ -186,8 +186,12 @@ namespace CellDotNet
 			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
 			new TreeDrawer().DrawMethod(cc.EntryPointAsMetodCompiler);
 			cc.PerformProcessing(CompileContextState.S8Complete);
+//			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
 
-			Disassembler.DisassembleToConsole(cc);
+			Disassembler.DisassembleUnconditionalToConsole(cc);
+
+			cc.PerformProcessing(CompileContextState.S8Complete);
+			cc.WriteAssemblyToFile("TestStruct.s", 0);
 
 			AreEqual(correctval, (int) SpeContext.UnitTestRunProgram(cc, 0));
 		}
