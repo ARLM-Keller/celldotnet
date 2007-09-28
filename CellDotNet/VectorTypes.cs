@@ -205,45 +205,45 @@ namespace CellDotNet
 			get { return e4; }
 		}
 
-		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE3)]
-		public static int GetE3(Int32Vector v)
-		{
-			return v.e3;
-		}
-
-		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE4)]
-		public static int GetE4(Int32Vector v)
-		{
-			return v.e4;
-		}
-
-		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_putE1)]
-		public static Int32Vector PutE1(Int32Vector v, Int32 i)
-		{
-			Int32Vector r = new Int32Vector(i, v.e2, v.e3, v.e4);
-			return r;
-		}
-
-		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_putE2)]
-		public static Int32Vector PutE2(Int32Vector v, Int32 i)
-		{
-			Int32Vector r = new Int32Vector(v.e1, i, v.e3, v.e4);
-			return r;
-		}
-
-		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_putE3)]
-		public static Int32Vector PutE3(Int32Vector v, Int32 i)
-		{
-			Int32Vector r = new Int32Vector(v.e1, v.e2, i, v.e4);
-			return r;
-		}
-
-		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_putE4)]
-		public static Int32Vector PutE4(Int32Vector v, Int32 i)
-		{
-			Int32Vector r = new Int32Vector(v.e1, v.e2, v.e3, i);
-			return r;
-		}
+//		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE3)]
+//		public static int GetE3(Int32Vector v)
+//		{
+//			return v.e3;
+//		}
+//
+//		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE4)]
+//		public static int GetE4(Int32Vector v)
+//		{
+//			return v.e4;
+//		}
+//
+//		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_putE1)]
+//		public static Int32Vector PutE1(Int32Vector v, Int32 i)
+//		{
+//			Int32Vector r = new Int32Vector(i, v.e2, v.e3, v.e4);
+//			return r;
+//		}
+//
+//		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_putE2)]
+//		public static Int32Vector PutE2(Int32Vector v, Int32 i)
+//		{
+//			Int32Vector r = new Int32Vector(v.e1, i, v.e3, v.e4);
+//			return r;
+//		}
+//
+//		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_putE3)]
+//		public static Int32Vector PutE3(Int32Vector v, Int32 i)
+//		{
+//			Int32Vector r = new Int32Vector(v.e1, v.e2, i, v.e4);
+//			return r;
+//		}
+//
+//		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_putE4)]
+//		public static Int32Vector PutE4(Int32Vector v, Int32 i)
+//		{
+//			Int32Vector r = new Int32Vector(v.e1, v.e2, v.e3, i);
+//			return r;
+//		}
 
 		public override string ToString()
 		{

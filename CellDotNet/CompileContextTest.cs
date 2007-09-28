@@ -68,13 +68,7 @@ namespace CellDotNet
 			SimpleDelegate del = delegate { };
 
 			CompileContext cc = new CompileContext(del.Method);
-//			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
 			cc.PerformProcessing(CompileContextState.S8Complete);
-			return;
-
-			StringWriter sw = new StringWriter();
-			Disassembler.DisassembleUnconditional(cc, sw);
-			Console.WriteLine(sw.GetStringBuilder());
 		}
 	}
 }

@@ -133,7 +133,7 @@ namespace CellDotNet
 		static public void WaitForDmaCompletion(uint tagMask)
 		{
 			const int SPE_TAG_ALL = 2;
-			const int SPE_TAG_ANY = 1;
+//			const int SPE_TAG_ANY = 1;
 //			const int SPE_TAG_IMMEDIATE = 3;
 
 			if (SpuRuntime.IsRunningOnSpu)
