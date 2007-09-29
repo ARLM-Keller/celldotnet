@@ -204,8 +204,8 @@ namespace CellDotNet
 						{
 							if (mc.MethodBase.IsConstructor)
 								throw new NotImplementedException("Constructors are not implemented.");
-							if (!mc.MethodBase.IsStatic)
-								throw new NotImplementedException("Only static methods are implemented.");
+//							if (!mc.MethodBase.IsStatic)
+//								throw new NotImplementedException("Only static methods are implemented.");
 						}
 						if (target.Parameters.Count > HardwareRegister.CallerSavesRegisters.Count)
 							throw new NotImplementedException("No support for more than " +

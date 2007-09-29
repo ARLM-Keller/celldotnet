@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Security.Permissions;
 
 namespace CellDotNet
 {
@@ -175,7 +174,7 @@ namespace CellDotNet
 		public List<IRBasicBlock> BuildBasicBlocks(MethodBase method, ILReader reader, 
 		                                           List<MethodVariable> variables, ReadOnlyCollection<MethodParameter> parameters)
 		{
-			return BuildBasicBlocks(method.Name, reader, variables, parameters);
+			return BuildBasicBlocks(method.Name, reader, variables, parameters, (method.CallingConvention & CallingConventions.HasThis) != 0);
 		}
 
 		/// <summary>
@@ -187,7 +186,7 @@ namespace CellDotNet
 		internal List<IRBasicBlock> BuildBasicBlocks(ILReader reader, List<MethodVariable> variables)
 		{
 			ReadOnlyCollection<MethodParameter> parameters = new ReadOnlyCollection<MethodParameter>(new MethodParameter[0]);
-			return BuildBasicBlocks("methodXX", reader, variables, parameters);
+			return BuildBasicBlocks("methodXX", reader, variables, parameters, false); // FIXME antager at der kun kaldes statiske metoder.
 		}
 
 		/// <summary>
@@ -204,6 +203,9 @@ namespace CellDotNet
 			List<MethodParameter> parms = new List<MethodParameter>();
 			TypeDeriver td = new TypeDeriver();
 
+			if((method.CallingConvention & CallingConventions.HasThis) != 0)
+				parms.Add(new MethodParameter(new StackTypeDescription(new TypeDescription(method.DeclaringType))));
+
 			foreach (ParameterInfo pi in method.GetParameters())
 			{
 				parms.Add(new MethodParameter(pi, td.GetStackTypeDescription(pi.ParameterType)));
@@ -215,7 +217,7 @@ namespace CellDotNet
 				variables.Add(new MethodVariable(lvi, td.GetStackTypeDescription(lvi.LocalType)));
 			}
 
-			return BuildBasicBlocks(method.Name, reader, variables, new ReadOnlyCollection<MethodParameter>(parms));
+			return BuildBasicBlocks(method.Name, reader, variables, new ReadOnlyCollection<MethodParameter>(parms), false); // FIXME antager at der kun kaldes statiske metoder.
 		}
 
 		/// <summary>
@@ -230,17 +232,20 @@ namespace CellDotNet
 		}
 
 		/// <summary>
-		/// For unit testing: It does not depend on a <see cref="MethodBase"/>.
+		/// NOTE: <code>parameters</code> must contain the <code>this</code> argument for instance methods.
 		/// </summary>
 		/// <param name="methodName"></param>
-		/// <param name="reader"></param>
+		/// <param name="readerIn"></param>
 		/// <param name="variables"></param>
 		/// <param name="parameters"></param>
 		/// <returns></returns>
-		private List<IRBasicBlock> BuildBasicBlocks(string methodName, ILReader reader, List<MethodVariable> variables, ReadOnlyCollection<MethodParameter> parameters)
+		/// <param name="hasThisArgument"></param>
+		private List<IRBasicBlock> BuildBasicBlocks(string methodName, ILReader readerIn, List<MethodVariable> variables, ReadOnlyCollection<MethodParameter> parameters, bool hasThisArgument)
 		{
 			Utilities.AssertArgumentNotNull(variables, "_variables != null");
 			Utilities.AssertArgumentNotNull(parameters, "_parameters != null");
+
+			IlReaderWrapper reader = new IlReaderWrapper(readerIn);
 
 			_parseStack = new ParseStack();
 
@@ -251,7 +256,9 @@ namespace CellDotNet
 			int nextForwardBranchTarget = int.MaxValue;
 			TypeDeriver typederiver = new TypeDeriver();
 
-			while (reader.Read())
+			StackTypeDescription prevType = default(StackTypeDescription);
+
+			while (reader.Read(prevType))
 			{
 				// Adjust variable stack if we've reached a new forward branch.
 				if (nextForwardBranchTarget == reader.Offset)
@@ -275,7 +282,8 @@ namespace CellDotNet
 										". The parsing or simplification probably wasn't performed correcly.");
 				}
 
-
+				if(reader.lastCreatedMethodVariable != null)
+					variables.Add(reader.lastCreatedMethodVariable);
 
 				PopBehavior popbehavior = IROpCode.GetPopBehavior(reader.OpCode.StackBehaviourPop);
 				int pushcount = GetPushCount(reader.OpCode);
@@ -288,14 +296,27 @@ namespace CellDotNet
 				if (treeinst.Opcode.IRCode == IRCode.Ldloc || treeinst.Opcode.IRCode == IRCode.Stloc ||
 				    treeinst.Opcode.IRCode == IRCode.Ldloca)
 				{
-					LocalVariableInfo lvi = (LocalVariableInfo) reader.Operand;
-					treeinst.Operand = variables[lvi.LocalIndex];
+					LocalVariableInfo lvi = reader.Operand as LocalVariableInfo;
+					if(lvi != null)
+						treeinst.Operand = variables[lvi.LocalIndex];
+					else
+					{
+						treeinst.Operand = reader.Operand;
+					}
 				}
 				else if (treeinst.Opcode.IRCode == IRCode.Ldarg || treeinst.Opcode.IRCode == IRCode.Starg ||
 				         treeinst.Opcode.IRCode == IRCode.Ldarga)
 				{
-					ParameterInfo pi = (ParameterInfo)reader.Operand;
-					treeinst.Operand = parameters[pi.Position];
+					// reader.Operand is null when its represent the this parameter.
+					if(reader.Operand == null)
+					{
+						treeinst.Operand = parameters[0];
+					}
+					else
+					{
+						ParameterInfo pi = (ParameterInfo)reader.Operand;
+						treeinst.Operand = parameters[pi.Position + (hasThisArgument?1:0)];
+					}
 				}
 				else if (reader.Operand is Type)
 				{
@@ -385,6 +406,8 @@ namespace CellDotNet
 					}
 				}
 
+				prevType = treeinst.StackType;
+
 				if (_parseStack.InstructionStack.Count == 0)
 				{
 					// It is a root when the instruction stack is empty.
@@ -398,15 +421,16 @@ namespace CellDotNet
 			return blocks;
 		}
 
-		private void CreateMethodCallInstruction(ILReader reader, IROpCode opcode, out int pushcount, out TreeInstruction treeinst)
+		private void CreateMethodCallInstruction(IlReaderWrapper reader, IROpCode opcode, out int pushcount, out TreeInstruction treeinst)
 		{
 			// Build a method call from the stack.
 			MethodBase methodBase = (MethodBase) reader.Operand;
-			if (_parseStack.TotalStackSize < methodBase.GetParameters().Length)
+			int hasThisExtraParam = ((int)(methodBase.CallingConvention & CallingConventions.HasThis) != 0 &&
+									 opcode != IROpCodes.Newobj) ? 1 : 0;
+
+			if (_parseStack.TotalStackSize < methodBase.GetParameters().Length + hasThisExtraParam)
 				throw new ILSemanticErrorException("Too few parameters on stack.");
 
-			int hasThisExtraParam = ((int) (methodBase.CallingConvention & CallingConventions.HasThis) != 0 && 
-			                         opcode != IROpCodes.Newobj) ? 1 : 0;
 			int paramcount = methodBase.GetParameters().Length + hasThisExtraParam;
 
 			TreeInstruction[] arr = new TreeInstruction[paramcount];

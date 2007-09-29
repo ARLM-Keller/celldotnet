@@ -103,7 +103,7 @@ namespace CellDotNet
 		{
 			get
 			{
-				AssertSimple();
+//				AssertSimple();
 				return _complexType;
 			}
 		}

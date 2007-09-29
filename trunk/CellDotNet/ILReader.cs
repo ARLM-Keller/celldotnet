@@ -6,6 +6,85 @@ using System.Reflection.Emit;
 
 namespace CellDotNet
 {
+	/// <summary>
+	/// Wraps a ILReader and expands a IL instructions to other secuence of instructions.
+	/// </summary>
+	class IlReaderWrapper
+	{
+		private int _variableCount = 0;
+
+		private ILReader _reader;
+
+		private LinkedList<object> _operandQue = new LinkedList<object>();
+
+		private LinkedList<OpCode> _opcodesQue = new LinkedList<OpCode>();
+
+		private MethodVariable _lastCreatedMethodVariable = null;
+
+		public MethodVariable lastCreatedMethodVariable
+		{
+			get { return _lastCreatedMethodVariable; }
+		}
+
+		public IlReaderWrapper(ILReader reader)
+		{
+			_reader = reader;	
+		}
+
+		public bool Read(StackTypeDescription type)
+		{
+			_lastCreatedMethodVariable = null;
+			if (_opcodesQue.Count > 0)
+			{
+				_opcodesQue.RemoveFirst();
+				_operandQue.RemoveFirst();
+			}
+
+			if (_opcodesQue.Count == 0)
+			{
+				if(!_reader.Read())
+					return false;
+
+				OpCode opcode = _reader.OpCode;
+				object operand = _reader.Operand;
+
+				if(opcode == OpCodes.Dup)
+				{
+					MethodVariable mv = new MethodVariable(_variableCount+2000, type);
+					_opcodesQue.AddLast(OpCodes.Stloc);
+					_operandQue.AddLast(mv);
+					_opcodesQue.AddLast(OpCodes.Ldloc);
+					_operandQue.AddLast(mv);
+					_opcodesQue.AddLast(OpCodes.Ldloc);
+					_operandQue.AddLast(mv);
+					_lastCreatedMethodVariable = mv;
+				}
+				else
+				{
+					_opcodesQue.AddLast(opcode);
+					_operandQue.AddLast(operand);
+				}
+			}
+			return true;
+		}
+
+		public int Offset
+		{
+			get { return _reader.Offset; }
+		}
+
+		public OpCode OpCode
+		{
+			get { return _opcodesQue.First.Value; }
+		}
+
+		public object Operand
+		{
+			get { return _operandQue.First.Value; }
+		}
+
+	}
+
 	[DebuggerDisplay("{DebuggerDisplay}")]
 	class ILReader
 	{
@@ -241,18 +320,33 @@ namespace CellDotNet
 				case OperandType.ShortInlineVar:
 					xindex = (uint) ReadInt8();
 					if (srOpcode == OpCodes.Ldarg_S || srOpcode == OpCodes.Ldarga_S || srOpcode == OpCodes.Starg_S)
-						_operand = _method.GetParameters()[xindex];
+					{
+						if ((_method.CallingConvention & CallingConventions.HasThis) != 0 && srOpcode != OpCodes.Newobj)
+						{
+							_operand = _method.GetParameters()[xindex-1];
+						} else
+						{
+							_operand = _method.GetParameters()[xindex];
+						}
+					}
 					else
 					{
 						Utilities.Assert(srOpcode == OpCodes.Ldloc_S || srOpcode == OpCodes.Ldloca_S || srOpcode == OpCodes.Stloc_S,
-						                 "Not loc?!");
-						_operand = _body.LocalVariables[(int) xindex];
+										 "Not loc?!");
+						_operand = _body.LocalVariables[(int)xindex];
 					}
 					break;
 				case OperandType.InlineVar:
 					xindex = (uint) ReadInt16();
 					if (srOpcode == OpCodes.Ldarg || srOpcode == OpCodes.Ldarga || srOpcode == OpCodes.Starg)
-						_operand = _method.GetParameters()[xindex];
+						if ((_method.CallingConvention & CallingConventions.HasThis) != 0 && srOpcode != OpCodes.Newobj)
+						{
+							_operand = _method.GetParameters()[xindex - 1];
+						}
+						else
+						{
+							_operand = _method.GetParameters()[xindex];
+						}
 					else
 					{
 						Utilities.Assert(srOpcode == OpCodes.Ldloc || srOpcode == OpCodes.Ldloca || srOpcode == OpCodes.Stloc, "Not loc??");
@@ -356,10 +450,21 @@ namespace CellDotNet
 				}
 				else if (srOpcode.Value >= OpCodes.Ldarg_0.Value && srOpcode.Value <= OpCodes.Ldarg_3.Value)
 				{
-					if (!_method.IsStatic)
-						throw new NotSupportedException("Instances are not supported.");
+//						if (!_method.IsStatic)
+//						throw new NotSupportedException("Instances are not supported.");
 					int index = srOpcode.Value - OpCodes.Ldarg_0.Value;
-					_operand = _method.GetParameters()[index];
+
+					if ((_method.CallingConvention & CallingConventions.HasThis) != 0 && srOpcode != OpCodes.Newobj)
+					{
+						if (index != 0)
+							_operand = _method.GetParameters()[index-1];
+						else
+							_operand = null; //There is no ParameterInfo to represent the this parameter.
+					}
+					else
+					{
+						_operand = _method.GetParameters()[index];
+					}
 					srOpcode = OpCodes.Ldarg;
 					return;
 				}
@@ -553,7 +658,7 @@ namespace CellDotNet
 			return (sbyte) _il[_readoffset++];
 		}
 
-		private object _operand;
+		private object	_operand;
 		public object Operand
 		{
 			get { return _operand; }
