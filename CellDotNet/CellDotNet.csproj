@@ -9,8 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CellDotNet</RootNamespace>
     <AssemblyName>CellDotNet</AssemblyName>
-    <StartupObject>
-    </StartupObject>
+    <StartupObject>CellDotNet.Class1</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -136,6 +135,8 @@
     <Compile Include="StaticFileLibraryResolver.cs" />
     <Compile Include="StaticFileLibraryResolverTest.cs" />
     <Compile Include="StoreLocation.cs" />
+    <Compile Include="Math.cs" />
+    <Compile Include="SystemLibMap.cs" />
     <Compile Include="TreeDrawer.cs" />
     <Compile Include="TypeDeriver.cs" />
     <Compile Include="TypeDeriverTest.cs" />
@@ -163,6 +164,6 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>copy $(TargetPath) \\ps3\homes\celldotnet</PostBuildEvent>
+    <PostBuildEvent>copy /Y "$(TargetPath)" \\ps3\homes\celldotnet</PostBuildEvent>
   </PropertyGroup>
 </Project>

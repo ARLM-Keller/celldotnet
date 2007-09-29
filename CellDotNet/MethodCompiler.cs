@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Runtime.InteropServices;
 
 namespace CellDotNet
 {
@@ -171,9 +169,21 @@ namespace CellDotNet
 			// Build Parameters.
 			List<MethodParameter> parlist = new List<MethodParameter>();
 			int i = 0;
+
+			if ((_methodBase.CallingConvention & CallingConventions.HasThis) != 0)
+			{
+				StackTypeDescription type = new StackTypeDescription(new TypeDescription(_methodBase.DeclaringType));
+
+				parlist.Add(new MethodParameter(type.GetManagedPointer()));
+				i++;
+			}
+
 			foreach (ParameterInfo pi in _methodBase.GetParameters())
 			{
-				Utilities.Assert(pi.Position == i, "pi.Index == i");
+				//Not true in instance methods.
+//				Utilities.Assert(pi.Position == i, "pi.Index == i");
+
+				Utilities.Assert(pi.Position == i - ((_methodBase.CallingConvention & CallingConventions.HasThis) != 0 ? 1 : 0), "pi.Index == i");
 				i++;
 					
 				parlist.Add(new MethodParameter(pi, typederiver.GetStackTypeDescription(pi.ParameterType)));
@@ -213,6 +223,8 @@ namespace CellDotNet
 					_methodBase.DeclaringType.Name, _methodBase.Name), e);
 			}
 			CheckTreeInstructionCountIsMinimum(reader.InstructionsRead);
+
+			PatchSystemLib();
 
 			// This one should be before escape determination, since some of the address ops might be removed.
 			RemoveAddressOperations();
@@ -300,6 +312,21 @@ namespace CellDotNet
 					count, minimumCount, MethodBase.Name);
 				throw new Exception(msg);
 			}
+		}
+
+		//TODO nameing
+		private void PatchSystemLib()
+		{
+			ForeachTreeInstruction(
+				delegate(TreeInstruction obj)
+					{
+						MethodBase mb = obj.Operand as MethodBase;
+						if(mb != null)
+						{
+							obj.Operand = SystemLibMap.GetUseableMethodBase(mb);
+						}
+
+					});
 		}
 
 		#endregion

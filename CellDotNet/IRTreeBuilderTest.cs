@@ -179,6 +179,21 @@ namespace CellDotNet
 		}
 
 		[Test]
+		public void TestParseBranchesDEBUG()
+		{
+			BasicTestDelegate del = delegate
+			                        	{
+			                        		{
+			                        			throw new Exception();
+			                        		}
+			                        	};
+
+			List<IRBasicBlock> blocks = new IRTreeBuilder().BuildBasicBlocks(del.Method);
+
+			//			new TreeDrawer().DrawMethod(blocks);
+		}
+
+		[Test]
 		public void TestParseBranchBasic()
 		{
 			BasicTestDelegate del = delegate

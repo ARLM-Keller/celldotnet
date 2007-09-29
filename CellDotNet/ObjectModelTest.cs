@@ -155,6 +155,63 @@ namespace CellDotNet
 			public int i2;
 			public int i3;
 			public int i4;
+
+			public int ReturnArg(int i)
+			{
+				return i;
+			}
+
+			public int ReturnSum()
+			{
+				return i1+i2+i3+i4;
+			}
+
+		}
+
+		[Test]
+		public void TestInstanceMethod_Simple()
+		{
+			Converter<int, int> del =
+				delegate(int i)
+				{
+					QWStruct s = new QWStruct();
+
+					return s.ReturnArg(i);
+				};
+
+			int arg = 7913;
+
+			int correctval = del(arg);
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(correctval, (int)SpeContext.UnitTestRunProgram(cc, arg));
+		}
+
+		[Test]
+		public void TestInstanceMethod_FieldAccess()
+		{
+			Converter<int, int> del =
+				delegate
+				{
+					QWStruct s = new QWStruct();
+					s.i1 = 11;
+					s.i2 = 22;
+					s.i3 = 33;
+					s.i4 = 44;
+
+					return s.ReturnSum();
+				};
+
+			int arg = 0; // Is not used
+
+			int correctval = del(arg);
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(correctval, (int)SpeContext.UnitTestRunProgram(cc, arg));
 		}
 
 		[Test]

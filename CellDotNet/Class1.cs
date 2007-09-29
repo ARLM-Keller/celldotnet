@@ -57,9 +57,17 @@ namespace CellDotNet
 
 //			new VectorTypeTest().TestVectorIntArray();
 
-			new MfcTest().TestDma_PutIntArray();
+//			new MfcTest().TestDma_PutIntArray();
 
-				Console.WriteLine("Running RunKlaus done.");
+//			new ObjectModelTest().TestInstanceMethod_FieldAccess();
+
+//			new IRTreeBuilderTest().TestParseBranchesDEBUG();
+
+//			new IRTreeBuilderTest().TestParseBranches1();
+
+			new ILOpCodeExecutionTest().Test_Dub();
+
+			Console.WriteLine("Running RunKlaus done.");
 		}
 
 		private static void GenericExperiment()

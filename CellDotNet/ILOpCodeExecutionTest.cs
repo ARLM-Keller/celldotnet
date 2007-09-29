@@ -402,6 +402,19 @@ namespace CellDotNet
 //			ExecuteAndVerifyBinaryOperator(OpCodes.Div_Un, 2, 7, 0);
 		}
 
+		[Test]
+		public void Test_Dub()
+		{
+			ILWriter w = new ILWriter();
+			w.WriteOpcode(OpCodes.Ldc_I4_7);
+			w.WriteOpcode(OpCodes.Dup);
+			w.WriteOpcode(OpCodes.Add);
+			w.WriteOpcode(OpCodes.Ret);
+
+			TestExecution(w, 14);
+		}
+
+
 		private static int f1()
 		{
 			int i = 5;
