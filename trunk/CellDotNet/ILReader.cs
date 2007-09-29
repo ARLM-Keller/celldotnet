@@ -7,7 +7,7 @@ using System.Reflection.Emit;
 namespace CellDotNet
 {
 	/// <summary>
-	/// Wraps a ILReader and expands a IL instructions to other secuence of instructions.
+	/// Wraps an ILReader and expands some IL instructions to sequence of instructions.
 	/// </summary>
 	class IlReaderWrapper
 	{
@@ -15,9 +15,9 @@ namespace CellDotNet
 
 		private ILReader _reader;
 
-		private LinkedList<object> _operandQue = new LinkedList<object>();
+		private Queue<object> _operandQueue = new Queue<object>();
 
-		private LinkedList<OpCode> _opcodesQue = new LinkedList<OpCode>();
+		private Queue<OpCode> _opcodeQueue = new Queue<OpCode>();
 
 		private MethodVariable _lastCreatedMethodVariable = null;
 
@@ -34,13 +34,13 @@ namespace CellDotNet
 		public bool Read(StackTypeDescription type)
 		{
 			_lastCreatedMethodVariable = null;
-			if (_opcodesQue.Count > 0)
+			if (_opcodeQueue.Count > 0)
 			{
-				_opcodesQue.RemoveFirst();
-				_operandQue.RemoveFirst();
+				_opcodeQueue.Dequeue();
+				_operandQueue.Dequeue();
 			}
 
-			if (_opcodesQue.Count == 0)
+			if (_opcodeQueue.Count == 0)
 			{
 				if(!_reader.Read())
 					return false;
@@ -51,18 +51,18 @@ namespace CellDotNet
 				if(opcode == OpCodes.Dup)
 				{
 					MethodVariable mv = new MethodVariable(_variableCount+2000, type);
-					_opcodesQue.AddLast(OpCodes.Stloc);
-					_operandQue.AddLast(mv);
-					_opcodesQue.AddLast(OpCodes.Ldloc);
-					_operandQue.AddLast(mv);
-					_opcodesQue.AddLast(OpCodes.Ldloc);
-					_operandQue.AddLast(mv);
+					_opcodeQueue.Enqueue(OpCodes.Stloc);
+					_operandQueue.Enqueue(mv);
+					_opcodeQueue.Enqueue(OpCodes.Ldloc);
+					_operandQueue.Enqueue(mv);
+					_opcodeQueue.Enqueue(OpCodes.Ldloc);
+					_operandQueue.Enqueue(mv);
 					_lastCreatedMethodVariable = mv;
 				}
 				else
 				{
-					_opcodesQue.AddLast(opcode);
-					_operandQue.AddLast(operand);
+					_opcodeQueue.Enqueue(opcode);
+					_operandQueue.Enqueue(operand);
 				}
 			}
 			return true;
@@ -75,12 +75,12 @@ namespace CellDotNet
 
 		public OpCode OpCode
 		{
-			get { return _opcodesQue.First.Value; }
+			get { return _opcodeQueue.Peek(); }
 		}
 
 		public object Operand
 		{
-			get { return _operandQue.First.Value; }
+			get { return _operandQueue.Peek(); }
 		}
 
 	}

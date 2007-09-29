@@ -203,7 +203,15 @@ namespace CellDotNet
 						if (mc != null)
 						{
 							if (mc.MethodBase.IsConstructor)
-								throw new NotImplementedException("Constructors are not implemented.");
+							{
+								if (mc.MethodBase == typeof(object).GetConstructor(Type.EmptyTypes))
+								{
+									// The System.Object ctor does nothing for us, so don't even bother calling it.
+									return null;
+								}
+								else
+									throw new NotSupportedException("Base type constructors are not supported.");
+							}
 //							if (!mc.MethodBase.IsStatic)
 //								throw new NotImplementedException("Only static methods are implemented.");
 						}
@@ -718,7 +726,15 @@ namespace CellDotNet
 				case IRCode.Ldstr:
 					break;
 				case IRCode.Newobj:
-					break;
+					{
+						Type cls = inst.OperandAsMethodCompiler.MethodBase.DeclaringType;
+						StackTypeDescription std = new TypeDeriver().GetStackTypeDescription(cls);
+						VirtualRegister sizereg = _writer.WriteLoadI4(std.ComplexType.QuadWordCount * 16);
+						VirtualRegister mem = WriteAllocateMemory(sizereg);
+
+						WriteZeroMemory(mem, std.ComplexType.QuadWordCount);
+						return mem;
+					}
 				case IRCode.Castclass:
 					break;
 				case IRCode.Isinst:

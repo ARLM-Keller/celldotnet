@@ -23,7 +23,6 @@ namespace CellDotNet
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
-			Disassembler.DisassembleUnconditionalToConsole(cc);
 
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
@@ -347,7 +346,9 @@ namespace CellDotNet
 						return c.i1 + c.i2 + c.i3 + c.i4;
 					};
 
-			MethodCompiler mc = new MethodCompiler(del.Method);
+
+
+			MethodCompiler mc = new MethodCompiler(typeof(ClassWithInts).GetConstructor(Type.EmptyTypes));
 			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 			new TreeDrawer().DrawMethod(mc);
 
