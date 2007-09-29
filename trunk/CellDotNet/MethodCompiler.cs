@@ -174,7 +174,13 @@ namespace CellDotNet
 			{
 				StackTypeDescription type = new StackTypeDescription(new TypeDescription(_methodBase.DeclaringType));
 
-				parlist.Add(new MethodParameter(type.GetManagedPointer()));
+				StackTypeDescription thistype;
+				if (type.IndirectionLevel == 0 && type.CliType == CliType.ValueType)
+					thistype = type.GetManagedPointer();
+				else
+					thistype = type;
+
+				parlist.Add(new MethodParameter(thistype));
 				i++;
 			}
 
