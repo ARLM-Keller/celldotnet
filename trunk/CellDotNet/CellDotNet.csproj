@@ -137,6 +137,7 @@
     <Compile Include="StoreLocation.cs" />
     <Compile Include="Math.cs" />
     <Compile Include="SystemLibMap.cs" />
+    <Compile Include="SystemLibTest.cs" />
     <Compile Include="TreeDrawer.cs" />
     <Compile Include="TypeDeriver.cs" />
     <Compile Include="TypeDeriverTest.cs" />
