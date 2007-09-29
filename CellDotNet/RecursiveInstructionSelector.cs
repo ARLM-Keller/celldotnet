@@ -650,6 +650,17 @@ namespace CellDotNet
 				case IRCode.Shr_Un:
 					break;
 				case IRCode.Neg:
+					switch (lefttype.CliType)
+					{
+						case CliType.Int32:
+						case CliType.NativeInt:
+							return _writer.WriteSfi(vrleft, 0);
+						case CliType.Float32:
+							VirtualRegister r1 = _writer.WriteIl(0);
+							VirtualRegister r2 = _writer.WriteCsflt(r1, 155);
+							return _writer.WriteFs(r2, vrleft);
+					}
+					break;
 					break;
 				case IRCode.Not:
 					break;

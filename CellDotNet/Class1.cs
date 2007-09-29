@@ -65,7 +65,7 @@ namespace CellDotNet
 
 //			new IRTreeBuilderTest().TestParseBranches1();
 
-			new ILOpCodeExecutionTest().Test_Dub();
+//			new ILOpCodeExecutionTest().Test_Dub();
 
 			Console.WriteLine("Running RunKlaus done.");
 		}

@@ -414,6 +414,28 @@ namespace CellDotNet
 			TestExecution(w, 14);
 		}
 
+		[Test]
+		public void Test_Neg_Int()
+		{
+			ILWriter w = new ILWriter();
+			w.WriteOpcode(OpCodes.Ldc_I4_7);
+			w.WriteOpcode(OpCodes.Neg);
+			w.WriteOpcode(OpCodes.Ret);
+
+			TestExecution(w, -7);
+		}
+
+		[Test]
+		public void Test_Neg_Float()
+		{
+			ILWriter w = new ILWriter();
+			w.WriteOpcode(OpCodes.Ldc_R4);
+			w.WriteFloat(3.14f);
+			w.WriteOpcode(OpCodes.Neg);
+			w.WriteOpcode(OpCodes.Ret);
+
+			TestExecution(w, -3.14f);
+		}
 
 		private static int f1()
 		{
