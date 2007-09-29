@@ -358,7 +358,7 @@ namespace CellDotNet
 				if (IsManagedPointer)
 					s += new string('&', IndirectionLevel);
 				else
-					s += new string('*', IndirectionLevel);
+					s += new string('*', IndirectionLevel - 1);
 			}
 
 			if (IsArray)

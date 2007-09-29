@@ -458,6 +458,10 @@ namespace CellDotNet
 			else
 			{
 				// A normal method call.
+				if (methodBase.IsVirtual)
+					throw new NotSupportedException("Calls to virtual methods is not supported.");
+				else if (opcode == IROpCodes.Callvirt)
+					opcode = IROpCodes.Call;
 				mci = new MethodCallInstruction(methodBase, opcode);
 			}
 			mci.Offset = reader.Offset;

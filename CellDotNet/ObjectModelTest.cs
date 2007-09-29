@@ -329,6 +329,16 @@ namespace CellDotNet
 			public int i2;
 			public int i3;
 			public int i4;
+
+			public int ReturnArgument(int i)
+			{
+				return i;
+			}
+
+			public int Sum()
+			{
+				return i1 + i2 + i3 + i4;
+			}
 		}
 
 		[Test]
@@ -346,16 +356,48 @@ namespace CellDotNet
 						return c.i1 + c.i2 + c.i3 + c.i4;
 					};
 
-
-
-			MethodCompiler mc = new MethodCompiler(typeof(ClassWithInts).GetConstructor(Type.EmptyTypes));
-			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
-			new TreeDrawer().DrawMethod(mc);
-
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			AreEqual(del(), (int) SpeContext.UnitTestRunProgram(cc));
+		}
+
+		[Test]
+		public void TestClass_InstanceMethod()
+		{
+			IntReturnDelegate del =
+				delegate
+				{
+					ClassWithInts c = new ClassWithInts();
+
+					return c.ReturnArgument(10);
+				};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(cc));
+		}
+
+		[Test]
+		public void TestClass_InstanceMethodAndFields()
+		{
+			IntReturnDelegate del =
+				delegate
+				{
+					ClassWithInts c = new ClassWithInts();
+					c.i1 = 1;
+					c.i2 = 10;
+					c.i3 = 100;
+					c.i4 = 1000;
+
+					return c.Sum();
+				};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(cc));
 		}
 	}
 }
