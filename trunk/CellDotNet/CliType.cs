@@ -31,7 +31,6 @@ namespace CellDotNet
 		public static readonly StackTypeDescription Int32Vector = new StackTypeDescription(CliType.Int32Vector, CliNumericSize.SixteenBytes, true);
 		public static readonly StackTypeDescription Float32Vector = new StackTypeDescription(CliType.Float32Vector, CliNumericSize.SixteenBytes, true);
 		public static readonly StackTypeDescription ObjectType = new StackTypeDescription(CliType.ObjectType, CliNumericSize.None, false);
-		public static readonly StackTypeDescription ValueType = new StackTypeDescription(CliType.ValueType, CliNumericSize.None, false);
 		public static readonly StackTypeDescription NativeInt = new StackTypeDescription(CliType.NativeInt, CliNumericSize.None, true);
 
 		public CliType _cliType;
@@ -88,10 +87,18 @@ namespace CellDotNet
 		/// <param name="complexType"></param>
 		public StackTypeDescription(TypeDescription complexType)
 		{
-			_cliType = complexType.ReflectionType.IsValueType ? CliType.ValueType : CliType.ObjectType;
+			if (complexType.ReflectionType.IsValueType)
+			{
+				_cliType = CliType.ValueType;
+				_indirectionLevel = 0;
+			}
+			else
+			{
+				_cliType = CliType.ObjectType;
+				_indirectionLevel = 1;
+			}
 			_isSigned = false;
 			_numericSize = CliNumericSize.None;
-			_indirectionLevel = 0;
 			_isManaged = false;
 			_complexType = complexType;
 			_isArray = complexType.ReflectionType.IsArray;
@@ -175,6 +182,7 @@ namespace CellDotNet
 
 		/// <summary>
 		/// Both managed and unmanaged pointers.
+		/// Value types have a value of zero, although they currently (20070929) are almost always located on the stack.
 		/// </summary>
 		public int IndirectionLevel
 		{

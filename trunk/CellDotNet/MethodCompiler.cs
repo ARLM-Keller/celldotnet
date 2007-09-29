@@ -320,7 +320,7 @@ namespace CellDotNet
 			ForeachTreeInstruction(
 				delegate(TreeInstruction obj)
 					{
-						MethodBase mb = obj.Operand as MethodBase;
+						MethodBase mb = obj.OperandAsMethod;
 						if(mb != null)
 						{
 							obj.Operand = SystemLibMap.GetUseableMethodBase(mb);
@@ -354,7 +354,7 @@ namespace CellDotNet
 					var.VirtualRegister = NextRegister();
 
 				// Custom mutable structs always go on the stack.
-				if (var.StackType == StackTypeDescription.ValueType && !var.StackType.IsImmutableSingleRegisterType)
+				if (var.StackType.CliType == CliType.ValueType && !var.StackType.IsImmutableSingleRegisterType)
 				{
 					var.Escapes = true;
 					var.StackLocation = GetNewSpillQuadOffset(var.StackType.ComplexType.QuadWordCount);
