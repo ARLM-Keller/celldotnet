@@ -165,6 +165,6 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(TargetPath)" \\ps3\homes\celldotnet</PostBuildEvent>
+    <PostBuildEvent>rem copy /Y "$(TargetPath)" \\ps3\homes\celldotnet</PostBuildEvent>
   </PropertyGroup>
 </Project>

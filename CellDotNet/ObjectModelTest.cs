@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -149,6 +150,8 @@ namespace CellDotNet
 			AreEqual(60, retval);
 		}
 
+		#region QWStruct
+
 		struct QWStruct
 		{
 			public int i1;
@@ -167,6 +170,8 @@ namespace CellDotNet
 			}
 
 		}
+
+		#endregion
 
 		[Test]
 		public void TestInstanceMethod_Simple()
@@ -256,6 +261,8 @@ namespace CellDotNet
 			AreEqual(correctval, (int)SpeContext.UnitTestRunProgram(cc, 0));
 		}
 
+		#region QWStruct_Big
+
 		struct QWStruct_Big
 		{
 			public int i1;
@@ -267,6 +274,8 @@ namespace CellDotNet
 			public int i7;
 			public int i8;
 		}
+
+		#endregion
 
 		[Test]
 		public void TestStruct_Field_Big()
@@ -314,5 +323,38 @@ namespace CellDotNet
 			AreEqual(correctval, (int)SpeContext.UnitTestRunProgram(cc, 0));
 		}
 
+
+		class ClassWithInts
+		{
+			public int i1;
+			public int i2;
+			public int i3;
+			public int i4;
+		}
+
+		[Test]
+		public void TestClass_Field()
+		{
+			IntReturnDelegate del = 
+				delegate
+					{
+						ClassWithInts c = new ClassWithInts();
+						c.i1 = 1;
+						c.i2 = 10;
+						c.i3 = 100;
+						c.i4 = 1000;
+
+						return c.i1 + c.i2 + c.i3 + c.i4;
+					};
+
+			MethodCompiler mc = new MethodCompiler(del.Method);
+			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
+			new TreeDrawer().DrawMethod(mc);
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(del(), (int) SpeContext.UnitTestRunProgram(cc));
+		}
 	}
 }

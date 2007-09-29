@@ -153,7 +153,8 @@ namespace CellDotNet
 				int fixedValue;
 				// When used on a method in a CompileContext the operand is a MethodCompiler;
 				// when used on a standalone MethodCompiler the operand is a MethodBase.
-				MethodInfo mi = inst.OperandAsMethod as MethodInfo ?? inst.OperandAsMethodCompiler.MethodBase as MethodInfo;
+				MethodBase mb = inst.OperandAsMethod ?? inst.OperandAsMethodCompiler.MethodBase;
+				MethodInfo mi = mb as MethodInfo;
 				if (mi != null && _fixedMethods.TryGetValue(mi, out fixedValue))
 				{
 					// Replace the call inst with a constant load.

@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace CellDotNet
 {
 	/// <summary>
-	/// This is our own representation of a type. It wraps a <see c="System.ReflectionType" /> and also
+	/// This is our own representation of a type. It wraps a <see cref="Type"/> and also
 	/// contains runtime information about the type, such as field offsets and methods.
 	/// 
 	/// <para>
@@ -71,28 +72,42 @@ namespace CellDotNet
 			_genericParameters = genericParameters;
 		}
 
-//		/// <summary>
-//		/// Creates a description of an array.
-//		/// </summary>
-//		/// <param name="type"></param>
-//		/// <param name="arrayDimension"></param>
-//		public TypeDescription(StackTypeDescription type, int arrayDimension)
-//		{
-//			if (type == null)
-//				throw new ArgumentNullException("type");
-//			if (arrayDimension < 1)
-//				throw new ArgumentOutOfRangeException("arrayDimension");
-//
-//			_reflectionType = type;
-//			_arrayDimension = arrayDimension;
-//		}
+		/// <summary>
+		/// Only use this for reference types.
+		/// </summary>
+		/// <param name="field"></param>
+		/// <returns></returns>
+		public int OffsetOf(FieldInfo field)
+		{
+			Utilities.AssertArgument(field.DeclaringType == ReflectionType, "field.DeclaringType == ReflectionType");
 
-//		private int _arrayDimension;
-//		public int ArrayDimension
-//		{
-//			get { return _arrayDimension; }
-//		}
+			EnsureTypeLayoutForReferenceType();
+			KeyValuePair<FieldInfo, int> pair = _fieldOffsets.Find(delegate(KeyValuePair<FieldInfo, int> obj) { return obj.Key == field; });
+			Utilities.Assert(pair.Key != null, "pair.Key != null");
 
+			return pair.Value;
+		}
+
+		private void EnsureTypeLayoutForReferenceType()
+		{
+			if (_fieldOffsets != null)
+				return;
+
+			FieldInfo[] fields = ReflectionType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+			TypeDeriver td = new TypeDeriver();
+
+			_fieldOffsets = new List<KeyValuePair<FieldInfo, int>>();
+			int offset = 0;
+			foreach (FieldInfo fi in fields)
+			{
+				StackTypeDescription std = td.GetStackTypeDescription(fi.FieldType);
+				if (std.CliType == CliType.ValueType)
+					throw new NotSupportedException("Fields containing value types is not supported.");
+
+				_fieldOffsets.Add(new KeyValuePair<FieldInfo, int>(fi, offset));
+				offset += 16;
+			}
+		}
 
 		private GenericType _genericType;
 		public GenericType GenericType
@@ -101,6 +116,8 @@ namespace CellDotNet
 		}
 
 		private StackTypeDescription[] _genericParameters;
+		private List<KeyValuePair<FieldInfo, int>> _fieldOffsets;
+
 		public IList<StackTypeDescription> GenericParameters
 		{
 			get { return _genericParameters; }

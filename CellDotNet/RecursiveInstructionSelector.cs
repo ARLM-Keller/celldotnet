@@ -740,7 +740,13 @@ namespace CellDotNet
 						int wordoffset;
 						GetStructFieldData(lefttype, vt, field, out qwoffset, out wordoffset);
 
-						return _writer.WriteLoadWord(vrleft, qwoffset, wordoffset);
+						if (lefttype.CliType == CliType.ManagedPointer && lefttype.Dereference().CliType == CliType.ValueType)
+							return _writer.WriteLoadWord(vrleft, qwoffset, wordoffset);
+						else
+						{
+							Utilities.Assert(wordoffset == 0, "wordoffset == 0");
+							return _writer.WriteLqd(vrleft, qwoffset);
+						}
 					}
 				case IRCode.Stfld:
 					{
@@ -751,8 +757,14 @@ namespace CellDotNet
 						int wordoffset;
 						GetStructFieldData(lefttype, vt, field, out qwoffset, out wordoffset);
 
-//						_writer.WriteStoreWord(vrleft, qwoffset, 0, vrright);
-						_writer.WriteStoreWord(vrleft, qwoffset, wordoffset, vrright);
+						if (lefttype.CliType == CliType.ManagedPointer && lefttype.Dereference().CliType == CliType.ValueType)
+							_writer.WriteStoreWord(vrleft, qwoffset, wordoffset, vrright);
+						else
+						{
+							Utilities.Assert(wordoffset == 0, "wordoffset == 0");
+							_writer.WriteStqd(vrright, vrleft, qwoffset);
+						}
+
 						return null;
 					}
 				case IRCode.Ldsfld:
@@ -799,21 +811,11 @@ namespace CellDotNet
 					{
 						StackTypeDescription elementtype = (StackTypeDescription) inst.Operand;
 						VirtualRegister elementcount = vrleft;
-						VirtualRegister bytesize;
 						
-						// 1: Determine number of required bytes.
-						// 2: Verify that we've got space for the allocation.
-						// 3: Update available space counter.
-						// 4: Get address for the array.
-						// 5: Initialize array length field.
-						// 6: Update pointer for next allocation.
-
-						if (_specialSpeObjects == null)
-							throw new InvalidOperationException("_specialSpeObjects == null");
-
 
 						// Determine byte size.
 						int elementByteSize = elementtype.GetSizeWithPadding();
+						VirtualRegister bytesize;
 						if (elementByteSize == 4)
 							bytesize = _writer.WriteShli(elementcount, 2);
 						else if (elementByteSize == 16)
@@ -824,31 +826,11 @@ namespace CellDotNet
 						_writer.WriteAi(bytesize, bytesize, 16); // makes room for the arraysize.
 
 						// Sets the size to be 16 bytes aligned. Note if the size is 16 bytes aligned, there will be allocated 16 extra bytes.
-						_writer.WriteAndi(bytesize, bytesize, 0xfff0);//Note the immediated field is no more than 16 bits wide.
+						_writer.WriteAndi(bytesize, bytesize, 0xfff0); // Note the immediated field is no more than 16 bits wide.
 						_writer.WriteAi(bytesize, bytesize, 16);
 
-						// Subtract from available byte count.
-						{
-							VirtualRegister allocatableByteCount = _writer.WriteLoad(_specialSpeObjects.AllocatableByteCountObject);
-							_writer.WriteSf(allocatableByteCount, bytesize, allocatableByteCount);
+						VirtualRegister array = WriteAllocateMemory(bytesize);
 
-							// If there isn't enough space, then halt by branching to the OOM routine.
-							VirtualRegister isFreeSpacePositive = _writer.WriteCgti(allocatableByteCount, 0);
-							_writer.WriteConditionalBranch(SpuOpCode.brz, isFreeSpacePositive, _specialSpeObjects.OutOfMemory);
-
-							// Store new allocatable byte count.
-							_writer.WriteStore(allocatableByteCount, _specialSpeObjects.AllocatableByteCountObject);
-						}
-
-						VirtualRegister nextAllocAddress = _writer.WriteLoad(_specialSpeObjects.NextAllocationStartObject);
-						VirtualRegister array = nextAllocAddress;
-
-						// Increment the pointer for the next allocation.
-						{
-							VirtualRegister newNextAllocAddress = _writer.NextRegister();
-							_writer.WriteA(newNextAllocAddress, nextAllocAddress, bytesize);
-							_writer.WriteStore(newNextAllocAddress, _specialSpeObjects.NextAllocationStartObject);
-						}
 						// make the arraypointer point to the first element.
 						_writer.WriteAi(array, array, 16);
 
@@ -1108,11 +1090,7 @@ namespace CellDotNet
 						StackTypeDescription t = (StackTypeDescription) inst.Operand;
 
 						int slotcount = t.ComplexType.QuadWordCount;
-						VirtualRegister zero = _writer.WriteIl(0);
-						for (int i = 0; i < slotcount; i++)
-						{
-							_writer.WriteStqd(zero, vrleft, i);
-						}
+						WriteZeroMemory(vrleft, slotcount);
 						return null;
 					}
 				case IRCode.Constrained:
@@ -1132,22 +1110,77 @@ namespace CellDotNet
 			return new VirtualRegister(-1);
 		}
 
-		private void GetStructFieldData(StackTypeDescription referenceType, Type structType, FieldInfo field, out int qwoffset, out int wordoffset)
+		private VirtualRegister WriteAllocateMemory(VirtualRegister bytesize)
 		{
-			if (!referenceType.IsManagedPointer || referenceType.Dereference().CliType != CliType.ValueType)
-				throw new NotSupportedException();
+			// 1: Determine number of required bytes.
+			// 2: Verify that we've got space for the allocation.
+			// 3: Update available space counter.
+			// 4: Get address for the array.
+			// 5: Initialize array length field.
+			// 6: Update pointer for next allocation.
 
+			if (_specialSpeObjects == null)
+				throw new InvalidOperationException("_specialSpeObjects == null");
 
-			int byteoffset = (int) Marshal.OffsetOf(structType, field.Name);
+			// Subtract from available byte count.
+			{
+				VirtualRegister allocatableByteCount = _writer.WriteLoad(_specialSpeObjects.AllocatableByteCountObject);
+				_writer.WriteSf(allocatableByteCount, bytesize, allocatableByteCount);
+
+				// If there isn't enough space, then halt by branching to the OOM routine.
+				VirtualRegister isFreeSpacePositive = _writer.WriteCgti(allocatableByteCount, 0);
+				_writer.WriteConditionalBranch(SpuOpCode.brz, isFreeSpacePositive, _specialSpeObjects.OutOfMemory);
+
+				// Store new allocatable byte count.
+				_writer.WriteStore(allocatableByteCount, _specialSpeObjects.AllocatableByteCountObject);
+			}
+
+			VirtualRegister nextAllocAddress = _writer.WriteLoad(_specialSpeObjects.NextAllocationStartObject);
+			VirtualRegister array = nextAllocAddress;
+
+			// Increment the pointer for the next allocation.
+			{
+				VirtualRegister newNextAllocAddress = _writer.NextRegister();
+				_writer.WriteA(newNextAllocAddress, nextAllocAddress, bytesize);
+				_writer.WriteStore(newNextAllocAddress, _specialSpeObjects.NextAllocationStartObject);
+			}
+			return array;
+		}
+
+		private void WriteZeroMemory(VirtualRegister target, int quadwordCount)
+		{
+			VirtualRegister zero = _writer.WriteIl(0);
+			for (int i = 0; i < quadwordCount; i++)
+			{
+				_writer.WriteStqd(zero, target, i);
+			}
+		}
+
+		private void GetStructFieldData(StackTypeDescription refType, Type complexType, FieldInfo field, out int qwoffset, out int wordoffset)
+		{
+			Utilities.AssertArgument(refType.CliType == CliType.ValueType || refType.IndirectionLevel == 1, "refType.IndirectionLevel != 1");
+
+			int byteoffset;
+			switch (refType.Dereference().CliType)
+			{
+				case CliType.ValueType:
+					byteoffset = (int)Marshal.OffsetOf(complexType, field.Name);
+					break;
+				case CliType.ObjectType:
+					byteoffset = refType.ComplexType.OffsetOf(field);
+					break;
+				default:
+					throw new ArgumentException();
+			}
 
 			StackTypeDescription fieldtype = new TypeDeriver().GetStackTypeDescription(field.FieldType);
 			if (fieldtype == StackTypeDescription.None || 
-			    fieldtype == StackTypeDescription.ValueType || 
+			    fieldtype.CliType == CliType.ValueType || 
 			    fieldtype == StackTypeDescription.ObjectType)
-				throw new NotSupportedException();
+				throw new NotSupportedException("Only simple field types are supported.");
 
 			if (fieldtype.NumericSize != CliNumericSize.FourBytes)
-				throw new NotSupportedException();
+				throw new NotSupportedException("Only four-byte fields are supported.");
 			int valuesize = (int) fieldtype.NumericSize;
 
 			// We don't do unaligned.
@@ -1157,7 +1190,6 @@ namespace CellDotNet
 			qwoffset = byteoffset / 16;
 			wordoffset = (byteoffset % 16) / 4;
 		}
-
 
 		class IntrinsicsWriter
 		{

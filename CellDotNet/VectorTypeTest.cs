@@ -114,6 +114,23 @@ namespace CellDotNet
 		#endregion
 
 		[Test]
+		public void TestVectorInt_Copy()
+		{
+			Converter<Int32Vector, Int32Vector> del = 
+				delegate(Int32Vector input)
+					{
+						Int32Vector v2 = input;
+						return v2;
+					};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			Int32Vector v = new Int32Vector(1, 2, 3, 4);
+			AreEqual(del(v), (Int32Vector) SpeContext.UnitTestRunProgram(cc, v));
+		}
+
+		[Test]
 		public void TestVectorInt_Add()
 		{
 			Int32VDelegateInt32VInt32V del = delegate(Int32Vector arg1, Int32Vector arg2) { return arg1 + arg2; };
@@ -433,12 +450,7 @@ namespace CellDotNet
 					};
 
 			CompileContext cc = new CompileContext(del.Method);
-
-			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
-			Disassembler.DisassembleUnconditional(cc, Console.Out);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
-			Disassembler.DisassembleToConsole(cc);
 
 			Int32Vector v1 = new Int32Vector(5, 6, 7, 8);
 			Int32Vector v2 = new Int32Vector(1, 2, 3, 4);
