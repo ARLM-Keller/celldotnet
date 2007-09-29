@@ -34,7 +34,13 @@ namespace CellDotNet
 		{
 			get
 			{
-				return Utilities.Align16(Marshal.SizeOf(_reflectionType)) / 16;
+				if (ReflectionType.IsValueType)
+					return Utilities.Align16(Marshal.SizeOf(_reflectionType)) / 16;
+				else
+				{
+					EnsureTypeLayoutForReferenceType();
+					return _quadwordcount;
+				}
 			}
 		}
 
@@ -52,8 +58,6 @@ namespace CellDotNet
 
 			_reflectionType = type;
 		}
-
-
 
 		public TypeDescription(GenericType genericType, params StackTypeDescription[] genericParameters)
 		{
@@ -107,6 +111,8 @@ namespace CellDotNet
 				_fieldOffsets.Add(new KeyValuePair<FieldInfo, int>(fi, offset));
 				offset += 16;
 			}
+
+			_quadwordcount = offset/16;
 		}
 
 		private GenericType _genericType;
@@ -117,6 +123,7 @@ namespace CellDotNet
 
 		private StackTypeDescription[] _genericParameters;
 		private List<KeyValuePair<FieldInfo, int>> _fieldOffsets;
+		private int _quadwordcount;
 
 		public IList<StackTypeDescription> GenericParameters
 		{

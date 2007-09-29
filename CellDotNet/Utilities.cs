@@ -55,13 +55,13 @@ namespace CellDotNet
 		static public void AssertNotNull(object arg, string expressionOrMessage)
 		{
 			if (arg == null)
-				throw new Exception("An expression is null: " + expressionOrMessage);
+				throw new DebugAssertException("An expression is null: " + expressionOrMessage);
 		}
 
 		static public void AssertNull(object arg, string expressionOrMessage)
 		{
 			if (arg != null)
-				throw new Exception("An expression is not null: " + expressionOrMessage);
+				throw new DebugAssertException("An expression is not null: " + expressionOrMessage);
 		}
 
 		static public void Assert(bool condition, string message)
