@@ -438,7 +438,7 @@ namespace CellDotNet
 				arr[paramcount - 1 - i] = _parseStack.Pop();
 
 			MethodInfo methodinfo = methodBase as MethodInfo;
-			if (methodBase is ConstructorInfo || (methodinfo != null && methodinfo.ReturnType != typeof(void)))
+			if (reader.OpCode == OpCodes.Newobj || (methodinfo != null && methodinfo.ReturnType != typeof(void)))
 				pushcount = 1;
 			else
 				pushcount = 0;
