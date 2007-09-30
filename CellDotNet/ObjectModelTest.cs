@@ -45,10 +45,6 @@ namespace CellDotNet
 						return arr.Length;
 					};
 
-//			IntReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
-//			SpeDelegateRunner t = (SpeDelegateRunner)del2.Target;
-//			Disassembler.DisassembleToConsole(t.CompileContext);
-
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
@@ -158,6 +154,14 @@ namespace CellDotNet
 			public int i3;
 			public int i4;
 
+			public QWStruct(int i1, int i2, int i3, int i4)
+			{
+				this.i1 = i1;
+				this.i2 = i2;
+				this.i3 = i3;
+				this.i4 = i4;
+			}
+
 			public int ReturnArg(int i)
 			{
 				return i;
@@ -173,7 +177,7 @@ namespace CellDotNet
 		#endregion
 
 		[Test]
-		public void TestInstanceMethod_Simple()
+		public void TestStruct_InstanceMethod()
 		{
 			Converter<int, int> del =
 				delegate(int i)
@@ -183,20 +187,17 @@ namespace CellDotNet
 					return s.ReturnArg(i);
 				};
 
-			int arg = 7913;
-
-			int correctval = del(arg);
-
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(correctval, (int)SpeContext.UnitTestRunProgram(cc, arg));
+			int arg = 7913;
+			AreEqual(del(arg), (int)SpeContext.UnitTestRunProgram(cc, arg));
 		}
 
 		[Test]
-		public void TestInstanceMethod_FieldAccess()
+		public void TestStruct_InstanceMethodAndFields()
 		{
-			Converter<int, int> del =
+			IntReturnDelegate del =
 				delegate
 				{
 					QWStruct s = new QWStruct();
@@ -208,20 +209,16 @@ namespace CellDotNet
 					return s.ReturnSum();
 				};
 
-			int arg = 0; // Is not used
-
-			int correctval = del(arg);
-
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(correctval, (int)SpeContext.UnitTestRunProgram(cc, arg));
+			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(cc));
 		}
 
 		[Test]
-		public void TestStruct_Field()
+		public void TestStruct_Fields()
 		{
-			Converter<int, int> del = 
+			IntReturnDelegate del = 
 				delegate
 					{
 						QWStruct s = new QWStruct();
@@ -233,18 +230,16 @@ namespace CellDotNet
 						return s.i1 + s.i2 + s.i3 + s.i4;
 					};
 
-			int correctval = del(0);
-
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(correctval, (int) SpeContext.UnitTestRunProgram(cc, 0));
+			AreEqual(del(), (int) SpeContext.UnitTestRunProgram(cc));
 		}
 
 		[Test]
 		public void TestStruct_FieldsCleared()
 		{
-			Converter<int, int> del =
+			IntReturnDelegate del =
 				delegate
 				{
 					QWStruct s = new QWStruct();
@@ -252,13 +247,56 @@ namespace CellDotNet
 					return s.i1 + s.i2 + s.i3 + s.i4;
 				};
 
-			int correctval = del(0);
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(cc));
+		}
+
+		[Test]
+		public void TestStruct_ConstructorAndFields()
+		{
+			IntReturnDelegate del =
+				delegate
+				{
+					QWStruct s = new QWStruct(1, 2, 11, 12);
+
+					return s.i1 + s.i2 + s.i3 + s.i4;
+				};
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(correctval, (int)SpeContext.UnitTestRunProgram(cc, 0));
+			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(cc));
 		}
+
+		[Test]
+		public void TestStruct_Fields_Multiple()
+		{
+			IntReturnDelegate del =
+				delegate
+				{
+					// Checks that the allocated stack positions don't overlap.
+					QWStruct s1 = new QWStruct();
+					s1.i1 = 1;
+					s1.i2 = 2;
+					s1.i3 = 11;
+					s1.i4 = 12;
+					QWStruct s2 = new QWStruct();
+					s2.i1 = 11;
+					s2.i2 = 12;
+					s2.i3 = 111;
+					s2.i4 = 112;
+
+					return s1.i1 + s1.i2 + s1.i3 + s1.i4 + s2.i1 + s2.i2 + s2.i3 + s2.i4;
+				};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(cc));
+		}
+
 
 		#region QWStruct_Big
 
@@ -279,7 +317,7 @@ namespace CellDotNet
 		[Test]
 		public void TestStruct_Field_Big()
 		{
-			Converter<int, int> del =
+			IntReturnDelegate del =
 				delegate
 				{
 					QWStruct_Big s = new QWStruct_Big();
@@ -295,18 +333,16 @@ namespace CellDotNet
 					return s.i1 + s.i2 + s.i3 + s.i4 + s.i5 + s.i6 + s.i7 + s.i8;
 				};
 
-			int correctval = del(0);
-
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(correctval, (int)SpeContext.UnitTestRunProgram(cc, 0));
+			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(cc));
 		}
 
 		[Test]
 		public void TestStruct_FieldsCleared_Big()
 		{
-			Converter<int, int> del =
+			IntReturnDelegate del =
 				delegate
 				{
 					QWStruct_Big s = new QWStruct_Big();
@@ -314,12 +350,10 @@ namespace CellDotNet
 					return s.i1 + s.i2 + s.i3 + s.i4 + s.i5 + s.i6 + s.i7 + s.i8;
 				};
 
-			int correctval = del(0);
-
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(correctval, (int)SpeContext.UnitTestRunProgram(cc, 0));
+			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(cc));
 		}
 
 
@@ -329,6 +363,16 @@ namespace CellDotNet
 			public int i2;
 			public int i3;
 			public int i4;
+
+			public ClassWithInts() {}
+
+			public ClassWithInts(int i1, int i2, int i3, int i4)
+			{
+				this.i1 = i1;
+				this.i2 = i2;
+				this.i3 = i3;
+				this.i4 = i4;
+			}
 
 			public int ReturnArgument(int i)
 			{
@@ -448,6 +492,23 @@ namespace CellDotNet
 				return;
 
 			AreEqual(64, Math.Abs((int)SpeContext.UnitTestRunProgram(cc)));
+		}
+
+		[Test]
+		public void TestClass_FieldAndConstructor()
+		{
+			IntReturnDelegate del =
+				delegate
+				{
+					ClassWithInts c = new ClassWithInts(1, 10, 100, 1000);
+
+					return c.i1 + c.i2 + c.i3 + c.i4;
+				};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(cc));
 		}
 	}
 }

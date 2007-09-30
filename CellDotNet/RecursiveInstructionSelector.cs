@@ -209,6 +209,10 @@ namespace CellDotNet
 									// The System.Object ctor does nothing for us, so don't even bother calling it.
 									return null;
 								}
+								else if (mc.MethodBase.DeclaringType.IsValueType)
+								{
+									// Value type ctors are called like any other method.
+								}
 								else
 									throw new NotSupportedException("Base type constructors are not supported.");
 							}
