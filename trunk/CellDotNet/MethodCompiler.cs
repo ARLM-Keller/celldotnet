@@ -228,7 +228,6 @@ namespace CellDotNet
 				throw new ILParseException(string.Format("An error occurred while parsing method '{0}.{1}'.", 
 					_methodBase.DeclaringType.Name, _methodBase.Name), e);
 			}
-			CheckTreeInstructionCountIsMinimum(reader.InstructionsRead);
 
 			PatchSystemLib();
 
@@ -296,28 +295,6 @@ namespace CellDotNet
 							}
 						}
 					});
-		}
-
-		/// <summary>
-		/// Checks that the number of instructions in the constructed tree is equal to the number of IL instructions in the cecil model.
-		/// </summary>
-		/// <param name="minimumCount"></param>
-		private void CheckTreeInstructionCountIsMinimum(int minimumCount)
-		{
-			int count = 0;
-			ForeachTreeInstruction(delegate
-			{
-				count += 1;
-			});
-
-			if (count < minimumCount)
-			{
-				TreeDrawer td= new TreeDrawer();
-				td.DrawMethod(this);
-				string msg = string.Format("Invalid tree instruction count of {0} for method {2}. Should have been {1}.", 
-					count, minimumCount, MethodBase.Name);
-				throw new Exception(msg);
-			}
 		}
 
 		//TODO nameing

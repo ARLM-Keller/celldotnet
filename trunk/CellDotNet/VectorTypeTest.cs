@@ -1,4 +1,5 @@
 using System;
+using System.Reflection.Emit;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -7,6 +8,8 @@ namespace CellDotNet
 	public class VectorTypeTest : UnitTest
 	{
 		private delegate Int32Vector Int32VDelegateInt32V(Int32Vector v1);
+
+		private delegate T Creator<T>();
 
 		private delegate Int32Vector Int32VDelegateInt32VInt32V(Int32Vector v1, Int32Vector v2);
 		private delegate Float32Vector Float32VDelegateFloat32VFloat32V(Float32Vector v1, Float32Vector v2);
@@ -191,6 +194,35 @@ namespace CellDotNet
 			}
 		}
 
+		[Test]
+		public void TestVectorInt_Constructor()
+		{
+			// This will use newobj.
+			Creator<Int32Vector> del = delegate { return new Int32Vector(1, 2, 3, 4); };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(new Int32Vector(1, 2, 3, 4), (Int32Vector) SpeContext.UnitTestRunProgram(cc));
+		}
+
+		[Test]
+		public void TestVectorInt_ConstructorLocalVariable()
+		{
+//			Console.WriteLine(OpCodes.Newobj.FlowControl);
+			// This will use call.
+			Creator<Int32Vector> del = delegate
+			                           	{
+			                           		Int32Vector v = new Int32Vector(1, 2, 3, 4);
+			                           		return v;
+			                           	};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(new Int32Vector(1, 2, 3, 4), (Int32Vector)SpeContext.UnitTestRunProgram(cc));
+		}
+
 		[Test, Ignore("Currently we can't handle bools.")]
 		public void TestVectorInt_Equal()
 		{
@@ -307,6 +339,34 @@ namespace CellDotNet
 				IsTrue((Float32Vector)vSPU2 == vPPU2, "Second test failed.");
 			}
 		}
+
+		[Test]
+		public void TestVectorFloat_Constructor()
+		{
+			Creator<Float32Vector> del = delegate { return new Float32Vector(1, 2, 3, 4); };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(new Float32Vector(1, 2, 3, 4), (Float32Vector)SpeContext.UnitTestRunProgram(cc));
+		}
+
+		[Test]
+		public void TestVectorFloat_ConstructorLocalVariable()
+		{
+			Creator<Float32Vector> del =
+				delegate
+					{
+						Float32Vector v = new Float32Vector(1, 2, 3, 4);
+						return v;
+					};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(new Float32Vector(1, 2, 3, 4), (Float32Vector)SpeContext.UnitTestRunProgram(cc));
+		}
+
 
 		private delegate float FloatElementDelegate(Float32Vector v, int elementno);
 
