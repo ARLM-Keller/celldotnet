@@ -576,7 +576,8 @@ namespace CellDotNet
 
 		private unsafe static void RunRasmus()
 		{
-			new ObjectModelTest().TestClass_InstanceMethodAndFields();
+			Console.WriteLine(Marshal.SizeOf(new Float32Vector()));
+//			new ObjectModelTest().TestClass_InstanceMethodAndFields();
 		}
 	}
 }
