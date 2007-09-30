@@ -399,5 +399,55 @@ namespace CellDotNet
 
 			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(cc));
 		}
+
+		[Test]
+		public void TestClass_AllocateMultiple()
+		{
+			IntReturnDelegate del =
+				delegate
+					{
+						// This should detect if they overlap.
+						ClassWithInts c = new ClassWithInts();
+						c.i1 = 1;
+						c.i2 = 10;
+						c.i3 = 100;
+						c.i4 = 1000;
+
+						ClassWithInts c2 = new ClassWithInts();
+						c2.i1 = 11;
+						c2.i2 = 110;
+						c2.i3 = 1100;
+						c2.i4 = 11000;
+
+						return c.i1 + c.i2 + c.i3 + c.i4 + c2.i1 + c2.i2 + c2.i3 + c2.i4;
+					};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(del(), (int) SpeContext.UnitTestRunProgram(cc));
+		}
+
+		[Test]
+		public void TestClass_AllocateMultiple2()
+		{
+			IntReturnDelegate del =
+				delegate
+				{
+					ClassWithInts c1 = new ClassWithInts();
+					ClassWithInts c2 = new ClassWithInts();
+
+					// With four int fields they should take up 64 bytes (and be located next to each other).
+					return SpuRuntime.UnsafeGetAddress(c1) - SpuRuntime.UnsafeGetAddress(c2);
+				};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			AreEqual(64, Math.Abs((int)SpeContext.UnitTestRunProgram(cc)));
+		}
 	}
 }

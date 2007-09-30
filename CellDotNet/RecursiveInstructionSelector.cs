@@ -1388,6 +1388,8 @@ namespace CellDotNet
 								VirtualRegister r4 = writer.WriteAndi(r3, 1);
 								return writer.WriteXori(r4, 0x01);
 							}
+						case SpuIntrinsicMethod.ReturnArgument1:
+							return childregs[0];
 						default:
 						throw new ArgumentException();
 				}
