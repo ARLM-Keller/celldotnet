@@ -214,10 +214,8 @@ namespace CellDotNet
 									// Value type ctors are called like any other method.
 								}
 								else
-									throw new NotSupportedException("Base type constructors are not supported.");
+									throw new NotSupportedException("Base types other than Object are not supported.");
 							}
-//							if (!mc.MethodBase.IsStatic)
-//								throw new NotImplementedException("Only static methods are implemented.");
 						}
 						if (target.Parameters.Count > HardwareRegister.CallerSavesRegisters.Count)
 							throw new NotImplementedException("No support for more than " +
@@ -672,7 +670,6 @@ namespace CellDotNet
 							VirtualRegister r2 = _writer.WriteCsflt(r1, 155);
 							return _writer.WriteFs(r2, vrleft);
 					}
-					break;
 					break;
 				case IRCode.Not:
 					break;
@@ -1331,7 +1328,8 @@ namespace CellDotNet
 						// The address is the only component.
 						return childregs[0];
 					case SpuIntrinsicMethod.VectorType_getE1:
-						return writer.WriteRotqbyi(childregs[0], 0*4);
+//						return writer.WriteRotqbyi(childregs[0], 0*4);
+						return childregs[0];
 					case SpuIntrinsicMethod.VectorType_getE2:
 						return writer.WriteRotqbyi(childregs[0], 1*4);
 					case SpuIntrinsicMethod.VectorType_getE3:
@@ -1377,24 +1375,28 @@ namespace CellDotNet
 							VirtualRegister r4 = writer.WriteAndi(r3, 1);
 							return writer.WriteXori(r4, 0x01);
 						}
-						case SpuIntrinsicMethod.FloatVectorType_Equals:
-							{
-								VirtualRegister r1 = writer.WriteFceq(childregs[0], childregs[1]);
-								VirtualRegister r2 = writer.WriteGb(r1);
-								VirtualRegister r3 = writer.WriteCeqi(r2, 0x0f);
-								return writer.WriteAndi(r3, 1);
-							}
-						case SpuIntrinsicMethod.FloatVectorType_NotEquals:
-							{
-								VirtualRegister r1 = writer.WriteFceq(childregs[0], childregs[1]);
-								VirtualRegister r2 = writer.WriteGb(r1);
-								VirtualRegister r3 = writer.WriteCeqi(r2, 0x0f);
-								VirtualRegister r4 = writer.WriteAndi(r3, 1);
-								return writer.WriteXori(r4, 0x01);
-							}
-						case SpuIntrinsicMethod.ReturnArgument1:
-							return childregs[0];
-						default:
+					case SpuIntrinsicMethod.FloatVectorType_Equals:
+						{
+							VirtualRegister r1 = writer.WriteFceq(childregs[0], childregs[1]);
+							VirtualRegister r2 = writer.WriteGb(r1);
+							VirtualRegister r3 = writer.WriteCeqi(r2, 0x0f);
+							return writer.WriteAndi(r3, 1);
+						}
+					case SpuIntrinsicMethod.FloatVectorType_NotEquals:
+						{
+							VirtualRegister r1 = writer.WriteFceq(childregs[0], childregs[1]);
+							VirtualRegister r2 = writer.WriteGb(r1);
+							VirtualRegister r3 = writer.WriteCeqi(r2, 0x0f);
+							VirtualRegister r4 = writer.WriteAndi(r3, 1);
+							return writer.WriteXori(r4, 0x01);
+						}
+					case SpuIntrinsicMethod.ReturnArgument1:
+						return childregs[0];
+					case SpuIntrinsicMethod.CombineFourWords:
+						{
+							throw new NotImplementedException();
+						}
+					default:
 						throw new ArgumentException();
 				}
 			}

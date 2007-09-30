@@ -444,10 +444,10 @@ namespace CellDotNet
 				pushcount = 0;
 
 			MethodCallInstruction mci;
-			if (methodinfo != null && methodBase.IsDefined(typeof(IntrinsicMethodAttribute), false))
+			if (methodBase.IsDefined(typeof(IntrinsicMethodAttribute), false))
 			{
 				IntrinsicMethodAttribute methodAtt = (IntrinsicMethodAttribute) methodBase.GetCustomAttributes(typeof(IntrinsicMethodAttribute), false)[0];
-				mci = new MethodCallInstruction(methodinfo, methodAtt.Intrinsic);
+				mci = new MethodCallInstruction(methodBase, methodAtt.Intrinsic);
 			}
 			else if (methodBase.IsDefined(typeof(SpuOpCodeAttribute), false))
 			{

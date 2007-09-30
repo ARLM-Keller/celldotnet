@@ -87,12 +87,11 @@ namespace CellDotNet
 						foreach (TreeInstruction param in mci.Parameters)
 							DeriveType(param);
 
-						MethodInfo method = mci.IntrinsicMethod;
-						if (method == null)
-							method = mci.OperandMethod as MethodInfo;  // might be a constructor.
-
-						if (method != null && method.ReturnType != typeof (void))
-							t = GetStackTypeDescription(method.ReturnType);
+						MethodBase methodBase = mci.IntrinsicMethod ?? mci.OperandMethod;
+						if (mci.Opcode == IROpCodes.Newobj)
+							t = GetStackTypeDescription(methodBase.DeclaringType);
+						else if (methodBase is MethodInfo && ((MethodInfo)methodBase).ReturnType != typeof (void))
+							t = GetStackTypeDescription(((MethodInfo)methodBase).ReturnType);
 						else
 							t = StackTypeDescription.None;
 					}

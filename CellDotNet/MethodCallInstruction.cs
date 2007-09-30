@@ -18,7 +18,7 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="intrinsic"></param>
 		/// <param name="method"></param>
-		public MethodCallInstruction(MethodInfo method, SpuIntrinsicMethod intrinsic) : base(IROpCodes.IntrinsicMethod)
+		public MethodCallInstruction(MethodBase method, SpuIntrinsicMethod intrinsic) : base(IROpCodes.IntrinsicMethod)
 		{
 			Utilities.AssertArgument(intrinsic != SpuIntrinsicMethod.None, "intrinsic != SpuIntrinsicMethod.None");
 			Operand = intrinsic;
@@ -55,11 +55,11 @@ namespace CellDotNet
 			get { return (SpuRoutine) Operand; }
 		}
 
-		private MethodInfo _intrinsicMethod;
+		private MethodBase _intrinsicMethod;
 		/// <summary>
 		/// Intrinsic methods are exposed via this property so that the type deriver can do its job.
 		/// </summary>
-		public MethodInfo IntrinsicMethod
+		public MethodBase IntrinsicMethod
 		{
 			get { return _intrinsicMethod; }
 		}
@@ -120,5 +120,6 @@ namespace CellDotNet
 		FloatVectorType_Equals,
 		FloatVectorType_NotEquals,
 		ReturnArgument1,
+		CombineFourWords
 	}
 }

@@ -455,20 +455,6 @@ namespace CellDotNet
 		}
 
 		/// <summary>
-		/// TODO: Rename and/or change signature.
-		/// </summary>
-		/// <param name="cc"></param>
-		/// <param name="args"></param>
-		/// <returns></returns>
-		public static object RunProgramX(CompileContext cc, params object[] args)
-		{
-			using (SpeContext sc = new SpeContext())
-			{
-				return sc.RunProgram(cc, args);
-			}
-		}
-
-		/// <summary>
 		/// This method can be used to execute a method even on windows. It will attempt to 
 		/// perform DMA ops as an SPE would.
 		/// </summary>
