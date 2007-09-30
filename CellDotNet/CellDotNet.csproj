@@ -78,6 +78,8 @@
     <Compile Include="LivenessAnalyzer.cs" />
     <Compile Include="LocalStorageAddress.cs" />
     <Compile Include="ManualRoutine.cs" />
+    <Compile Include="Marshaler.cs" />
+    <Compile Include="MarshalerTest.cs" />
     <Compile Include="MethodCompiler.cs" />
     <Compile Include="MethodCompilerTest.cs" />
     <Compile Include="MethodParameter.cs" />
