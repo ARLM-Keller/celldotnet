@@ -118,6 +118,7 @@ namespace CellDotNet
 		IntVectorType_Equals,
 		IntVectorType_NotEquals,
 		FloatVectorType_Equals,
-		FloatVectorType_NotEquals
+		FloatVectorType_NotEquals,
+		ReturnArgument1,
 	}
 }
