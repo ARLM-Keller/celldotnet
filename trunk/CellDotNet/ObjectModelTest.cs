@@ -514,5 +514,61 @@ namespace CellDotNet
 
 			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(cc));
 		}
+
+		class PpeClass
+		{
+			int _hitcount;
+			public int Hitcount
+			{
+				get { return _hitcount; }
+			}
+
+			public void Hit()
+			{
+				_hitcount++;
+			}
+
+			public int somepublicfield;
+		}
+
+		[Test]
+		public void TestPpeClass_InstanceMethodCall()
+		{
+			Action<PpeClass> del = delegate(PpeClass obj) { obj.Hit(); };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(1, cc.Methods.Count);
+
+			PpeClass inst = new PpeClass();
+			SpeContext.UnitTestRunProgram(cc, inst);
+
+			AreEqual(1, inst.Hitcount);
+		}
+
+		[Test]
+		public void TestPpeClass_InstanceFieldAccessFailure()
+		{
+			Converter<PpeClass, int> del = delegate(PpeClass obj) { return obj.somepublicfield; };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(1, cc.Methods.Count);
+
+			PpeClass inst = new PpeClass();
+			SpeContext.UnitTestRunProgram(cc, inst);
+
+			try
+			{
+				AreEqual(1, inst.Hitcount);				
+				Fail();
+			}
+			catch (NotSupportedException)
+			{
+				// Ok
+			}
+		}
 	}
 }

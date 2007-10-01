@@ -12,24 +12,13 @@ namespace CellDotNet
 	{
 		private Library _library;
 		private int _offsetInLibrary;
-		private StackTypeDescription _returnType;
-		private ReadOnlyCollection<MethodParameter> _parameters;
 
-		public LibraryMethod(string name, Library library, int offsetInLibrary, MethodInfo signature) : base(name)
+		public LibraryMethod(string name, Library library, int offsetInLibrary, MethodInfo signature) : base(name, signature)
 		{
 			Utilities.AssertArgument(!string.IsNullOrEmpty(name), "name null");
 			Utilities.AssertArgumentNotNull(library, "library");
 			Utilities.AssertArgumentNotNull(offsetInLibrary, "offsetInLibrary");
 			Utilities.AssertArgumentNotNull(signature, "signature");
-
-			TypeDeriver td = new TypeDeriver();
-			_returnType = td.GetStackTypeDescription(signature.ReturnType);
-			List<MethodParameter> plist = new List<MethodParameter>();
-			foreach (ParameterInfo paraminfo in signature.GetParameters())
-			{
-				plist.Add(new MethodParameter(paraminfo, td.GetStackTypeDescription(paraminfo.ParameterType)));
-			}
-			_parameters = plist.AsReadOnly();
 
 			_library = library;
 			_offsetInLibrary = offsetInLibrary;

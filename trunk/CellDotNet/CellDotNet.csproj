@@ -99,6 +99,7 @@
     <Compile Include="ObjectWithAddress.cs" />
     <Compile Include="PartialEvaluator.cs" />
     <Compile Include="PartialEvaluatorTest.cs" />
+    <Compile Include="PpeMethod.cs" />
     <Compile Include="RecursiveInstructionSelector.cs" />
     <Compile Include="RegAllocGraphColloring.cs" />
     <Compile Include="RegAllocGraphColloringTest.cs" />
