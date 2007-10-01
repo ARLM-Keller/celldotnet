@@ -10,9 +10,15 @@ namespace CellDotNet
 	/// </summary>
 	class Marshaler
 	{
+		List<KeyValuePair<int, object>> _objects = new List<KeyValuePair<int, object>>();
+		private int _nextObjectKey = 0xf000000;
+
 		public byte[] GetArguments(object[] arguments)
 		{
-			byte[] argmem = new byte[arguments.Length * 16];
+			// Allocate some extra room... hackish...
+			int currentlyAllocatedQwCount = arguments.Length + 10;
+
+			byte[] argmem = new byte[currentlyAllocatedQwCount * 16];
 			int usedQuadWords = 0;
 			for (int i = 0; i < arguments.Length; i++)
 			{
@@ -44,6 +50,21 @@ namespace CellDotNet
 						throw new NotSupportedException("Unsupported argument datatype: " + val.GetType().Name);
 				}
 
+				if (buf == null && !(val is ValueType))
+				{
+					KeyValuePair<int, object> pair =
+						_objects.Find(delegate(KeyValuePair<int, object> obj) { return ReferenceEquals(obj.Value, val); });
+					if (pair.Value == null)
+					{
+						// Allocate new slot.
+						pair = new KeyValuePair<int, object>(_nextObjectKey, val);
+						_nextObjectKey++;
+						_objects.Add(pair);
+					}
+
+					buf = BitConverter.GetBytes(pair.Key);
+				}
+
 				if (buf != null)
 				{
 					Buffer.BlockCopy(buf, 0, argmem, usedQuadWords * 16, buf.Length);
@@ -66,26 +87,6 @@ namespace CellDotNet
 						if (h != default(GCHandle))
 							h.Free();
 					}
-
-					//						if (val is Int32Vector || val is Float32Vector)
-					//						{
-					//							// TODO Ought to pin buf.
-					//							buf = new byte[16];
-					//							IntPtr ptr = Marshal.UnsafeAddrOfPinnedArrayElement(buf, 0);
-					//							Marshal.StructureToPtr(val, ptr, false);
-					//						}
-					//						else if (val is MainStorageArea)
-					//						{
-					//							uint ea = MainStorageArea.GetEffectiveAddress((MainStorageArea)val);
-					//							if (!Utilities.IsQuadwordAligned((int)ea))
-					//								throw new ArgumentException("A MainStorageAddress passed as an argument is not quadword-aligned.");
-					//							buf = BitConverter.GetBytes(ea);
-					//						}
-					//						else if (val is IntPtr)
-					//							buf = BitConverter.GetBytes((int)(IntPtr)val);
-					//						else
-					//							throw new NotSupportedException("Unsupported argument datatype: " + val.GetType().Name);
-
 				}
 				else
 				{
@@ -93,10 +94,14 @@ namespace CellDotNet
 					throw new NotSupportedException("Unsupported argument datatype: " + val.GetType().Name);
 				}
 
-				// TODO: Have room for/handle arguments which take up more than one qw.
-
 				usedQuadWords += currentArgQW;
+			}
 
+			if (currentlyAllocatedQwCount > usedQuadWords)
+			{
+				byte[] newargmem = new byte[usedQuadWords*16];
+				Buffer.BlockCopy(argmem, 0, newargmem, 0, usedQuadWords * 16);
+				argmem = newargmem;
 			}
 
 			return argmem;
@@ -164,8 +169,13 @@ namespace CellDotNet
 				}
 				else
 				{
-					// TODO: Support reference types.
-					throw new NotSupportedException("Unsupported datatype: " + type.Name);
+					int key = BitConverter.ToInt32(buf, currentBufOffset);
+					KeyValuePair<int, object> pair = _objects.Find(delegate(KeyValuePair<int, object> obj) { return obj.Key == key; });
+					if (pair.Key == 0)
+						throw new ArgumentException("Could not recover reference type '" + type.Name + "' for argument number " + i + ".");
+
+					val = pair.Value;
+					currentValQuadwords = 1;
 				}
 
 				arr[i] = val;
