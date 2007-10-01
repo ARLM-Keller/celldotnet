@@ -385,6 +385,27 @@ namespace CellDotNet
 			AreEqual(new Float32Vector(1, 2, 3, 4), (Float32Vector)SpeContext.UnitTestRunProgram(cc));
 		}
 
+		static private void TestVectorFloat_ConstructorRefArg_RefArgMehod(out Float32Vector v)
+		{
+			v = new Float32Vector(1, 2, 3, 4);
+		}
+
+		[Test]
+		public void TestVectorFloat_ConstructorRefArg()
+		{
+			Creator<Float32Vector> del = 
+				delegate
+					{
+						Float32Vector v;
+						TestVectorFloat_ConstructorRefArg_RefArgMehod(out v);
+						return v;
+					};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(new Float32Vector(1, 2, 3, 4), (Float32Vector)SpeContext.UnitTestRunProgram(cc));
+		}
 
 		private delegate float FloatElementDelegate(Float32Vector v, int elementno);
 
