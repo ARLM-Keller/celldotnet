@@ -18,7 +18,8 @@ namespace CellDotNet
 			/// <summary>
 			/// The registers that currently are available for use.
 			/// </summary>
-			private Set<CellRegister> _availableRegisters;
+			private SortedRegisterSet _availableRegisters;
+//			private Set<CellRegister> _availableRegisters;
 
 			/// <summary>
 			/// All registers that have been returned by <see cref="GetFreeRegister"/>.
@@ -27,13 +28,58 @@ namespace CellDotNet
 
 			private Set<CellRegister> _usedPrecoloredRegisters;
 
+
+			class SortedRegisterSet
+			{
+				class RegNumComparer : IComparer<CellRegister>
+				{
+					public int Compare(CellRegister x, CellRegister y)
+					{
+						return y - x;
+					}
+
+					public static RegNumComparer Inverse = new RegNumComparer();
+				}
+
+				List<CellRegister> _list = new List<CellRegister>();
+
+
+				public void Add(CellRegister reg)
+				{
+					_list.Add(reg);
+					_list.Sort(RegNumComparer.Inverse);
+				}
+
+				public CellRegister GetSome()
+				{
+					CellRegister reg = _list[_list.Count - 1];
+					_list.RemoveAt(_list.Count - 1);
+
+					return reg;
+				}
+
+				public bool Contains(CellRegister reg)
+				{
+					return _list.Contains(reg);
+				}
+
+				public void Remove(CellRegister register)
+				{
+					int index = _list.FindIndex(delegate(CellRegister obj) { return obj == register; });
+					if (index == -1)
+						throw new ArgumentException("Register " + register + " is not in the set.");
+
+					_list.RemoveAt(index);
+				}
+			}
+
 			public RegisterPool()
 			{
 				_usedRegisters = new Set<CellRegister>();
 				_usedPrecoloredRegisters = new Set<CellRegister>();
 
 				// Only use calle-saves.
-				_availableRegisters = new Set<CellRegister>();
+				_availableRegisters = new SortedRegisterSet();
 				foreach (CellRegister regnum in HardwareRegister.getCalleeSavesCellRegisters())
 				{
 					_availableRegisters.Add(regnum);
@@ -57,8 +103,11 @@ namespace CellDotNet
 
 			public CellRegister GetFreeRegister()
 			{
-				CellRegister reg = Utilities.GetFirst(_availableRegisters);
-				_availableRegisters.Remove(reg);
+				CellRegister reg = _availableRegisters.GetSome();
+//				CellRegister reg = Utilities.GetMinimum(_availableRegisters, 
+//					delegate(CellRegister x, CellRegister y) { return (int) x - (int) y; });
+//				CellRegister reg = Utilities.GetFirst(_availableRegisters);
+//				_availableRegisters.Remove(reg);
 				_usedRegisters.Add(reg);
 
 				return reg;

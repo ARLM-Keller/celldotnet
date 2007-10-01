@@ -85,6 +85,11 @@ namespace CellDotNet
 			}
 		}
 
+		private string SubTreeText
+		{
+			get { return new TreeDrawer().DrawSubTree(this); }
+		}
+
 		private TreeInstruction _right;
 		public TreeInstruction Right
 		{

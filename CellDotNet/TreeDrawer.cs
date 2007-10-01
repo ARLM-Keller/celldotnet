@@ -112,6 +112,15 @@ namespace CellDotNet
 			}
 		}
 
+		public string DrawSubTree(TreeInstruction inst)
+		{
+			StringWriter sw = new StringWriter();
+			if (Output == null)
+				Output = sw;
+			DrawTree(inst, 0);
+			return sw.GetStringBuilder().ToString();
+		}
+
 		private void AddBranchTargets(TreeInstruction inst)
 		{
 			// Do we still use this method?

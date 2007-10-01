@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection.Emit;
 using NUnit.Framework;
 
@@ -203,13 +204,19 @@ namespace CellDotNet
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
+			List<MethodVariable> vlist = Utilities.FindAll(cc.EntryPointAsMetodCompiler.Variables,
+				delegate(MethodVariable var) { return var.StackType == StackTypeDescription.Int32Vector; });
+			AreEqual(1, vlist.Count);
+			IsFalse(vlist[0].Escapes.Value);
+
+			cc.WriteAssemblyToFile("vector.s");
+
 			AreEqual(new Int32Vector(1, 2, 3, 4), (Int32Vector) SpeContext.UnitTestRunProgram(cc));
 		}
 
 		[Test]
 		public void TestVectorInt_ConstructorLocalVariable()
 		{
-//			Console.WriteLine(OpCodes.Newobj.FlowControl);
 			// This will use call.
 			Creator<Int32Vector> del = delegate
 			                           	{
@@ -219,6 +226,17 @@ namespace CellDotNet
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			new TreeDrawer().DrawMethod(cc.EntryPointAsMetodCompiler);
+
+			List<MethodVariable> vlist = Utilities.FindAll(cc.EntryPointAsMetodCompiler.Variables,
+				delegate(MethodVariable var) { return var.StackType == StackTypeDescription.Int32Vector; });
+
+			// allow 2 since debug mode branch might have induced an extra variable.
+			IsTrue(vlist.Count == 1 || vlist.Count == 2); 
+			IsFalse(vlist[0].Escapes.Value);
+			if (vlist.Count == 2)
+				IsFalse(vlist[1].Escapes.Value);
 
 			AreEqual(new Int32Vector(1, 2, 3, 4), (Int32Vector)SpeContext.UnitTestRunProgram(cc));
 		}

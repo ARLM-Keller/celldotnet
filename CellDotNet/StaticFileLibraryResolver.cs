@@ -17,7 +17,7 @@ namespace CellDotNet
 
 		private string FindFullLibraryPath(string dllImportName)
 		{
-			string filename = dllImportName + ".o";
+			string filename = dllImportName + ".a";
 
 			if (!File.Exists(filename))
 				throw new DllNotFoundException("Cannot resolve library \"" + dllImportName + "\".");

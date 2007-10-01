@@ -156,7 +156,7 @@ namespace CellDotNet
 			resolver = new FakeLibraryResolver(lib);
 		}
 
-		[DllImport("ElfStaticLibrary")]
+		[DllImport("libtest")]
 		private extern static int TestElfStaticLibrary(int arg1, int arg2);
 
 		private delegate int AdderDelegate(int arg1, int arg2);

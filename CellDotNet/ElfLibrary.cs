@@ -75,7 +75,7 @@ namespace CellDotNet
 		private List<ElfSymbolInfo> GetElfSymbols(string fullpath)
 		{
 			string shellScript = string.Format(@"
-spu-nm {0}
+spu-nm {0} | awk '/^[0-9]+/ {{ print $1, $2, $3 }}'
 ", fullpath);
 			string output = ShellUtilities.ExecuteShellScript(shellScript);
 
@@ -166,7 +166,7 @@ spu-objdump -h {0} | awk '/^ +[0-9]/ {{ print $2,$3,$4,$6}}'
 						throw new Exception("Bad output line.");
 				}
 
-				Utilities.Assert(arr.Length == 3, "Not three elements in line.");
+				Utilities.Assert(arr.Length == 3, "Not three elements in line. nm output:\n" + nmDumpOutput);
 
 				int virtualAddress = Convert.ToInt32(arr[0], 16);
 				char symbolType = arr[1][0];

@@ -248,53 +248,102 @@ namespace CellDotNet
 		/// </summary>
 		private void RemoveAddressOperations()
 		{
-			ForeachTreeInstruction(
-				delegate(TreeInstruction obj)
+			// Replace vector types constructor "call"s (which use ldloca) with newobj and stloc.
+			// The ctor call will be a root.
+			foreach (IRBasicBlock bb in Blocks)
+			{
+				for (int i = 0; i < bb.Roots.Count; i++)
+				{
+					TreeInstruction root = bb.Roots[i];
+
+					MethodCallInstruction mci = root as MethodCallInstruction;
+					bool isConstructorCall = mci != null && root.Opcode == IROpCodes.IntrinsicNewObj;
+					if (!isConstructorCall)
+						continue;
+//					continue;
+
+					Utilities.Assert(mci.Parameters.Count >= 1, "mci.Parameters.Count >= 1");
+
+					TreeInstruction ldthis = mci.Parameters[0];
+
+					Utilities.Assert(ldthis.StackType.IndirectionLevel == 1 && 
+						ldthis.StackType.Dereference().IsImmutableSingleRegisterType, 
+						"ldthis.StackType.IndirectionLevel == 1");
+
+					// Remove the address load and insert a store instead.
+
+					mci.Parameters.RemoveAt(0);
+					TreeInstruction newRootStoreInst;
+					if (ldthis.Opcode == IROpCodes.Ldloca || ldthis.Opcode == IROpCodes.Ldarga)
 					{
-						// Replace instance method calls (ld*, call) on vector types with (ldarg, ldobj, call)
-						// so that vector instance methods operate on values instead of pointers.
+						if (ldthis.Opcode == IROpCodes.Ldloca)
+							newRootStoreInst = new TreeInstruction(IROpCodes.Stloc);
+						else
+							newRootStoreInst = new TreeInstruction(IROpCodes.Starg);
 
-						MethodCallInstruction mci = obj as MethodCallInstruction;
-						if (mci != null && (mci.Opcode == IROpCodes.IntrinsicMethod || mci.Opcode == IROpCodes.SpuInstructionMethod) &&
-							!mci.IntrinsicMethod.IsStatic && !mci.IntrinsicMethod.IsConstructor)
-						{
-							MethodBase method = mci.IntrinsicMethod;
-							TreeInstruction ldthis = mci.Parameters[0];
-							StackTypeDescription thistype = ldthis.StackType;
+						MethodVariable thisvar = ldthis.OperandAsVariable;
+						newRootStoreInst.Operand = thisvar;
+						newRootStoreInst.Left = mci;
+					}
+					else
+					{
+						newRootStoreInst = new TreeInstruction(IROpCodes.Stobj);
+						newRootStoreInst.Left = ldthis;
+						newRootStoreInst.Right = mci;
+					}
 
-							bool isDefiningTypeInstanceMethodCall = method.DeclaringType == ldthis.OperandAsVariable.ReflectionType;
-							bool canRemoveAddressOp = isDefiningTypeInstanceMethodCall && ldthis.OperandAsVariable != null && 
-								thistype.IsManagedPointer && thistype.Dereference().IsImmutableSingleRegisterType;
+					bb.Roots[i] = newRootStoreInst;
+				}
+			}
 
-							if (!canRemoveAddressOp)
-								return;
+			ForeachTreeInstruction(RemoveAddressOperations);
+		}
 
-							if (ldthis.Opcode == IROpCodes.Ldloca || ldthis.Opcode == IROpCodes.Ldarga)
-							{
-								// Load value instead of address.
-								MethodVariable var = ldthis.OperandAsVariable;
-								if (ldthis.Opcode == IROpCodes.Ldloca)
-									ldthis = new TreeInstruction(IROpCodes.Ldloc);
-								else
-									ldthis = new TreeInstruction(IROpCodes.Ldarg);
-								ldthis.Operand = var;
+		private void RemoveAddressOperations(TreeInstruction obj)
+		{
+			MethodCallInstruction mci = obj as MethodCallInstruction;
+			if (mci != null && (mci.Opcode == IROpCodes.IntrinsicMethod || mci.Opcode == IROpCodes.SpuInstructionMethod) &&
+			    !mci.IntrinsicMethod.IsStatic && !mci.IntrinsicMethod.IsConstructor)
+			{
+				// Replace instance method calls (ld(loc|arg)(a), call) on vector types with (ld(loc|arg), ldobj, call) or
+				// (ldarg, ldobj, call) for ref arguments so that vector instance methods operate on values instead of pointers.
 
-								mci.Parameters[0] = ldthis;
-							}
-							else
-							{
-								Utilities.Assert(ldthis.Opcode == IROpCodes.Ldloc || ldthis.Opcode == IROpCodes.Ldarg,
-									"ldthis.Opcode == IROpCodes.Ldloc || ldthis.Opcode == IROpCodes.Ldarg");
+				MethodBase method = mci.IntrinsicMethod;
+				TreeInstruction ldthis = mci.Parameters[0];
+				StackTypeDescription thistype = ldthis.StackType;
 
-								// Insert an ldobj before the method call.
-								TreeInstruction ldobj = new TreeInstruction(IROpCodes.Ldobj);
-								ldobj.Operand = thistype.Dereference();
-								ldobj.Left = ldthis;
+				bool isDefiningTypeInstanceMethodCall = method.DeclaringType == ldthis.OperandAsVariable.ReflectionType;
+				bool canRemoveAddressOp = isDefiningTypeInstanceMethodCall && ldthis.OperandAsVariable != null &&
+				                          thistype.IsManagedPointer && thistype.Dereference().IsImmutableSingleRegisterType;
 
-								mci.Parameters[0] = ldobj;
-							}
-						}
-					});
+				if (!canRemoveAddressOp)
+					return;
+
+				if (ldthis.Opcode == IROpCodes.Ldloca || ldthis.Opcode == IROpCodes.Ldarga)
+				{
+					// Load value instead of address.
+					MethodVariable var = ldthis.OperandAsVariable;
+					if (ldthis.Opcode == IROpCodes.Ldloca)
+						ldthis = new TreeInstruction(IROpCodes.Ldloc);
+					else
+						ldthis = new TreeInstruction(IROpCodes.Ldarg);
+					ldthis.Operand = var;
+
+					mci.Parameters[0] = ldthis;
+				}
+				else
+				{
+					Utilities.Assert(ldthis.Opcode == IROpCodes.Ldloc || ldthis.Opcode == IROpCodes.Ldarg,
+					                 "ldthis.Opcode == IROpCodes.Ldloc || ldthis.Opcode == IROpCodes.Ldarg");
+
+					// Insert an ldobj before the method call.
+					TreeInstruction ldobj = new TreeInstruction(IROpCodes.Ldobj);
+					ldobj.Operand = thistype.Dereference();
+					ldobj.Left = ldthis;
+
+					mci.Parameters[0] = ldobj;
+				}
+			}
 		}
 
 		//TODO nameing
@@ -435,7 +484,7 @@ namespace CellDotNet
 			State = MethodCompileState.S4InstructionSelectionDone;
 		}
 
-		private void PerformInstructionOptimazation()
+		private void PerformInstructionOptimization()
 		{
 			List<SpuInstruction> jumpInsts = new List<SpuInstruction>();
 
@@ -443,7 +492,7 @@ namespace CellDotNet
 			Dictionary<SpuBasicBlock, List<SpuInstruction>> branchSources = new Dictionary<SpuBasicBlock, List<SpuInstruction>>();
 
 			// Maps to basic block number.
-			List<int> posibleRemoveableBranche = new List<int>();
+			List<int> possibleRemoveableBranche = new List<int>();
 
 
 			for (int i = 0; i < SpuBasicBlocks.Count; i++ )
@@ -454,31 +503,31 @@ namespace CellDotNet
 
 				while (inst != null)
 				{
-					if(inst.JumpTarget != null)
-					{
-						int target = SpuBasicBlocks.IndexOf(inst.JumpTarget);
-						// Looks for the firste non empty basic block
-						while (target < SpuBasicBlocks.Count && SpuBasicBlocks[target].Head == null)
-							target++;
+					if (inst.JumpTarget == null)
+						continue;
 
-						if (i < SpuBasicBlocks.Count)
-						{
-							SpuInstruction targetInst = SpuBasicBlocks[target].Head;
+					int target = SpuBasicBlocks.IndexOf(inst.JumpTarget);
+					// Looks for the firste non empty basic block
+					while (target < SpuBasicBlocks.Count && SpuBasicBlocks[target].Head == null)
+						target++;
 
-							if(targetInst.OpCode == SpuOpCode.br || targetInst.OpCode == SpuOpCode.ret)
-							{
-								posibleRemoveableBranche.Add(target);
+					if (i >= SpuBasicBlocks.Count)
+						continue;
 
-								if (targetInst.OpCode == SpuOpCode.ret)
-										targetInst.JumpTarget = _innerEpilog;
+					SpuInstruction targetInst = SpuBasicBlocks[target].Head;
 
-								if(!branchSourcesForConditionalBranch.ContainsKey(SpuBasicBlocks[target]))
-									branchSourcesForConditionalBranch[SpuBasicBlocks[target]] = new Set<SpuInstruction>();
+					if (targetInst.OpCode != SpuOpCode.br && targetInst.OpCode != SpuOpCode.ret)
+						continue;
 
-								branchSourcesForConditionalBranch[SpuBasicBlocks[target]].Add(inst);
-							}
-						}
-					}
+					possibleRemoveableBranche.Add(target);
+
+					if (targetInst.OpCode == SpuOpCode.ret)
+						targetInst.JumpTarget = _innerEpilog;
+
+					if(!branchSourcesForConditionalBranch.ContainsKey(SpuBasicBlocks[target]))
+						branchSourcesForConditionalBranch[SpuBasicBlocks[target]] = new Set<SpuInstruction>();
+
+					branchSourcesForConditionalBranch[SpuBasicBlocks[target]].Add(inst);
 				}
 			}
 
@@ -504,10 +553,10 @@ namespace CellDotNet
 				}
 			}
 
-			posibleRemoveableBranche.Sort();
-			posibleRemoveableBranche.Reverse();
+			possibleRemoveableBranche.Sort();
+			possibleRemoveableBranche.Reverse();
 
-			foreach (int i in posibleRemoveableBranche)
+			foreach (int i in possibleRemoveableBranche)
 				if(i + 1 < SpuBasicBlocks.Count && SpuBasicBlocks[i].Head.JumpTarget == SpuBasicBlocks[i+1])
 					SpuBasicBlocks.RemoveAt(i);
 		}

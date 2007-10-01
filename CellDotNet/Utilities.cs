@@ -102,6 +102,18 @@ namespace CellDotNet
 			return first;
 		}
 
+		public static List<T> FindAll<T>(IEnumerable<T> set, Predicate<T> pred)
+		{
+			List<T> l = new List<T>();
+			foreach (T t in set)
+			{
+				if (pred(t))
+					l.Add(t);
+			}
+
+			return l;
+		}
+
 		/// <summary>
 		/// You can use this one to make resharper think that a variable is used so that it won't
 		/// show a warning. Can be handy when the variable isn't used for anything but debugging, 

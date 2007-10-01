@@ -18,7 +18,8 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="intrinsic"></param>
 		/// <param name="method"></param>
-		public MethodCallInstruction(MethodBase method, SpuIntrinsicMethod intrinsic) : base(IROpCodes.IntrinsicMethod)
+		/// <param name="intrinsicCallOpCode"></param>
+		public MethodCallInstruction(MethodBase method, SpuIntrinsicMethod intrinsic, IROpCode intrinsicCallOpCode) : base(intrinsicCallOpCode)
 		{
 			Utilities.AssertArgument(intrinsic != SpuIntrinsicMethod.None, "intrinsic != SpuIntrinsicMethod.None");
 			Operand = intrinsic;

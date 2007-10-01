@@ -133,6 +133,8 @@ namespace CellDotNet
 		{
 			if (regnum < 0 || regnum > 127)
 				throw new ArgumentOutOfRangeException("regnum", regnum, "0 <= x <= 127");
+			if (regnum > 100)
+				throw new ApplicationException("regnum : " + regnum);
 
 			return GetHardwareRegister((CellRegister) regnum);
 		}
