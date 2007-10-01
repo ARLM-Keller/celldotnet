@@ -481,7 +481,18 @@ namespace CellDotNet
 		{
 			AssertState(CompileContextState.S2TreeConstructionDone - 1);
 
-			// Compile entry point and all any called methods.
+			// The types whose methods should only be executed on the ppe.
+			Set<Type> _ppeTypes = new Set<Type>();
+			foreach (ParameterInfo param in _entryPointMethod.GetParameters())
+			{
+				Type t = param.ParameterType;
+				if (t.IsPrimitive || t.IsValueType)
+					continue;
+
+				_ppeTypes.Add(t);
+			}
+
+			// Compile entry point and any called methods, except PPE class methods.
 			Dictionary<string, MethodBase> methodsToCompile = new Dictionary<string, MethodBase>();
 			Dictionary<string, MethodBase> allMethods = new Dictionary<string, MethodBase>();
 			Dictionary<string, List<TreeInstruction>> instructionsToPatch = new Dictionary<string, List<TreeInstruction>>();
