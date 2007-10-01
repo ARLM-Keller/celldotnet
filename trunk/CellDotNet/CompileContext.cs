@@ -156,7 +156,22 @@ namespace CellDotNet
 
 			// Start from the beginning and lay them out sequentially.
 			int lsOffset = 0;
-			foreach (ObjectWithAddress o in GetAllObjects())
+			List<ObjectWithAddress> all = GetAllObjects();
+
+			// This sort is only to make windows and mono assign the same addresses.
+			all.Sort(delegate(ObjectWithAddress x, ObjectWithAddress y)
+			         	{
+							// Make sure that the initializer goes first.
+							if (x is SpuInitializer && y is SpuInitializer)
+								return 0;
+							if (x is SpuInitializer)
+								return -1;
+							else if (y is SpuInitializer)
+								return 1;
+			         		return String.CompareOrdinal(x.Name, y.Name);
+			         	});
+
+			foreach (ObjectWithAddress o in all)
 			{
 				if (o is MethodCompiler)
 				{

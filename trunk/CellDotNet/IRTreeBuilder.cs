@@ -447,7 +447,8 @@ namespace CellDotNet
 			if (methodBase.IsDefined(typeof(IntrinsicMethodAttribute), false))
 			{
 				IntrinsicMethodAttribute methodAtt = (IntrinsicMethodAttribute) methodBase.GetCustomAttributes(typeof(IntrinsicMethodAttribute), false)[0];
-				mci = new MethodCallInstruction(methodBase, methodAtt.Intrinsic);
+				IROpCode oc = methodBase.IsConstructor ? IROpCodes.IntrinsicNewObj : IROpCodes.IntrinsicMethod;
+				mci = new MethodCallInstruction(methodBase, methodAtt.Intrinsic, oc);
 			}
 			else if (methodBase.IsDefined(typeof(SpuOpCodeAttribute), false))
 			{

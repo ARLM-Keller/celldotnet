@@ -186,59 +186,30 @@ namespace CellDotNet
 					break;
 				case IRCode.SpuInstructionMethodCall:
 					{
-						MethodCallInstruction callInst = (MethodCallInstruction)inst;
+						MethodCallInstruction callInst = (MethodCallInstruction) inst;
 						return IntrinsicsWriter.GenerateSpuInstructionMethod(_writer, callInst, childregs);
 					}
+				case IRCode.IntrinsicNewObj:
 				case IRCode.IntrinsicMethodCall:
 					{
-						MethodCallInstruction callInst = (MethodCallInstruction)inst;
-						return IntrinsicsWriter.GenerateIntrinsicMethod(_writer, (SpuIntrinsicMethod)callInst.Operand, childregs);
+						MethodCallInstruction callInst = (MethodCallInstruction) inst;
+						return IntrinsicsWriter.GenerateIntrinsicMethod(_writer, (SpuIntrinsicMethod) callInst.Operand, childregs);
+					}
+				case IRCode.Newobj:
+					{
+						Type cls = inst.OperandAsMethodCompiler.MethodBase.DeclaringType;
+						StackTypeDescription std = new TypeDeriver().GetStackTypeDescription(cls);
+						VirtualRegister sizereg = _writer.WriteLoadI4(std.ComplexType.QuadWordCount*16);
+						VirtualRegister mem = WriteAllocateMemory(sizereg);
+						WriteZeroMemory(mem, std.ComplexType.QuadWordCount);
+
+						childregs.Insert(0, mem);
+						WriteMethodCall((MethodCallInstruction) inst, childregs);
+
+						return mem;
 					}
 				case IRCode.Call:
-					{
-						MethodCallInstruction callInst = (MethodCallInstruction) inst;
-						SpuRoutine target = callInst.TargetRoutine;
-
-						MethodCompiler mc = callInst.TargetRoutine as MethodCompiler;
-						if (mc != null)
-						{
-							if (mc.MethodBase.IsConstructor)
-							{
-								if (mc.MethodBase == typeof(object).GetConstructor(Type.EmptyTypes))
-								{
-									// The System.Object ctor does nothing for us, so don't even bother calling it.
-									return null;
-								}
-								else if (mc.MethodBase.DeclaringType.IsValueType)
-								{
-									// Value type ctors are called like any other method.
-								}
-								else
-									throw new NotSupportedException("Base types other than Object are not supported.");
-							}
-						}
-						if (target.Parameters.Count > HardwareRegister.CallerSavesRegisters.Count)
-							throw new NotImplementedException("No support for more than " +
-							                                  HardwareRegister.CallerSavesRegisters.Count + "parameters.");
-
-						// Move parameters into hardware registers.
-						for (int i = 0; i < target.Parameters.Count; i++)
-							_writer.WriteMove(childregs[i], HardwareRegister.GetHardwareArgumentRegister(i));
-
-//						VirtualRegister r = _writer.WriteLoadAddress(target);
-
-						_writer.WriteBrsl(target);
-
-						if (inst.StackType != StackTypeDescription.None)
-						{
-//							VirtualRegister result = _writer.NextRegister();
-//							_writer.WriteMove(HardwareRegister.GetHardwareRegister(3), result);
-//							return result;
-							return HardwareRegister.GetHardwareRegister(CellRegister.REG_3);
-						}
-						else
-							return null;
-					}
+					return WriteMethodCall((MethodCallInstruction) inst, childregs);
 				case IRCode.Callvirt:
 					break;
 				case IRCode.Calli:
@@ -257,7 +228,7 @@ namespace CellDotNet
 					WriteConditionalBranch(SpuOpCode.brz, vrleft, (IRBasicBlock) inst.Operand);
 					return null;
 				case IRCode.Brtrue:
-					WriteConditionalBranch(SpuOpCode.brnz, vrleft, (IRBasicBlock)inst.Operand);
+					WriteConditionalBranch(SpuOpCode.brnz, vrleft, (IRBasicBlock) inst.Operand);
 					return null;
 				case IRCode.Beq:
 					// NOTE: Asumes left and right operand is compatible
@@ -267,11 +238,11 @@ namespace CellDotNet
 						case CliType.Int32:
 						case CliType.NativeInt:
 							VirtualRegister vr1 = _writer.WriteCeq(vrleft, vrright);
-							WriteConditionalBranch(SpuOpCode.brnz, vr1, (IRBasicBlock)inst.Operand);
+							WriteConditionalBranch(SpuOpCode.brnz, vr1, (IRBasicBlock) inst.Operand);
 							return null;
 						case CliType.Float32:
 							VirtualRegister vr2 = _writer.WriteFceq(vrleft, vrright);
-							WriteConditionalBranch(SpuOpCode.brnz, vr2, (IRBasicBlock)inst.Operand);
+							WriteConditionalBranch(SpuOpCode.brnz, vr2, (IRBasicBlock) inst.Operand);
 							return null;
 						case CliType.Int64:
 						case CliType.Float64:
@@ -297,7 +268,7 @@ namespace CellDotNet
 							case CliType.Float32:
 								vr = _writer.WriteFceq(vrright, vrleft);
 								_writer.WriteXori(vr, vr, 0xfffffff);
-								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
+								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Int64:
 							case CliType.Float64:
@@ -343,12 +314,12 @@ namespace CellDotNet
 							case CliType.NativeInt:
 								vr = _writer.WriteCgt(vrleft, vrright);
 								_writer.WriteXori(vr, vr, 0xfffffff);
-								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
+								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Float32:
 								vr = _writer.WriteFceq(vrleft, vrright);
 								_writer.WriteXori(vr, vr, 0xfffffff);
-								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
+								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Int64:
 							case CliType.Float64:
@@ -369,11 +340,11 @@ namespace CellDotNet
 							case CliType.Int32:
 							case CliType.NativeInt:
 								vr = _writer.WriteCgt(vrright, vrleft);
-								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
+								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Float32:
 								vr = _writer.WriteFceq(vrright, vrleft);
-								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
+								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Int64:
 							case CliType.Float64:
@@ -394,12 +365,12 @@ namespace CellDotNet
 							case CliType.NativeInt:
 								vr = _writer.WriteCeq(vrleft, vrright);
 								_writer.WriteXori(vr, vr, 0xfffffff);
-								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
+								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Float32:
 								vr = _writer.WriteFceq(vrleft, vrright);
 								_writer.WriteXori(vr, vr, 0xfffffff);
-								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
+								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Int64:
 							case CliType.Float64:
@@ -421,12 +392,12 @@ namespace CellDotNet
 							case CliType.NativeInt:
 								vr = _writer.WriteClgt(vrright, vrleft);
 								_writer.WriteXori(vr, vr, 0xfffffff);
-								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
+								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Float32:
 								vr = _writer.WriteFceq(vrright, vrleft);
 								_writer.WriteXori(vr, vr, 0xfffffff);
-								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
+								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Int64:
 							case CliType.Float64:
@@ -446,11 +417,11 @@ namespace CellDotNet
 							case CliType.Int32:
 							case CliType.NativeInt:
 								vr = _writer.WriteClgt(vrleft, vrright);
-								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
+								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Float32:
 								vr = _writer.WriteFceq(vrleft, vrright);
-								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
+								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Int64:
 							case CliType.Float64:
@@ -472,12 +443,12 @@ namespace CellDotNet
 							case CliType.NativeInt:
 								vr = _writer.WriteClgt(vrleft, vrright);
 								_writer.WriteXori(vr, vr, 0xfffffff);
-								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
+								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Float32:
 								vr = _writer.WriteFceq(vrleft, vrright);
 								_writer.WriteXori(vr, vr, 0xfffffff);
-								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
+								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Int64:
 							case CliType.Float64:
@@ -498,11 +469,11 @@ namespace CellDotNet
 							case CliType.Int32:
 							case CliType.NativeInt:
 								vr = _writer.WriteClgt(vrright, vrleft);
-								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
+								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Float32:
 								vr = _writer.WriteFceq(vrright, vrleft);
-								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
+								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Int64:
 							case CliType.Float64:
@@ -597,7 +568,7 @@ namespace CellDotNet
 							_writer.WriteA(rt, rt, t3);
 							return rt;
 						case CliType.Float32:
-							return  _writer.WriteFm(vrleft, vrright);
+							return _writer.WriteFm(vrleft, vrright);
 					}
 					break;
 				case IRCode.Div:
@@ -726,16 +697,6 @@ namespace CellDotNet
 					break;
 				case IRCode.Ldstr:
 					break;
-				case IRCode.Newobj:
-					{
-						Type cls = inst.OperandAsMethodCompiler.MethodBase.DeclaringType;
-						StackTypeDescription std = new TypeDeriver().GetStackTypeDescription(cls);
-						VirtualRegister sizereg = _writer.WriteLoadI4(std.ComplexType.QuadWordCount * 16);
-						VirtualRegister mem = WriteAllocateMemory(sizereg);
-
-						WriteZeroMemory(mem, std.ComplexType.QuadWordCount);
-						return mem;
-					}
 				case IRCode.Castclass:
 					break;
 				case IRCode.Isinst:
@@ -828,7 +789,7 @@ namespace CellDotNet
 					{
 						StackTypeDescription elementtype = (StackTypeDescription) inst.Operand;
 						VirtualRegister elementcount = vrleft;
-						
+
 
 						// Determine byte size.
 						int elementByteSize = elementtype.GetSizeWithPadding();
@@ -1027,7 +988,7 @@ namespace CellDotNet
 					break;
 				case IRCode.Ldarg:
 					{
-						MethodVariable var = ((MethodVariable)inst.Operand);
+						MethodVariable var = ((MethodVariable) inst.Operand);
 						if (var.Escapes != null && var.Escapes.Value)
 						{
 							_writer.WriteLqd(var.VirtualRegister, HardwareRegister.SP, var.StackLocation);
@@ -1040,11 +1001,11 @@ namespace CellDotNet
 					}
 				case IRCode.Ldarga:
 					{
-						MethodVariable var = ((MethodVariable)inst.Operand);
+						MethodVariable var = ((MethodVariable) inst.Operand);
 						if (var.Escapes != null && var.Escapes.Value)
 						{
-							Utilities.Assert(var.StackLocation * 4 < 32*1024, "Immediated overflow");
-							VirtualRegister r = _writer.WriteIl(var.StackLocation * 16);
+							Utilities.Assert(var.StackLocation*4 < 32*1024, "Immediated overflow");
+							VirtualRegister r = _writer.WriteIl(var.StackLocation*16);
 							_writer.WriteA(r, HardwareRegister.SP, r);
 							return r;
 						}
@@ -1053,7 +1014,7 @@ namespace CellDotNet
 					}
 				case IRCode.Starg:
 					{
-						MethodVariable var = ((MethodVariable)inst.Operand);
+						MethodVariable var = ((MethodVariable) inst.Operand);
 						if (var.Escapes != null && var.Escapes.Value)
 							_writer.WriteStqd(vrleft, HardwareRegister.SP, var.StackLocation);
 						else
@@ -1078,10 +1039,10 @@ namespace CellDotNet
 						if (var.Escapes != null && var.Escapes.Value)
 						{
 							// This is a sanity check for stack overflow.
-							Utilities.Assert(var.StackLocation * 4 < 32 * 1024, "Immediated overflow");
+							Utilities.Assert(var.StackLocation*4 < 32*1024, "Immediated overflow");
 //							VirtualRegister r = _writer.WriteIl(var.StackLocation * 16);
 //							_writer.WriteA(r, HardwareRegister.SP, r);
-							VirtualRegister r = _writer.WriteAi(HardwareRegister.SP, var.StackLocation * 16);
+							VirtualRegister r = _writer.WriteAi(HardwareRegister.SP, var.StackLocation*16);
 							return r;
 						}
 						else
@@ -1125,6 +1086,35 @@ namespace CellDotNet
 
 			_unimplementedOpCodes.Add(inst.Opcode);
 			return new VirtualRegister(-1);
+		}
+
+		private VirtualRegister WriteMethodCall(MethodCallInstruction callInst, List<VirtualRegister> childregs)
+		{
+			SpuRoutine target = callInst.TargetRoutine;
+
+			MethodCompiler mc = callInst.TargetRoutine as MethodCompiler;
+			if (mc != null)
+			{
+				if (mc.MethodBase.IsConstructor && mc.MethodBase == typeof (object).GetConstructor(Type.EmptyTypes))
+				{
+					// The System.Object ctor does nothing for us, so don't even bother calling it.
+					return null;
+				}
+			}
+			if (target.Parameters.Count > HardwareRegister.CallerSavesRegisters.Count)
+				throw new NotImplementedException("No support for more than " +
+				                                  HardwareRegister.CallerSavesRegisters.Count + "parameters.");
+
+			// Move parameters into hardware registers.
+			for (int i = 0; i < target.Parameters.Count; i++)
+				_writer.WriteMove(childregs[i], HardwareRegister.GetHardwareArgumentRegister(i));
+
+			_writer.WriteBrsl(target);
+
+			if (callInst.StackType != StackTypeDescription.None)
+				return HardwareRegister.GetHardwareRegister(CellRegister.REG_3);
+			else
+				return null;
 		}
 
 		private VirtualRegister WriteAllocateMemory(VirtualRegister bytesize)
@@ -1394,7 +1384,22 @@ namespace CellDotNet
 						return childregs[0];
 					case SpuIntrinsicMethod.CombineFourWords:
 						{
-							throw new NotImplementedException();
+							// Could probably save some instructions here...
+							VirtualRegister w0 = childregs[0];
+							VirtualRegister w1 = writer.WriteRotqbyi(childregs[1], 12);
+							VirtualRegister w2 = writer.WriteRotqbyi(childregs[2], 8);
+							VirtualRegister w3 = writer.WriteRotqbyi(childregs[3], 4);
+
+							VirtualRegister merge0_1_mask = writer.WriteFsmbi(0x0f00);
+							VirtualRegister v0_1 = writer.WriteSelb(w0, w1, merge0_1_mask);
+
+							VirtualRegister merge01_2_mask = writer.WriteFsmbi(0x00f0);
+							VirtualRegister v01_2 = writer.WriteSelb(v0_1, w2, merge01_2_mask);
+
+							VirtualRegister merge012_3_mask = writer.WriteFsmbi(0x000f);
+							VirtualRegister v012_3 = writer.WriteSelb(v01_2, w3, merge012_3_mask);
+
+							return v012_3;
 						}
 					default:
 						throw new ArgumentException();

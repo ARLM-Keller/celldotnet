@@ -194,6 +194,7 @@ namespace CellDotNet
 
 		// Custom opcodes.
 		IntrinsicMethodCall,
+		IntrinsicNewObj,
 		SpuInstructionMethodCall
 	}
 }

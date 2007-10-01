@@ -508,6 +508,10 @@ namespace CellDotNet
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
+			new TreeDrawer().DrawMethod(cc.EntryPointAsMetodCompiler);
+//			Disassembler.DisassembleToConsole(cc);
+//			cc.WriteAssemblyToFile("ctor.s");
+
 			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(cc));
 		}
 	}
