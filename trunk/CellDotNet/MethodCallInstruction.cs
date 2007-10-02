@@ -94,6 +94,14 @@ namespace CellDotNet
 		{
 			Parameters[childIndex] = newchild;
 		}
+
+		public void SetCalledMethod(SpuRoutine routine, IROpCode callOpCode)
+		{
+			Utilities.AssertArgumentNotNull(routine, "routine");
+
+			Operand = routine;
+			Opcode = callOpCode;
+		}
 	}
 
 	/// <summary>

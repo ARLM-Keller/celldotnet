@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Reflection;
 
 namespace CellDotNet
@@ -49,16 +48,6 @@ namespace CellDotNet
 		public override int Size
 		{
 			get { throw new InvalidOperationException(); }
-		}
-
-		public override ReadOnlyCollection<MethodParameter> Parameters
-		{
-			get { return _parameters; }
-		}
-
-		public override StackTypeDescription ReturnType
-		{
-			get { return _returnType; }
 		}
 	}
 }

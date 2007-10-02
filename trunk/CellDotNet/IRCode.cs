@@ -193,8 +193,9 @@ namespace CellDotNet
 		// End of generated opcodes.
 
 		// Custom opcodes.
-		IntrinsicMethodCall,
+		IntrinsicCall,
 		IntrinsicNewObj,
-		SpuInstructionMethodCall
+		SpuInstructionMethodCall,
+		PpeCall
 	}
 }

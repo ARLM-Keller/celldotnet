@@ -63,7 +63,7 @@ namespace CellDotNet
 
 		internal ICollection<MethodCompiler> Methods
 		{
-			get { return _methodDict.Values; }
+			get { return _methods.GetMethodCompilers(); }
 		}
 
 		public CompileContext(MethodBase entryPoint)
@@ -475,6 +475,43 @@ namespace CellDotNet
 		}
 
 		/// <summary>
+		/// Tracks the methods which need to be compiled and also external methods like <see cref="LibraryMethod"/> and
+		/// <see cref="PpeMethod"/>.
+		/// </summary>
+		class MethodSet
+		{
+			private Dictionary<string, MethodCompiler> _methodcompilers;
+
+
+			public MethodSet()
+			{
+				_methodcompilers = new Dictionary<string, MethodCompiler>();
+			}
+
+			public void Add(string key, MethodCompiler mc)
+			{
+				_methodcompilers.Add(key, mc);
+			}
+
+			public bool TryGetValue(string methodkey, out SpuRoutine routine)
+			{
+				MethodCompiler mc;
+				if (_methodcompilers.TryGetValue(methodkey, out mc))
+				{
+					routine = mc;
+					return true;
+				}
+				routine = null;
+				return false;
+			}
+
+			public ICollection<MethodCompiler> GetMethodCompilers()
+			{
+				return _methodcompilers.Values;
+			}
+		}
+
+		/// <summary>
 		/// Finds and build MethodCompilers for the methods that are transitively referenced from the entry method.
 		/// </summary>
 		private void PerformRecursiveMethodTreesConstruction()
@@ -494,7 +531,6 @@ namespace CellDotNet
 
 			// Compile entry point and any called methods, except PPE class methods.
 			Dictionary<string, MethodBase> methodsToCompile = new Dictionary<string, MethodBase>();
-			Dictionary<string, MethodBase> allMethods = new Dictionary<string, MethodBase>();
 			Dictionary<string, List<TreeInstruction>> instructionsToPatch = new Dictionary<string, List<TreeInstruction>>();
 			methodsToCompile.Add(CreateMethodRefKey(_entryPointMethod), _entryPointMethod);
 
@@ -506,10 +542,13 @@ namespace CellDotNet
 				string methodkey = Utilities.GetFirst(methodsToCompile.Keys);
 				MethodBase method = methodsToCompile[methodkey];
 				methodsToCompile.Remove(methodkey);
-				allMethods.Add(methodkey, method);
 
 				SpuRoutine routine;
-				if (method.IsDefined(typeof (DllImportAttribute), false))
+				if (DetectPpeType(_ppeTypes, method.DeclaringType))
+				{
+					routine = new PpeMethod((MethodInfo) method);
+				}
+				else if (method.IsDefined(typeof(DllImportAttribute), false))
 				{
 					routine = LibMan.GetMethod((MethodInfo) method);
 				}
@@ -524,7 +563,9 @@ namespace CellDotNet
 				if (instructionsToPatch.TryGetValue(thismethodkey, out patchlist))
 				{
 					foreach (TreeInstruction inst in patchlist)
-						inst.Operand = routine;
+					{
+						SetCalledRoutine((MethodCallInstruction) inst, routine);
+					}
 				}
 
 				if (isfirst)
@@ -536,7 +577,64 @@ namespace CellDotNet
 
 			State = CompileContextState.S2TreeConstructionDone;
 		}
-		
+
+		/// <summary>
+		/// Replaces the operand method of <paramref name="inst"/> with <paramref name="calledRoutine"/>
+		/// and possible changes the call opcode according to the type of routine (<see cref="IROpCodes.PpeCall"/>).
+		/// </summary>
+		/// <param name="inst"></param>
+		/// <param name="calledRoutine"></param>
+		private void SetCalledRoutine(MethodCallInstruction inst, SpuRoutine calledRoutine)
+		{
+			IROpCode callopcode;
+			if (calledRoutine is PpeMethod)
+				callopcode = IROpCodes.PpeCall;
+			else
+				callopcode = inst.Opcode;
+
+			inst.SetCalledMethod(calledRoutine, callopcode);
+		}
+
+		/// <summary>
+		/// Determines if any base type (except Object) is a known ppe type.
+		/// </summary>
+		/// <param name="currentlyKnownPpeTypes"></param>
+		/// <param name="type"></param>
+		/// <returns></returns>
+		private bool DetectPpeType(Set<Type> currentlyKnownPpeTypes, Type type)
+		{
+			if (type.IsValueType)
+				return false;
+
+			Type tester = type;
+			bool isppe = false;
+			while (tester != null && tester != typeof(object))
+			{
+				if (currentlyKnownPpeTypes.Contains(tester))
+				{
+					isppe = true;
+					break;
+				}
+
+				tester = tester.BaseType;
+			}
+
+			if (isppe)
+			{
+				Type tmp = type;
+				while (tmp != null && tmp != typeof(object))
+				{
+					currentlyKnownPpeTypes.Add(tmp);
+					tmp = tester.BaseType;
+				}
+				return true;
+			}
+
+			return false;
+		}
+
+		MethodSet _methods = new MethodSet();
+
 		/// <summary>
 		/// Creates a <see cref="MethodCompiler"/> from <paramref name="method"/> while 
 		/// updating <paramref name="instructionsToPatch"/> and <paramref name="methodsToCompile"/>.
@@ -554,23 +652,27 @@ namespace CellDotNet
 		{
 			MethodCompiler mc = new MethodCompiler(method);
 			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
-			_methodDict.Add(methodKey, mc);
+
+			_methods.Add(methodKey, mc);
 
 			// Find referenced methods.
 			mc.ForeachTreeInstruction(
 				delegate(TreeInstruction inst)
 					{
-						MethodBase mr = SystemLibMap.GetUseableMethodBase(inst.OperandAsMethod);
-						if (mr == null)
+						MethodCallInstruction mci = inst as MethodCallInstruction;
+						if (mci == null)
 							return;
 
-						string methodkey = CreateMethodRefKey(mr);
-						MethodCompiler calledMethod;
-						if (_methodDict.TryGetValue(methodkey, out calledMethod))
+						MethodBase mb = SystemLibMap.GetUseableMethodBase(inst.OperandAsMethod);
+						if (mb == null)
+							return;
+
+						string methodkey = CreateMethodRefKey(mb);
+						SpuRoutine calledRoutine;
+						if (_methods.TryGetValue(methodkey, out calledRoutine))
 						{
 							// We encountered the method before, so just use it.
-							inst.Operand = calledMethod;
-							return;
+							SetCalledRoutine(mci, calledRoutine);
 						}
 						else
 						{
@@ -578,7 +680,7 @@ namespace CellDotNet
 							// make a note that we need to compile it and remember
 							// that this instruction must be patched with a MethodCompiler
 							// once it is created.
-							methodsToCompile[methodkey] = mr;
+							methodsToCompile[methodkey] = mb;
 							List<TreeInstruction> patchlist;
 							if (!instructionsToPatch.TryGetValue(methodkey, out patchlist))
 							{
@@ -589,6 +691,7 @@ namespace CellDotNet
 							patchlist.Add(inst);
 						}
 					});
+
 			return mc;
 		}
 

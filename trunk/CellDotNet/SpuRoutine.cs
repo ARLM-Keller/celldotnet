@@ -7,8 +7,9 @@ namespace CellDotNet
 {
 	abstract class SpuRoutine : ObjectWithAddress
 	{
-		protected StackTypeDescription _returnType;
-		protected ReadOnlyCollection<MethodParameter> _parameters;
+		private bool hasSignature;
+		private StackTypeDescription _returnType;
+		private ReadOnlyCollection<MethodParameter> _parameters;
 
 		protected SpuRoutine()
 		{
@@ -23,6 +24,7 @@ namespace CellDotNet
 		{
 			if (signature != null)
 			{
+				hasSignature = true;
 				TypeDeriver td = new TypeDeriver();
 				_returnType = td.GetStackTypeDescription(signature.ReturnType);
 				List<MethodParameter> plist = new List<MethodParameter>();
@@ -38,7 +40,7 @@ namespace CellDotNet
 		{
 			get
 			{
-				if (_parameters != null)
+				if (hasSignature)
 					return _parameters;
 				throw new InvalidOperationException();
 			}
@@ -47,7 +49,7 @@ namespace CellDotNet
 		{
 			get
 			{
-				if (_returnType != null)
+				if (hasSignature)
 					return _returnType;
 				throw new InvalidOperationException();
 			}
