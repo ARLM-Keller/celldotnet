@@ -26,7 +26,6 @@ namespace CellDotNet
 	public class CompileContext
 	{
 		private SpuRoutine _entryPoint;
-		private Dictionary<string, MethodCompiler> _methodDict = new Dictionary<string, MethodCompiler>();
 		private SpecialSpeObjects _specialSpeObjects;
 
 		private int _totalCodeSize = -1;
@@ -783,7 +782,7 @@ namespace CellDotNet
 
 			int[] code;
 			if (arguments != null && arguments.Length != 0)
-				code = GetEmittedCode(arguments);
+				code = GetEmittedCode(arguments, null);
 			else
 				code = GetEmittedCode();
 
@@ -953,53 +952,6 @@ main:
 
 		#endregion
 
-		private int[] GetArgumentsImage(object[] arguments)
-		{
-			if (EntryPoint.Parameters.Count != arguments.Length)
-				throw new ArgumentException(string.Format("Invalid number of arguments in array; expected {0}, got {1}.",
-				                                          EntryPoint.Parameters.Count, arguments.Length));
-			Utilities.Assert(ArgumentArea.Size == arguments.Length * 16, "cc.ArgumentArea.Size == arguments.Length * 16");
-
-			int[] argbuf = new int[arguments.Length * 4];
-			for (int i = 0; i < EntryPoint.Parameters.Count; i++)
-			{
-				object val = arguments[i];
-				byte[] buf;
-
-				if (val is int)
-					buf = BitConverter.GetBytes((int)val);
-				else if (val is long)
-					buf = BitConverter.GetBytes((long)val);
-				else if (val is float)
-					buf = BitConverter.GetBytes((float)val);
-				else if (val is double)
-					buf = BitConverter.GetBytes((double)val);
-				else if (val is Int32Vector || val is Float32Vector)
-				{
-					// TODO Ought to pin buf.
-					buf = new byte[16];
-					IntPtr ptr = Marshal.UnsafeAddrOfPinnedArrayElement(buf, 0);
-					Marshal.StructureToPtr(val, ptr, false);
-				}
-				else if (val is MainStorageArea)
-				{
-					uint ea = MainStorageArea.GetEffectiveAddress((MainStorageArea)val);
-					if (!Utilities.IsQuadwordAligned((int)ea))
-						throw new ArgumentException("A MainStorageAddress passed as an argument is not quadword-aligned.");
-					buf = BitConverter.GetBytes(ea);
-				}
-				else if (val is IntPtr)
-					buf = BitConverter.GetBytes((int) (IntPtr) val);
-				else
-					throw new ArgumentException("Unsupported argument datatype: " + val.GetType().Name);
-
-				Utilities.Assert(buf.Length <= 16, "buf.Length <= 16");
-
-				Buffer.BlockCopy(buf, 0, argbuf, i*16, buf.Length);
-			}
-
-			return argbuf;
-		}
 
 		public int[] GetEmittedCode()
 		{
@@ -1014,11 +966,27 @@ main:
 			return copy;
 		}
 
-		public int[] GetEmittedCode(params object[] arguments)
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="arguments"></param>
+		/// <param name="marshaler">The marshaler which is to be used. Null is ok.</param>
+		/// <returns></returns>
+		internal int[] GetEmittedCode(object[] arguments, Marshaler marshaler)
 		{
+			if (EntryPoint.Parameters.Count != arguments.Length)
+				throw new ArgumentException(string.Format("Invalid number of arguments in array; expected {0}, got {1}.",
+														  EntryPoint.Parameters.Count, arguments.Length));
+			Utilities.Assert(ArgumentArea.Size == arguments.Length * 16, "cc.ArgumentArea.Size == arguments.Length * 16");
+
+			if (marshaler == null)
+				marshaler = new Marshaler();
+			byte[] argmem = marshaler.GetArgumentsImage(arguments);
+			if (argmem.Length != ArgumentArea.Size)
+				throw new NotSupportedException("Argument buffer is not the same size as argument area. Entry point arguments can only take up one quadword each.");
+
 			int[] code = GetEmittedCode();
-			int[] argumentImage = GetArgumentsImage(arguments);
-			Utilities.CopyCode(argumentImage, 0, code, ArgumentArea.Offset / 4, argumentImage.Length);
+			Buffer.BlockCopy(argmem, 0, code, ArgumentArea.Offset, argmem.Length);
 
 			return code;
 		}

@@ -12,7 +12,7 @@ namespace CellDotNet
 		public void TestSimpleTypes()
 		{
 			object[] arr = new object[] { 1, 3f, 4d, (short)5 };
-			byte[] buf = new Marshaler().GetArguments(arr);
+			byte[] buf = new Marshaler().GetArgumentsImage(arr);
 
 			AreEqual(arr.Length * 16, buf.Length);
 			object[] arr2 = new Marshaler().GetValues(buf, new Type[] { typeof(int), typeof(float), typeof(double), typeof(short) });
@@ -23,7 +23,7 @@ namespace CellDotNet
 		public void TestVectorTypes()
 		{
 			object[] arr = new object[] { new Int32Vector(1, 2, 3, 4), new Float32Vector(1, 2, 3, 4) };
-			byte[] buf = new Marshaler().GetArguments(arr);
+			byte[] buf = new Marshaler().GetArgumentsImage(arr);
 
 			AreEqual(arr.Length * 16, buf.Length);
 			object[] arr2 = new Marshaler().GetValues(buf, new Type[] { typeof(Int32Vector), typeof(Float32Vector) });
@@ -34,7 +34,7 @@ namespace CellDotNet
 		public void TestOtherStructs()
 		{
 			object[] arr = new object[] { new MainStorageArea((IntPtr) 0x12323525), (IntPtr) 0x34985221 };
-			byte[] buf = new Marshaler().GetArguments(arr);
+			byte[] buf = new Marshaler().GetArgumentsImage(arr);
 
 			AreEqual(arr.Length * 16, buf.Length);
 			object[] arr2 = new Marshaler().GetValues(buf, new Type[] { typeof(MainStorageArea), typeof(IntPtr) });
@@ -69,7 +69,7 @@ namespace CellDotNet
 		public void TestBigStruct()
 		{
 			object[] arr = new object[] { new TestBigStruct_Struct(1, 2, 0x34985221, 4, 5, 6, 7, 8), 0x34985221 };
-			byte[] buf = new Marshaler().GetArguments(arr);
+			byte[] buf = new Marshaler().GetArgumentsImage(arr);
 
 			IsTrue(arr.Length * 16 <= buf.Length);
 			object[] arr2 = new Marshaler().GetValues(buf, new Type[] { typeof(TestBigStruct_Struct), typeof(int) });
@@ -89,7 +89,7 @@ namespace CellDotNet
 		{
 			object[] arr = new object[] { new MyRefType1(), new MyRefType2() };
 			Marshaler m = new Marshaler();
-			byte[] buf = m.GetArguments(arr);
+			byte[] buf = m.GetArgumentsImage(arr);
 
 			AreEqual(32, buf.Length);
 			object[] arr2 = m.GetValues(buf, new Type[] { typeof(MyRefType1), typeof(MyRefType2) });

@@ -18,14 +18,7 @@ namespace CellDotNet
 			SimpleDelegateReturn del1 = delegate() { return SpuMath.Max(4, 99); };
 
 			CompileContext cc = new CompileContext(del1.Method);
-
-			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
-
-			new TreeDrawer().DrawMethods(cc);
-
-			Disassembler.DisassembleToConsole(cc);
 
 			int[] code = cc.GetEmittedCode();
 
@@ -573,13 +566,7 @@ namespace CellDotNet
 
 
 			CompileContext cc = new CompileContext(del1.Method);
-
-			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
-			Disassembler.DisassembleUnconditionalToConsole(cc);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
-
-//			cc.WriteAssemblyToFile(Utilities.GetUnitTestName()+"_asm.s");
 
 			int[] code = cc.GetEmittedCode();
 
@@ -676,7 +663,7 @@ namespace CellDotNet
 				var.VirtualRegister = new VirtualRegister();
 			}
 
-			new TreeDrawer().DrawMethod(basicBlocks);
+//			new TreeDrawer().DrawMethod(basicBlocks);
 
 			RecursiveInstructionSelector sel = new RecursiveInstructionSelector();
 

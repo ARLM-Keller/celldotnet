@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace CellDotNet
 {
-	struct LocalStorageAddress
+	struct LocalStorageAddress : IFormattable
 	{
 		public LocalStorageAddress(int value)
 		{
@@ -21,6 +21,11 @@ namespace CellDotNet
 			return new LocalStorageAddress(addr);
 		}
 
+		public static explicit operator LocalStorageAddress(uint addr)
+		{
+			return new LocalStorageAddress((int) addr);
+		}
+
 		public static LocalStorageAddress operator+(LocalStorageAddress baseAddr, int bytes)
 		{
 			return new LocalStorageAddress(baseAddr._value + bytes);
@@ -30,5 +35,14 @@ namespace CellDotNet
 		{
 			return new LocalStorageAddress(baseAddr._value % divisor);
 		}
+
+		#region IFormattable Members
+
+		public string ToString(string format, IFormatProvider formatProvider)
+		{
+			return Value.ToString(format, formatProvider);
+		}
+
+		#endregion
 	}
 }
