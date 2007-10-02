@@ -70,26 +70,6 @@ namespace CellDotNet
 		private const uint SPE_TAG_ANY = 2;
 		private const uint SPE_TAG_IMMEDIATE = 3;
 
-/*
-		class SpeHandle : SafeHandle
-		{
-			public SpeHandle() : base(IntPtr.Zero, true)
-			{
-				// Nothing.
-			}
-
-			protected override bool ReleaseHandle()
-			{
-				return UnsafeNativeMethods.spe_context_destroy(this) == 0;
-			}
-
-			public override bool IsInvalid
-			{
-				get { return handle == IntPtr.Zero; }
-			}
-		}
-//		private SpeHandle _handle;
-*/
 		static object s_lock = new object();
 
 		private static bool? s_hasSpeHardware;
@@ -196,7 +176,7 @@ namespace CellDotNet
 
 		public void LoadProgram(int[] code)
 		{
-			AssertContext();
+			AssertHasNativeContext();
 
 			IntPtr dataBufMain = IntPtr.Zero;
 			Utilities.AssertArgumentNotNull(code, "code");
@@ -369,13 +349,13 @@ namespace CellDotNet
 
 				spe_mfcio_put(0, dataBuf, sixteenK, DMA_tag, 0, 0);
 
-				Console.WriteLine("Waiting for DMA to finish.");
+//				Console.WriteLine("Waiting for DMA to finish.");
 
 				// TODO mask skal sættes til noget fornuftigt
 				uint tag_status = 0;
 				int waitresult = UnsafeNativeMethods.spe_mfcio_tag_status_read(_handle, 0, SPE_TAG_ANY, ref tag_status);
 
-				Console.WriteLine("DMA done.");
+//				Console.WriteLine("DMA done.");
 
 				if (waitresult != 0)
 					throw new LibSpeException("spe_mfcio_tag_status_read failed.");
@@ -386,14 +366,14 @@ namespace CellDotNet
 			}
 			finally
 			{
-				if(dataBufMain != IntPtr.Zero)
+				if (dataBufMain != IntPtr.Zero)
 					Marshal.FreeHGlobal(dataBufMain);
 			}
 		}
 
 		public void Run()
 		{
-			AssertContext();
+			AssertHasNativeContext();
 
 			uint entry = 0;
 			SpeStopInfo stopinfo = new SpeStopInfo();
@@ -426,7 +406,7 @@ namespace CellDotNet
 				default:
 					throw new SpeExecutionException(
 						string.Format("An error occurred during execution. The error code is: {0} (0x{1:x}).", 
-						stopinfo.SignalCode, (int) stopinfo.SignalCode));
+						stopinfo.SignalCode, stopinfo.SignalCode));
 			}
 		}
 
@@ -434,7 +414,7 @@ namespace CellDotNet
 		{
 			SpuStopCode stopcode;
 			if (rc < 0)
-				throw new LibSpeException("spe_context_run failed. Return code:" + rc);
+				throw new LibSpeException("spe_context_run failed. Return code: " + rc);
 			else if (rc == 0)
 			{
 				// May be system error; details are in the stop info.
@@ -525,7 +505,7 @@ namespace CellDotNet
 		/// <param name="rid"></param>
 		private void spe_mfcio_get(int lsa, IntPtr ea, int size, uint tag, uint tid, uint rid)
 		{
-			AssertContext();
+			AssertHasNativeContext();
 
 			// Seems like 16 bytes is the smallest transfer unit that works...
 			if ((size <= 0) || !Utilities.IsQuadwordMultiplum(size))
@@ -542,7 +522,7 @@ namespace CellDotNet
 				throw new LibSpeException("spe_mfcio_get failed.");
 		}
 
-		private void AssertContext()
+		private void AssertHasNativeContext()
 		{
 			if (_handle == IntPtr.Zero)
 				throw new InvalidOperationException("No context.");
@@ -559,7 +539,7 @@ namespace CellDotNet
 		/// <param name="rid"></param>
 		private void spe_mfcio_put(int lsa, IntPtr ea, int size, uint tag, uint tid, uint rid)
 		{
-			AssertContext();
+			AssertHasNativeContext();
 
 			// Seems like 16 bytes is the smallest transfer unit that works...
 			if ((size <= 0) || !Utilities.IsQuadwordMultiplum(size))
@@ -620,10 +600,6 @@ namespace CellDotNet
 			int segmentStartIndex = (int) (alignedAddress - arrayStartAddress) / elementSize;
 			ArraySegment<T> segment = new ArraySegment<T>(arr, segmentStartIndex, count);
 
-//			Console.WriteLine("Array base addr     : {0:x} {1}", arrayStartAddress, arrayStartAddress); //DEBUG
-//			Console.WriteLine("Array align addr    : {0:x} {1}", alignedAddress, alignedAddress); //DEBUG
-//			Console.WriteLine("Array segment index : {0}", segmentStartIndex); //DEBUG
-
 			return new AlignedMemory<T>(gchandle, segment);
 		}
 
@@ -641,23 +617,18 @@ namespace CellDotNet
 		static class UnsafeNativeMethods
 		{
 			[DllImport("libspe2")]
-//		private static extern SpeHandle spe_context_create(uint flags, IntPtr gang);
 			public static extern IntPtr spe_context_create(SpeContextCreateFlags flags, IntPtr gang);
 
 			[DllImport("libspe2")]
-//		private static extern int spe_context_destroy(SpeHandle handle);
 			public static extern int spe_context_destroy(IntPtr handle);
 
 			[DllImport("libspe2")]
-//		private static extern IntPtr spe_ls_area_get(SpeHandle spe);
 			public static extern IntPtr spe_ls_area_get(IntPtr spe);
 
 			[DllImport("libspe2")]
 			public static extern int spe_ls_size_get(IntPtr spe);
 
 			[DllImport("libspe2")]
-//		private static extern int spe_context_run(SpeHandle spe, uint* entry, uint runflags, IntPtr argp, IntPtr envp,
-//		                                          IntPtr stopinfo);
 			public static extern int spe_context_run(IntPtr spe, ref uint entry, uint runflags, IntPtr argp, IntPtr envp,
 			                                          ref SpeStopInfo stopinfo);
 
@@ -1021,25 +992,21 @@ namespace CellDotNet
 	[StructLayout(LayoutKind.Explicit)]
 	struct SpeControlArea
 	{
-//			uint reserved_0_3; 
+
 		[FieldOffset(4)]
 		public uint SPU_Out_Mbox;
-//			uint __reserved_8_B; 
+
 		[FieldOffset(0xc)]
 		public uint SPU_In_Mbox;
-//		uint __reserved_10_13;
+
 		[FieldOffset(0x14)]
 		public uint SPU_Mbox_Stat;
-//			uint __reserved_18_1B; 
+
 		[FieldOffset(0x1c)]
 		public uint SPU_RunCntl;
-//			uint __reserved_20_23; 
+
 		[FieldOffset(0x24)]
 		public SpuStatusRegister SPU_Status;
-//		uint SPU_Status;
-//			uint __reserved_28_33_1;
-//			uint __reserved_28_33_2;
-//			uint __reserved_28_33_3; 
 
 		/// <summary>
 		/// SPU Next Program Counter Register.
