@@ -11,6 +11,7 @@ namespace CellDotNet
 	public class SimpleProgramsTest : UnitTest
 	{
 		private delegate int IntReturnDelegate();
+
 		private delegate float FloatReturnDelegate();
 
 		[Test]
@@ -52,13 +53,13 @@ namespace CellDotNet
 		{
 			FloatReturnDelegate del =
 				delegate
-				{
-					const int count = 5;
-					float sum = 0;
-					for (int i = 0; i < count; i++)
-						sum += (float) i * (float) i;
-					return sum;
-				};
+					{
+						const int count = 5;
+						float sum = 0;
+						for (int i = 0; i < count; i++)
+							sum += (float) i*(float) i;
+						return sum;
+					};
 
 			float correctVal = del();
 
@@ -75,18 +76,18 @@ namespace CellDotNet
 		{
 			FloatReturnDelegate del =
 				delegate
-				{
-					const int count = 5;
-					float sum = 0;
-					int[] arr = new int[count];
+					{
+						const int count = 5;
+						float sum = 0;
+						int[] arr = new int[count];
 
-					for (int i = 0; i < count; i++)
-						arr[i] = i;
-					for (int i = 0; i < count; i++)
-						sum += arr[i];
+						for (int i = 0; i < count; i++)
+							arr[i] = i;
+						for (int i = 0; i < count; i++)
+							sum += arr[i];
 
-					return sum;
-				};
+						return sum;
+					};
 
 			float correctVal = del();
 			FloatReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
@@ -136,16 +137,16 @@ namespace CellDotNet
 			using (SpeContext sc = new SpeContext())
 			{
 				object rv = sc.RunProgram(cc, arg);
-				AreEqual(correctval, (int)rv);
+				AreEqual(correctval, (int) rv);
 			}
 		}
 
-		static int ReturnInt(int i)
+		private static int ReturnInt(int i)
 		{
 			return i;
 		}
 
-		static int MethodCallMethod(int level)
+		private static int MethodCallMethod(int level)
 		{
 			return 3 + ReturnInt(10);
 		}
@@ -168,21 +169,21 @@ namespace CellDotNet
 			CompileContext cc = new CompileContext(del.Method);
 
 			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
-			Disassembler.DisassembleUnconditionalToConsole((SpuDynamicRoutine)cc.EntryPoint);
+			Disassembler.DisassembleUnconditionalToConsole((SpuDynamicRoutine) cc.EntryPoint);
 
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			Disassembler.DisassembleToConsole(cc);
 
 //			cc.WriteAssemblyToFile(Utilities.GetUnitTestName() + "_asm.s", arg);
-			
+
 			if (!SpeContext.HasSpeHardware)
 				return;
 
 			using (SpeContext sc = new SpeContext())
 			{
 				object rv = sc.RunProgram(cc, arg);
-				AreEqual(correctval, (int)rv);
+				AreEqual(correctval, (int) rv);
 			}
 		}
 
@@ -191,7 +192,7 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="level"></param>
 		/// <returns></returns>
-		static int RecursiveSummation_Int(int level)
+		private static int RecursiveSummation_Int(int level)
 		{
 			if (level == 0)
 				return 0;
@@ -231,7 +232,7 @@ namespace CellDotNet
 			using (SpeContext sc = new SpeContext())
 			{
 				object rv = sc.RunProgram(cc, arg);
-				AreEqual(correctval, (float)rv);
+				AreEqual(correctval, (float) rv);
 			}
 		}
 
@@ -240,7 +241,7 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="level"></param>
 		/// <returns></returns>
-		static float RecursiveSummation_Float(int level)
+		private static float RecursiveSummation_Float(int level)
 		{
 			if (level == 0)
 				return 0;
@@ -248,6 +249,38 @@ namespace CellDotNet
 				return level + RecursiveSummation_Float(level - 1);
 			else
 				return RecursiveSummation_Float(level - 1);
+		}
+
+		[Test]
+		public void TestConditionalExpresion()
+		{
+			Converter<int, int> fun =
+				delegate(int input)
+					{
+						return input + (input == 17 ? 0 : input);
+					};
+
+			CompileContext cc = new CompileContext(fun.Method);
+
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			object result1 = SpeContext.UnitTestRunProgram(cc, 14);
+			object result2 = SpeContext.UnitTestRunProgram(cc, 17);
+
+			AreEqual(28, (int)result1);
+			AreEqual(17, (int)result2);
+		}
+
+		[Test]
+		public void TestDivisionUnsigned()
+		{
+			Assert.AreEqual(SpuMath.Div_Un(14, 7), ((uint)14)/((uint)7), "SpuMath.Div_Un failed.");
+			Assert.AreEqual(SpuMath.Div_Un(33, 7), ((uint)33) / ((uint)7), "SpuMath.Div_Un failed.");
+			Assert.AreEqual(SpuMath.Div_Un(12345, 54), ((uint)12345) / ((uint)54), "SpuMath.Div_Un failed.");
+			Assert.AreEqual(SpuMath.Div_Un(987536, 664), ((uint)987536) / ((uint)664), "SpuMath.Div_Un failed.");
+			Assert.AreEqual(SpuMath.Div_Un(9675, 745), ((uint)9675) / ((uint)745), "SpuMath.Div_Un failed.");
+			Assert.AreEqual(SpuMath.Div_Un(123454, 3), ((uint)123454) / ((uint)3), "SpuMath.Div_Un failed.");
+			Assert.AreEqual(SpuMath.Div_Un(16524, 23), ((uint)16524) / ((uint)23), "SpuMath.Div_Un failed.");
 		}
 	}
 }

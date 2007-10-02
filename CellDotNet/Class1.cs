@@ -67,6 +67,12 @@ namespace CellDotNet
 
 //			new ILOpCodeExecutionTest().Test_Dub();
 
+//			new IRTreeBuilderTest().TestTypeDerivingForVariableStack();
+
+			new SimpleProgramsTest().TestConditionalExpresion();
+
+//			new ILOpCodeExecutionTest().Test_Br();
+
 			Console.WriteLine("Running RunKlaus done.");
 		}
 

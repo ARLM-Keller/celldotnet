@@ -293,8 +293,8 @@ namespace CellDotNet
 			ILWriter w = new ILWriter();
 			w.WriteOpcode(OpCodes.Ldc_I4_4);
 			w.WriteOpcode(OpCodes.Br_S);
-			w.WriteByte(1);
-			w.WriteOpcode(OpCodes.Ldc_I4_7);
+			w.WriteByte(0);
+//			w.WriteOpcode(OpCodes.Ldc_I4_7);
 			w.WriteOpcode(OpCodes.Pop);
 
 			IRTreeBuilder builder = new IRTreeBuilder();

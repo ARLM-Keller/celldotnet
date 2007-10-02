@@ -110,7 +110,7 @@ namespace CellDotNet
 					{
 						reachedBlocks.Add(root.OperandAsBasicBlock);
 						if (rootnum < bb.Roots.Count - 1)
-							bb.Roots.RemoveRange(rootnum + 1, bb.Roots.Count - rootnum);
+							bb.Roots.RemoveRange(rootnum + 1, bb.Roots.Count - (rootnum + 1));
 					}
 					if (root.Opcode.FlowControl == FlowControl.Cond_Branch)
 					{

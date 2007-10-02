@@ -13,7 +13,11 @@ namespace CellDotNet
 	{
 		private int _variableCount = 0;
 
-		private ILReader _reader;
+		private ILReader _ilreader;
+		public ILReader ILReader
+		{
+			get { return _ilreader; }
+		}
 
 		private Queue<object> _operandQueue = new Queue<object>();
 
@@ -28,7 +32,13 @@ namespace CellDotNet
 
 		public IlReaderWrapper(ILReader reader)
 		{
-			_reader = reader;	
+			_ilreader = reader;	
+		}
+
+		public void Reset()
+		{
+			_ilreader.Reset();
+			_variableCount = 0;
 		}
 
 		public bool Read(StackTypeDescription type)
@@ -42,15 +52,18 @@ namespace CellDotNet
 
 			if (_opcodeQueue.Count == 0)
 			{
-				if(!_reader.Read())
+				if (!_ilreader.Read())
 					return false;
 
-				OpCode opcode = _reader.OpCode;
-				object operand = _reader.Operand;
+				OpCode opcode = _ilreader.OpCode;
+				object operand = _ilreader.Operand;
 
 				if(opcode == OpCodes.Dup)
 				{
-					MethodVariable mv = new MethodVariable(_variableCount+2000, type);
+					if (type == StackTypeDescription.None)
+						throw new Exception("Incompatible type.");
+
+					MethodVariable mv = new MethodVariable(_variableCount + 2000, type);
 					_opcodeQueue.Enqueue(OpCodes.Stloc);
 					_operandQueue.Enqueue(mv);
 					_opcodeQueue.Enqueue(OpCodes.Ldloc);
@@ -58,6 +71,16 @@ namespace CellDotNet
 					_opcodeQueue.Enqueue(OpCodes.Ldloc);
 					_operandQueue.Enqueue(mv);
 					_lastCreatedMethodVariable = mv;
+				}
+				else if (opcode == OpCodes.Div && type.CliType == CliType.Int32)
+				{
+					_opcodeQueue.Enqueue(OpCodes.Call);
+					_operandQueue.Enqueue(typeof(CellDotNet.SpuMath).GetMethod("Div", new Type[] { typeof(int), typeof(int) }));
+				}
+				else if (opcode == OpCodes.Div_Un && type.CliType == CliType.Int32)
+				{
+					_opcodeQueue.Enqueue(OpCodes.Call);
+					_operandQueue.Enqueue(typeof(CellDotNet.SpuMath).GetMethod("Div_Un", new Type[] { typeof(int), typeof(int) }));
 				}
 				else
 				{
@@ -70,7 +93,7 @@ namespace CellDotNet
 
 		public int Offset
 		{
-			get { return _reader.Offset; }
+			get { return _ilreader.Offset; }
 		}
 
 		public OpCode OpCode
@@ -117,7 +140,7 @@ namespace CellDotNet
 			return s_reflectionmap;
 		}
 
-		private enum ReadState
+		public enum ReadState
 		{
 			None,
 			Initial,
@@ -137,6 +160,11 @@ namespace CellDotNet
 //		/// The value part is branch offset.
 //		/// </summary>
 //		Stack<KeyValuePair<IROpCode, int>> _opcodestack = new Stack<KeyValuePair<IROpCode, int>>();
+
+		public ReadState State
+		{
+			get { return _state; }
+		}
 
 		private int _instructionsRead;
 		public int InstructionsRead
@@ -171,10 +199,23 @@ namespace CellDotNet
 			_state = ReadState.Initial;
 		}
 
+		public void Reset()
+		{
+			_state = ReadState.Initial;
+			_readoffset = default(int);
+			_operand = default(object);
+			_opcode = default(OpCode);
+			_instructionsRead = default(int);
+		}
+
 		public bool Read()
 		{
-			if (_state == ReadState.EOF)
+			if (_readoffset == _il.Length)
+			{
+				_state = ReadState.EOF;
 				return false;
+			}
+
 			_state = ReadState.Reading;
 
 			_instructionsRead++;
@@ -241,8 +282,8 @@ namespace CellDotNet
 			}
 
 
-			if (_readoffset == _il.Length)
-				_state = ReadState.EOF;
+//			if (_readoffset == _il.Length)
+//				_state = ReadState.EOF;
 
 			return true;
 		}

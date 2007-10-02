@@ -82,19 +82,46 @@ namespace CellDotNet
 		{
 			ILWriter w = new ILWriter();
 
+			w.WriteOpcode(OpCodes.Ldc_I4_1);
+
+			w.WriteOpcode(OpCodes.Ldc_I4_3);
+
+			// 0x02
 			w.WriteOpcode(OpCodes.Br_S);
-			w.WriteByte(3);
+			w.WriteByte(2);
+
+			// 0x04
+			w.WriteOpcode(OpCodes.Ldc_I4_1);
 
 			w.WriteOpcode(OpCodes.Ldc_I4_1);
 
-			w.WriteOpcode(OpCodes.Br_S);
-			w.WriteByte(1);
+			// 0x06
+			w.WriteOpcode(OpCodes.Beq_S);
+			w.WriteByte(-4);
 
+			// 0x08
 			w.WriteOpcode(OpCodes.Ldc_I4_2);
 			
 			w.WriteOpcode(OpCodes.Ret);
 
 			TestExecution(w, 2);
+		}
+
+		[Test]
+		public void Test_Br_Simple()
+		{
+			ILWriter w = new ILWriter();
+
+			w.WriteOpcode(OpCodes.Ldc_I4_3);
+
+			w.WriteOpcode(OpCodes.Br_S);
+			w.WriteByte(0);
+
+//			w.WriteOpcode(OpCodes.Ldc_I4_1);
+
+			w.WriteOpcode(OpCodes.Ret);
+
+			TestExecution(w, 3);
 		}
 
 		[Test]
@@ -383,23 +410,79 @@ namespace CellDotNet
 		public void Test_Ceq_I4()
 		{
 //			ExecuteAndVerifyBinaryOperator(OpCodes.Ceq, 5, 3, 0);
-			ExecuteAndVerifyBinaryOperator(OpCodes.Ceq, 5, 5, 1);
+			ExecuteAndVerifyComparator(OpCodes.Ceq, 5, 5, 1);
 		}
 
 		[Test]
 		public void Test_Cgt_I4()
 		{
-			ExecuteAndVerifyBinaryOperator(OpCodes.Cgt, 5, 3, 1);
-			ExecuteAndVerifyBinaryOperator(OpCodes.Cgt, 5, 5, 0);
-			ExecuteAndVerifyBinaryOperator(OpCodes.Cgt, 5, 7, 0);
+			ExecuteAndVerifyComparator(OpCodes.Cgt, 5, 3, 1);
+			ExecuteAndVerifyComparator(OpCodes.Cgt, 5, 5, 0);
+			ExecuteAndVerifyComparator(OpCodes.Cgt, 5, 7, 0);
 		}
 
-		[Test, Ignore("Enable when division works.")]
+		[Test]
+		public void Test_Cgt_Un_I4()
+		{
+			ExecuteAndVerifyComparator(OpCodes.Cgt_Un, -3, 5, 1);
+			ExecuteAndVerifyComparator(OpCodes.Cgt_Un, -1, -7, 1);
+			ExecuteAndVerifyComparator(OpCodes.Cgt_Un, -7, -7, 0);
+			ExecuteAndVerifyComparator(OpCodes.Cgt_Un, -7, -1, 0);
+			ExecuteAndVerifyComparator(OpCodes.Cgt_Un, 7, -3, 0);
+
+			ExecuteAndVerifyComparator(OpCodes.Cgt_Un, 5, 3, 1);
+			ExecuteAndVerifyComparator(OpCodes.Cgt_Un, 5, 5, 0);
+			ExecuteAndVerifyComparator(OpCodes.Cgt_Un, 5, 7, 0);
+		}
+
+		[Test]
+		public void Test_Clt_Un_I4()
+		{
+			ExecuteAndVerifyComparator(OpCodes.Clt_Un, -3, 5, 0);
+			ExecuteAndVerifyComparator(OpCodes.Clt_Un, -1, -7, 0);
+			ExecuteAndVerifyComparator(OpCodes.Clt_Un, -7, -7, 0);
+			ExecuteAndVerifyComparator(OpCodes.Clt_Un, -7, -1, 1);
+			ExecuteAndVerifyComparator(OpCodes.Clt_Un, 7, -3, 1);
+
+			ExecuteAndVerifyComparator(OpCodes.Clt_Un, 5, 3, 0);
+			ExecuteAndVerifyComparator(OpCodes.Clt_Un, 5, 5, 0);
+			ExecuteAndVerifyComparator(OpCodes.Clt_Un, 5, 7, 1);
+		}
+
+		[Test]
+		public void Test_Cgt_Un_R4()
+		{
+			ExecuteAndVerifyComparator(OpCodes.Cgt_Un, -3f, 5f, 0);
+			ExecuteAndVerifyComparator(OpCodes.Cgt_Un, -1f, -7f, 1);
+			ExecuteAndVerifyComparator(OpCodes.Cgt_Un, -7f, -7f, 0);
+			ExecuteAndVerifyComparator(OpCodes.Cgt_Un, -7f, -1f, 0);
+			ExecuteAndVerifyComparator(OpCodes.Cgt_Un, 7f, -3f, 1);
+
+			ExecuteAndVerifyComparator(OpCodes.Cgt_Un, 5f, 3f, 1);
+			ExecuteAndVerifyComparator(OpCodes.Cgt_Un, 5f, 5f, 0);
+			ExecuteAndVerifyComparator(OpCodes.Cgt_Un, 5f, 7f, 0);
+		}
+
+		[Test]
+		public void Test_Clt_Un_R4()
+		{
+			ExecuteAndVerifyComparator(OpCodes.Clt_Un, -3f, 5f, 1);
+			ExecuteAndVerifyComparator(OpCodes.Clt_Un, -1f, -7f, 0);
+			ExecuteAndVerifyComparator(OpCodes.Clt_Un, -7f, -7f, 0);
+			ExecuteAndVerifyComparator(OpCodes.Clt_Un, -7f, -1f, 1);
+			ExecuteAndVerifyComparator(OpCodes.Clt_Un, 7f, -3f, 0);
+
+			ExecuteAndVerifyComparator(OpCodes.Clt_Un, 5f, 3f, 0);
+			ExecuteAndVerifyComparator(OpCodes.Clt_Un, 5f, 5f, 0);
+			ExecuteAndVerifyComparator(OpCodes.Clt_Un, 5f, 7f, 1);
+		}
+
+		[Test]
 		public void Test_Div_Un()
 		{
-			ExecuteAndVerifyBinaryOperator(OpCodes.Div_Un, 16, 4, 4);
-//			ExecuteAndVerifyBinaryOperator(OpCodes.Div_Un, 16, 5, 3);
-//			ExecuteAndVerifyBinaryOperator(OpCodes.Div_Un, 2, 7, 0);
+			ExecuteAndVerifyBinaryOperator(OpCodes.Div_Un, 16, 4, 16/4);
+			ExecuteAndVerifyBinaryOperator(OpCodes.Div_Un, 16, 5, 16/5);
+			ExecuteAndVerifyBinaryOperator(OpCodes.Div_Un, 2, 7, 2/7);
 		}
 
 		[Test]
@@ -478,6 +561,34 @@ namespace CellDotNet
 
 				AreEqual(6, returnValue, "Function call with ref argument returned a wrong value.");
 			}
+		}
+
+		public void ExecuteAndVerifyComparator(OpCode opcode, int i1, int i2, int expectedValue)
+		{
+			ILWriter w = new ILWriter();
+
+			w.WriteOpcode(OpCodes.Ldc_I4);
+			w.WriteInt32(i1);
+			w.WriteOpcode(OpCodes.Ldc_I4);
+			w.WriteInt32(i2);
+			w.WriteOpcode(opcode);
+			w.WriteOpcode(OpCodes.Ret);
+
+			TestExecution(w, expectedValue);
+		}
+
+		public void ExecuteAndVerifyComparator(OpCode opcode, float i1, float i2, int expectedValue)
+		{
+			ILWriter w = new ILWriter();
+
+			w.WriteOpcode(OpCodes.Ldc_R4);
+			w.WriteFloat(i1);
+			w.WriteOpcode(OpCodes.Ldc_R4);
+			w.WriteFloat(i2);
+			w.WriteOpcode(opcode);
+			w.WriteOpcode(OpCodes.Ret);
+
+			TestExecution(w, expectedValue);
 		}
 
 		public void ExecuteAndVerifyBinaryOperator(OpCode opcode, int i1, int i2, int expectedValue)
@@ -577,6 +688,8 @@ namespace CellDotNet
 				if(dynamicRoutine != null)
 					dynamicRoutine.PerformAddressPatching();
 			}
+
+//			Disassembler.DisassembleToConsole(objectsWithAddresss);	
 
 			int[] code = new int[codeByteSize/4];
 			CompileContext.CopyCode(code, new SpuDynamicRoutine[] { spuinit, spum });
