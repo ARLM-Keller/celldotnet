@@ -302,7 +302,7 @@ namespace CellDotNet
 		private void RemoveAddressOperations(TreeInstruction obj)
 		{
 			MethodCallInstruction mci = obj as MethodCallInstruction;
-			if (mci != null && (mci.Opcode == IROpCodes.IntrinsicMethod || mci.Opcode == IROpCodes.SpuInstructionMethod) &&
+			if (mci != null && (mci.Opcode == IROpCodes.IntrinsicCall || mci.Opcode == IROpCodes.SpuInstructionMethod) &&
 			    !mci.IntrinsicMethod.IsStatic && !mci.IntrinsicMethod.IsConstructor)
 			{
 				// Replace instance method calls (ld(loc|arg)(a), call) on vector types with (ld(loc|arg), ldobj, call) or

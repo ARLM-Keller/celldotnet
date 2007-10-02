@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Reflection;
 using System.Text;
 
 namespace CellDotNet
@@ -10,14 +11,8 @@ namespace CellDotNet
 	/// </summary>
 	class PpeMethod : SpuRoutine
 	{
-		public override ReadOnlyCollection<MethodParameter> Parameters
+		public PpeMethod(MethodInfo method) : base(method.Name, method)
 		{
-			get { throw new NotImplementedException(); }
-		}
-
-		public override StackTypeDescription ReturnType
-		{
-			get { throw new NotImplementedException(); }
 		}
 
 		public override int Size

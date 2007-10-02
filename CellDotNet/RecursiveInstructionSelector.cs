@@ -193,10 +193,15 @@ namespace CellDotNet
 						return IntrinsicsWriter.GenerateSpuInstructionMethod(_writer, callInst, childregs);
 					}
 				case IRCode.IntrinsicNewObj:
-				case IRCode.IntrinsicMethodCall:
+				case IRCode.IntrinsicCall:
 					{
 						MethodCallInstruction callInst = (MethodCallInstruction) inst;
 						return IntrinsicsWriter.GenerateIntrinsicMethod(_writer, (SpuIntrinsicMethod) callInst.Operand, childregs);
+					}
+				case IRCode.PpeCall:
+					{
+						break;
+						
 					}
 				case IRCode.Newobj:
 					{

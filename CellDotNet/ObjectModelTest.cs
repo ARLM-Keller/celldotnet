@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using NUnit.Framework;
 
 namespace CellDotNet
@@ -508,10 +507,6 @@ namespace CellDotNet
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			new TreeDrawer().DrawMethod(cc.EntryPointAsMetodCompiler);
-//			Disassembler.DisassembleToConsole(cc);
-//			cc.WriteAssemblyToFile("ctor.s");
-
 			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(cc));
 		}
 
@@ -528,7 +523,7 @@ namespace CellDotNet
 				_hitcount++;
 			}
 
-			public int somepublicfield;
+			public int SomePublicFieldWhichIsNotAccessibleFromSpu;
 		}
 
 		[Test]
@@ -537,6 +532,9 @@ namespace CellDotNet
 			Action<PpeClass> del = delegate(PpeClass obj) { obj.Hit(); };
 
 			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
+			new TreeDrawer().DrawMethod(cc.EntryPointAsMetodCompiler);
+
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			AreEqual(1, cc.Methods.Count);
@@ -550,20 +548,16 @@ namespace CellDotNet
 		[Test]
 		public void TestPpeClass_InstanceFieldAccessFailure()
 		{
-			Converter<PpeClass, int> del = delegate(PpeClass obj) { return obj.somepublicfield; };
-
+			Action<PpeClass> del = delegate(PpeClass obj) { obj.SomePublicFieldWhichIsNotAccessibleFromSpu = 5; };
 			CompileContext cc = new CompileContext(del.Method);
-			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(1, cc.Methods.Count);
-
-			PpeClass inst = new PpeClass();
-			SpeContext.UnitTestRunProgram(cc, inst);
+			Utilities.PretendVariableIsUsed(new PpeClass().SomePublicFieldWhichIsNotAccessibleFromSpu);
 
 			try
 			{
-				AreEqual(1, inst.Hitcount);				
-				Fail();
+				cc.PerformProcessing(CompileContextState.S8Complete);
+
+				Fail("Should have failed.");
 			}
 			catch (NotSupportedException)
 			{
