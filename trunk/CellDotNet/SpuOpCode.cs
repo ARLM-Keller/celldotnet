@@ -149,21 +149,24 @@ namespace CellDotNet
 	}
 
 	/// <summary>
-	/// See the Linux ABI for details.
+	/// See the Linux ABI for details on some of these.
 	/// </summary>
 	enum SpuStopCode
 	{
 		None = 0,
 
-		// Reserved ranges - custom runtime codes.
-		OutOfMemory = 0x2010,
+		CustomStopCodeBase = 0xa00,
 
-		PpeCall = 0x20A0,
 		/// <summary>
 		/// Used to test that <see cref="SpeContext"/> picks up stop codes in the range.
 		/// </summary>
-		PpeCallFailureTest = 0x20A1,
-//		PpeCallFailureTest = 0x0A01,
+		PpeCallFailureTest = CustomStopCodeBase + 1,
+
+		PpeCall = CustomStopCodeBase + 2,
+
+		// Reserved ranges - custom runtime codes.
+		OutOfMemory = 0x2010,
+
 
 		// Reserved ranges - standard codes.
 		/// <summary>
