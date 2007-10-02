@@ -200,6 +200,7 @@ namespace CellDotNet
 					}
 				case IRCode.PpeCall:
 					{
+
 						break;
 						
 					}
@@ -1269,6 +1270,10 @@ namespace CellDotNet
 					if (atts.Length == 0)
 						throw new InvalidInstructionParametersException("Method: " + method.Name);
 					SpuInstructionPartAttribute att = (SpuInstructionPartAttribute) atts[0];
+
+					if ((necessaryParts & att.Part) == 0)
+						throw new InvalidInstructionParametersException(
+							"Instruction '" + inst.OperandSpuOpCode + "' does not use instruction part " + att.Part + ".");
 
 					// Make sure that it's not a reassignment.
 					if ((partsSoFar | att.Part) == partsSoFar)

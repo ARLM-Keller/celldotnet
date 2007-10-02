@@ -89,22 +89,9 @@ namespace CellDotNet
 	[Serializable]
 	public class LibSpeException : Exception
 	{
-		static string GetErrorMessage()
-		{
-			// Hmm, I guess the error code could be overwritten by this check if
-			// HasSpeHardware hasn't been used before...
-			if (SpeContext.HasSpeHardware)
-			{
-				object ec = SpeContext.GetErrorCode();
-				return " code: " + (ec != null ? ec : "(null)");
-			}
-			else
-				return " code: (no SPE hardware is available)";
-		}
-
-		public LibSpeException() : base(GetErrorMessage()) { }
-		public LibSpeException(string message) : base(message + GetErrorMessage()) { }
-		public LibSpeException(string message, Exception inner) : base(message + GetErrorMessage(), inner) { }
+		public LibSpeException() : base() { }
+		public LibSpeException(string message) : base(message) { }
+		public LibSpeException(string message, Exception inner) : base(message, inner) { }
 		protected LibSpeException(
 		  SerializationInfo info,
 		  StreamingContext context)
@@ -162,6 +149,24 @@ namespace CellDotNet
 			: base(info, context) { }
 	}
 
+	[Serializable]
+	public class PpeCallException : Exception
+	{
+		//
+		// For guidelines regarding the creation of new exception types, see
+		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
+		// and
+		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
+		//
+
+		public PpeCallException() { }
+		public PpeCallException(string message) : base(message) { }
+		public PpeCallException(string message, Exception inner) : base(message, inner) { }
+		protected PpeCallException(
+		  SerializationInfo info,
+		  StreamingContext context)
+			: base(info, context) { }
+	}
 
 	[Serializable]
 	public class InvalidInstructionParametersException : Exception
