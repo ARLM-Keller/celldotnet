@@ -75,12 +75,16 @@ namespace CellDotNet
 				else if (opcode == OpCodes.Div && type.CliType == CliType.Int32)
 				{
 					_opcodeQueue.Enqueue(OpCodes.Call);
-					_operandQueue.Enqueue(typeof(CellDotNet.SpuMath).GetMethod("Div", new Type[] { typeof(int), typeof(int) }));
+					MethodBase mb = typeof (CellDotNet.SpuMath).GetMethod("Div", new Type[] {typeof (int), typeof (int)});
+					Utilities.AssertNotNull(mb, "Could not finde division function.");
+					_operandQueue.Enqueue(mb);
 				}
 				else if (opcode == OpCodes.Div_Un && type.CliType == CliType.Int32)
 				{
 					_opcodeQueue.Enqueue(OpCodes.Call);
-					_operandQueue.Enqueue(typeof(CellDotNet.SpuMath).GetMethod("Div_Un", new Type[] { typeof(int), typeof(int) }));
+					MethodBase mb = typeof(CellDotNet.SpuMath).GetMethod("Div_Un", new Type[] { typeof(uint), typeof(uint) });
+					Utilities.AssertNotNull(mb, "Could not finde division function.");
+					_operandQueue.Enqueue(mb);
 				}
 				else
 				{

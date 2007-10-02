@@ -162,6 +162,15 @@ namespace CellDotNet
 			}
 		}
 
+		public static String DrawMethodToString(IEnumerable<IRBasicBlock> blocks)
+		{
+			StringWriter writer = new StringWriter();
+
+			new TreeDrawer().DrawMethod(blocks, writer);
+
+			return writer.GetStringBuilder().ToString();
+		}
+
 		public void DrawMethod(MethodCompiler ci)
 		{
 			DrawMethod(ci.Blocks);
@@ -199,7 +208,7 @@ namespace CellDotNet
 			DrawMethod(blocks, output);
 		}
 
-		public void DrawMethod(List<IRBasicBlock> blocks, TextWriter output)
+		public void DrawMethod(IEnumerable<IRBasicBlock> blocks, TextWriter output)
 		{
 			Output = output;
 

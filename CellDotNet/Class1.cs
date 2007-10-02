@@ -69,9 +69,27 @@ namespace CellDotNet
 
 //			new IRTreeBuilderTest().TestTypeDerivingForVariableStack();
 
-			new SimpleProgramsTest().TestConditionalExpresion();
+//			new SimpleProgramsTest().TestConditionalExpresion();
 
 //			new ILOpCodeExecutionTest().Test_Br();
+
+//			Converter<int, uint> fun =
+//				delegate(int input)
+//					{
+//						return CellDotNet.SpuMath.Div_Un	(14, 7);
+//					};
+//
+//			CompileContext cc = new CompileContext(fun.Method);
+//
+//			cc.PerformProcessing(CompileContextState.S8Complete);
+//
+//			object result = SpeContext.UnitTestRunProgram(cc, 17);
+
+			new ILOpCodeExecutionTest().Test_Div_Un();
+
+//			new ILOpCodeExecutionTest().Test_Beq();
+
+//			new SimpleProgramsTest().TestDivisionUnsigned();
 
 			Console.WriteLine("Running RunKlaus done.");
 		}

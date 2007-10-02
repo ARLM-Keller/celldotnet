@@ -175,6 +175,7 @@ namespace CellDotNet
 
 				// Activate the variable stack.
 				// Pop is modifyed to remove the element from _currentVariableStack.
+				_currentVariableStack.Clear();
 				_currentVariableStack.AddRange(stack);
 				_currentVariableStackTop = stack.Count - 1;
 
@@ -316,7 +317,7 @@ namespace CellDotNet
 
 			_parseStack = new ParseStack();
 
-			IRBasicBlock currblock = new IRBasicBlock();
+			IRBasicBlock currblock;
 			List<TreeInstruction> branches = new List<TreeInstruction>();
 
 			List<IRBasicBlock> blocks = new List<IRBasicBlock>();
@@ -325,7 +326,9 @@ namespace CellDotNet
 
 			TreeInstruction prevInst = default(TreeInstruction);
 
-			Set<int> branchTargets = new Set<int>();
+			Dictionary<int, IRBasicBlock> branchTargets = new Dictionary<int, IRBasicBlock>();
+
+			branchTargets.Add(0, new IRBasicBlock());
 
 			// Looks for branch targets.
 			while (readerIn.Read())
@@ -334,9 +337,12 @@ namespace CellDotNet
 					readerIn.OpCode.FlowControl == FlowControl.Cond_Branch)
 				{
 					int targetOffset = (int)readerIn.Operand;
-					branchTargets.Add(targetOffset);
+					if(!branchTargets.ContainsKey(targetOffset))
+						branchTargets.Add(targetOffset, new IRBasicBlock());
 				}
 			}
+
+			currblock = branchTargets[0];
 
 			readerIn.Reset();
 
@@ -349,7 +355,7 @@ namespace CellDotNet
 				if (prevInst != null && prevInst.Opcode.FlowControl == FlowControl.Branch)
 				{
 					// Skip unreachablwe instructions.
-					while (!branchTargets.Contains(reader.Offset) && reader.Read(_parseStack.PeakType()))
+					while (!branchTargets.ContainsKey(reader.Offset) && reader.Read(_parseStack.PeakType()))
 					{}
 
 					if (reader.ILReader.State == ILReader.ReadState.EOF)
@@ -367,11 +373,8 @@ namespace CellDotNet
 				treeinst.Offset = reader.Offset;
 
 				// Adjust variable stack if we've reached a new forward branch.
-//				if (nextForwardBranchTarget == reader.Offset)
-				if (branchTargets.Contains(reader.Offset))
+				if (branchTargets.ContainsKey(reader.Offset) && reader.Offset != 0)
 				{
-//					nextForwardBranchTarget = _parseStack.GetNextForwardBranchAddress(reader.Offset);
-
 					if (prevInst!= null && prevInst.Opcode.FlowControl == FlowControl.Branch)
 					{
 						_parseStack.LoadVariableStack(reader.Offset);
@@ -388,6 +391,9 @@ namespace CellDotNet
 						if (setOffset)
 							treeinst.Offset = -1;
 					}
+
+					blocks.Add(currblock);
+					currblock = branchTargets[reader.Offset];
 				}
 
 //				Utilities.Assert(nextForwardBranchTarget > reader.Offset, 
@@ -508,6 +514,11 @@ namespace CellDotNet
 
 					_parseStack.SaveInstructionStack(targetOffset, currblock.Roots, ref setOffset, reader.Offset);
 
+					if (setOffset)
+						treeinst.Offset = -1;
+
+					treeinst.Operand = branchTargets[targetOffset];
+
 //					if (targetOffset > reader.Offset && 
 //						targetOffset < nextForwardBranchTarget)
 //					{
@@ -524,10 +535,17 @@ namespace CellDotNet
 				}
 
 				prevInst = treeinst;
+
 			}
+
 			blocks.Add(currblock);
 
-			FixBranchesAndCreateBasicBlocks(blocks, branches, variables);
+//			FixBranchesAndCreateBasicBlocks(blocks, branches, variables);
+
+			foreach (List<MethodVariable> methodVariables in _parseStack.BranchTargetStackVariables.Values)
+			{
+				variables.AddRange(methodVariables);
+			}
 
 			return blocks;
 		}
@@ -631,11 +649,6 @@ namespace CellDotNet
 
 				NextBranch:
 				branchinst.Operand = target;
-			}
-
-			foreach (List<MethodVariable> methodVariables in _parseStack.BranchTargetStackVariables.Values)
-			{
-				variables.AddRange(methodVariables);
 			}
 		}
 

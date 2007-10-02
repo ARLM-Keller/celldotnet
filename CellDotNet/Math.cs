@@ -68,7 +68,7 @@ namespace CellDotNet
 		{
 			uint num_bits;
 			uint bit, d=0;
-			int i;
+			uint i;
 
 			remainder = 0;
 			quotient = 0;
@@ -110,7 +110,7 @@ namespace CellDotNet
 				uint t = remainder - divisor;
 				bool q = ((t & 0x80000000) >> 31) == 0;
 				dividend = dividend << 1;
-				quotient = (uint)((quotient << 1) | (q?1:0));
+				quotient = ((quotient << 1) | (uint)(q?1:0));
 				if (q)
 				{
 					remainder = t;
@@ -121,39 +121,43 @@ namespace CellDotNet
 		internal static void signed_divide(int dividend, int divisor, ref int quotient, ref int remainder)
 		{
 			uint dend, dor;
-			uint q=0, r=0;
+			uint quo=0, rem=0;
 
 			dend = (uint)(dividend < 0 ? -dividend : dividend);
 			dor = (uint)(divisor < 0 ? -divisor : divisor);
 //			dend = ABS(dividend);
 //			dor = ABS(divisor);
-			unsigned_divide(dend, dor, ref q, ref r);
+			unsigned_divide(dend, dor, ref quo, ref rem);
 
-			quotient = (int)q;
+			int q = (int) quo;
+
+			int r = (int) rem;
+
+			quotient = q;
 			if (dividend < 0)
 			{
-				remainder = (int)-r;
+				remainder = -r;
 				if (divisor > 0)
-					quotient = (int)-q;
+					quotient = -q;
 			}
 			else
 			{
 				/* positive dividend */
-				remainder = (int)r;
+				remainder = r;
 				if (divisor < 0)
-					quotient = (int)-q;
+					quotient = -q;
 			}
 		} /* signed_divide */
 
 
-		public static uint Div_Un_DEBUG(uint dividend, uint divisor)
+		internal static uint Div_Un_DEBUG(uint dividend, uint divisor)
 		{
 			uint quotient = 0, remainder = 0;
 			unsigned_divide_DEBUG(dividend, divisor, ref quotient, ref remainder);
 			return quotient;
 		}
 
-		public static void unsigned_divide_DEBUG(uint dividend, uint divisor, ref uint quotient, ref uint remainder)
+		internal static void unsigned_divide_DEBUG(uint dividend, uint divisor, ref uint quotient, ref uint remainder)
 		{
 			uint num_bits;
 			uint bit, d = 0;
@@ -199,7 +203,7 @@ namespace CellDotNet
 				uint t = remainder - divisor;
 				bool q = ((t & 0x80000000) >> 31) == 0;
 //				dividend = dividend << 1;
-				quotient = (uint)((quotient << 1) | (q ? 1 : 0));
+				quotient = ((quotient << 1) | (uint)(q ? 1 : 0));
 //				if (q)
 //				{
 //					remainder = t;
