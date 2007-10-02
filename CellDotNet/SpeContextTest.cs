@@ -145,6 +145,19 @@ namespace CellDotNet
 			TestError_StopCodeException<SpeStackOverflowException>(SpuStopCode.StackOverflow);
 		}
 
+		[Test, ExpectedException(typeof(PpeCallException))]
+		public void TestPpeCallFailureTest()
+		{
+			BasicTestDelegate del = delegate { SpuRuntime.Stop(SpuStopCode.PpeCallFailureTest); };
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			SpeContext.UnitTestRunProgram(cc);
+		}
+
 		private static void TestError_StopCodeException<T>(SpuStopCode stopcode) where T : Exception, new()
 		{
 			SpuInstructionWriter writer = new SpuInstructionWriter();

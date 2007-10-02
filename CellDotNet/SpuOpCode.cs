@@ -87,7 +87,11 @@ namespace CellDotNet
 		/// <summary>
 		/// For pseudo-instructions.
 		/// </summary>
-		Custom
+		Custom,
+		/// <summary>
+		/// Used for the stop instruction.
+		/// </summary>
+		RI14
 	}
 
 	[Flags]
@@ -153,6 +157,13 @@ namespace CellDotNet
 
 		// Reserved ranges - custom runtime codes.
 		OutOfMemory = 0x2010,
+
+		PpeCall = 0x20A0,
+		/// <summary>
+		/// Used to test that <see cref="SpeContext"/> picks up stop codes in the range.
+		/// </summary>
+		PpeCallFailureTest = 0x20A1,
+//		PpeCallFailureTest = 0x0A01,
 
 		// Reserved ranges - standard codes.
 		/// <summary>
@@ -248,6 +259,10 @@ namespace CellDotNet
 				case SpuInstructionFormat.RI10:
 					_parts = SpuInstructionPart.Rt | SpuInstructionPart.Ra | SpuInstructionPart.Immediate;
 					_immediateBits = 10;
+					break;
+				case SpuInstructionFormat.RI14:
+					_parts = SpuInstructionPart.Immediate;
+					_immediateBits = 14;
 					break;
 				case SpuInstructionFormat.RI16:
 					_parts = SpuInstructionPart.Rt | SpuInstructionPart.Immediate;
@@ -783,8 +798,11 @@ namespace CellDotNet
 		// 10. Control OpCodes
 		// p238
 		//			};
+		/// <summary>
+		/// Using <see cref="SpuInstructionFormat.RI16NoRegs"/> for this is cheating a bit....
+		/// </summary>
 		public static readonly SpuOpCode stop =
-				new SpuOpCode("stop", "Stop and Signal", SpuInstructionFormat.WEIRD, "00000000000");
+				new SpuOpCode("stop", "Stop and Signal", SpuInstructionFormat.RI14, "00000000000");
 
 		public static readonly SpuOpCode lnop =
 			new SpuOpCode("lnop", "No Operation (Load)", SpuInstructionFormat.WEIRD, "00000000001");

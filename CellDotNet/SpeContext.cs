@@ -399,10 +399,9 @@ namespace CellDotNet
 			SpeStopInfo stopinfo = new SpeStopInfo();
 
 			int rc = UnsafeNativeMethods.spe_context_run(_handle, ref entry, 0, IntPtr.Zero, IntPtr.Zero, ref stopinfo);
-			if (rc < 0)
-				throw new LibSpeException("spe_context_run failed. Return code:" + rc);
+			SpuStopCode stopcode = GetStopcode(rc, stopinfo);
 
-			switch (stopinfo.SignalCode)
+			switch (stopcode)
 			{
 				case SpuStopCode.None:
 				case SpuStopCode.ExitSuccess:
@@ -410,6 +409,8 @@ namespace CellDotNet
 					return;
 				case SpuStopCode.OutOfMemory:
 					throw new SpeOutOfMemoryException();
+				case SpuStopCode.PpeCallFailureTest:
+					throw new PpeCallException();
 				case SpuStopCode.StackOverflow:
 					throw new SpeStackOverflowException();
 				case SpuStopCode.DebuggerBreakpoint:
@@ -423,8 +424,28 @@ namespace CellDotNet
 						throw new SpeDebugException("Debug breakpoint.");
 					}
 				default:
-					throw new SpeExecutionException("An error occurred during execution. The error code is: " + stopinfo.SignalCode);
+					throw new SpeExecutionException(
+						string.Format("An error occurred during execution. The error code is: {0} (0x{1:x}).", 
+						stopinfo.SignalCode, (int) stopinfo.SignalCode));
 			}
+		}
+
+		private static SpuStopCode GetStopcode(int rc, SpeStopInfo stopinfo)
+		{
+			SpuStopCode stopcode;
+			if (rc < 0)
+				throw new LibSpeException("spe_context_run failed. Return code:" + rc);
+			else if (rc == 0)
+			{
+				// May be system error; details are in the stop info.
+				stopcode = (SpuStopCode) (stopinfo.SignalCode | 0x2000);
+			}
+			else
+			{
+				// Maybe it's a custom stop code.
+				stopcode = (SpuStopCode) rc;
+			}
+			return stopcode;
 		}
 
 		public object RunProgram(Delegate delegateToRun, params object[] arguments)
@@ -732,13 +753,14 @@ namespace CellDotNet
 			/// Signal codes 0x0001-0x1FFF are user-defined signals. 
 			/// This convention determines the mapping to the respective fields in stopinfo.
 			/// </summary>
-			public SpuStopCode SignalCode
+			public int SignalCode
 			{
 				get
 				{
 					if (StopReason != SpeStopReason.SPE_EXIT && StopReason != SpeStopReason.SPE_STOP_AND_SIGNAL)
 						throw new InvalidOperationException();
-					return (SpuStopCode)((int)Result | 0x2000);
+
+					return (int) Result;
 				}
 			}
 

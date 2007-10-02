@@ -196,6 +196,7 @@ namespace CellDotNet
 					case SpuInstructionFormat.RI16:
 						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Constant);
 						break;
+					case SpuInstructionFormat.RI14:
 					case SpuInstructionFormat.RI16NoRegs:
 						tw.Write("{0} {1}", inst.OpCode.Name, inst.Constant);
 						break;

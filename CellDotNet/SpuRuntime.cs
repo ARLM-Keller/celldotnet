@@ -17,6 +17,13 @@ namespace CellDotNet
 			throw new InvalidOperationException();
 		}
 
+		[SpuOpCode(SpuOpCodeEnum.Stop)]
+		internal static void Stop(
+			[SpuInstructionPart(SpuInstructionPart.Immediate)]SpuStopCode stopcode)
+		{
+			throw new InvalidOperationException();
+		}
+
 		public static bool IsRunningOnSpu
 		{
 			get 
