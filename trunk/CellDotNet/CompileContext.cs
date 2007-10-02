@@ -560,7 +560,7 @@ namespace CellDotNet
 			mc.ForeachTreeInstruction(
 				delegate(TreeInstruction inst)
 					{
-						MethodBase mr = inst.OperandAsMethod;
+						MethodBase mr = SystemLibMap.GetUseableMethodBase(inst.OperandAsMethod);
 						if (mr == null)
 							return;
 

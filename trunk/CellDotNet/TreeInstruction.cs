@@ -85,6 +85,17 @@ namespace CellDotNet
 			}
 		}
 
+		public string DebuggerTreeDisplay()
+		{
+			String leftString = (_left != null)? _left.DebuggerTreeDisplay() : "";
+			String rightString = (_right != null) ? _right.DebuggerTreeDisplay() : "";
+
+			if(_left == null && _right == null)
+				return string.Format("{0} {1}", DebuggerDisplay, _offset);
+			else
+				return string.Format("{0} {1} [{2}, {3}]", DebuggerDisplay, _offset, leftString, rightString);
+		}
+
 		private string SubTreeText
 		{
 			get { return new TreeDrawer().DrawSubTree(this); }
@@ -246,8 +257,8 @@ namespace CellDotNet
 				Utilities.TryGetFirst(parent.GetChildInstructions(), out child);
 			} while (child != null && child.Offset >= 0);
 
-			if (parent.Offset < 0)
-				throw new ILSemanticErrorException("Can't find first instruction with offset.");
+//			if (parent.Offset < 0)
+//				throw new ILSemanticErrorException("Can't find first instruction with offset.");
 
 			return parent;
 		}

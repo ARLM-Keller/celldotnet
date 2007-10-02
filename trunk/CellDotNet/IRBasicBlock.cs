@@ -93,5 +93,15 @@ namespace CellDotNet
 					yield return inst;
 			}
 		}
+
+		public String toString()
+		{
+			String result = "";
+			foreach (TreeInstruction root in _roots)
+			{
+				result += string.Format("{0}\n", root.DebuggerTreeDisplay());
+			}
+			return result;
+		}
 	}
 }

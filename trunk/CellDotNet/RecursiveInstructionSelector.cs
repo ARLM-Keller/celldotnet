@@ -155,6 +155,7 @@ namespace CellDotNet
 
 			IRCode ilcode = inst.Opcode.IRCode;
 			StackTypeDescription lefttype = inst.Left != null ? inst.Left.StackType : StackTypeDescription.None;
+			StackTypeDescription righttype = inst.Right != null ? inst.Right.StackType : StackTypeDescription.None;
 			switch (ilcode)
 			{
 				case IRCode.Nop:
@@ -179,9 +180,11 @@ namespace CellDotNet
 				case IRCode.Ldc_R8:
 					break;
 				case IRCode.Dup:
-				case IRCode.Pop:
-					// Does it make sense that these two are IR instructions?
+					// This is rewritten to stloc, ldloc, ldloc.
 					break;
+				case IRCode.Pop:
+					// Does it make sense that this are IR instructions?
+					return null;
 				case IRCode.Jmp:
 					break;
 				case IRCode.SpuInstructionMethodCall:
@@ -971,16 +974,53 @@ namespace CellDotNet
 					}
 					break;
 				case IRCode.Cgt_Un:
+					switch (lefttype.CliType)
+					{
+						case CliType.NativeInt:
+						case CliType.Int32:
+							if(righttype.CliType == CliType.NativeInt || righttype.CliType == CliType.Int32)
+							{
+								VirtualRegister val = _writer.WriteClgt(vrleft, vrright);
+								return _writer.WriteAndi(val, 1);
+							}
+							break;
+						case CliType.Float32:
+							if (righttype.CliType == CliType.Float32)
+							{
+								VirtualRegister val = _writer.WriteFcgt(vrleft, vrright);
+								return _writer.WriteAndi(val, 1);
+							}
+							break;
+					}
 					break;
 				case IRCode.Clt:
 					switch (lefttype.CliType)
 					{
 						case CliType.NativeInt:
 						case CliType.Int32:
-							return _writer.WriteCgt(vrright, vrleft);
+							VirtualRegister val = _writer.WriteCgt(vrright, vrleft);
+							return _writer.WriteAndi(val, 1);
 					}
 					break;
 				case IRCode.Clt_Un:
+					switch (lefttype.CliType)
+					{
+						case CliType.NativeInt:
+						case CliType.Int32:
+							if (righttype.CliType == CliType.NativeInt || righttype.CliType == CliType.Int32)
+							{
+								VirtualRegister val = _writer.WriteClgt(vrright, vrleft);
+								return _writer.WriteAndi(val, 1);
+							}
+							break;
+						case CliType.Float32:
+							if (righttype.CliType == CliType.Float32)
+							{
+								VirtualRegister val = _writer.WriteFcgt(vrright, vrleft);
+								return _writer.WriteAndi(val, 1);
+							}
+							break;
+					}
 					break;
 				case IRCode.Ldftn:
 					break;
