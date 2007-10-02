@@ -636,8 +636,34 @@ namespace CellDotNet
 					}
 					break;
 				case IRCode.Shr:
+					switch (lefttype.CliType)
+					{
+						case CliType.Int32:
+						case CliType.NativeInt:
+							{
+								if (righttype.CliType == CliType.Int32 || righttype.CliType == CliType.NativeInt)
+								{
+									VirtualRegister r = _writer.WriteSfi(vrright, 0);
+									return _writer.WriteRotma(vrleft, r);
+								}
+							}
+							break;
+					}
 					break;
 				case IRCode.Shr_Un:
+					switch (lefttype.CliType)
+					{
+						case CliType.Int32:
+						case CliType.NativeInt:
+							{
+								if (righttype.CliType == CliType.Int32 || righttype.CliType == CliType.NativeInt)
+								{
+									VirtualRegister r = _writer.WriteSfi(vrright, 0);
+									return _writer.WriteRotm(vrleft, r);
+								}
+							}
+							break;
+					}
 					break;
 				case IRCode.Neg:
 					switch (lefttype.CliType)
@@ -671,8 +697,9 @@ namespace CellDotNet
 						if (srctype.CliType == CliType.NativeInt)
 							return vrleft;
 
-						throw new NotSupportedException();
+//						throw new NotSupportedException();
 					}
+					break;
 				case IRCode.Conv_I8:
 					break;
 				case IRCode.Conv_R4:

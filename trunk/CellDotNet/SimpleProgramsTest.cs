@@ -40,12 +40,22 @@ namespace CellDotNet
 
 			int correctVal = del();
 
-			IntReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+//			IntReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			new TreeDrawer().DrawMethods(cc);
+
+			Disassembler.DisassembleToConsole(cc);
 
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			AreEqual(correctVal, del2());
+			using (SpeContext sc = new SpeContext())
+			{
+				object rv = sc.RunProgram(cc);
+				AreEqual(correctVal, (int)rv);
+			}
 		}
 
 		[Test]
@@ -272,7 +282,27 @@ namespace CellDotNet
 		}
 
 		[Test]
-		public void TestDivisionUnsigned()
+		public void TestDivisionSigned()
+		{
+			Converter<int, int> fun =
+				delegate(int input)
+				{
+					return input / 7;
+				};
+
+			CompileContext cc = new CompileContext(fun.Method);
+
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			object result1 = SpeContext.UnitTestRunProgram(cc, 14);
+			object result2 = SpeContext.UnitTestRunProgram(cc, 17);
+
+			AreEqual(2, (int)result1);
+			AreEqual(2, (int)result2);
+		}
+
+		[Test]
+		public void TestImplementationDivisionUnsigned()
 		{
 			Assert.AreEqual(SpuMath.Div_Un(14, 7), ((uint)14)/((uint)7), "SpuMath.Div_Un failed.");
 			Assert.AreEqual(SpuMath.Div_Un(33, 7), ((uint)33) / ((uint)7), "SpuMath.Div_Un failed.");
@@ -281,6 +311,26 @@ namespace CellDotNet
 			Assert.AreEqual(SpuMath.Div_Un(9675, 745), ((uint)9675) / ((uint)745), "SpuMath.Div_Un failed.");
 			Assert.AreEqual(SpuMath.Div_Un(123454, 3), ((uint)123454) / ((uint)3), "SpuMath.Div_Un failed.");
 			Assert.AreEqual(SpuMath.Div_Un(16524, 23), ((uint)16524) / ((uint)23), "SpuMath.Div_Un failed.");
+		}
+
+		[Test]
+		public void TestImplementationDivisionSigned()
+		{
+			Assert.AreEqual(SpuMath.Div(14, 7), 14 / 7, "SpuMath.Div failed.");
+			Assert.AreEqual(SpuMath.Div(33, 7), 33 / 7, "SpuMath.Div failed.");
+			Assert.AreEqual(SpuMath.Div(12345, 54), 12345 / 54, "SpuMath.Div failed.");
+			Assert.AreEqual(SpuMath.Div(987536, 664), 987536 / 664, "SpuMath.Div failed.");
+			Assert.AreEqual(SpuMath.Div(9675, 745), 9675 / 745, "SpuMath.Div failed.");
+			Assert.AreEqual(SpuMath.Div(123454, 3), 123454 / 3, "SpuMath.Div failed.");
+			Assert.AreEqual(SpuMath.Div(16524, 23), 16524 / 23, "SpuMath.Div failed.");
+
+			Assert.AreEqual(SpuMath.Div(-14, 7), -14 / 7, "SpuMath.Div failed.");
+			Assert.AreEqual(SpuMath.Div(33, -7), 33 / -7, "SpuMath.Div failed.");
+			Assert.AreEqual(SpuMath.Div(-12345, -54), -12345 / -54, "SpuMath.Div failed.");
+			Assert.AreEqual(SpuMath.Div(-987536, -664), -987536 / -664, "SpuMath.Div failed.");
+			Assert.AreEqual(SpuMath.Div(9675, -745), 9675 / -745, "SpuMath.Div failed.");
+			Assert.AreEqual(SpuMath.Div(123454, -3), 123454 / -3, "SpuMath.Div failed.");
+			Assert.AreEqual(SpuMath.Div(-16524, 23), -16524 / 23, "SpuMath.Div failed.");
 		}
 	}
 }
