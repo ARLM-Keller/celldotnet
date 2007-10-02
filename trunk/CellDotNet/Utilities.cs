@@ -157,9 +157,34 @@ namespace CellDotNet
 			return (value + 127) & ~127;
 		}
 
-		public static bool IsWordAligned(int offset)
+		public static bool IsWordAligned(int i)
 		{
-			return (offset%4) == 0;
+			return (i%4) == 0;
+		}
+
+		public static bool IsWordAligned(IntPtr ptr)
+		{
+			return IsWordAligned((int)ptr);
+		}
+
+		internal static bool IsWordAligned(LocalStorageAddress lsa)
+		{
+			return IsWordAligned(lsa.Value);
+		}
+
+		public static bool IsDoubleWordAligned(int i)
+		{
+			return (i%8) == 0;
+		}
+
+		public static bool IsDoubleWordAligned(IntPtr ptr)
+		{
+			return IsDoubleWordAligned((int) ptr);
+		}
+
+		internal static bool IsDoubleWordAligned(LocalStorageAddress lsa)
+		{
+			return IsDoubleWordAligned(lsa.Value);
 		}
 
 		internal static bool IsQuadwordAligned(LocalStorageAddress lsa)

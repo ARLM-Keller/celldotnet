@@ -13,7 +13,7 @@ namespace CellDotNet
 		List<KeyValuePair<int, object>> _objects = new List<KeyValuePair<int, object>>();
 		private int _nextObjectKey = 0xf000000;
 
-		public byte[] GetArguments(object[] arguments)
+		public byte[] GetArgumentsImage(object[] arguments)
 		{
 			// Allocate some extra room... hackish...
 			int currentlyAllocatedQwCount = arguments.Length + 10;
@@ -41,6 +41,7 @@ namespace CellDotNet
 						buf = BitConverter.GetBytes((long)val);
 						break;
 					case TypeCode.Object:
+					case TypeCode.String:
 						// Handled below.
 						break;
 					case TypeCode.Single:
@@ -138,6 +139,7 @@ namespace CellDotNet
 						val = BitConverter.ToInt64(buf, currentBufOffset);
 						break;
 					case TypeCode.Object:
+					case TypeCode.String:
 						// Handled below.
 						break;
 					default:

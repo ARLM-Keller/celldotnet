@@ -153,7 +153,7 @@ namespace CellDotNet
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			if (!SpeContext.HasSpeHardware)
-				return;
+				throw new PpeCallException();
 
 			SpeContext.UnitTestRunProgram(cc);
 		}

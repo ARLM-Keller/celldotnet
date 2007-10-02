@@ -134,16 +134,16 @@ namespace CellDotNet
 
 				Disassembler.DisassembleToConsole(cc);
 
-				cc.WriteAssemblyToFile("TestDma_GetIntArray_DEBUG_asm.s", mem.GetArea());
+//				cc.WriteAssemblyToFile("TestDma_GetIntArray_DEBUG_asm.s", mem.GetArea());
 
 				if (!SpeContext.HasSpeHardware)
 					return;
 
 				object rv = new SpeContext().RunProgram(cc, mem.GetArea());
 
-				Console.WriteLine("Result: {0:x}", MainStorageArea.GetEffectiveAddress(mem.GetArea()));
+//				Console.WriteLine("Result: {0:x}", MainStorageArea.GetEffectiveAddress(mem.GetArea()));
 
-				Console.WriteLine("Result: {0:x}", (int) rv);
+//				Console.WriteLine("Result: {0:x}", (int) rv);
 
 //				int correctVal = del(mem.GetArea());
 //				AreEqual(20, correctVal);
@@ -182,20 +182,19 @@ namespace CellDotNet
 				// Run on spu.
 				object rv = SpeContext.UnitTestRunProgram(cc, mem.GetArea());
 
-				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
-					Console.WriteLine("mem.ArraySegment.Array[{0}] = {1}", i, mem.ArraySegment.Array[i]);
+//				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
+//					Console.WriteLine("mem.ArraySegment.Array[{0}] = {1}", i, mem.ArraySegment.Array[i]);
 
 				IsNull(rv);
 
-				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
-					AreEqual(i - mem.ArraySegment.Offset, mem.ArraySegment.Array[i]);
+//				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
+//					AreEqual(i - mem.ArraySegment.Offset, mem.ArraySegment.Array[i]);
 			}
 		}
 
 
 		[Test]
-		public
-			void TestDma_PutIntArray()
+		public void TestDma_PutIntArray()
 		{
 			using (AlignedMemory<int> mem = SpeContext.AllocateAlignedInt32(4))
 			{
@@ -228,13 +227,13 @@ namespace CellDotNet
 				// Run on spu.
 				object rv = SpeContext.UnitTestRunProgram(cc, mem.GetArea());
 
-				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
-					Console.WriteLine("mem.ArraySegment.Array[{0}] = {1}", i, mem.ArraySegment.Array[i]);
+//				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
+//					Console.WriteLine("mem.ArraySegment.Array[{0}] = {1}", i, mem.ArraySegment.Array[i]);
 
 				IsNull(rv);
 
-				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
-					AreEqual(i - mem.ArraySegment.Offset, mem.ArraySegment.Array[i]);
+//				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
+//					AreEqual(i - mem.ArraySegment.Offset, mem.ArraySegment.Array[i]);
 			}
 		}
 	}
@@ -255,7 +254,7 @@ namespace CellDotNet
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.MainStorageArea_get_EffectiveAddress)]
-		public static uint GetEffectiveAddress(MainStorageArea ma)
+		internal static uint GetEffectiveAddress(MainStorageArea ma)
 		{
 			return ma._effectiveAddress;
 		}

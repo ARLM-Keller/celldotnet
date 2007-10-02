@@ -155,6 +155,9 @@ namespace CellDotNet
 	{
 		None = 0,
 
+		/// <summary>
+		/// Only used as an offset for other codes.
+		/// </summary>
 		CustomStopCodeBase = 0xa00,
 
 		/// <summary>
