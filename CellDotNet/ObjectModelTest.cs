@@ -529,17 +529,21 @@ namespace CellDotNet
 			public const int MagicNumber2 = 0x50;
 			public const int MagicReturn = 0x0b0c0d0;
 
-//			public readonly Int32Vector MagicVector = new Int32Vector(10, 10, 12, 13);
-//			public readonly BigStruct MagicBigStruct = new BigStruct(100, 200, 300, 400);
-
 			public Int32Vector Int32VectorReturnValue;
 			public BigStruct BigStructReturnValue;
+			public OtherPpeClass OtherPpeClassReturnValue;
 
 			private BigStruct _hitBigStruct;
-//			public BigStruct HitBigStruct
-//			{
-//				get { return _hitBigStruct; }
-//			}
+			public BigStruct HitBigStruct
+			{
+				get { return _hitBigStruct; }
+			}
+
+			private object _hitObject;
+			public object HitObject
+			{
+				get { return _hitObject; }
+			}
 
 			private Int32Vector _hitInt32Vector;
 			public Int32Vector HitInt32Vector
@@ -547,10 +551,6 @@ namespace CellDotNet
 				get { return _hitInt32Vector; }
 			}
 
-			public BigStruct HitBigStruct
-			{
-				get { return _hitBigStruct; }
-			}
 
 			int _hitcount;
 			public int Hitcount
@@ -601,7 +601,23 @@ namespace CellDotNet
 				return BigStructReturnValue;
 			}
 
+			public OtherPpeClass HitWithOtherSpeTypeReturn()
+			{
+				_hitcount++;
+				return OtherPpeClassReturnValue;
+			}
+
 			public int SomePublicFieldWhichIsNotAccessibleFromSpu;
+
+			public void Hit(object ppeobject, int number2)
+			{
+				_hitcount++;
+				_hitObject = ppeobject;
+			}
+		}
+
+		class OtherPpeClass
+		{
 		}
 
 		[Test]
@@ -671,6 +687,46 @@ namespace CellDotNet
 		}
 
 		[Test]
+		public void TestPpeClass_InstanceMethodCall_ArgsPpeRefType()
+		{
+			Action<PpeClass, object> del = delegate(PpeClass obj, object o) { obj.Hit(o, PpeClass.MagicNumber2); };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(1, cc.Methods.Count);
+
+			PpeClass inst = new PpeClass();
+			string s = "hey";
+			SpeContext.UnitTestRunProgram(cc, inst, s);
+
+			AreEqual(1, inst.Hitcount);
+			AreSame(s, inst.HitObject);
+		}
+
+		class SpeClass
+		{
+		}
+
+		[Test]
+		public void TestPpeClass_InstanceMethodCall_ArgsSpeRefTypeFailure()
+		{
+			Action<PpeClass> del = delegate(PpeClass obj) { obj.Hit(new SpeClass(), PpeClass.MagicNumber2); };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(3, cc.Methods.Count); // call to objec() included.
+
+			PpeClass inst = new PpeClass();
+
+			// This should fail somehow.
+			SpeContext.UnitTestRunProgram(cc, inst);
+
+			Fail();
+		}
+
+		[Test]
 		public void TestPpeClass_InstanceMethodCall_ReturnInt()
 		{
 			Converter<PpeClass, int> del = delegate(PpeClass obj) { return obj.HitWithValue(); };
@@ -708,12 +764,30 @@ namespace CellDotNet
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
+			cc.WriteAssemblyToFile("returnbig.s");
+			Disassembler.DisassembleToConsole(cc);
 
 			AreEqual(1, cc.Methods.Count);
 
 			PpeClass inst = new PpeClass();
 			inst.BigStructReturnValue = new BigStruct(1000, 2000, 3000, 4000);
 			AreEqual(inst.BigStructReturnValue, (BigStruct) SpeContext.UnitTestRunProgram(cc, inst));
+			AreEqual(1, inst.Hitcount);
+		}
+
+		[Test]
+		public void TestPpeClass_InstanceMethodCall_ReturnPpeRefType()
+		{
+			Converter<PpeClass, OtherPpeClass> del = delegate(PpeClass obj) { return obj.HitWithOtherSpeTypeReturn(); };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(1, cc.Methods.Count);
+
+			PpeClass inst = new PpeClass();
+			inst.OtherPpeClassReturnValue = new OtherPpeClass();
+			AreSame(inst.OtherPpeClassReturnValue, (OtherPpeClass) SpeContext.UnitTestRunProgram(cc, inst));
 			AreEqual(1, inst.Hitcount);
 		}
 

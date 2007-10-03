@@ -30,6 +30,12 @@ namespace CellDotNet
 			Assert.AreNotEqual(expected, actual);
 		}
 
+		protected static void AreSame<T1, T2>(T1 expected, T2 actual) 
+			where T1 : class where T2 : class
+		{
+			Assert.AreSame(expected, actual);
+		}
+
 		protected static void IsTrue(bool condition, string message)
 		{
 			Assert.IsTrue(condition, message);

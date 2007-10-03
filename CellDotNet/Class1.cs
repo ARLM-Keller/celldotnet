@@ -611,7 +611,7 @@ namespace CellDotNet
 //			new SpuInstructionTest().TestRI10();
 //			new SpuInstructionTest().TestRI10_2();
 //			new ObjectModelTest().TestClass_FieldAndConstructor();
-			new ObjectModelTest().TestPpeClass_InstanceMethodCall();
+			new ObjectModelTest().TestPpeClass_InstanceMethodCall_ReturnBigStruct();
 //			new LibraryTest().TestElfStaticLibrary();
 //			new SpeContextTest().TestPpeCallFailureTest();
 //			new SpeContextTest().TestStopCode_OutOfMemoryException();
