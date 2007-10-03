@@ -45,6 +45,7 @@
     <Compile Include="BitVectorTest.cs" />
     <Compile Include="CalleeSavesStoreRoutine.cs" />
     <Compile Include="Class1.cs" />
+    <Compile Include="CommonDelegates.cs" />
     <Compile Include="CompileContextTest.cs" />
     <Compile Include="DataObject.cs" />
     <Compile Include="Disassembler.cs" />

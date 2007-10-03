@@ -194,11 +194,11 @@ namespace CellDotNet
 						tw.Write("{0} {1}, {3}({2})", inst.OpCode.Name, inst.Rt, inst.Ra, inst.Constant);
 						break;
 					case SpuInstructionFormat.RI16:
-						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Constant);
+						tw.Write("{0} {1}, 0x{2:x}", inst.OpCode.Name, inst.Rt, inst.Constant);
 						break;
 					case SpuInstructionFormat.RI14:
 					case SpuInstructionFormat.RI16NoRegs:
-						tw.Write("{0} {1}", inst.OpCode.Name, inst.Constant);
+						tw.Write("{0} 0x{1:x}", inst.OpCode.Name, inst.Constant);
 						break;
 					case SpuInstructionFormat.RI18:
 						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Constant);
@@ -206,7 +206,7 @@ namespace CellDotNet
 					case SpuInstructionFormat.WEIRD:
 						if (inst.OpCode == SpuOpCode.stop)
 						{
-							tw.Write("{0} {1} ", inst.OpCode.Name, inst.Constant);
+							tw.Write("{0} 0x{1:x} ", inst.OpCode.Name, inst.Constant);
 							break;
 						}
 						else if (inst.OpCode == SpuOpCode.nop)
