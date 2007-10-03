@@ -22,7 +22,6 @@ namespace CellDotNet
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			cc.WriteAssemblyToFile("dumpx.s", 0xaeae);
-//			cc.GetEmittedCode(0xaeae);
 		}
 
 		[Test]
@@ -40,13 +39,8 @@ namespace CellDotNet
 
 			int correctVal = del();
 
-//			IntReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
-
-			new TreeDrawer().DrawMethods(cc);
-
-			Disassembler.DisassembleToConsole(cc);
 
 			if (!SpeContext.HasSpeHardware)
 				return;
@@ -138,9 +132,6 @@ namespace CellDotNet
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-//			cc.WriteAssemblyToFile("TestMethodCall.s", arg);
-			Disassembler.DisassembleToConsole(cc);
-
 			if (!SpeContext.HasSpeHardware)
 				return;
 
@@ -177,15 +168,7 @@ namespace CellDotNet
 			AreNotEqual(0, correctval, "Zero isn't good.");
 
 			CompileContext cc = new CompileContext(del.Method);
-
-			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
-			Disassembler.DisassembleUnconditionalToConsole((SpuDynamicRoutine) cc.EntryPoint);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
-
-			Disassembler.DisassembleToConsole(cc);
-
-//			cc.WriteAssemblyToFile(Utilities.GetUnitTestName() + "_asm.s", arg);
 
 			if (!SpeContext.HasSpeHardware)
 				return;
@@ -226,15 +209,7 @@ namespace CellDotNet
 			AreNotEqual(0f, correctval, "Zero isn't good.");
 
 			CompileContext cc = new CompileContext(del.Method);
-
-			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
-			Disassembler.DisassembleUnconditionalToConsole((SpuDynamicRoutine) cc.EntryPoint);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
-
-
-			Disassembler.DisassembleToConsole(cc);
-
 
 			if (!SpeContext.HasSpeHardware)
 				return;
@@ -271,7 +246,6 @@ namespace CellDotNet
 					};
 
 			CompileContext cc = new CompileContext(fun.Method);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			object result1 = SpeContext.UnitTestRunProgram(cc, 14);
