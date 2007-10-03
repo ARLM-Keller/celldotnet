@@ -13,7 +13,7 @@ namespace CellDotNet
 		List<KeyValuePair<int, object>> _objects = new List<KeyValuePair<int, object>>();
 		private int _nextObjectKey = 0xf000000;
 
-		public byte[] GetArgumentsImage(object[] arguments)
+		public byte[] GetImage(object[] arguments)
 		{
 			// Allocate some extra room... hackish...
 			int currentlyAllocatedQwCount = arguments.Length + 10;
