@@ -986,7 +986,7 @@ main:
 
 			if (marshaler == null)
 				marshaler = new Marshaler();
-			byte[] argmem = marshaler.GetArgumentsImage(arguments);
+			byte[] argmem = marshaler.GetImage(arguments);
 			if (argmem.Length != ArgumentArea.Size)
 				throw new NotSupportedException("Argument buffer is not the same size as argument area. Entry point arguments can only take up one quadword each.");
 

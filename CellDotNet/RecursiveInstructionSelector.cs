@@ -274,7 +274,7 @@ namespace CellDotNet
 							else
 							{
 								Utilities.Assert(rettype.IndirectionLevel == 0, "rettype.IndirectionLevel == 0");
-								if (rettype.CliType == CliType.ValueType && !rettype.IsImmutableSingleRegisterType)
+								if (rettype.CliType != CliType.ValueType || rettype.IsImmutableSingleRegisterType)
 									retval = _writer.WriteLoad(argaddress, 0);
 								else
 								{

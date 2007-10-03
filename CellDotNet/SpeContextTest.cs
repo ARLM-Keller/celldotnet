@@ -554,7 +554,7 @@ namespace CellDotNet
 			// Method...
 			Marshal.StructureToPtr(methodToCall.Method.MethodHandle, Marshal.UnsafeAddrOfPinnedArrayElement(buf, 0), false);
 			// Arguments...
-			byte[] argimg = marshaler.GetArgumentsImage(new object[] {methodToCall.Target, magicnumber});
+			byte[] argimg = marshaler.GetImage(new object[] {methodToCall.Target, magicnumber});
 			Utilities.Assert(argimg.Length == 32, "argimg.Length == 32");
 			Buffer.BlockCopy(argimg, 0, buf, 16, 32);
 
@@ -575,7 +575,7 @@ namespace CellDotNet
 			// Method...
 			Marshal.StructureToPtr(methodToCall.Method.MethodHandle, Marshal.UnsafeAddrOfPinnedArrayElement(buf, 0), false);
 			// Arguments...
-			byte[] argimg = marshaler.GetArgumentsImage(new object[] { magicnumber });
+			byte[] argimg = marshaler.GetImage(new object[] { magicnumber });
 			Utilities.Assert(argimg.Length == 16, "argimg.Length == 16");
 			Buffer.BlockCopy(argimg, 0, buf, 16, 16);
 

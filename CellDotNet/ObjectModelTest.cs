@@ -297,9 +297,9 @@ namespace CellDotNet
 		}
 
 
-		#region QWStruct_Big
+		#region BigStruct
 
-		struct QWStruct_Big
+		struct BigStruct
 		{
 			public int i1;
 			public int i2;
@@ -309,6 +309,19 @@ namespace CellDotNet
 			public int i6;
 			public int i7;
 			public int i8;
+
+
+			public BigStruct(int i1, int i3, int i5, int i7)
+			{
+				this.i1 = i1;
+				this.i3 = i3;
+				this.i5 = i5;
+				this.i7 = i7;
+				i8 = 0;
+				i6 = 0;
+				i4 = 0;
+				i2 = 0;
+			}
 		}
 
 		#endregion
@@ -319,7 +332,7 @@ namespace CellDotNet
 			IntReturnDelegate del =
 				delegate
 				{
-					QWStruct_Big s = new QWStruct_Big();
+					BigStruct s = new BigStruct();
 					s.i1 = 1;
 					s.i2 = 2;
 					s.i3 = 101;
@@ -344,7 +357,7 @@ namespace CellDotNet
 			IntReturnDelegate del =
 				delegate
 				{
-					QWStruct_Big s = new QWStruct_Big();
+					BigStruct s = new BigStruct();
 
 					return s.i1 + s.i2 + s.i3 + s.i4 + s.i5 + s.i6 + s.i7 + s.i8;
 				};
@@ -512,6 +525,33 @@ namespace CellDotNet
 
 		class PpeClass
 		{
+			public const int MagicNumber1 = 0x40b0c0d0;
+			public const int MagicNumber2 = 0x50;
+			public const int MagicReturn = 0x0b0c0d0;
+
+//			public readonly Int32Vector MagicVector = new Int32Vector(10, 10, 12, 13);
+//			public readonly BigStruct MagicBigStruct = new BigStruct(100, 200, 300, 400);
+
+			public Int32Vector Int32VectorReturnValue;
+			public BigStruct BigStructReturnValue;
+
+			private BigStruct _hitBigStruct;
+//			public BigStruct HitBigStruct
+//			{
+//				get { return _hitBigStruct; }
+//			}
+
+			private Int32Vector _hitInt32Vector;
+			public Int32Vector HitInt32Vector
+			{
+				get { return _hitInt32Vector; }
+			}
+
+			public BigStruct HitBigStruct
+			{
+				get { return _hitBigStruct; }
+			}
+
 			int _hitcount;
 			public int Hitcount
 			{
@@ -520,8 +560,45 @@ namespace CellDotNet
 
 			public void Hit()
 			{
-//				throw new SpeExecutionException();
 				_hitcount++;
+			}
+
+			public void Hit(int magic1, int magic2)
+			{
+				AreEqual(MagicNumber1, magic1);
+				AreEqual(MagicNumber2, magic2);
+				_hitcount++;
+			}
+
+			public void Hit(BigStruct bs, int magic2)
+			{
+				_hitBigStruct = bs;
+				AreEqual(MagicNumber2, magic2);
+				_hitcount++;
+			}
+
+			public void Hit(Int32Vector v)
+			{
+				_hitInt32Vector = v;
+				_hitcount++;
+			}
+
+			public int HitWithValue()
+			{
+				_hitcount++;
+				return MagicReturn;
+			}
+
+			public Int32Vector HitWithVectorReturn()
+			{
+				_hitcount++;
+				return Int32VectorReturnValue;
+			}
+
+			public BigStruct HitWithBigStructReturn()
+			{
+				_hitcount++;
+				return BigStructReturnValue;
 			}
 
 			public int SomePublicFieldWhichIsNotAccessibleFromSpu;
@@ -534,13 +611,109 @@ namespace CellDotNet
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
-			cc.WriteAssemblyToFile("ppecall.s", 0);
 
 			AreEqual(1, cc.Methods.Count);
 
 			PpeClass inst = new PpeClass();
 			SpeContext.UnitTestRunProgram(cc, inst);
 
+			AreEqual(1, inst.Hitcount);
+		}
+
+		[Test]
+		public void TestPpeClass_InstanceMethodCall_ArgsInt()
+		{
+			Action<PpeClass> del = delegate(PpeClass obj) { obj.Hit(PpeClass.MagicNumber1, PpeClass.MagicNumber2); };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(1, cc.Methods.Count);
+
+			PpeClass inst = new PpeClass();
+			SpeContext.UnitTestRunProgram(cc, inst);
+
+			AreEqual(1, inst.Hitcount);
+		}
+
+		[Test]
+		public void TestPpeClass_InstanceMethodCall_ArgsVector()
+		{
+			Action<PpeClass> del = delegate(PpeClass obj) { obj.Hit(new Int32Vector(10, 11, 12, 13)); };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(1, cc.Methods.Count);
+
+			PpeClass inst = new PpeClass();
+			SpeContext.UnitTestRunProgram(cc, inst);
+
+			AreEqual(1, inst.Hitcount);
+			AreEqual(new Int32Vector(10, 11, 12, 13), inst.HitInt32Vector);
+		}
+
+		[Test]
+		public void TestPpeClass_InstanceMethodCall_ArgsBigStruct()
+		{
+			Action<PpeClass> del = delegate(PpeClass obj) { obj.Hit(new BigStruct(100, 200, 300, 400), PpeClass.MagicNumber2); };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(2, cc.Methods.Count);
+
+			PpeClass inst = new PpeClass();
+			SpeContext.UnitTestRunProgram(cc, inst);
+
+			AreEqual(1, inst.Hitcount);
+			AreEqual(new BigStruct(100, 200, 300, 400), inst.HitBigStruct);
+		}
+
+		[Test]
+		public void TestPpeClass_InstanceMethodCall_ReturnInt()
+		{
+			Converter<PpeClass, int> del = delegate(PpeClass obj) { return obj.HitWithValue(); };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(1, cc.Methods.Count);
+
+			PpeClass inst = new PpeClass();
+			AreEqual(PpeClass.MagicReturn, (int) SpeContext.UnitTestRunProgram(cc, inst));
+			AreEqual(1, inst.Hitcount);
+		}
+
+		[Test]
+		public void TestPpeClass_InstanceMethodCall_ReturnVector()
+		{
+			Converter<PpeClass, Int32Vector> del = delegate(PpeClass obj) { return obj.HitWithVectorReturn(); };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(1, cc.Methods.Count);
+
+			PpeClass inst = new PpeClass();
+			inst.Int32VectorReturnValue = new Int32Vector(100, 200, 300, 400);
+			AreEqual(inst.Int32VectorReturnValue, (Int32Vector) SpeContext.UnitTestRunProgram(cc, inst));
+			AreEqual(1, inst.Hitcount);
+		}
+
+		[Test]
+		public void TestPpeClass_InstanceMethodCall_ReturnBigStruct()
+		{
+			Converter<PpeClass, BigStruct> del = delegate(PpeClass obj) { return obj.HitWithBigStructReturn(); };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(1, cc.Methods.Count);
+
+			PpeClass inst = new PpeClass();
+			inst.BigStructReturnValue = new BigStruct(1000, 2000, 3000, 4000);
+			AreEqual(inst.BigStructReturnValue, (BigStruct) SpeContext.UnitTestRunProgram(cc, inst));
 			AreEqual(1, inst.Hitcount);
 		}
 

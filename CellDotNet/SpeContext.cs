@@ -138,7 +138,6 @@ namespace CellDotNet
 				SpeStopInfo stopinfo = new SpeStopInfo();
 				runAgain = false;
 
-//				Console.WriteLine("Start SPE at address 0x{0:x}.", programCounter);
 				int rc = UnsafeNativeMethods.spe_context_run(_handle, ref programCounter, 0, IntPtr.Zero, IntPtr.Zero, ref stopinfo);
 				SpuStopCode stopcode = GetStopcode(rc, stopinfo);
 
@@ -155,11 +154,13 @@ namespace CellDotNet
 							// Clear interrupt bit.
 							programCounter &= ~(uint)1;
 
-//							Console.WriteLine("PC at ppe call: {0:x}", programCounter);
-//							Console.WriteLine("ppe mem: (ppe offset 0x{0:x}", ppeCallDataArea.Offset);
-//							Utilities.DumpMemory(this, (LocalStorageAddress) ppeCallDataArea.Offset, ppeCallDataArea.Size, Console.Out);
 							byte[] argmem = GetLocalStorageMax16K((LocalStorageAddress)ppeCallDataArea.Offset, ppeCallDataArea.Size);
-							PerformPpeCall(argmem, marshaler);
+							byte[] returnmem = PerformPpeCall(argmem, marshaler);
+							if (returnmem != null && returnmem.Length > 0)
+							{
+								
+							}
+
 
 							runAgain = true;
 						}
@@ -186,7 +187,7 @@ namespace CellDotNet
 			} while (runAgain);
 		}
 
-		internal static void PerformPpeCall(byte[] argmem, Marshaler marshaler)
+		internal static byte[] PerformPpeCall(byte[] argmem, Marshaler marshaler)
 		{
 			// Figure out which method to call - the first quadword is a RuntimeMethodHandle
 			RuntimeMethodHandle rmh;
@@ -194,10 +195,9 @@ namespace CellDotNet
 			GCHandle gc = new GCHandle();
 			try
 			{
-				gc = GCHandle.Alloc(argmem);
-				// If the method handle is bad, this might blow up the runtime.
-				rmh = (RuntimeMethodHandle) Marshal.PtrToStructure(
-					Marshal.UnsafeAddrOfPinnedArrayElement(argmem, 0), typeof (RuntimeMethodHandle));
+				gc = GCHandle.Alloc(argmem, GCHandleType.Pinned);
+				// If the method handle is bad, this will probably blow up the runtime.
+				rmh = (RuntimeMethodHandle) Marshal.PtrToStructure(gc.AddrOfPinnedObject(), typeof (RuntimeMethodHandle));
 			}
 			finally
 			{
@@ -207,8 +207,6 @@ namespace CellDotNet
 
 			Utilities.Assert(rmh.Value != IntPtr.Zero, "rmh.Value != IntPtr.Zero");
 
-			Console.WriteLine("Method handle for ppe call: 0x{0:x}", (uint)rmh.Value);
-			Console.Out.Flush();
 			System.Threading.Thread.Sleep(100);
 
 			MethodBase mb = MethodBase.GetMethodFromHandle(rmh);
@@ -248,8 +246,11 @@ namespace CellDotNet
 			object retval = methodToCall.Invoke(instance, arguments);
 			if (methodToCall.ReturnType != typeof(void))
 			{
-				throw new NotImplementedException();
+				byte[] retmem = marshaler.GetImage(new object[] { retval });
+				return retmem;
 			}
+
+			return null;
 		}
 
 		private static SpuStopCode GetStopcode(int rc, SpeStopInfo stopinfo)
@@ -342,36 +343,12 @@ namespace CellDotNet
 
 				Marshal.Copy(code, 0, dataBuf, code.Length);
 
-				DmaGetLarge(dataBuf, codeBufSize, (LocalStorageAddress) 0);
+				PutLocalStorage(dataBuf, (LocalStorageAddress) 0, codeBufSize);
 			} 
 			finally
 			{
 				if (dataBufMain != IntPtr.Zero)
 					Marshal.FreeHGlobal(dataBufMain);
-			}
-		}
-
-		/// <summary>
-		/// Transfers the data to LS.
-		/// </summary>
-		/// <param name="buffer"></param>
-		/// <param name="transferSize"></param>
-		/// <param name="lsa"></param>
-		private void DmaGetLarge(IntPtr buffer, int transferSize, LocalStorageAddress lsa)
-		{
-			const int MaxDmaSize = 16 * 1024;
-			for (int offset = 0; offset < transferSize; offset += MaxDmaSize)
-			{
-				uint DMA_tag = 1;
-				IntPtr bufptr = (IntPtr)((int)buffer + offset);
-				int size = Math.Min(transferSize - offset, MaxDmaSize);
-				spe_mfcio_get(lsa + offset, bufptr, size, DMA_tag, 0, 0);
-
-				// TODO mask skal sættes til noget fornuftigt
-				uint tag_status = 0;
-				int waitresult = UnsafeNativeMethods.spe_mfcio_tag_status_read(_handle, 0, SPE_TAG_ALL, ref tag_status);
-				if (waitresult == -1)
-					throw new LibSpeException("spe_mfcio_status_tag_read failed.");
 			}
 		}
 
@@ -398,7 +375,6 @@ namespace CellDotNet
 			}
 			throw new NotSupportedException("Data type is not supported: " + datatype);
 		}
-
 
 		/// <summary>
 		/// Gets a small value type from the specified local storage address.
@@ -539,6 +515,44 @@ namespace CellDotNet
 			{
 				if (dataBufMain != IntPtr.Zero)
 					Marshal.FreeHGlobal(dataBufMain);
+			}
+		}
+
+		private void PutLocalStorage(byte[] buffer, LocalStorageAddress lsa, int transferSize)
+		{
+			GCHandle gc = new GCHandle();
+			try
+			{
+				gc = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+				PutLocalStorage(gc.AddrOfPinnedObject(), lsa, transferSize);
+			}
+			finally
+			{
+				if (gc.IsAllocated)
+					gc.Free();
+			}
+		}
+
+		/// <summary>
+		/// Transfers the data to LS. Can handle big transfers.
+		/// </summary>
+		/// <param name="buffer"></param>
+		/// <param name="transferSize"></param>
+		/// <param name="lsa"></param>
+		private void PutLocalStorage(IntPtr buffer, LocalStorageAddress lsa, int transferSize)
+		{
+			const int MaxDmaSize = 16 * 1024;
+			for (int offset = 0; offset < transferSize; offset += MaxDmaSize)
+			{
+				uint DMA_tag = 1;
+				IntPtr bufptr = (IntPtr)((int)buffer + offset);
+				int size = Math.Min(transferSize - offset, MaxDmaSize);
+				spe_mfcio_get(lsa + offset, bufptr, size, DMA_tag, 0, 0);
+
+				uint tag_status = 0;
+				int waitresult = UnsafeNativeMethods.spe_mfcio_tag_status_read(_handle, 0, SPE_TAG_ALL, ref tag_status);
+				if (waitresult == -1)
+					throw new LibSpeException("spe_mfcio_status_tag_read failed.");
 			}
 		}
 
