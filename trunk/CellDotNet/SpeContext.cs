@@ -7,63 +7,6 @@ using System.Runtime.InteropServices;
 
 namespace CellDotNet
 {
-	/// <summary>
-	/// Represents a pinned array segment which is sutably aligned for MFC DMA.
-	/// </summary>
-	public class AlignedMemory<T> : IDisposable where T : struct
-	{
-		private GCHandle _arrayHandle;
-		private ArraySegment<T> _arraySegment;
-
-		internal AlignedMemory(GCHandle arrayHandle, ArraySegment<T> arraySegment)
-		{
-			_arrayHandle = arrayHandle;
-			_arraySegment = arraySegment;
-		}
-
-		public MainStorageArea GetArea()
-		{
-			IntPtr ptr = GetIntPtr();
-			MainStorageArea area = new MainStorageArea(ptr);
-
-			return area;
-		}
-
-		public IntPtr GetIntPtr()
-		{
-			if (!_arrayHandle.IsAllocated)
-				throw new InvalidOperationException();
-
-			return Marshal.UnsafeAddrOfPinnedArrayElement(_arraySegment.Array, _arraySegment.Offset);
-		}
-
-		public ArraySegment<T> ArraySegment
-		{
-			get { return _arraySegment; }
-		}
-
-		public T this[int index]
-		{
-			get { return _arraySegment.Array[_arraySegment.Offset + index]; }
-			set { _arraySegment.Array[_arraySegment.Offset + index] = value; }
-		}
-
-		public void Dispose()
-		{
-			if (_arrayHandle.IsAllocated)
-			{
-				_arrayHandle.Free();
-				GC.SuppressFinalize(this);
-				_arraySegment = new ArraySegment<T>();
-			}
-		}
-
-		~AlignedMemory()
-		{
-			Dispose();
-		}
-	}
-
 	public class SpeContext : IDisposable
 	{
 		private const uint SPE_TAG_ALL = 1;
@@ -211,8 +154,8 @@ namespace CellDotNet
 							programCounter &= ~(uint)1;
 
 							byte[] argmem = GetLocalStorageMax16K((LocalStorageAddress)ppeCallDataArea.Offset, ppeCallDataArea.Size);
+							PerformPpeCall(argmem, marshaler);
 
-							HandlePpeCall(argmem, marshaler);
 							runAgain = true;
 						}
 						break;
@@ -238,14 +181,23 @@ namespace CellDotNet
 			} while (runAgain);
 		}
 
-		internal static unsafe void HandlePpeCall(byte[] argmem, Marshaler marshaler)
+		internal static void PerformPpeCall(byte[] argmem, Marshaler marshaler)
 		{
 			// Figure out which method to call - the first quadword is a RuntimeMethodHandle
 			RuntimeMethodHandle rmh;
-			fixed (byte* ptr = argmem)
+
+			GCHandle gc = new GCHandle();
+			try
 			{
+				gc = GCHandle.Alloc(argmem);
 				// If the method handle is bad, this might blow up the runtime.
-				rmh = (RuntimeMethodHandle) Marshal.PtrToStructure((IntPtr)ptr, typeof (RuntimeMethodHandle));
+				rmh = (RuntimeMethodHandle) Marshal.PtrToStructure(
+					Marshal.UnsafeAddrOfPinnedArrayElement(argmem, 0), typeof (RuntimeMethodHandle));
+			}
+			finally
+			{
+				if (gc.IsAllocated)
+					gc.Free();
 			}
 
 			MethodBase mb = MethodBase.GetMethodFromHandle(rmh);
@@ -282,7 +234,9 @@ namespace CellDotNet
 			else
 				arguments = values;
 
-			methodToCall.Invoke(instance, arguments);
+			object retval = methodToCall.Invoke(instance, arguments);
+
+
 		}
 
 		private static SpuStopCode GetStopcode(int rc, SpeStopInfo stopinfo)

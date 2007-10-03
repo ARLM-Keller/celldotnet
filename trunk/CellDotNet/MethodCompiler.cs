@@ -449,13 +449,6 @@ namespace CellDotNet
 					calleTemps.Add(temp);
 					_instructions.WriteMove(register, temp);
 				}
-
-//				for (int regnum = 80; regnum <= 127; regnum++)
-//				{
-//					VirtualRegister temp = NextRegister();
-//					calleTemps.Add(temp);
-//					_instructions.WriteMove(HardwareRegister.GetHardwareRegister(regnum), temp);
-//				}
 			}
 
 			// Generate the body.
@@ -475,10 +468,6 @@ namespace CellDotNet
 				{
 					_instructions.WriteMove(calleTemps[i], HardwareRegister.GetHardwareRegister(i+80));
 				}
-//				for (int regnum = 80; regnum <= 127; regnum++)
-//				{
-//					_instructions.WriteMove(calleTemps[regnum - 80], HardwareRegister.GetHardwareRegister(regnum));
-//				}
 			}
 
 			State = MethodCompileState.S4InstructionSelectionDone;

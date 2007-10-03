@@ -542,7 +542,7 @@ namespace CellDotNet
 		#endregion
 
 		[Test]
-		public void TestPpeCallMarshaling()
+		public void TestPpeInstanceCallMarshaling()
 		{
 			byte[] buf = new byte[3*16];
 
@@ -558,9 +558,37 @@ namespace CellDotNet
 			Utilities.Assert(argimg.Length == 32, "argimg.Length == 32");
 			Buffer.BlockCopy(argimg, 0, buf, 16, 32);
 
-			SpeContext.HandlePpeCall(buf, marshaler);
+			SpeContext.PerformPpeCall(buf, marshaler);
 
 			AreEqual(magicnumber, callArgumentValue);
+		}
+
+		[Test]
+		public void TestPpeStaticCallMarshaling()
+		{
+			byte[] buf = new byte[2 * 16];
+
+			const int magicnumber = 42;
+			Action<int> methodToCall = delegate(int obj) { throw new DummyException(obj == magicnumber ? "ok" : "bad"); };
+			Marshaler marshaler = new Marshaler();
+
+			// Method...
+			Marshal.StructureToPtr(methodToCall.Method.MethodHandle, Marshal.UnsafeAddrOfPinnedArrayElement(buf, 0), false);
+			// Arguments...
+			byte[] argimg = marshaler.GetArgumentsImage(new object[] { magicnumber });
+			Utilities.Assert(argimg.Length == 16, "argimg.Length == 16");
+			Buffer.BlockCopy(argimg, 0, buf, 16, 16);
+
+			try
+			{
+				SpeContext.PerformPpeCall(buf, marshaler);
+				Fail("Should have gotten an exception.");
+			}
+			catch (TargetInvocationException e)
+			{
+				DummyException realexception = (DummyException) e.InnerException;
+				AreEqual("ok", realexception.Message);
+			}
 		}
 
 		private static T CreateSpeDelegate<T>(T delegateToWrap) where T : class

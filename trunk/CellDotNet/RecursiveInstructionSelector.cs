@@ -200,9 +200,92 @@ namespace CellDotNet
 					}
 				case IRCode.PpeCall:
 					{
+						int areaSlot = 0;
 
-						break;
-						
+						// Write method to be called.
+						MethodInfo method = inst.OperandAsPpeMethod.Method;
+						VirtualRegister handlereg = _writer.WriteLoadIntPtr(method.MethodHandle.Value);
+
+						VirtualRegister argAddress = _writer.WriteLoadAddress(_specialSpeObjects.PpeCallDataArea);
+						_writer.WriteStqd(handlereg, argAddress, areaSlot++);
+
+						// Write parameters to the ppe call area.
+						MethodCallInstruction mci = (MethodCallInstruction) inst;
+						for (int paramidx = 0; paramidx < mci.Parameters.Count; paramidx++)
+						{
+							TreeInstruction param = mci.Parameters[paramidx];
+							StackTypeDescription type = param.StackType;
+							if (type.IndirectionLevel == 0)
+							{
+								// Byval value types.
+								Utilities.Assert(type.CliType != CliType.ObjectType, "type.CliType != CliType.ObjectType");
+								if (type.CliType == CliType.ValueType && !type.IsImmutableSingleRegisterType)
+								{
+									// It's on the stack.
+									for (int qnum = 0; qnum < type.ComplexType.QuadWordCount; qnum++)
+									{
+										VirtualRegister val = _writer.WriteLqd(childregs[paramidx], qnum);
+										_writer.WriteStqd(val, argAddress, areaSlot++);
+									}
+								}
+								else
+								{
+									// The value is in a single register.
+									_writer.WriteStqd(childregs[paramidx], argAddress, areaSlot++);
+								}
+							}
+							else if (type.IndirectionLevel == 1)
+							{
+								StackTypeDescription etype = type.Dereference();
+								if (etype.CliType != CliType.ObjectType)
+									throw new NotSupportedException(
+										"Argument type '" + type + "' is not supported. Unmanaged pointers are not supported.");
+
+								// Should be a PPE reference type handle.
+								_writer.WriteStqd(childregs[paramidx], argAddress, areaSlot++);
+							}
+							else
+								throw new NotSupportedException("Argument type '" + type + "' is not supported.");
+						}
+
+						// Perform the call.
+						_writer.WriteStop(SpuStopCode.PpeCall);
+
+						// Move return value back.
+						StackTypeDescription rettype = mci.StackType;
+						if (rettype != StackTypeDescription.None)
+						{
+							VirtualRegister retval;
+							if (rettype.DereferencedCliType == CliType.ObjectType)
+							{
+								Utilities.Assert(rettype.IndirectionLevel == 1, "mci.StackType.IndirectionLevel == 1");
+								retval = _writer.WriteLqd(argAddress, 0);
+							}
+							else
+							{
+								Utilities.Assert(rettype.IndirectionLevel == 0, "rettype.IndirectionLevel == 0");
+								if (rettype.CliType == CliType.ValueType && !rettype.IsImmutableSingleRegisterType)
+									retval = _writer.WriteLqd(argAddress, 0);
+								else
+								{
+									throw new NotImplementedException();
+//									for (int qnum = 0; qnum < rettype.ComplexType.QuadWordCount; qnum++)
+//									{
+//										VirtualRegister val = _writer.WriteLqd(argAddress, qnum);
+//										_writer.WriteStqd(val, argAddress, areaSlot++);
+//									}
+								}
+
+							
+							}
+
+							Utilities.Assert(areaSlot*16 <= _specialSpeObjects.PpeCallDataArea.Size,
+							                 "areaSlot * 16 < _specialSpeObjects.PpeCallDataArea.Size");
+
+							return retval;
+						}
+						else
+							return null;
 					}
 				case IRCode.Newobj:
 					{

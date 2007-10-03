@@ -134,6 +134,11 @@ namespace CellDotNet
 			get { return _operand as MethodCompiler; }
 		}
 
+		public PpeMethod OperandAsPpeMethod
+		{
+			get { return _operand as PpeMethod; }
+		}
+
 		public IRBasicBlock OperandAsBasicBlock
 		{
 			get {return _operand as IRBasicBlock; }

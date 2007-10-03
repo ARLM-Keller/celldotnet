@@ -473,6 +473,16 @@ namespace CellDotNet
 		}
 
 		/// <summary>
+		/// Pseudo instruction to load a main storage pointer into a register.
+		/// </summary>
+		/// <param name="i"></param>
+		/// <returns></returns>
+		public VirtualRegister WriteLoadIntPtr(IntPtr i)
+		{
+			return WriteLoadI4(i.ToInt32());
+		}
+
+		/// <summary>
 		/// Pseudo instruction to load the address of an object into a rgister.
 		/// No other registers are used.
 		/// </summary>
