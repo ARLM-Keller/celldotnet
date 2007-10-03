@@ -180,6 +180,67 @@ namespace CellDotNet
 
 		#region Tree iteration / checking.
 
+		public static TreeInstruction ForeachTreeInstruction(TreeInstruction root, Converter<TreeInstruction, TreeInstruction> converter)
+		{
+			if (root == null)
+				return null;
+
+			TreeInstruction newRoot = null;
+
+			Stack<TreeInstruction> parrentlist = new Stack<TreeInstruction>();
+			Stack<int> chieldIndexList = new Stack<int>();
+
+			TreeInstruction parrent = null;
+			int chieldIndex = 0;
+
+			TreeInstruction inst = root;
+
+			do
+			{
+				TreeInstruction newInst = converter(inst);
+
+				if (newInst != null)
+				{
+					inst = newInst;
+					if (parrent != null)
+						parrent.ReplaceChild(chieldIndex, newInst);
+					else
+						newRoot = newInst;
+				}
+
+				// Go to the nest instruction.
+				if (inst.GetChildInstructions().Length > 0)
+				{
+					parrentlist.Push(parrent);
+					chieldIndexList.Push(chieldIndex);
+
+					parrent = inst;
+					chieldIndex = 0;
+
+					inst = inst.GetChildInstructions()[0];
+				}
+				else if (parrent != null && chieldIndex + 1 < parrent.GetChildInstructions().Length)
+				{
+					inst = parrent.GetChildInstructions()[++chieldIndex];
+				}
+				else if (parrent != null)
+				{
+					while(parrent != null && chieldIndex + 1 >= parrent.GetChildInstructions().Length)
+					{
+						parrent = parrentlist.Pop();
+						chieldIndex = chieldIndexList.Pop();
+					}
+
+					if(parrent != null)
+						inst = parrent.GetChildInstructions()[++chieldIndex];
+
+					//					parrent = parrentlist.Peek();
+					//					chieldIndex = chieldIndexList.Peek();
+				}
+			} while (parrent != null);
+			return newRoot;
+		}
+
 		/// <summary>
 		/// For checking tree construction.
 		/// </summary>

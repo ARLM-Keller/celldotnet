@@ -6,7 +6,7 @@ namespace CellDotNet
 	/// <summary>
 	/// Sizes of numeric operands on the stack.
 	/// </summary>
-	enum CliNumericSize : byte
+	internal enum CliNumericSize : byte
 	{
 		None,
 		OneByte = 1,
@@ -21,17 +21,33 @@ namespace CellDotNet
 	/// <para>TODO: Express non-basic types.</para>
 	/// </summary>
 	[DebuggerDisplay("{DebuggerDisplay}")]
-	struct StackTypeDescription : IEquatable<StackTypeDescription>
+	internal struct StackTypeDescription : IEquatable<StackTypeDescription>
 	{
 		public static readonly StackTypeDescription None = new StackTypeDescription();
-		public static readonly StackTypeDescription Int32 = new StackTypeDescription(CliType.Int32, CliNumericSize.FourBytes, true);
-		public static readonly StackTypeDescription Int64 = new StackTypeDescription(CliType.Int64, CliNumericSize.EightBytes, true);
-		public static readonly StackTypeDescription Float32 = new StackTypeDescription(CliType.Float32, CliNumericSize.FourBytes, true);
-		public static readonly StackTypeDescription Float64 = new StackTypeDescription(CliType.Float64, CliNumericSize.EightBytes, true);
-		public static readonly StackTypeDescription Int32Vector = new StackTypeDescription(CliType.Int32Vector, CliNumericSize.SixteenBytes, true);
-		public static readonly StackTypeDescription Float32Vector = new StackTypeDescription(CliType.Float32Vector, CliNumericSize.SixteenBytes, true);
-		public static readonly StackTypeDescription ObjectType = new StackTypeDescription(CliType.ObjectType, CliNumericSize.None, false);
-		public static readonly StackTypeDescription NativeInt = new StackTypeDescription(CliType.NativeInt, CliNumericSize.None, true);
+
+		public static readonly StackTypeDescription Int32 =
+			new StackTypeDescription(CliType.Int32, CliNumericSize.FourBytes, true);
+
+		public static readonly StackTypeDescription Int64 =
+			new StackTypeDescription(CliType.Int64, CliNumericSize.EightBytes, true);
+
+		public static readonly StackTypeDescription Float32 =
+			new StackTypeDescription(CliType.Float32, CliNumericSize.FourBytes, true);
+
+		public static readonly StackTypeDescription Float64 =
+			new StackTypeDescription(CliType.Float64, CliNumericSize.EightBytes, true);
+
+		public static readonly StackTypeDescription Int32Vector =
+			new StackTypeDescription(CliType.Int32Vector, CliNumericSize.SixteenBytes, true);
+
+		public static readonly StackTypeDescription Float32Vector =
+			new StackTypeDescription(CliType.Float32Vector, CliNumericSize.SixteenBytes, true);
+
+		public static readonly StackTypeDescription ObjectType =
+			new StackTypeDescription(CliType.ObjectType, CliNumericSize.None, false);
+
+		public static readonly StackTypeDescription NativeInt =
+			new StackTypeDescription(CliType.NativeInt, CliNumericSize.None, true);
 
 		public CliType _cliType;
 		private bool _isSigned;
@@ -57,8 +73,8 @@ namespace CellDotNet
 			_complexType = null;
 			_isArray = false;
 		}
-		
-		static public StackTypeDescription GetStackType(CliType clitype)
+
+		public static StackTypeDescription GetStackType(CliType clitype)
 		{
 			switch (clitype)
 			{
@@ -97,11 +113,15 @@ namespace CellDotNet
 				_cliType = CliType.ObjectType;
 				_indirectionLevel = 1;
 			}
+
 			_isSigned = false;
 			_numericSize = CliNumericSize.None;
 			_isManaged = false;
 			_complexType = complexType;
 			_isArray = complexType.ReflectionType.IsArray;
+
+			if (_isArray)
+				_indirectionLevel++;
 
 			Utilities.PretendVariableIsUsed(DebuggerDisplay);
 		}
@@ -130,10 +150,7 @@ namespace CellDotNet
 		/// </summary>
 		public bool IsImmutableSingleRegisterType
 		{
-			get
-			{
-				return this == Int32Vector || this == Float32Vector;
-			}
+			get { return this == Int32Vector || this == Float32Vector; }
 		}
 
 		/// <summary>
@@ -145,8 +162,10 @@ namespace CellDotNet
 			{
 				if (IndirectionLevel > 0)
 				{
-					if (IsManagedPointer)
+					if (_isManaged)
 						return CliType.ManagedPointer;
+					else if (_isArray)
+						return CliType.ObjectType;
 					else if (IndirectionLevel > 0)
 						return CliType.NativeInt;
 				}
@@ -167,6 +186,9 @@ namespace CellDotNet
 		{
 			get
 			{
+				if (_isArray)
+					return CliNumericSize.FourBytes;
+
 				AssertSimple();
 				return _numericSize;
 			}
@@ -177,7 +199,7 @@ namespace CellDotNet
 		/// </summary>
 		public bool IsArray
 		{
-			get { return _isArray; }
+			get { return !_isManaged && _isArray; }
 		}
 
 		/// <summary>
@@ -194,10 +216,11 @@ namespace CellDotNet
 			get { return _indirectionLevel; }
 		}
 
-		public bool IsByRef
-		{
-			get { return IndirectionLevel > 0; }
-		}
+//		public bool IsByRef
+//		{
+//			// TODO array?
+//			get { return IndirectionLevel > 0; }
+//		}
 
 		public StackTypeDescription GetManagedPointer()
 		{
@@ -238,29 +261,31 @@ namespace CellDotNet
 		/// <returns></returns>
 		public StackTypeDescription GetArrayType()
 		{
-			if (_isArray)
-				throw new NotSupportedException("Arrays of arrays are not supported.");
+			if (_isArray || _cliType == CliType.ManagedPointer)
+				throw new NotSupportedException("This array type not suported.");
 
 			StackTypeDescription arr = this;
 			arr._isArray = true;
+			arr._indirectionLevel++;
 
 			return arr;
 		}
 
 		public StackTypeDescription GetArrayElementType()
 		{
-			if (!_isArray)
+			if (!_isArray || _isManaged)
 				throw new InvalidOperationException("This type is not an array type.");
 
 			StackTypeDescription std = this;
 			std._isArray = false;
+			std._indirectionLevel--;
 
 			return std;
 		}
 
 		public StackTypeDescription GetPointer()
 		{
-			if (_isManaged)
+			if (_isManaged || _isArray)
 				throw new InvalidOperationException();
 
 			StackTypeDescription rv = this;
@@ -293,7 +318,7 @@ namespace CellDotNet
 
 		public StackTypeDescription Dereference()
 		{
-			if (IndirectionLevel == 0)
+			if (IndirectionLevel == 0 || _isArray)
 				throw new InvalidOperationException("ReflectionType is not byref.");
 
 			StackTypeDescription e = this;
@@ -309,7 +334,7 @@ namespace CellDotNet
 
 		public StackTypeDescription DereferenceFully()
 		{
-			if (IndirectionLevel == 0)
+			if (IndirectionLevel == 0 || _isArray)
 				throw new InvalidOperationException("ReflectionType is not byref.");
 
 			StackTypeDescription e = this;
@@ -333,15 +358,15 @@ namespace CellDotNet
 				case CliType.None:
 					return null;
 				case CliType.Int32:
-					return typeof(int);
+					return typeof (int);
 				case CliType.Int64:
-					return typeof(long);
+					return typeof (long);
 				case CliType.NativeInt:
-					return typeof(IntPtr);
+					return typeof (IntPtr);
 				case CliType.Float32:
-					return typeof(sbyte);
+					return typeof (sbyte);
 				case CliType.Float64:
-					return typeof(float);
+					return typeof (float);
 				case CliType.ValueType:
 				case CliType.ObjectType:
 					return ComplexType.ReflectionType;
@@ -365,7 +390,7 @@ namespace CellDotNet
 			{
 				// I guess this is not entirely correct if you got an unmanaged pointer to
 				// a managed pointer...
-				if (IsManagedPointer)
+				if (_isManaged)
 					s += new string('&', IndirectionLevel);
 				else
 					s += new string('*', IndirectionLevel - 1);
@@ -379,14 +404,14 @@ namespace CellDotNet
 
 		#region Equality stuff
 
-		static public bool operator==(StackTypeDescription x, StackTypeDescription y)
+		public static bool operator ==(StackTypeDescription x, StackTypeDescription y)
 		{
 			return (x._cliType == y._cliType) &&
 			       (x._complexType == y._complexType) &&
 			       (x._indirectionLevel == y._indirectionLevel) &&
 			       (x._isManaged == y._isManaged) &&
 			       (x._isSigned == y._isSigned) &&
-				   (x._isArray == y._isArray) &&
+			       (x._isArray == y._isArray) &&
 			       (x._numericSize == y._numericSize);
 		}
 

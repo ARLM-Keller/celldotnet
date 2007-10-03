@@ -50,18 +50,32 @@ namespace CellDotNet
 				return value1;
 		}
 
-		public static int Div(int dividend, int divisor)
+		internal static int Div(int dividend, int divisor)
 		{
 			int quotient=0, remainder=0;
 			signed_divide(dividend, divisor, ref quotient, ref remainder);
 			return quotient;
 		}
 
-		public static uint Div_Un(uint dividend, uint divisor)
+		internal static uint Div_Un(uint dividend, uint divisor)
 		{
 			uint quotient = 0, remainder = 0;
 			unsigned_divide(dividend, divisor, ref quotient, ref remainder);
 			return quotient;
+		}
+
+		internal static int Rem(int dividend, int divisor)
+		{
+			int quotient = 0, remainder = 0;
+			signed_divide(dividend, divisor, ref quotient, ref remainder);
+			return remainder;
+		}
+
+		internal static uint Rem_Un(uint dividend, uint divisor)
+		{
+			uint quotient = 0, remainder = 0;
+			unsigned_divide(dividend, divisor, ref quotient, ref remainder);
+			return remainder;
 		}
 
 		internal static void unsigned_divide(uint dividend, uint divisor, ref uint quotient, ref uint remainder)
@@ -148,68 +162,5 @@ namespace CellDotNet
 					quotient = -q;
 			}
 		} /* signed_divide */
-
-
-		internal static uint Div_Un_DEBUG(uint dividend, uint divisor)
-		{
-			uint quotient = 0, remainder = 0;
-			unsigned_divide_DEBUG(dividend, divisor, ref quotient, ref remainder);
-			return quotient;
-		}
-
-		internal static void unsigned_divide_DEBUG(uint dividend, uint divisor, ref uint quotient, ref uint remainder)
-		{
-			uint num_bits;
-			uint bit, d = 0;
-			int i;
-
-//			remainder = 0;
-//			quotient = 0;
-
-//			if (divisor == 0)
-//				return;
-//
-//			if (divisor > dividend)
-//			{
-//				remainder = dividend;
-//				return;
-//			}
-//
-//			if (divisor == dividend)
-//			{
-//				quotient = 1;
-//				return;
-//			}
-
-			num_bits = 32;
-
-//			while (remainder < divisor)
-//			{
-//				bit = (dividend & 0x80000000) >> 31;
-//				remainder = (remainder << 1) | bit;
-//				d = dividend;
-//				dividend = dividend << 1;
-//				num_bits--;
-//			}
-
-//			dividend = d;
-//			remainder = remainder >> 1;
-//			num_bits++;
-
-			for (i = 0; i < num_bits; i++)
-			{
-//				bit = (dividend & 0x80000000) >> 31;
-//				remainder = (remainder << 1) | bit;
-				uint t = remainder - divisor;
-				bool q = ((t & 0x80000000) >> 31) == 0;
-//				dividend = dividend << 1;
-				quotient = ((quotient << 1) | (uint)(q ? 1 : 0));
-//				if (q)
-//				{
-//					remainder = t;
-//				}
-			}
-		} /* unsigned_divide */
-
 	}
 }

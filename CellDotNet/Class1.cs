@@ -85,11 +85,11 @@ namespace CellDotNet
 //
 //			object result = SpeContext.UnitTestRunProgram(cc, 17);
 
-			new ILOpCodeExecutionTest().Test_Div_Un();
+//			new ILOpCodeExecutionTest().Test_Div();
 
 //			new ILOpCodeExecutionTest().Test_Beq();
 
-//			new SimpleProgramsTest().TestDivisionUnsigned();
+			new SimpleProgramsTest().TestDivisionSigned();
 
 			Console.WriteLine("Running RunKlaus done.");
 		}
