@@ -110,12 +110,17 @@ namespace CellDotNet
 
 		public object[] GetValues(byte[] buf, Type[] types)
 		{
+			return GetValues(buf, types, 0);	
+		}
+
+		public object[] GetValues(byte[] buf, Type[] types, int offset)
+		{
 			Utilities.AssertArgument(buf.Length % 16 == 0, "buf.Length % 16 == 0");
 			Utilities.AssertArgument(buf.Length >= types.Length * 16, "buf.Length >= types.Length * 16");
 
 			object[] arr = new object[types.Length];
 
-			int currentBufOffset = 0;
+			int currentBufOffset = offset;
 			for (int i = 0; i < types.Length; i++)
 			{
 				Type type = types[i];

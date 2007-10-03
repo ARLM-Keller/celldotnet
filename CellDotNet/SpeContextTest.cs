@@ -541,6 +541,28 @@ namespace CellDotNet
 
 		#endregion
 
+		[Test]
+		public void TestPpeCallMarshaling()
+		{
+			byte[] buf = new byte[3*16];
+
+			int callArgumentValue = 0;
+			const int magicnumber = 42;
+			Action<int> methodToCall = delegate(int obj) { callArgumentValue = obj; };
+			Marshaler marshaler = new Marshaler();
+
+			// Method...
+			Marshal.StructureToPtr(methodToCall.Method.MethodHandle, Marshal.UnsafeAddrOfPinnedArrayElement(buf, 0), false);
+			// Arguments...
+			byte[] argimg = marshaler.GetArgumentsImage(new object[] {methodToCall.Target, magicnumber});
+			Utilities.Assert(argimg.Length == 32, "argimg.Length == 32");
+			Buffer.BlockCopy(argimg, 0, buf, 16, 32);
+
+			SpeContext.HandlePpeCall(buf, marshaler);
+
+			AreEqual(magicnumber, callArgumentValue);
+		}
+
 		private static T CreateSpeDelegate<T>(T delegateToWrap) where T : class
 		{
 			return SpeUnitTestDelegateRunner.CreateUnitTestSpeDelegate(delegateToWrap);

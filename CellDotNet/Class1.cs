@@ -600,13 +600,20 @@ namespace CellDotNet
 
 		private unsafe static void RunRasmus()
 		{
+			RuntimeMethodHandle mh = MethodBase.GetCurrentMethod().MethodHandle;
+			byte[] buf = new byte[100];
+			IntPtr ptr = Marshal.UnsafeAddrOfPinnedArrayElement(buf, 0);
+			Marshal.StructureToPtr(mh, ptr, false);
+
+			RuntimeMethodHandle mh2 = (RuntimeMethodHandle) Marshal.PtrToStructure(ptr, typeof (RuntimeMethodHandle));
+
 //			new VectorTypeTest().TestVectorFloat_ConstructorRefArg();
 //			new SpuInstructionTest().TestRI10();
 //			new SpuInstructionTest().TestRI10_2();
 //			new ObjectModelTest().TestClass_FieldAndConstructor();
 //			new ObjectModelTest().TestPpeClass_InstanceMethodCall();
 //			new LibraryTest().TestElfStaticLibrary();
-			new SpeContextTest().TestPpeCallFailureTest();
+//			new SpeContextTest().TestPpeCallFailureTest();
 //			new SpeContextTest().TestStopCode_OutOfMemoryException();
 //			new ObjectModelTest().TestClass_InstanceMethodAndFields();
 //			new MarshalerTest().TestReferenceTypes();

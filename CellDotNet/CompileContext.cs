@@ -35,6 +35,7 @@ namespace CellDotNet
 		private int[] _emittedCode;
 		private DataObject _argumentArea;
 
+		private DataObject _ppeCallDataArea = DataObject.FromQuadWords(15, "PpeCallDataArea");
 		private CompileContextState _state;
 
 		private MethodBase _entryPointMethod;
@@ -102,6 +103,11 @@ namespace CellDotNet
 				AssertState(CompileContextState.S8Complete);
 				return _argumentArea;
 			}
+		}
+
+		internal DataObject PpeCallDataArea
+		{
+			get { return _ppeCallDataArea; }
 		}
 
 		public void PerformProcessing(CompileContextState targetState)
@@ -283,6 +289,7 @@ namespace CellDotNet
 			if (_returnValueLocation != null)
 				all.Add(_returnValueLocation);
 			all.Add(_argumentArea);
+			all.Add(_ppeCallDataArea);
 
 			return all;
 		}
@@ -716,7 +723,7 @@ namespace CellDotNet
 			State = CompileContextState.S3InstructionSelectionDone;
 		}
 
-		public static void AssertAllValueTypeFields(Type t)
+		internal static void AssertAllValueTypeFields(Type t)
 		{
 			if (!t.IsValueType)
 				throw new ArgumentException("Type " + t.FullName + " is not a value type.");

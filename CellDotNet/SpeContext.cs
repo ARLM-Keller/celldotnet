@@ -159,13 +159,6 @@ namespace CellDotNet
 
 		public SpeContext()
 		{
-			if (HasSpeHardware)
-			{
-				// Call this one now to warm up, so that we don't risk having an errno overwritten
-				// by suddenly loading the posix assembly.
-				GetErrorCode();
-			}
-
 			_handle = UnsafeNativeMethods.spe_context_create(0, IntPtr.Zero);
 			if (_handle == IntPtr.Zero || _handle == null)
 				throw new Exception();
@@ -173,6 +166,197 @@ namespace CellDotNet
 			_localStorageSize = UnsafeNativeMethods.spe_ls_size_get(_handle);
 			_localStorageMappedAddress = UnsafeNativeMethods.spe_ls_area_get(_handle);
 		}
+
+		private void AssertHasNativeContext()
+		{
+			if (_handle == IntPtr.Zero)
+				throw new InvalidOperationException("No context.");
+		}
+
+		#region Running
+
+		internal void Run()
+		{
+			Run(null, null);
+		}
+
+		private void Run(DataObject ppeCallDataArea, Marshaler marshaler)
+		{
+			AssertHasNativeContext();
+
+			if (marshaler == null)
+				marshaler = new Marshaler();
+
+			uint programCounter = 0;
+			bool runAgain = false;
+
+			do
+			{
+				SpeStopInfo stopinfo = new SpeStopInfo();
+
+				int rc = UnsafeNativeMethods.spe_context_run(_handle, ref programCounter, 0, IntPtr.Zero, IntPtr.Zero, ref stopinfo);
+				SpuStopCode stopcode = GetStopcode(rc, stopinfo);
+
+				switch (stopcode)
+				{
+					case SpuStopCode.None:
+					case SpuStopCode.ExitSuccess:
+					case SpuStopCode.ExitFailure:
+						break;
+					case SpuStopCode.OutOfMemory:
+						throw new SpeOutOfMemoryException();
+					case SpuStopCode.PpeCall:
+						{
+							// Clear interrupt bit.
+							programCounter &= ~(uint)1;
+
+							byte[] argmem = GetLocalStorageMax16K((LocalStorageAddress)ppeCallDataArea.Offset, ppeCallDataArea.Size);
+
+							HandlePpeCall(argmem, marshaler);
+							runAgain = true;
+						}
+						break;
+					case SpuStopCode.PpeCallFailureTest:
+						throw new PpeCallException();
+					case SpuStopCode.StackOverflow:
+						throw new SpeStackOverflowException();
+					case SpuStopCode.DebuggerBreakpoint:
+						if (_debugValueObject != null)
+						{
+							throw new SpeDebugException("Debug breakpoint. Debug value: "
+							                            + DmaGetValue<int>((LocalStorageAddress) _debugValueObject.Offset));
+						}
+						else
+						{
+							throw new SpeDebugException("Debug breakpoint.");
+						}
+					default:
+						throw new SpeExecutionException(
+							string.Format("An error occurred during execution. The error code is: {0} (0x{1:x}).",
+								stopinfo.SignalCode, stopinfo.SignalCode));
+				}
+			} while (runAgain);
+		}
+
+		internal static unsafe void HandlePpeCall(byte[] argmem, Marshaler marshaler)
+		{
+			// Figure out which method to call - the first quadword is a RuntimeMethodHandle
+			RuntimeMethodHandle rmh;
+			fixed (byte* ptr = argmem)
+			{
+				// If the method handle is bad, this might blow up the runtime.
+				rmh = (RuntimeMethodHandle) Marshal.PtrToStructure((IntPtr)ptr, typeof (RuntimeMethodHandle));
+			}
+
+			MethodBase mb = MethodBase.GetMethodFromHandle(rmh);
+			if (mb is ConstructorInfo)
+				throw new NotSupportedException("Calling PPE type constructors is currently not supported.");
+
+			MethodInfo methodToCall = (MethodInfo) mb;
+
+			// Construct type list for marshaler.
+			ParameterInfo[] parameters = methodToCall.GetParameters();
+			List<Type> argTypes = new List<Type>(parameters.Length + 1);
+			if (!methodToCall.IsStatic)
+				argTypes.Add(methodToCall.DeclaringType);
+
+			foreach (ParameterInfo param in parameters)
+			{
+				argTypes.Add(param.ParameterType);
+			}
+			object[] values = marshaler.GetValues(argmem, argTypes.ToArray(), 16);
+
+
+			// Invoke.
+			object instance = null;
+			object[] arguments;
+			if (!methodToCall.IsStatic)
+			{
+				instance = values[0];
+				Utilities.Assert(methodToCall.DeclaringType.IsAssignableFrom(instance.GetType()),
+				                 "Instance type: " + instance.GetType().FullName + ". Method type: " + methodToCall.DeclaringType.FullName);
+
+				arguments = new object[values.Length-1];
+				Array.Copy(values, 1, arguments, 0, values.Length - 1);
+			}
+			else
+				arguments = values;
+
+			methodToCall.Invoke(instance, arguments);
+		}
+
+		private static SpuStopCode GetStopcode(int rc, SpeStopInfo stopinfo)
+		{
+			SpuStopCode stopcode;
+			if (rc < 0)
+				throw new LibSpeException("spe_context_run failed. Return code: " + rc);
+			else if (rc == 0)
+			{
+				// May be system error; details are in the stop info.
+				stopcode = (SpuStopCode) (stopinfo.SignalCode | 0x2000);
+			}
+			else
+			{
+				// Maybe it's a custom stop code.
+				stopcode = (SpuStopCode) rc;
+			}
+			return stopcode;
+		}
+
+		internal object RunProgram(CompileContext cc, params object[] arguments)
+		{
+			// Run and load.
+			Marshaler marshaler = new Marshaler();
+			int[] code = cc.GetEmittedCode(arguments, marshaler);
+			LoadProgram(code);
+
+			DebugValueObject = cc.DebugValueObject;
+			Run(cc.PpeCallDataArea, marshaler);
+
+			// Get return value.
+			object retval = null;
+			if (cc.EntryPoint.ReturnType != StackTypeDescription.None)
+			{
+				retval = DmaGetValue(cc.EntryPoint.ReturnType, cc.ReturnValueAddress);
+			}
+
+			return retval;
+		}
+
+		public object RunProgram(Delegate delegateToRun, params object[] arguments)
+		{
+			CompileContext cc = new CompileContext(delegateToRun.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			return RunProgram(cc, arguments);
+		}
+
+		/// <summary>
+		/// This method can be used to execute a method even on windows. It will attempt to 
+		/// perform DMA ops as an SPE would.
+		/// </summary>
+		/// <param name="cc"></param>
+		/// <param name="args"></param>
+		/// <returns></returns>
+		public static object UnitTestRunProgram(CompileContext cc, params object[] args)
+		{
+			// Just to make sure...
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			if (HasSpeHardware)
+			{
+				using (SpeContext sc = new SpeContext())
+					return sc.RunProgram(cc, args);
+			}
+			else
+			{
+				return cc.EntryPointAsMetodCompiler.MethodBase.Invoke(null, args);
+			}
+		}
+
+		#endregion
+
+		#region DMA
 
 		public void LoadProgram(int[] code)
 		{
@@ -216,15 +400,11 @@ namespace CellDotNet
 				int size = Math.Min(transferSize - offset, MaxDmaSize);
 				spe_mfcio_get(lsa + offset, bufptr, size, DMA_tag, 0, 0);
 
-				Console.WriteLine("Waiting for DMA to finish.");
-
 				// TODO mask skal sættes til noget fornuftigt
 				uint tag_status = 0;
 				int waitresult = UnsafeNativeMethods.spe_mfcio_tag_status_read(_handle, 0, SPE_TAG_ALL, ref tag_status);
 				if (waitresult == -1)
 					throw new LibSpeException("spe_mfcio_status_tag_read failed.");
-
-				Console.WriteLine("DMA done.");
 			}
 		}
 
@@ -263,7 +443,7 @@ namespace CellDotNet
 			IntPtr ptr = Utilities.Align16((IntPtr) buf);
 
 			uint DMA_tag = 1;
-			spe_mfcio_put(lsAddress.Value, ptr, 16, DMA_tag, 0, 0);
+			spe_mfcio_put(lsAddress, ptr, 16, DMA_tag, 0, 0);
 
 			uint tag_status = 0;
 			int waitresult = UnsafeNativeMethods.spe_mfcio_tag_status_read(_handle, 0, SPE_TAG_ANY, ref tag_status);
@@ -340,6 +520,27 @@ namespace CellDotNet
 			DmaPutValue(lsAddress, (ValueType) value);
 		}
 
+		private unsafe byte[] GetLocalStorageMax16K(LocalStorageAddress lsa, int size)
+		{
+			ValidateDmaTransfer(null, lsa, size);
+
+			byte* ptr = stackalloc byte[size + 16];
+			IntPtr buf = Utilities.Align16((IntPtr) ptr);
+
+			const uint DMA_tag = 2;
+			spe_mfcio_put(lsa, buf, size, DMA_tag, 0, 0);
+
+			uint tag_status = 0;
+			int waitresult = UnsafeNativeMethods.spe_mfcio_tag_status_read(_handle, 0, SPE_TAG_ANY, ref tag_status);
+
+			if (waitresult != 0)
+				throw new LibSpeException("spe_mfcio_tag_status_read failed.");
+
+			byte[] data = new byte[size];
+			Marshal.Copy(buf, data, 0, size);
+			return data;
+		}
+
 		public int[] GetCopyOfLocalStorage16K()
 		{
 			IntPtr dataBufMain = IntPtr.Zero;
@@ -354,7 +555,7 @@ namespace CellDotNet
 
 				uint DMA_tag = 2;
 
-				spe_mfcio_put(0, dataBuf, sixteenK, DMA_tag, 0, 0);
+				spe_mfcio_put((LocalStorageAddress) 0, dataBuf, sixteenK, DMA_tag, 0, 0);
 
 				// TODO mask skal sættes til noget fornuftigt
 				uint tag_status = 0;
@@ -374,159 +575,8 @@ namespace CellDotNet
 			}
 		}
 
-		internal void Run()
-		{
-			Run(new Marshaler());
-		}
-
-		private void Run(Marshaler marshaler)
-		{
-			AssertHasNativeContext();
-
-			uint programCounter = 0;
-			bool runAgain = false;
-
-			do
-			{
-				SpeStopInfo stopinfo = new SpeStopInfo();
-
-				int rc = UnsafeNativeMethods.spe_context_run(_handle, ref programCounter, 0, IntPtr.Zero, IntPtr.Zero, ref stopinfo);
-				SpuStopCode stopcode = GetStopcode(rc, stopinfo);
-
-				switch (stopcode)
-				{
-					case SpuStopCode.None:
-					case SpuStopCode.ExitSuccess:
-					case SpuStopCode.ExitFailure:
-						break;
-					case SpuStopCode.OutOfMemory:
-						throw new SpeOutOfMemoryException();
-					case SpuStopCode.PpeCall:
-						// Clear interrupt bit.
-						programCounter &= ~(uint)1;
-
-						HandlePpeCall(ref programCounter, marshaler);
-						runAgain = true;
-						break;
-					case SpuStopCode.PpeCallFailureTest:
-						throw new PpeCallException();
-					case SpuStopCode.StackOverflow:
-						throw new SpeStackOverflowException();
-					case SpuStopCode.DebuggerBreakpoint:
-						if (_debugValueObject != null)
-						{
-							throw new SpeDebugException("Debug breakpoint. Debug value: "
-							                            + DmaGetValue<int>((LocalStorageAddress) _debugValueObject.Offset));
-						}
-						else
-						{
-							throw new SpeDebugException("Debug breakpoint.");
-						}
-					default:
-						throw new SpeExecutionException(
-							string.Format("An error occurred during execution. The error code is: {0} (0x{1:x}).",
-								stopinfo.SignalCode, stopinfo.SignalCode));
-				}
-			} while (runAgain);
-		}
-
-		private void HandlePpeCall(ref uint programCounter, Marshaler marshaler)
-		{
-			// >= 0 because 0 more likely an error.
-			Utilities.AssertArgumentRange(programCounter > 0 && programCounter < LocalStorageSize, "programCounter", programCounter);
-
-			LocalStorageAddress argumentlocation = DmaGetValue<LocalStorageAddress>((LocalStorageAddress) programCounter);
-
-			throw new NotImplementedException();
-		}
-
-		private static SpuStopCode GetStopcode(int rc, SpeStopInfo stopinfo)
-		{
-			SpuStopCode stopcode;
-			if (rc < 0)
-				throw new LibSpeException("spe_context_run failed. Return code: " + rc);
-			else if (rc == 0)
-			{
-				// May be system error; details are in the stop info.
-				stopcode = (SpuStopCode) (stopinfo.SignalCode | 0x2000);
-			}
-			else
-			{
-				// Maybe it's a custom stop code.
-				stopcode = (SpuStopCode) rc;
-			}
-			return stopcode;
-		}
-
-		internal object RunProgram(CompileContext cc, params object[] arguments)
-		{
-			// Run and load.
-			Marshaler marshaler = new Marshaler();
-			int[] code = cc.GetEmittedCode(arguments, marshaler);
-			LoadProgram(code);
-
-			DebugValueObject = cc.DebugValueObject;
-			Run(marshaler);
-
-			// Get return value.
-			object retval = null;
-			if (cc.EntryPoint.ReturnType != StackTypeDescription.None)
-			{
-				retval = DmaGetValue(cc.EntryPoint.ReturnType, cc.ReturnValueAddress);
-			}
-
-			return retval;
-		}
-
-		public object RunProgram(Delegate delegateToRun, params object[] arguments)
-		{
-			CompileContext cc = new CompileContext(delegateToRun.Method);
-			cc.PerformProcessing(CompileContextState.S8Complete);
-
-			return RunProgram(cc, arguments);
-		}
-
 		/// <summary>
-		/// This method can be used to execute a method even on windows. It will attempt to 
-		/// perform DMA ops as an SPE would.
-		/// </summary>
-		/// <param name="cc"></param>
-		/// <param name="args"></param>
-		/// <returns></returns>
-		public static object UnitTestRunProgram(CompileContext cc, params object[] args)
-		{
-			// Just to make sure...
-			cc.PerformProcessing(CompileContextState.S8Complete);
-
-			if (HasSpeHardware)
-			{
-				using (SpeContext sc = new SpeContext())
-					return sc.RunProgram(cc, args);
-			}
-			else
-			{
-				return cc.EntryPointAsMetodCompiler.MethodBase.Invoke(null, args);
-			}
-		}
-
-		internal unsafe SpeControlArea GetControlArea()
-		{
-			IntPtr ptr = GetProblemState(SpeProblemArea.SPE_MSSYNC_AREA);
-			SpeControlArea* areaptr = (SpeControlArea*) ptr;
-
-			return *areaptr;
-		}
-
-		private IntPtr GetProblemState(SpeProblemArea area)
-		{
-			IntPtr ptr = UnsafeNativeMethods.spe_ps_area_get(_handle, area);
-			if (ptr == IntPtr.Zero || (long) ptr == -1L)
-				throw new LibSpeException();
-			return ptr;
-		}
-
-		/// <summary>
-		/// Wrapper for the real one which checks the return code.
+		/// Wrapper for the real one which validates the arguments and checks the return code.
 		/// </summary>
 		/// <param name="lsa"></param>
 		/// <param name="ea"></param>
@@ -538,23 +588,7 @@ namespace CellDotNet
 		{
 			AssertHasNativeContext();
 
-			// Seems like 16 bytes is the smallest transfer unit that works...
-			if ((size > 0) && Utilities.IsQuadwordMultiplum(size))
-			{
-				Utilities.AssertArgument(Utilities.IsQuadwordAligned(lsa), "Not 16-byte aligned LSA.");
-				Utilities.AssertArgument(Utilities.IsQuadwordAligned(ea), "Not 16-byte aligned EA.");
-			}
-			else if (size == 8)
-			{
-				Utilities.AssertArgument(Utilities.IsDoubleWordAligned(lsa), "Not 8-byte aligned LSA.");
-				Utilities.AssertArgument(Utilities.IsDoubleWordAligned(ea), "Not 8-byte aligned EA.");
-			}
-			else if (size == 4)
-			{
-				Utilities.AssertArgument(Utilities.IsWordAligned(lsa), "Not 4-byte aligned LSA.");
-				Utilities.AssertArgument(Utilities.IsWordAligned(ea), "Not 4-byte aligned EA.");
-			}
-			else throw new ArgumentException("Bad transfer size and/or alignment.");
+			ValidateDmaTransfer(ea, lsa, size);
 
 			Trace.WriteLine(string.Format("Starting DMA: spe_mfcio_get: EA: {0:x8}, LSA: {1:x6}, size: {2:x6}", (int)ea, lsa, size));
 			int loadresult = UnsafeNativeMethods.spe_mfcio_get(_handle, (uint)lsa.Value, ea, (uint)size, tag, tid, rid);
@@ -563,14 +597,8 @@ namespace CellDotNet
 				throw new LibSpeException("spe_mfcio_get failed.");
 		}
 
-		private void AssertHasNativeContext()
-		{
-			if (_handle == IntPtr.Zero)
-				throw new InvalidOperationException("No context.");
-		}
-
 		/// <summary>
-		/// Wrapper for the real one which checks the return code.
+		/// Wrapper for the real one which validates the arguments and checks the return code.
 		/// </summary>
 		/// <param name="lsa"></param>
 		/// <param name="ea"></param>
@@ -578,23 +606,46 @@ namespace CellDotNet
 		/// <param name="tag"></param>
 		/// <param name="tid"></param>
 		/// <param name="rid"></param>
-		private void spe_mfcio_put(int lsa, IntPtr ea, int size, uint tag, uint tid, uint rid)
+		private void spe_mfcio_put(LocalStorageAddress lsa, IntPtr ea, int size, uint tag, uint tid, uint rid)
 		{
 			AssertHasNativeContext();
 
-			// Seems like 16 bytes is the smallest transfer unit that works...
-			if ((size <= 0) || !Utilities.IsQuadwordMultiplum(size))
-				throw new ArgumentException("Size is not a positive multiplum of 16 bytes.");
-			if (!Utilities.IsQuadwordAligned(lsa))
-				throw new ArgumentException("Not 16-byte aligned LSA.");
-			if (!Utilities.IsQuadwordAligned(ea))
-				throw new ArgumentException("Not 16-byte aligned EA.");
+			ValidateDmaTransfer(ea, lsa, size);
 
 			Trace.WriteLine(string.Format("Starting DMA: spe_mfcio_put: EA: {0:x8}, LSA: {1:x6}, size: {2:x6}", (int)ea, lsa, size));
-			int loadresult = UnsafeNativeMethods.spe_mfcio_put(_handle, (uint)lsa, ea, (uint)size, tag, tid, rid);
+			int loadresult = UnsafeNativeMethods.spe_mfcio_put(_handle, (uint)lsa.Value, ea, (uint)size, tag, tid, rid);
 
 			if (loadresult != 0)
 				throw new LibSpeException("spe_mfcio_put failed.");
+		}
+
+		/// <summary>
+		/// Verifies that the addresses and sizes are acceptable for the hardware for a single DMA transfer.
+		/// </summary>
+		/// <param name="ea"></param>
+		/// <param name="lsa"></param>
+		/// <param name="size"></param>
+		private static void ValidateDmaTransfer(IntPtr? ea, LocalStorageAddress lsa, int size)
+		{
+			// Seems like 16 bytes is the smallest transfer unit that works...
+			if ((size > 0) && Utilities.IsQuadwordMultiplum(size))
+			{
+				Utilities.AssertArgument(Utilities.IsQuadwordAligned(lsa), "Not 16-byte aligned LSA.");
+				Utilities.AssertArgument(ea == null || Utilities.IsQuadwordAligned(ea.Value), "Not 16-byte aligned EA.");
+			}
+			else if (size == 8)
+			{
+				Utilities.AssertArgument(Utilities.IsDoubleWordAligned(lsa), "Not 8-byte aligned LSA.");
+				Utilities.AssertArgument(ea == null || Utilities.IsDoubleWordAligned(ea.Value), "Not 8-byte aligned EA.");
+			}
+			else if (size == 4)
+			{
+				Utilities.AssertArgument(Utilities.IsWordAligned(lsa), "Not 4-byte aligned LSA.");
+				Utilities.AssertArgument(ea == null || Utilities.IsWordAligned(ea.Value), "Not 4-byte aligned EA.");
+			}
+			else throw new ArgumentException("Bad transfer size and/or alignment.");
+
+			Utilities.AssertArgumentRange(size <= 16*1024, "size", size);
 		}
 
 		public static AlignedMemory<int> AllocateAlignedInt32(int count)
@@ -642,6 +693,24 @@ namespace CellDotNet
 			ArraySegment<T> segment = new ArraySegment<T>(arr, segmentStartIndex, count);
 
 			return new AlignedMemory<T>(gchandle, segment);
+		}
+
+		#endregion
+
+		internal unsafe SpeControlArea GetControlArea()
+		{
+			IntPtr ptr = GetProblemState(SpeProblemArea.SPE_MSSYNC_AREA);
+			SpeControlArea* areaptr = (SpeControlArea*) ptr;
+
+			return *areaptr;
+		}
+
+		private IntPtr GetProblemState(SpeProblemArea area)
+		{
+			IntPtr ptr = UnsafeNativeMethods.spe_ps_area_get(_handle, area);
+			if (ptr == IntPtr.Zero || (long) ptr == -1L)
+				throw new LibSpeException();
+			return ptr;
 		}
 
 		public void Dispose()
@@ -886,36 +955,6 @@ namespace CellDotNet
 		};
 
 		#endregion
-
-		#region errno
-
-		private static ErrorCodeDelegate s_errorCodeGetter;
-		private delegate object ErrorCodeDelegate();
-
-		/// <summary>
-		/// Used to get the errno that libspe sets.
-		/// </summary>
-		public static object GetErrorCode()
-		{
-			if (!HasSpeHardware)
-				throw new InvalidOperationException();
-
-			if (s_errorCodeGetter == null)
-			{
-				//  /usr/lib/mono/gac/Mono.Posix/2.0.0.0__0738eb9f132ed756/Mono.Posix.dll
-				Assembly ass = Assembly.LoadFrom("/usr/lib/mono/gac/Mono.Posix/2.0.0.0__0738eb9f132ed756/Mono.Posix.dll");
-				Type s_stdlib = ass.GetType("Mono.Unix.Native.Stdlib");
-				MethodInfo method = s_stdlib.GetMethod("GetLastError");
-
-				s_errorCodeGetter = (ErrorCodeDelegate)Delegate.CreateDelegate(
-							typeof(ErrorCodeDelegate), method);
-			}
-
-			return s_errorCodeGetter();
-		}
-
-		#endregion
-
 	}
 
 	#region struct SpuStatusRegister
