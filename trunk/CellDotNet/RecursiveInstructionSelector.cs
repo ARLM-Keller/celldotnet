@@ -116,6 +116,11 @@ namespace CellDotNet
 			return *((uint*) &f);
 		}
 
+		static internal unsafe int ReinterpretAsInt(float f)
+		{
+			return *((int*)&f);
+		}
+
 		private VirtualRegister GenerateCode(TreeInstruction inst)
 		{
 			VirtualRegister vrleft = null, vrright = null;
@@ -669,12 +674,32 @@ namespace CellDotNet
 					}
 					break;
 				case IRCode.Div:
-					break;
 				case IRCode.Div_Un:
-// TODO FIXME
-//					VirtualRegister result = new VirtualRegister();
-//					_writer.WriteDivU(vrleft, vrright, result, new VirtualRegister());
-//					return result;
+					// Integer division is handled during IL reading, by replacing with a call to SpuMath.Div and SpuMath.Div_Un.
+					switch (lefttype.CliType)
+					{
+						case CliType.Float32:
+							VirtualRegister r2 = vrright;
+							VirtualRegister r3 = vrleft;
+							VirtualRegister r4 = new VirtualRegister();
+							VirtualRegister r5 = new VirtualRegister();
+							VirtualRegister r6 = new VirtualRegister();
+
+							_writer.WriteFrest(r5, r2);
+							_writer.WriteFi(r5, r2, r5);
+
+							_writer.WriteFm(r6, r3, r5);
+
+							_writer.WriteFnms(r4, r6, r2, r3);
+							_writer.WriteFma(r5, r4, r5, r6);
+
+							_writer.WriteAi(r6, r5, 1);
+							_writer.WriteFnms(r4, r2, r6, r3);
+							_writer.WriteCgti(r4, r4, -1);
+							_writer.WriteSelb(r4, r5, r6, r4);
+
+							return r4;
+					}
 					break;
 				case IRCode.Rem:
 					break;
@@ -1090,8 +1115,19 @@ namespace CellDotNet
 					{
 						case CliType.NativeInt:
 						case CliType.Int32:
-							VirtualRegister val = _writer.WriteCgt(vrleft, vrright);
-							return _writer.WriteAndi(val, 1);
+							if (righttype.CliType == CliType.NativeInt || righttype.CliType == CliType.Int32)
+							{
+								VirtualRegister val = _writer.WriteCgt(vrleft, vrright);
+								return _writer.WriteAndi(val, 1);
+							}
+							break;
+						case CliType.Float32:
+							if (righttype.CliType == CliType.Float32)
+							{
+								VirtualRegister val = _writer.WriteFcgt(vrleft, vrright);
+								return _writer.WriteAndi(val, 1);
+							}
+							break;
 					}
 					break;
 				case IRCode.Cgt_Un:
@@ -1347,7 +1383,7 @@ namespace CellDotNet
 			    fieldtype == StackTypeDescription.ObjectType)
 				throw new NotSupportedException("Only simple field types are supported.");
 
-			if (fieldtype.NumericSize != CliNumericSize.FourBytes)
+			if (fieldtype.IndirectionLevel != 1 && fieldtype.NumericSize != CliNumericSize.FourBytes)
 				throw new NotSupportedException("Only four-byte fields are supported.");
 			int valuesize = (int) fieldtype.NumericSize;
 

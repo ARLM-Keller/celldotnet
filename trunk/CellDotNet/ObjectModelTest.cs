@@ -563,5 +563,11 @@ namespace CellDotNet
 				// Ok
 			}
 		}
+
+
+		// TODO
+		// new test: test af feldt i struct og object af ref typer, eks. array og ref typer
+		// husk flere feldter
+		// se spu runtime get address
 	}
 }

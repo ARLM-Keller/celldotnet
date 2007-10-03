@@ -477,12 +477,13 @@ namespace CellDotNet
 		/// <returns></returns>
 		public StackTypeDescription GetStackTypeDescription(Type type)
 		{
+			if (type.IsPointer)
+				throw new NotSupportedException();
+
 			Type realtype;
 
-			if (type.IsByRef || type.IsPointer)
-			{
+			if (type.IsByRef)
 				realtype = type.GetElementType();
-			}
 			else
 				realtype = type;
 
@@ -519,8 +520,6 @@ namespace CellDotNet
 
 			if (type.IsByRef)
 				std = std.GetManagedPointer();
-			if (type.IsPointer)
-				std = std.GetPointer();
 
 			return std;
 		}

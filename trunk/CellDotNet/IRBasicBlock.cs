@@ -85,6 +85,22 @@ namespace CellDotNet
 			}
 		}
 
+		static public void ConvertTreeInstructions(IEnumerable<IRBasicBlock> blocks, Converter<TreeInstruction, TreeInstruction> converter)
+		{
+			foreach (IRBasicBlock block in blocks)
+			{
+				for (int r = 0; r < block.Roots.Count; r++)
+				{
+					TreeInstruction root = block.Roots[r];
+					TreeInstruction newRoot = TreeInstruction.ForeachTreeInstruction(root, converter);
+					if (newRoot != null)
+					{
+						block.Roots[r] = newRoot;
+					}
+				}
+			}
+		}
+
 		public static IEnumerable<TreeInstruction> EnumerateTreeInstructions(List<IRBasicBlock> blocks)
 		{
 			foreach (IRBasicBlock block in blocks)

@@ -270,9 +270,33 @@ namespace CellDotNet
 
 			object result1 = SpeContext.UnitTestRunProgram(cc, 14);
 			object result2 = SpeContext.UnitTestRunProgram(cc, 17);
+			object result3 = SpeContext.UnitTestRunProgram(cc, 1952);
 
-			AreEqual(2, (int)result1);
-			AreEqual(2, (int)result2);
+			AreEqual(14/7, (int)result1);
+			AreEqual(17/7, (int)result2);
+			AreEqual(1952/7, (int)result3);
+		}
+
+		[Test]
+		public void TestDivisionFloat()
+		{
+			Converter<float, float> fun =
+				delegate(float input)
+				{
+					return input / 3.14f;
+				};
+
+			CompileContext cc = new CompileContext(fun.Method);
+
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			object result1 = SpeContext.UnitTestRunProgram(cc, 6.28f);
+			object result2 = SpeContext.UnitTestRunProgram(cc, 123.45f);
+			object result3 = SpeContext.UnitTestRunProgram(cc, 435643.23f);
+
+			AreEqual(6.28f / 3.14f, (float)result1);
+			AreEqual(123.45f / 3.14f, (float)result2);
+			AreEqual(435643.23f / 3.14f, (float)result3);
 		}
 
 		[Test]

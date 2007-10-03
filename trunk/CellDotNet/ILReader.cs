@@ -72,20 +72,20 @@ namespace CellDotNet
 					_operandQueue.Enqueue(mv);
 					_lastCreatedMethodVariable = mv;
 				}
-				else if (opcode == OpCodes.Div && type.CliType == CliType.Int32)
-				{
-					_opcodeQueue.Enqueue(OpCodes.Call);
-					MethodBase mb = typeof (CellDotNet.SpuMath).GetMethod("Div", new Type[] {typeof (int), typeof (int)});
-					Utilities.AssertNotNull(mb, "Could not finde division function.");
-					_operandQueue.Enqueue(mb);
-				}
-				else if (opcode == OpCodes.Div_Un && type.CliType == CliType.Int32)
-				{
-					_opcodeQueue.Enqueue(OpCodes.Call);
-					MethodBase mb = typeof(CellDotNet.SpuMath).GetMethod("Div_Un", new Type[] { typeof(uint), typeof(uint) });
-					Utilities.AssertNotNull(mb, "Could not finde division function.");
-					_operandQueue.Enqueue(mb);
-				}
+//				else if (opcode == OpCodes.Div && (type.CliType == CliType.Int32 || type.CliType == CliType.NativeInt))
+//				{
+//					_opcodeQueue.Enqueue(OpCodes.Call);
+//					MethodBase mb = typeof (CellDotNet.SpuMath).GetMethod("Div", new Type[] {typeof (int), typeof (int)});
+//					Utilities.AssertNotNull(mb, "Could not finde division function.");
+//					_operandQueue.Enqueue(mb);
+//				}
+//				else if (opcode == OpCodes.Div_Un && (type.CliType == CliType.Int32 || type.CliType == CliType.NativeInt))
+//				{
+//					_opcodeQueue.Enqueue(OpCodes.Call);
+//					MethodBase mb = typeof(CellDotNet.SpuMath).GetMethod("Div_Un", new Type[] { typeof(uint), typeof(uint) });
+//					Utilities.AssertNotNull(mb, "Could not finde division function.");
+//					_operandQueue.Enqueue(mb);
+//				}
 				else
 				{
 					_opcodeQueue.Enqueue(opcode);

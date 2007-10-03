@@ -11,7 +11,7 @@ namespace CellDotNet
 
 		private delegate void BasicTestDelegate();
 
-		[Test]
+		[Test, Ignore("Pointer is not supported eany more.")]
 		public unsafe void SimpleTest()
 		{
 			BasicTestDelegate del = delegate
@@ -43,7 +43,7 @@ namespace CellDotNet
 
 		}
 
-		[Test]
+		[Test, Ignore("Pointer is not supported eany more.")]
 		public unsafe void LargeTest()
 		{
 			BasicTestDelegate del = delegate

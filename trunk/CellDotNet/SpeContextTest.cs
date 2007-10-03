@@ -28,7 +28,7 @@ namespace CellDotNet
 
 		private delegate void BasicTestDelegate();
 
-		[Test]
+		[Test, Ignore("Pointer is not supported eany more.")]
 		unsafe public void TestFirstCellProgram()
 		{
 			BasicTestDelegate del = delegate

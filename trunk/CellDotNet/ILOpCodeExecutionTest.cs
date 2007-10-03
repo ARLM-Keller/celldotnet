@@ -480,7 +480,7 @@ namespace CellDotNet
 		public void Test_Div_Un()
 		{
 			DivUnDelegate fun =
-				delegate(int d1, int d2) { return (int)CellDotNet.SpuMath.Div_Un((uint)d1, (uint)d2); };
+				delegate(int d1, int d2) { return (int)SpuMath.Div_Un((uint)d1, (uint)d2); };
 
 			CompileContext cc = new CompileContext(fun.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -498,7 +498,7 @@ namespace CellDotNet
 		public void Test_Div()
 		{
 			DivUnDelegate fun =
-				delegate(int d1, int d2) { return (int)CellDotNet.SpuMath.Div(d1, d2); };
+				delegate(int d1, int d2) { return SpuMath.Div(d1, d2); };
 
 			CompileContext cc = new CompileContext(fun.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -510,6 +510,62 @@ namespace CellDotNet
 			AreEqual(4 / 7, (int)SpeContext.UnitTestRunProgram(cc, 4, 7), "");
 			AreEqual(42 / 42, (int)SpeContext.UnitTestRunProgram(cc, 42, 42), "");
 			AreEqual(52907 / 432, (int)SpeContext.UnitTestRunProgram(cc, 52907, 432), "");
+		}
+
+		private delegate float DivFloatDelegate(float d1, float d2);
+
+		private static void Test_Div_Float_Helper(CompileContext cc, float dividend, float divisor, float error)
+		{
+			float result;
+			float corect;
+			int resultint;
+			int corectint;
+
+			corect = dividend / divisor;
+			result = (float)SpeContext.UnitTestRunProgram(cc, dividend, divisor);
+			resultint = RecursiveInstructionSelector.ReinterpretAsInt(result);
+			corectint = RecursiveInstructionSelector.ReinterpretAsInt(corect);
+			Console.WriteLine("{0} / {1} Mono: {2} SPU: {3}4", dividend, divisor, corect, result);
+//			Console.WriteLine("{0}", Convert.ToString(resultint, 2));
+//			Console.WriteLine("{0}", Convert.ToString(corectint, 2));
+
+			if(Math.Abs(corect) < error)
+				IsTrue(Math.Abs(result) < error);
+			else
+				IsTrue(Math.Abs(result) < Math.Abs(corect) * (1 + error) && Math.Abs(result) > Math.Abs(corect) * (1 - error) && Math.Sign(result) == Math.Sign(corect));
+
+			Utilities.PretendVariableIsUsed(resultint);
+			Utilities.PretendVariableIsUsed(corectint);
+		}
+
+		[Test]
+		public void Test_Div_Float()
+		{
+			DivFloatDelegate fun =
+				delegate(float d1, float d2) { return d1/d2; };
+
+			CompileContext cc = new CompileContext(fun.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			float error = 0.00001f;
+
+			Test_Div_Float_Helper(cc, 17f, 7f, error);
+			Test_Div_Float_Helper(cc, 14f, 7f, error);
+			Test_Div_Float_Helper(cc, 4f, 7f, error);
+			Test_Div_Float_Helper(cc, 42f, 42f, error);
+			Test_Div_Float_Helper(cc, 52907f, 432f, error);
+
+			Test_Div_Float_Helper(cc, 0f, 1f, error);
+			Test_Div_Float_Helper(cc, 1f, 1f, error);
+			Test_Div_Float_Helper(cc, -1f, 1f, error);
+			Test_Div_Float_Helper(cc, 1f, -11f, error);
+			Test_Div_Float_Helper(cc, -1f, -1f, error);
+
+			Test_Div_Float_Helper(cc, 0f, 543f, error);
+			Test_Div_Float_Helper(cc, 1123f, 1423f, error);
+			Test_Div_Float_Helper(cc, -643f, 234f, error);
+			Test_Div_Float_Helper(cc, 64323f, -53441f, error);
+			Test_Div_Float_Helper(cc, -6453f, -4567f, error);
 		}
 
 		[Test]
