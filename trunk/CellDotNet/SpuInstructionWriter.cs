@@ -364,9 +364,15 @@ namespace CellDotNet
 
 		public void WriteStore(VirtualRegister rt, ObjectWithAddress target)
 		{
+			WriteStore(rt, target, 0);
+		}
+
+		public void WriteStore(VirtualRegister rt, ObjectWithAddress target, int quadWordOffset)
+		{
 			AssertRegisterNotNull(rt, "rt");
 
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.stqr);
+			inst.Constant = quadWordOffset;
 			inst.ObjectWithAddress = target;
 			inst.Rt = rt;
 			AddInstruction(inst);
@@ -423,18 +429,31 @@ namespace CellDotNet
 
 		public void WriteLoad(VirtualRegister rt, ObjectWithAddress objectToLoad)
 		{
+			WriteLoad(rt, objectToLoad, 0);
+		}
+
+		public void WriteLoad(VirtualRegister rt, ObjectWithAddress owa, int quadWordOffset)
+		{
 			AssertRegisterNotNull(rt, "rt");
 
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.lqr);
-			inst.ObjectWithAddress = objectToLoad;
+			inst.ObjectWithAddress = owa;
+			inst.Constant = quadWordOffset;
 			inst.Rt = rt;
 			AddInstruction(inst);
+		}
+
+		public VirtualRegister WriteLoad(ObjectWithAddress owa, int quadWordOffset)
+		{
+			VirtualRegister rt = NextRegister();
+			WriteLoad(rt, owa, quadWordOffset);
+			return rt;
 		}
 
 		public VirtualRegister WriteLoad(ObjectWithAddress objectToLoad)
 		{
 			VirtualRegister rt = NextRegister();
-			WriteLoad(rt, objectToLoad);
+			WriteLoad(rt, objectToLoad, 0);
 
 			return rt;
 		}
@@ -482,46 +501,35 @@ namespace CellDotNet
 			return WriteLoadI4(i.ToInt32());
 		}
 
-		/// <summary>
-		/// Pseudo instruction to load the address of an object into a rgister.
-		/// No other registers are used.
-		/// </summary>
-		/// <param name="rt"></param>
-		/// <param name="owa"></param>
-		/// <returns></returns>
-		public void WriteLoadAddress(VirtualRegister rt, ObjectWithAddress owa)
-		{
-			SpuInstruction inst = new SpuInstruction(SpuOpCode.ilhu);
-			inst.Constant = 0;
-			inst.Rt = rt;
-			AddInstruction(inst);
-
-			inst = new SpuInstruction(SpuOpCode.iohl);
-			inst.ObjectWithAddress = owa;
-			inst.Rt = rt;
-			AddInstruction(inst);
-		}
+//		/// <summary>
+//		/// Pseudo instruction to load the address of an object into a rgister.
+//		/// No other registers are used.
+//		/// </summary>
+//		/// <param name="rt"></param>
+//		/// <param name="owa"></param>
+//		/// <returns></returns>
+//		public void WriteLoadAddress(VirtualRegister rt, ObjectWithAddress owa)
+//		{
+//			SpuInstruction inst = new SpuInstruction(SpuOpCode.ila);
+//			inst.Constant = 0;
+//			inst.Rt = rt;
+//			inst.ObjectWithAddress = owa;
+//			AddInstruction(inst);
+//		}
 
 		/// <summary>
 		/// Pseudo instruction to load the address of an object into a rgister.
 		/// </summary>
 		/// <param name="owa"></param>
 		/// <returns></returns>
+		[Obsolete("This one probably shouldn't be used. Try to use Load with an offset instead.")]
 		public VirtualRegister WriteLoadAddress(ObjectWithAddress owa)
 		{
-			VirtualRegister rt = new VirtualRegister();
-
-			SpuInstruction inst = new SpuInstruction(SpuOpCode.ilhu);
-			inst.Constant = 0;
-			inst.Rt = rt;
-			AddInstruction(inst);
-
-			inst = new SpuInstruction(SpuOpCode.iohl);
-			inst.ObjectWithAddress = owa;
-			inst.Rt = rt;
-			AddInstruction(inst);
-
-			return rt;
+			throw new InvalidOperationException();
+//			VirtualRegister rt = NextRegister();
+//			WriteLoadAddress(rt, owa);
+//
+//			return rt;
 		}
 
 		#endregion

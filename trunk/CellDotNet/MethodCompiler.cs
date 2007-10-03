@@ -33,6 +33,13 @@ namespace CellDotNet
 	}
 
 	/// <summary>
+	/// Returns an offset (measured in quadwords) from the stack pointer of unused space.
+	/// </summary>
+	/// <param name="quadWordCount"></param>
+	/// <returns></returns>
+	internal delegate int NewSpillOffsetDelegate(int quadWordCount);
+
+	/// <summary>
 	/// Data used during compilation of a method.
 	/// </summary>
 	internal class MethodCompiler : SpuDynamicRoutine
@@ -408,13 +415,13 @@ namespace CellDotNet
 						{
 							((MethodParameter) obj.Operand).Escapes = true;
 							if (((MethodParameter) obj.Operand).StackLocation == 0)
-								((MethodParameter) obj.Operand).StackLocation = GetNewSpillQuadOffset();
+								((MethodParameter) obj.Operand).StackLocation = GetNewSpillQuadOffset(1);
 						}
 						else if (obj.Opcode.IRCode == IRCode.Ldloca)
 						{
 							((MethodVariable) obj.Operand).Escapes = true;
 							if (((MethodVariable)obj.Operand).StackLocation == 0)
-								((MethodVariable) obj.Operand).StackLocation = GetNewSpillQuadOffset();
+								((MethodVariable) obj.Operand).StackLocation = GetNewSpillQuadOffset(1);
 						}
 					};
 			ForeachTreeInstruction(action);
@@ -454,7 +461,7 @@ namespace CellDotNet
 			// Generate the body.
 			RecursiveInstructionSelector selector;
 			if (_specialSpeObjects != null)
-				selector = new RecursiveInstructionSelector(_specialSpeObjects);
+				selector = new RecursiveInstructionSelector(_specialSpeObjects, GetNewSpillQuadOffset);
 			else
 				selector = new RecursiveInstructionSelector();
 
@@ -659,17 +666,10 @@ namespace CellDotNet
 
 		private int _nextSpillOffset = 2; // Start by pointing to start of Local Variable Space.
 
-		/// <summary>
-		/// For escaping variables and for the register allocator to use to get SP offsets for spilling.
-		/// </summary>
-		/// <returns></returns>
-		public int GetNewSpillQuadOffset()
-		{
-			return _nextSpillOffset++;
-		}
-
 		public int GetNewSpillQuadOffset(int count)
 		{
+			Utilities.AssertArgumentRange(count >= 1 && count <= 10, "count", count);
+
 			int offset = _nextSpillOffset;
 			_nextSpillOffset += count;
 			return offset;

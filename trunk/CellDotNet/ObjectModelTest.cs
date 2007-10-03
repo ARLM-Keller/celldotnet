@@ -520,6 +520,7 @@ namespace CellDotNet
 
 			public void Hit()
 			{
+//				throw new SpeExecutionException();
 				_hitcount++;
 			}
 
@@ -532,10 +533,8 @@ namespace CellDotNet
 			Action<PpeClass> del = delegate(PpeClass obj) { obj.Hit(); };
 
 			CompileContext cc = new CompileContext(del.Method);
-			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
-			new TreeDrawer().DrawMethod(cc.EntryPointAsMetodCompiler);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
+			cc.WriteAssemblyToFile("ppecall.s", 0);
 
 			AreEqual(1, cc.Methods.Count);
 

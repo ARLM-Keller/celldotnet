@@ -22,16 +22,18 @@ namespace CellDotNet
 		private List<IROpCode> _unimplementedOpCodes;
 
 		private SpecialSpeObjects _specialSpeObjects;
+		private NewSpillOffsetDelegate _spillAllocator;
 
 
 		public RecursiveInstructionSelector()
 		{
 		}
 
-		public RecursiveInstructionSelector(SpecialSpeObjects specialSpeObjects)
+		public RecursiveInstructionSelector(SpecialSpeObjects specialSpeObjects, NewSpillOffsetDelegate spillAllocator)
 		{
 			Utilities.AssertArgumentNotNull(specialSpeObjects, "specialSpeObjects");
 			_specialSpeObjects = specialSpeObjects;
+			_spillAllocator = spillAllocator;
 		}
 
 		public void GenerateCode(List<IRBasicBlock> basicBlocks, ReadOnlyCollection<MethodParameter> parameters, SpuInstructionWriter writer)
@@ -204,10 +206,12 @@ namespace CellDotNet
 
 						// Write method to be called.
 						MethodInfo method = inst.OperandAsPpeMethod.Method;
-						VirtualRegister handlereg = _writer.WriteLoadIntPtr(method.MethodHandle.Value);
+						IntPtr mptr = method.MethodHandle.Value;
+						Console.WriteLine("Ppe call inst ptr: 0x{0:x}", (uint)mptr);
+						VirtualRegister handlereg = _writer.WriteLoadIntPtr(mptr);
 
-						VirtualRegister argAddress = _writer.WriteLoadAddress(_specialSpeObjects.PpeCallDataArea);
-						_writer.WriteStqd(handlereg, argAddress, areaSlot++);
+						ObjectWithAddress argaddress = _specialSpeObjects.PpeCallDataArea;
+						_writer.WriteStore(handlereg, argaddress, areaSlot++);
 
 						// Write parameters to the ppe call area.
 						MethodCallInstruction mci = (MethodCallInstruction) inst;
@@ -225,13 +229,13 @@ namespace CellDotNet
 									for (int qnum = 0; qnum < type.ComplexType.QuadWordCount; qnum++)
 									{
 										VirtualRegister val = _writer.WriteLqd(childregs[paramidx], qnum);
-										_writer.WriteStqd(val, argAddress, areaSlot++);
+										_writer.WriteStore(val, argaddress, areaSlot++);
 									}
 								}
 								else
 								{
 									// The value is in a single register.
-									_writer.WriteStqd(childregs[paramidx], argAddress, areaSlot++);
+									_writer.WriteStore(childregs[paramidx], argaddress, areaSlot++);
 								}
 							}
 							else if (type.IndirectionLevel == 1)
@@ -242,7 +246,7 @@ namespace CellDotNet
 										"Argument type '" + type + "' is not supported. Unmanaged pointers are not supported.");
 
 								// Should be a PPE reference type handle.
-								_writer.WriteStqd(childregs[paramidx], argAddress, areaSlot++);
+								_writer.WriteStore(childregs[paramidx], argaddress, areaSlot++);
 							}
 							else
 								throw new NotSupportedException("Argument type '" + type + "' is not supported.");
@@ -250,6 +254,7 @@ namespace CellDotNet
 
 						// Perform the call.
 						_writer.WriteStop(SpuStopCode.PpeCall);
+
 
 						// Move return value back.
 						StackTypeDescription rettype = mci.StackType;
@@ -259,24 +264,24 @@ namespace CellDotNet
 							if (rettype.DereferencedCliType == CliType.ObjectType)
 							{
 								Utilities.Assert(rettype.IndirectionLevel == 1, "mci.StackType.IndirectionLevel == 1");
-								retval = _writer.WriteLqd(argAddress, 0);
+								retval = _writer.WriteLoad(argaddress, 0);
 							}
 							else
 							{
 								Utilities.Assert(rettype.IndirectionLevel == 0, "rettype.IndirectionLevel == 0");
 								if (rettype.CliType == CliType.ValueType && !rettype.IsImmutableSingleRegisterType)
-									retval = _writer.WriteLqd(argAddress, 0);
+									retval = _writer.WriteLoad(argaddress, 0);
 								else
 								{
-									throw new NotImplementedException();
-//									for (int qnum = 0; qnum < rettype.ComplexType.QuadWordCount; qnum++)
-//									{
-//										VirtualRegister val = _writer.WriteLqd(argAddress, qnum);
-//										_writer.WriteStqd(val, argAddress, areaSlot++);
-//									}
+									// Save the struct to a new stack position.
+									int stackpos = _spillAllocator(rettype.ComplexType.QuadWordCount);
+									retval = _writer.WriteAi(HardwareRegister.SP, stackpos);
+									for (int qnum = 0; qnum < rettype.ComplexType.QuadWordCount; qnum++)
+									{
+										VirtualRegister val = _writer.WriteLoad(argaddress, qnum);
+										_writer.WriteStqd(val, retval, qnum);
+									}
 								}
-
-							
 							}
 
 							Utilities.Assert(areaSlot*16 <= _specialSpeObjects.PpeCallDataArea.Size,
@@ -284,8 +289,8 @@ namespace CellDotNet
 
 							return retval;
 						}
-						else
-							return null;
+
+						return null;
 					}
 				case IRCode.Newobj:
 					{
