@@ -257,7 +257,7 @@ namespace CellDotNet
 				else if (address % 4 == 0)
 					writer.Write(" ");
 
-				uint val = (uint)memDump[i];
+				uint val = (uint)memDump[arrayOffset + i];
 				writer.Write(" {0:x2} {1:x2} {2:x2} {3:x2}", val >> 0x18, (val >> 0x10) & 0xff, (val >> 8) & 0xff, val & 0xff);
 			}
 			writer.WriteLine();

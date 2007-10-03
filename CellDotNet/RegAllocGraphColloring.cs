@@ -106,8 +106,6 @@ namespace CellDotNet
 
 		private BitVector callerSavesRegister = new BitVector();
 
-		public delegate int NewSpillOffsetDelegate();
-
 		private static int allocCalls = 0;
 		private int allocCount = 0;
 		private int allocLoopCount = 0;
@@ -1212,7 +1210,7 @@ namespace CellDotNet
 				if (NewSpillOffset == null)
 					throw new Exception("Unable to spill.");
 
-				int spillOffset = NewSpillOffset();
+				int spillOffset = NewSpillOffset(1);
 
 				foreach (SpuBasicBlock basicBlock in basicBlocks)
 				{
@@ -1569,4 +1567,5 @@ namespace CellDotNet
 			}
 		}
 	}
+
 }

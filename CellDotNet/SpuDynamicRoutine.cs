@@ -110,12 +110,14 @@ namespace CellDotNet
 					{
 						Utilities.Assert(inst.ObjectWithAddress.Offset > 0, "Bad ObjectWithAddress offset: " + inst.ObjectWithAddress.Offset + ". Type: " + inst.ObjectWithAddress.GetType().Name);
 
-						int diff = inst.ObjectWithAddress.Offset - (Offset + curroffset);
+						int bytediff = inst.ObjectWithAddress.Offset - (Offset + curroffset);
 
-						Utilities.Assert(diff % 4 == 0, "branch offset not multiple of four bytes: " + diff);
-						Utilities.Assert(inst.OpCode != SpuOpCode.brsl || (diff < 1024*127 || diff > -1024*127), "Branch offset for brsl is not whitin bounds " + -1024*127 + " and " + 1024*127 + ": " + diff);
+						Utilities.Assert(bytediff % 4 == 0, "branch offset not multiple of four bytes: " + bytediff);
+						Utilities.Assert(inst.OpCode != SpuOpCode.brsl || (bytediff < 1024*127 || bytediff > -1024*127), "Branch offset for brsl is not whitin bounds " + -1024*127 + " and " + 1024*127 + ": " + bytediff);
 
-						inst.Constant = diff >> 2; // instructions and therefore branch offsets are 4-byte aligned and the ISA uses that fact.
+						// instructions and therefore branch offsets are 4-byte aligned, and the ISA uses that fact.
+						// Constant is assumed to be a quadwords ooffset.
+						inst.Constant = inst.Constant * 4 + (bytediff >> 2);
 					}
 
 					curroffset += 4;

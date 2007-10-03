@@ -131,12 +131,14 @@ namespace CellDotNet
 				marshaler = new Marshaler();
 
 			uint programCounter = 0;
-			bool runAgain = false;
+			bool runAgain;
 
 			do
 			{
 				SpeStopInfo stopinfo = new SpeStopInfo();
+				runAgain = false;
 
+//				Console.WriteLine("Start SPE at address 0x{0:x}.", programCounter);
 				int rc = UnsafeNativeMethods.spe_context_run(_handle, ref programCounter, 0, IntPtr.Zero, IntPtr.Zero, ref stopinfo);
 				SpuStopCode stopcode = GetStopcode(rc, stopinfo);
 
@@ -153,6 +155,9 @@ namespace CellDotNet
 							// Clear interrupt bit.
 							programCounter &= ~(uint)1;
 
+//							Console.WriteLine("PC at ppe call: {0:x}", programCounter);
+//							Console.WriteLine("ppe mem: (ppe offset 0x{0:x}", ppeCallDataArea.Offset);
+//							Utilities.DumpMemory(this, (LocalStorageAddress) ppeCallDataArea.Offset, ppeCallDataArea.Size, Console.Out);
 							byte[] argmem = GetLocalStorageMax16K((LocalStorageAddress)ppeCallDataArea.Offset, ppeCallDataArea.Size);
 							PerformPpeCall(argmem, marshaler);
 
@@ -200,6 +205,12 @@ namespace CellDotNet
 					gc.Free();
 			}
 
+			Utilities.Assert(rmh.Value != IntPtr.Zero, "rmh.Value != IntPtr.Zero");
+
+			Console.WriteLine("Method handle for ppe call: 0x{0:x}", (uint)rmh.Value);
+			Console.Out.Flush();
+			System.Threading.Thread.Sleep(100);
+
 			MethodBase mb = MethodBase.GetMethodFromHandle(rmh);
 			if (mb is ConstructorInfo)
 				throw new NotSupportedException("Calling PPE type constructors is currently not supported.");
@@ -235,8 +246,10 @@ namespace CellDotNet
 				arguments = values;
 
 			object retval = methodToCall.Invoke(instance, arguments);
-
-
+			if (methodToCall.ReturnType != typeof(void))
+			{
+				throw new NotImplementedException();
+			}
 		}
 
 		private static SpuStopCode GetStopcode(int rc, SpeStopInfo stopinfo)
