@@ -11,8 +11,17 @@ namespace CellDotNet
 	/// </summary>
 	class PpeMethod : SpuRoutine
 	{
+		private MethodInfo _method;
+
+
+		public MethodInfo Method
+		{
+			get { return _method; }
+		}
+
 		public PpeMethod(MethodInfo method) : base(method.Name, method)
 		{
+			_method = method;
 		}
 
 		public override int Size

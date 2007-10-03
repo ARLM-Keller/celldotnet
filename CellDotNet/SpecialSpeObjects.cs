@@ -15,6 +15,7 @@ namespace CellDotNet
 		private RegisterSizedObject _allocatableByteCountObject = new RegisterSizedObject("AllocatableByteCount");
 		private RegisterSizedObject _stackPointerObject = new RegisterSizedObject("InitialStackPointer");
 		private RegisterSizedObject _debugValueObject = new RegisterSizedObject("DebugValue");
+		private DataObject _ppeCallDataArea = DataObject.FromQuadWords(15, "PpeCallDataArea");
 		//		private RegisterSizedObject _stackSizeObject = new RegisterSizedObject("StackSize");
 		private ManualRoutine _stackOverflow;
 		private ManualRoutine _outOfMemory;
@@ -51,6 +52,11 @@ namespace CellDotNet
 			get { return _debugValueObject; }
 		}
 
+		public DataObject PpeCallDataArea
+		{
+			get { return _ppeCallDataArea; }
+		}
+
 //		public RegisterSizedObject StackSizeObject
 //		{
 //			get { return _stackSizeObject; }
@@ -79,6 +85,7 @@ namespace CellDotNet
 				DebugValueObject,
 				StackOverflow, 
 				OutOfMemory, 
+				PpeCallDataArea
 			};
 		}
 

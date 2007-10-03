@@ -182,7 +182,12 @@ namespace CellDotNet
 
 		/// <summary>
 		/// Both managed and unmanaged pointers.
+		/// <para>
 		/// Value types have a value of zero, although they currently (20070929) are almost always located on the stack.
+		/// </para>
+		/// <para>
+		/// Reference types have a value of one.
+		/// </para>
 		/// </summary>
 		public int IndirectionLevel
 		{
@@ -295,6 +300,11 @@ namespace CellDotNet
 			e._indirectionLevel--;
 			e._isManaged = false;
 			return e;
+		}
+
+		public CliType DereferencedCliType
+		{
+			get { return _cliType; }
 		}
 
 		public StackTypeDescription DereferenceFully()

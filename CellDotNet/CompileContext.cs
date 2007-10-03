@@ -35,7 +35,6 @@ namespace CellDotNet
 		private int[] _emittedCode;
 		private DataObject _argumentArea;
 
-		private DataObject _ppeCallDataArea = DataObject.FromQuadWords(15, "PpeCallDataArea");
 		private CompileContextState _state;
 
 		private MethodBase _entryPointMethod;
@@ -107,7 +106,7 @@ namespace CellDotNet
 
 		internal DataObject PpeCallDataArea
 		{
-			get { return _ppeCallDataArea; }
+			get { return _specialSpeObjects.PpeCallDataArea; }
 		}
 
 		public void PerformProcessing(CompileContextState targetState)
@@ -289,7 +288,6 @@ namespace CellDotNet
 			if (_returnValueLocation != null)
 				all.Add(_returnValueLocation);
 			all.Add(_argumentArea);
-			all.Add(_ppeCallDataArea);
 
 			return all;
 		}
