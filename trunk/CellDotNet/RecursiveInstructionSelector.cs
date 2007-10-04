@@ -279,12 +279,13 @@ namespace CellDotNet
 								else
 								{
 									// Save the struct to a new stack position.
-									int stackpos = _spillAllocator(rettype.ComplexType.QuadWordCount);
-									retval = _writer.WriteAi(HardwareRegister.SP, stackpos);
+									int varStackPos = _spillAllocator(rettype.ComplexType.QuadWordCount);
+									retval = _writer.WriteAi(HardwareRegister.SP, varStackPos * 16);
 									for (int qnum = 0; qnum < rettype.ComplexType.QuadWordCount; qnum++)
 									{
 										VirtualRegister val = _writer.WriteLoad(argaddress, qnum);
-										_writer.WriteStqd(val, retval, qnum);
+										int stackPos = varStackPos + qnum;
+										_writer.WriteStqd(val, HardwareRegister.SP, stackPos);
 									}
 								}
 							}

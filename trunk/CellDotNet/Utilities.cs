@@ -239,6 +239,18 @@ namespace CellDotNet
 			DumpMemory(mem, lsa.Value / 4, lsa, bytecount, writer);
 		}
 
+		static internal void DumpMemoryToConsole(byte[] memDump)
+		{
+			DumpMemory(memDump, 0, (LocalStorageAddress) 0, memDump.Length, Console.Out);
+		}
+
+		static internal void DumpMemory(byte[] memDump, int arrayOffset, LocalStorageAddress arrayOffsetAddress, int bytecount, TextWriter writer)
+		{
+			int[] copy = new int[Align4(bytecount)];
+			Buffer.BlockCopy(memDump, arrayOffset, copy, 0, bytecount);
+			DumpMemory(copy, 0, arrayOffsetAddress, bytecount, writer);
+		}
+
 		static internal void DumpMemory(int[] memDump, int arrayOffset, LocalStorageAddress arrayOffsetAddress, int bytecount, TextWriter writer)
 		{
 			int bytesPerLine = 16;
