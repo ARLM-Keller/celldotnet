@@ -158,10 +158,10 @@ namespace CellDotNet
 							byte[] returnmem = PerformPpeCall(argmem, marshaler);
 							if (returnmem != null && returnmem.Length > 0)
 							{
-								
+								Console.WriteLine("ppe return:");
+								Utilities.DumpMemoryToConsole(returnmem);
+								PutLocalStorage(returnmem, (LocalStorageAddress) ppeCallDataArea.Offset, returnmem.Length);
 							}
-
-
 							runAgain = true;
 						}
 						break;
@@ -206,8 +206,6 @@ namespace CellDotNet
 			}
 
 			Utilities.Assert(rmh.Value != IntPtr.Zero, "rmh.Value != IntPtr.Zero");
-
-			System.Threading.Thread.Sleep(100);
 
 			MethodBase mb = MethodBase.GetMethodFromHandle(rmh);
 			if (mb is ConstructorInfo)

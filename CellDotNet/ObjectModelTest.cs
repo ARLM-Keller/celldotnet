@@ -322,6 +322,11 @@ namespace CellDotNet
 				i4 = 0;
 				i2 = 0;
 			}
+
+			public int SumElements()
+			{
+				return i1 + i2 + i3 + i4 + i5 + i6 + i7 + i8;
+			}
 		}
 
 		#endregion
@@ -551,7 +556,6 @@ namespace CellDotNet
 				get { return _hitInt32Vector; }
 			}
 
-
 			int _hitcount;
 			public int Hitcount
 			{
@@ -583,8 +587,9 @@ namespace CellDotNet
 				_hitcount++;
 			}
 
-			public int HitWithValue()
+			public int HitWithMagicIntReturnValue()
 			{
+				Console.WriteLine("Return magic: " + MagicReturn);
 				_hitcount++;
 				return MagicReturn;
 			}
@@ -729,10 +734,12 @@ namespace CellDotNet
 		[Test]
 		public void TestPpeClass_InstanceMethodCall_ReturnInt()
 		{
-			Converter<PpeClass, int> del = delegate(PpeClass obj) { return obj.HitWithValue(); };
+			Converter<PpeClass, int> del = delegate(PpeClass obj) { return obj.HitWithMagicIntReturnValue(); };
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
+			cc.WriteAssemblyToFile("returnint.s", 0);
+//			Disassembler.DisassembleToConsole(cc);
 
 			AreEqual(1, cc.Methods.Count);
 
@@ -760,18 +767,25 @@ namespace CellDotNet
 		[Test]
 		public void TestPpeClass_InstanceMethodCall_ReturnBigStruct()
 		{
-			Converter<PpeClass, BigStruct> del = delegate(PpeClass obj) { return obj.HitWithBigStructReturn(); };
+			Converter<PpeClass, int> del = 
+				delegate(PpeClass obj)
+					{
+						BigStruct bs2 = obj.HitWithBigStructReturn();
+						return bs2.i1 + bs2.i3 + bs2.i5 + bs2.i7;
+					};
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
+			new TreeDrawer().DrawMethod(cc.EntryPointAsMetodCompiler);
 			cc.WriteAssemblyToFile("returnbig.s");
 			Disassembler.DisassembleToConsole(cc);
 
 			AreEqual(1, cc.Methods.Count);
 
 			PpeClass inst = new PpeClass();
-			inst.BigStructReturnValue = new BigStruct(1000, 2000, 3000, 4000);
-			AreEqual(inst.BigStructReturnValue, (BigStruct) SpeContext.UnitTestRunProgram(cc, inst));
+			BigStruct bs = new BigStruct(1000, 2000, 3000, 4000);
+			inst.BigStructReturnValue = bs;
+			AreEqual(bs.i1 + bs.i3 + bs.i5 + bs.i7, (int)SpeContext.UnitTestRunProgram(cc, inst));
 			AreEqual(1, inst.Hitcount);
 		}
 

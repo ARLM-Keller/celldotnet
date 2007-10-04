@@ -115,7 +115,8 @@ namespace CellDotNet
 						Utilities.Assert(bytediff % 4 == 0, "branch offset not multiple of four bytes: " + bytediff);
 						Utilities.Assert(inst.OpCode != SpuOpCode.brsl || (bytediff < 1024*127 || bytediff > -1024*127), "Branch offset for brsl is not whitin bounds " + -1024*127 + " and " + 1024*127 + ": " + bytediff);
 
-						// instructions and therefore branch offsets are 4-byte aligned, and the ISA uses that fact.
+						// Instructions and therefore branch offsets are 4-byte aligned, 
+						// and the ISA uses that fact for relative loads, stores an branches.
 						// Constant is assumed to be a quadwords ooffset.
 						inst.Constant = inst.Constant * 4 + (bytediff >> 2);
 					}
