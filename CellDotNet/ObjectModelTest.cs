@@ -373,6 +373,132 @@ namespace CellDotNet
 			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(cc));
 		}
 
+		private static void ChangeBigStructByval(BigStruct bs, int newi5Value)
+		{
+			bs.i5 = newi5Value;
+		}
+
+		private static void ChangeBigStructByref(ref BigStruct bs, int newi5Value)
+		{
+			bs.i5 = newi5Value;
+		}
+
+		private static BigStruct ReturnBigStructCopy(BigStruct bs)
+		{
+			return bs;
+		}
+
+		private static BigStruct ReturnBigStructCopy(ref BigStruct bs)
+		{
+			return bs;
+		}
+
+		private static BigStruct ReturnBigStruct(int i1, int i3, int i5, int i7)
+		{
+			BigStruct bs = new BigStruct(i1, i3, i5, i7);
+			return bs;
+		}
+
+		[Test]
+		public void TestStruct_ArgumentCantModifyCallersValue()
+		{
+			const int i5value = 50;
+			const int i5newValue = 100;
+			Func<int> del = 
+				delegate
+					{
+						BigStruct bs = new BigStruct(10, 30, i5value, 40);
+						ChangeBigStructByval(bs, i5newValue);
+						return bs.i5;
+					};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(i5value, (int) SpeContext.UnitTestRunProgram(cc));
+		}
+
+		[Test]
+		public void TestStruct_ArgumentByref()
+		{
+			const int i5value = 50;
+			const int i5newValue = 100;
+			Func<int> del = 
+				delegate
+					{
+						BigStruct bs = new BigStruct(10, 30, i5value, 40);
+						ChangeBigStructByref(ref bs, i5newValue);
+						return bs.i5;
+					};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(i5newValue, (int) SpeContext.UnitTestRunProgram(cc));
+		}
+
+		[Test]
+		public void TestStruct_ReturnArgument()
+		{
+			const int i5value = 50;
+			const int i5newValue = 100;
+			Func<int> del = 
+				delegate
+					{
+						BigStruct bs = new BigStruct(10, 30, i5value, 40);
+						BigStruct bs2 = ReturnBigStructCopy(bs);
+						bs.i5 = i5newValue;
+
+						return bs2.i5;
+					};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(i5value, (int) SpeContext.UnitTestRunProgram(cc));
+		}
+
+		[Test]
+		public void TestStruct_ReturnByrefArgument()
+		{
+			const int i5value = 50;
+			const int i5newValue = 100;
+			Func<int> del = 
+				delegate
+					{
+						BigStruct bs = new BigStruct(10, 30, i5value, 40);
+						BigStruct bs2 = ReturnBigStructCopy(ref bs);
+						bs.i5 = i5newValue;
+
+						return bs2.i5;
+					};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(i5value, (int) SpeContext.UnitTestRunProgram(cc));
+		}
+
+		[Test]
+		public void TestStruct_LocalsAreCopiedByValue()
+		{
+			const int i5value = 50;
+			const int i5newValue = 100;
+			Func<int> del = 
+				delegate
+					{
+						BigStruct bs1 = new BigStruct(10, 30, i5value, 40);
+						BigStruct bs2 = bs1;
+
+						bs1.i5 = i5newValue;
+						return bs2.i5;
+					};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(i5value, (int) SpeContext.UnitTestRunProgram(cc));
+		}
 
 		class ClassWithInts
 		{
