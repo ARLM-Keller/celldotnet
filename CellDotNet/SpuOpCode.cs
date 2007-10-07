@@ -184,6 +184,13 @@ namespace CellDotNet
 		DebuggerBreakpoint = 0x3FFF,
 	}
 
+	public enum SpuPipeline
+	{
+		None,
+		Even,
+		Odd
+	}
+
 	/// <summary>
 	/// SPU instruction definitions as taken from the 
 	/// "Synergistic Processor Unit Instruction Set Architecture" version 1.2
@@ -208,21 +215,37 @@ namespace CellDotNet
 
 		private readonly SpuInstructionPart _parts;
 
+		private SpuPipeline? _pipeline;
+		private int? _latency;
+
+		public SpuPipeline Pipeline
+		{
+			get { return _pipeline.Value; }
+		}
+
+		public int Latency
+		{
+			get { return _latency.Value; }
+		}
 
 		static Dictionary<SpuOpCodeEnum, SpuOpCode> s_enumCodeMap;
 
 		static object s_lock = new object();
 
-		private SpuOpCode(string name, string title, SpuInstructionFormat format, String opcode)
-			: this(name, title, format, opcode, SpuOpCodeSpecialFeatures.None) { }
+		private SpuOpCode(string name, string title, SpuInstructionFormat format, String opcode, 
+			SpuPipeline pipeline, int latency)
+			: this(name, title, format, opcode, SpuOpCodeSpecialFeatures.None, pipeline, latency) { }
 
-		private SpuOpCode(string name, string title, SpuInstructionFormat format, String opcode, SpuOpCodeSpecialFeatures features)
+		private SpuOpCode(string name, string title, SpuInstructionFormat format, String opcode, SpuOpCodeSpecialFeatures features,
+			SpuPipeline pipeline, int latency)
 		{
 			_name = name;
 			_title = title;
 			_format = format;
 			_opCodeWidth = opcode.Length;
 			_opCode = Convert.ToInt32(opcode, 2) << 32 - OpCodeWidth;
+			_pipeline = pipeline;
+			_latency = latency;
 
 			// HACK: Shitty way to determine this.
 			if (name.StartsWith("st") || name == "wrch")
@@ -417,411 +440,411 @@ namespace CellDotNet
 		//		public static SpuOpCode[] OpCodes = new SpuOpCode[]
 		//			{
 		public static readonly SpuOpCode lqd =
-			new SpuOpCode("lqd", "Load Quadword (d-form)", SpuInstructionFormat.RI10, "00110100");
+			new SpuOpCode("lqd", "Load Quadword (d-form)", SpuInstructionFormat.RI10, "00110100", SpuPipeline.Odd, 6);
 		public static readonly SpuOpCode lqx =
-			new SpuOpCode("lqx", "Load Quadword (x-form)", SpuInstructionFormat.RR, "00111000100");
+			new SpuOpCode("lqx", "Load Quadword (x-form)", SpuInstructionFormat.RR, "00111000100", SpuPipeline.Odd, 6);
 		public static readonly SpuOpCode lqa =
-			new SpuOpCode("lqa", "Load Quadword (a-form)", SpuInstructionFormat.RI16, "001100001");
+			new SpuOpCode("lqa", "Load Quadword (a-form)", SpuInstructionFormat.RI16, "001100001", SpuPipeline.Odd, 6);
 		public static readonly SpuOpCode lqr =
-			new SpuOpCode("lqr", "Load Quadword Instruction Relative (a-form)", SpuInstructionFormat.RI16, "001100111");
+			new SpuOpCode("lqr", "Load Quadword Instruction Relative (a-form)", SpuInstructionFormat.RI16, "001100111", SpuPipeline.Odd, 6);
 		public static readonly SpuOpCode stqd =
-			new SpuOpCode("stqd", "Store Quadword (d-form)", SpuInstructionFormat.RI10, "00100100");
+			new SpuOpCode("stqd", "Store Quadword (d-form)", SpuInstructionFormat.RI10, "00100100", SpuPipeline.Odd, 6);
 		public static readonly SpuOpCode stqx =
-			new SpuOpCode("stqx", "Store Quadword (x-form)", SpuInstructionFormat.RR, "00101000100");
+			new SpuOpCode("stqx", "Store Quadword (x-form)", SpuInstructionFormat.RR, "00101000100", SpuPipeline.Odd, 6);
 		public static readonly SpuOpCode stqa =
-			new SpuOpCode("stqa", "Store Quadword (a-form)", SpuInstructionFormat.RI16, "001000001");
+			new SpuOpCode("stqa", "Store Quadword (a-form)", SpuInstructionFormat.RI16, "001000001", SpuPipeline.Odd, 6);
 		public static readonly SpuOpCode stqr =
-			new SpuOpCode("stqr", "Store Quadword Instruction Relative (a-form)", SpuInstructionFormat.RI16, "001000111");
+			new SpuOpCode("stqr", "Store Quadword Instruction Relative (a-form)", SpuInstructionFormat.RI16, "001000111", SpuPipeline.Odd, 6);
 		public static readonly SpuOpCode cbd =
-			new SpuOpCode("cbd", "Generate Controls for Byte Insertion (d-form)", SpuInstructionFormat.RI7, "00111110100");
+			new SpuOpCode("cbd", "Generate Controls for Byte Insertion (d-form)", SpuInstructionFormat.RI7, "00111110100", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode cbx =
-			new SpuOpCode("cbx", "Generate Controls for Byte Insertion (x-form)", SpuInstructionFormat.RR, "00111010100");
+			new SpuOpCode("cbx", "Generate Controls for Byte Insertion (x-form)", SpuInstructionFormat.RR, "00111010100", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode chd =
-			new SpuOpCode("chd", "Generate Controls for Halfword Insertion (d-form)", SpuInstructionFormat.RI7, "00111110101");
+			new SpuOpCode("chd", "Generate Controls for Halfword Insertion (d-form)", SpuInstructionFormat.RI7, "00111110101", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode chx =
-			new SpuOpCode("chx", "Generate Controls for Halfword Insertion (x-form)", SpuInstructionFormat.RR, "00111010101");
+			new SpuOpCode("chx", "Generate Controls for Halfword Insertion (x-form)", SpuInstructionFormat.RR, "00111010101", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode cwd =
-				new SpuOpCode("cwd", "Generate Controls for Word Insertion (d-form)", SpuInstructionFormat.RI7, "00111110110");
+				new SpuOpCode("cwd", "Generate Controls for Word Insertion (d-form)", SpuInstructionFormat.RI7, "00111110110", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode cwx =
-				new SpuOpCode("cwx", "Generate Controls for Word Insertion (x-form)", SpuInstructionFormat.RR, "00111010110");
+				new SpuOpCode("cwx", "Generate Controls for Word Insertion (x-form)", SpuInstructionFormat.RR, "00111010110", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode cdd =
-				new SpuOpCode("cdd", "Generate Controls for Doubleword Insertion (d-form)", SpuInstructionFormat.RI7, "00111110111");
+				new SpuOpCode("cdd", "Generate Controls for Doubleword Insertion (d-form)", SpuInstructionFormat.RI7, "00111110111", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode cdx =
-				new SpuOpCode("cdx", "Generate Controls for Doubleword Insertion (x-form)", SpuInstructionFormat.RR, "00111010111");
+				new SpuOpCode("cdx", "Generate Controls for Doubleword Insertion (x-form)", SpuInstructionFormat.RR, "00111010111", SpuPipeline.Odd, 4);
 
 		// Constant form section.
 		public static readonly SpuOpCode ilh =
-				new SpuOpCode("ilh", "Immediate Load Halfword", SpuInstructionFormat.RI16, "010000011");
+				new SpuOpCode("ilh", "Immediate Load Halfword", SpuInstructionFormat.RI16, "010000011", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode ilhu =
-				new SpuOpCode("ilhu", "Immediate Load Halfword Upper", SpuInstructionFormat.RI16, "010000010");
+				new SpuOpCode("ilhu", "Immediate Load Halfword Upper", SpuInstructionFormat.RI16, "010000010", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode il =
-				new SpuOpCode("il", "Immediate Load Word", SpuInstructionFormat.RI16, "010000001");
+				new SpuOpCode("il", "Immediate Load Word", SpuInstructionFormat.RI16, "010000001", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode ila =
-				new SpuOpCode("ila", "Immediate Load Address", SpuInstructionFormat.RI18, "0100001");
+				new SpuOpCode("ila", "Immediate Load Address", SpuInstructionFormat.RI18, "0100001", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode iohl =
-				new SpuOpCode("iohl", "Immediate Or Halfword Lower", SpuInstructionFormat.RI16, "011000001");
+				new SpuOpCode("iohl", "Immediate Or Halfword Lower", SpuInstructionFormat.RI16, "011000001", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode fsmbi =
-				new SpuOpCode("fsmbi", "Form Select Mask for Bytes Immediate", SpuInstructionFormat.RI16, "001100101");
+				new SpuOpCode("fsmbi", "Form Select Mask for Bytes Immediate", SpuInstructionFormat.RI16, "001100101", SpuPipeline.Odd, 4);
 
 		// 5. Integer and Logical OpCodes
 		public static readonly SpuOpCode ah =
-				new SpuOpCode("ah", "Add Halfword", SpuInstructionFormat.RR, "00011001000");
+				new SpuOpCode("ah", "Add Halfword", SpuInstructionFormat.RR, "00011001000", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode ahi =
-				new SpuOpCode("ahi", "Add Halfword Immediate", SpuInstructionFormat.RI10, "00011101");
+				new SpuOpCode("ahi", "Add Halfword Immediate", SpuInstructionFormat.RI10, "00011101", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode a =
-				new SpuOpCode("a", "Add Word", SpuInstructionFormat.RR, "00011000000");
+				new SpuOpCode("a", "Add Word", SpuInstructionFormat.RR, "00011000000", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode ai =
-				new SpuOpCode("ai", "Add Word Immediate", SpuInstructionFormat.RI10, "00011100");
+				new SpuOpCode("ai", "Add Word Immediate", SpuInstructionFormat.RI10, "00011100", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode sfh =
-				new SpuOpCode("sfh", "Subtract from Halfword", SpuInstructionFormat.RR, "00001001000");
+				new SpuOpCode("sfh", "Subtract from Halfword", SpuInstructionFormat.RR, "00001001000", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode sfhi =
-				new SpuOpCode("sfhi", "Subtract from Halfword Immediate", SpuInstructionFormat.RI10, "00001101");
+				new SpuOpCode("sfhi", "Subtract from Halfword Immediate", SpuInstructionFormat.RI10, "00001101", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode sf =
-				new SpuOpCode("sf", "Subtract from Word", SpuInstructionFormat.RR, "00001000000");
+				new SpuOpCode("sf", "Subtract from Word", SpuInstructionFormat.RR, "00001000000", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode sfi =
-				new SpuOpCode("sfi", "Subtract from Word Immediate", SpuInstructionFormat.RI10, "00001100");
+				new SpuOpCode("sfi", "Subtract from Word Immediate", SpuInstructionFormat.RI10, "00001100", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode addx =
-				new SpuOpCode("addx", "Add Extended", SpuInstructionFormat.RR, "01101000000");
+				new SpuOpCode("addx", "Add Extended", SpuInstructionFormat.RR, "01101000000", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode cg =
-				new SpuOpCode("cg", "Carry Generate", SpuInstructionFormat.RR, "00011000010");
+				new SpuOpCode("cg", "Carry Generate", SpuInstructionFormat.RR, "00011000010", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode cgx =
-				new SpuOpCode("cgx", "Carry Generate Extended", SpuInstructionFormat.RR, "01101000010");
+				new SpuOpCode("cgx", "Carry Generate Extended", SpuInstructionFormat.RR, "01101000010", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode sfx =
-				new SpuOpCode("sfx", "Subtract from Extended", SpuInstructionFormat.RR, "01101000001");
+				new SpuOpCode("sfx", "Subtract from Extended", SpuInstructionFormat.RR, "01101000001", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode bg =
-				new SpuOpCode("bg", "Borrow Generate", SpuInstructionFormat.RR, "00001000010");
+				new SpuOpCode("bg", "Borrow Generate", SpuInstructionFormat.RR, "00001000010", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode bgx =
-				new SpuOpCode("bgx", "Borrow Generate Extended", SpuInstructionFormat.RR, "01101000011");
+				new SpuOpCode("bgx", "Borrow Generate Extended", SpuInstructionFormat.RR, "01101000011", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode mpy =
-				new SpuOpCode("mpy", "Multiply", SpuInstructionFormat.RR, "01111000100");
+				new SpuOpCode("mpy", "Multiply", SpuInstructionFormat.RR, "01111000100", SpuPipeline.Even, 7);
 		public static readonly SpuOpCode mpyu =
-				new SpuOpCode("mpyu", "Multiply Unsigned", SpuInstructionFormat.RR, "01111001100");
+				new SpuOpCode("mpyu", "Multiply Unsigned", SpuInstructionFormat.RR, "01111001100", SpuPipeline.Even, 7);
 		public static readonly SpuOpCode mpyi =
-				new SpuOpCode("mpyi", "Multiply Immediate", SpuInstructionFormat.RI10, "01110100");
+				new SpuOpCode("mpyi", "Multiply Immediate", SpuInstructionFormat.RI10, "01110100", SpuPipeline.Even, 7);
 		public static readonly SpuOpCode mpyui =
-				new SpuOpCode("mpyui", "Multiply Unsigned Immediate", SpuInstructionFormat.RI10, "01110101");
+				new SpuOpCode("mpyui", "Multiply Unsigned Immediate", SpuInstructionFormat.RI10, "01110101", SpuPipeline.Even, 7);
 		public static readonly SpuOpCode mpya =
-				new SpuOpCode("mpya", "Multiply and Add", SpuInstructionFormat.RRR, "1100");
+				new SpuOpCode("mpya", "Multiply and Add", SpuInstructionFormat.RRR, "1100", SpuPipeline.Even, 7);
 		public static readonly SpuOpCode mpyh =
-				new SpuOpCode("mpyh", "Multiply High", SpuInstructionFormat.RR, "01111000101");
+				new SpuOpCode("mpyh", "Multiply High", SpuInstructionFormat.RR, "01111000101", SpuPipeline.Even, 7);
 		public static readonly SpuOpCode mpys =
-				new SpuOpCode("mpys", "Multiply and Shift Right", SpuInstructionFormat.RR, "01111000111");
+				new SpuOpCode("mpys", "Multiply and Shift Right", SpuInstructionFormat.RR, "01111000111", SpuPipeline.Even, 7);
 		public static readonly SpuOpCode mpyhh =
-				new SpuOpCode("mpyhh", "Multiply High High", SpuInstructionFormat.RR, "01111000110");
+				new SpuOpCode("mpyhh", "Multiply High High", SpuInstructionFormat.RR, "01111000110", SpuPipeline.Even, 7);
 		public static readonly SpuOpCode mpyhha =
-				new SpuOpCode("mpyhha", "Multiply High High and Add", SpuInstructionFormat.RR, "01101000110");
+				new SpuOpCode("mpyhha", "Multiply High High and Add", SpuInstructionFormat.RR, "01101000110", SpuPipeline.Even, 7);
 		public static readonly SpuOpCode mpyhhu =
-				new SpuOpCode("mpyhhu", "Multiply High High Unsigned", SpuInstructionFormat.RR, "01111001110");
+				new SpuOpCode("mpyhhu", "Multiply High High Unsigned", SpuInstructionFormat.RR, "01111001110", SpuPipeline.Even, 7);
 		public static readonly SpuOpCode mpyhhau =
-				new SpuOpCode("mpyhhau", "Multiply High High Unsigned and Add", SpuInstructionFormat.RR, "01101001110");
+				new SpuOpCode("mpyhhau", "Multiply High High Unsigned and Add", SpuInstructionFormat.RR, "01101001110", SpuPipeline.Even, 7);
 		// p83 clz
 		public static readonly SpuOpCode clz =
-				new SpuOpCode("clz", "Count Leading Zeros", SpuInstructionFormat.RR2, "01010100101");
+				new SpuOpCode("clz", "Count Leading Zeros", SpuInstructionFormat.RR2, "01010100101", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode cntb =
-				new SpuOpCode("cntb", "Count Ones in Bytes", SpuInstructionFormat.RR2, "01010110100");
+				new SpuOpCode("cntb", "Count Ones in Bytes", SpuInstructionFormat.RR2, "01010110100", SpuPipeline.Even, 4);
 		public static readonly SpuOpCode fsmb =
-				new SpuOpCode("fsmb", "Form Select Mask for Bytes", SpuInstructionFormat.RR2, "00110110110");
+				new SpuOpCode("fsmb", "Form Select Mask for Bytes", SpuInstructionFormat.RR2, "00110110110", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode fsmh =
-				new SpuOpCode("fsmh", "Form Select Mask for Halfwords", SpuInstructionFormat.RR2, "00110110101");
+				new SpuOpCode("fsmh", "Form Select Mask for Halfwords", SpuInstructionFormat.RR2, "00110110101", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode fsm =
-				new SpuOpCode("fsm", "Form Select Mask for Words", SpuInstructionFormat.RR2, "00110110100");
+				new SpuOpCode("fsm", "Form Select Mask for Words", SpuInstructionFormat.RR2, "00110110100", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode gbb =
-				new SpuOpCode("gbb", "Gather Bits from Bytes", SpuInstructionFormat.RR2, "00110110010");
+				new SpuOpCode("gbb", "Gather Bits from Bytes", SpuInstructionFormat.RR2, "00110110010", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode gbh =
-				new SpuOpCode("gbh", "Gather Bits from Halfwords", SpuInstructionFormat.RR2, "00110110001");
+				new SpuOpCode("gbh", "Gather Bits from Halfwords", SpuInstructionFormat.RR2, "00110110001", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode gb =
-				new SpuOpCode("gb", "Gather Bits from Words", SpuInstructionFormat.RR2, "00110110000");
+				new SpuOpCode("gb", "Gather Bits from Words", SpuInstructionFormat.RR2, "00110110000", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode avgb =
-				new SpuOpCode("avgb", "Average Bytes", SpuInstructionFormat.RR, "00011010011");
+				new SpuOpCode("avgb", "Average Bytes", SpuInstructionFormat.RR, "00011010011", SpuPipeline.Even, 4);
 		public static readonly SpuOpCode absdb =
-				new SpuOpCode("absdb", "Absolute Differences of Bytes", SpuInstructionFormat.RR, "00001010011");
+				new SpuOpCode("absdb", "Absolute Differences of Bytes", SpuInstructionFormat.RR, "00001010011", SpuPipeline.Even, 4);
 		public static readonly SpuOpCode sumb =
-				new SpuOpCode("sumb", "Sum Bytes into Halfwords", SpuInstructionFormat.RR, "01001010011");
+				new SpuOpCode("sumb", "Sum Bytes into Halfwords", SpuInstructionFormat.RR, "01001010011", SpuPipeline.Even, 4);
 		public static readonly SpuOpCode xsbh =
-				new SpuOpCode("xsbh", "Extend Sign Byte to Halfword", SpuInstructionFormat.RR2, "01010110110");
+				new SpuOpCode("xsbh", "Extend Sign Byte to Halfword", SpuInstructionFormat.RR2, "01010110110", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode xshw =
-				new SpuOpCode("xshw", "Extend Sign Halfword to Word", SpuInstructionFormat.RR2, "01010101110");
+				new SpuOpCode("xshw", "Extend Sign Halfword to Word", SpuInstructionFormat.RR2, "01010101110", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode xswd =
-				new SpuOpCode("xswd", "Extend Sign Word to Doubleword", SpuInstructionFormat.RR2, "01010100110");
+				new SpuOpCode("xswd", "Extend Sign Word to Doubleword", SpuInstructionFormat.RR2, "01010100110", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode and =
-				new SpuOpCode("and", "And", SpuInstructionFormat.RR, "00011000001");
+				new SpuOpCode("and", "And", SpuInstructionFormat.RR, "00011000001", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode andc =
-				new SpuOpCode("andc", "And with Complement", SpuInstructionFormat.RR, "01011000001");
+				new SpuOpCode("andc", "And with Complement", SpuInstructionFormat.RR, "01011000001", SpuPipeline.Even, 2);
 
 		public static readonly SpuOpCode andbi =
-				new SpuOpCode("andbi", "And Byte Immediate", SpuInstructionFormat.RI10, "00010110");
+				new SpuOpCode("andbi", "And Byte Immediate", SpuInstructionFormat.RI10, "00010110", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode andhi =
-				new SpuOpCode("andhi", "And Halfword Immediate", SpuInstructionFormat.RI10, "00010101");
+				new SpuOpCode("andhi", "And Halfword Immediate", SpuInstructionFormat.RI10, "00010101" ,SpuPipeline.Even, 2);
 		public static readonly SpuOpCode andi =
-				new SpuOpCode("andi", "And Word Immediate", SpuInstructionFormat.RI10, "00010100");
+				new SpuOpCode("andi", "And Word Immediate", SpuInstructionFormat.RI10, "00010100", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode or =
-				new SpuOpCode("or", "Or", SpuInstructionFormat.RR, "00001000001");
+				new SpuOpCode("or", "Or", SpuInstructionFormat.RR, "00001000001", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode orc =
-				new SpuOpCode("orc", "Or with Complement", SpuInstructionFormat.RR, "01011001001");
+				new SpuOpCode("orc", "Or with Complement", SpuInstructionFormat.RR, "01011001001", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode orbi =
-				new SpuOpCode("orbi", "Or Byte Immediate", SpuInstructionFormat.RI10, "00000110");
+				new SpuOpCode("orbi", "Or Byte Immediate", SpuInstructionFormat.RI10, "00000110", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode orhi =
-				new SpuOpCode("orhi", "Or Halfword Immediate", SpuInstructionFormat.RI10, "00000101");
+				new SpuOpCode("orhi", "Or Halfword Immediate", SpuInstructionFormat.RI10, "00000101", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode ori =
-				new SpuOpCode("ori", "Or Word Immediate", SpuInstructionFormat.RI10, "00000100");
+				new SpuOpCode("ori", "Or Word Immediate", SpuInstructionFormat.RI10, "00000100", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode orx =
-				new SpuOpCode("orx", "Or Across", SpuInstructionFormat.RR2, "00111110000");
+				new SpuOpCode("orx", "Or Across", SpuInstructionFormat.RR2, "00111110000", SpuPipeline.Even, 4);
 		public static readonly SpuOpCode xor =
-				new SpuOpCode("xor", "Exclusive Or", SpuInstructionFormat.RR, "01001000001");
+				new SpuOpCode("xor", "Exclusive Or", SpuInstructionFormat.RR, "01001000001", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode xorbi =
-				new SpuOpCode("xorbi", "Exclusive Or Byte Immediate", SpuInstructionFormat.RI10, "01000110");
+				new SpuOpCode("xorbi", "Exclusive Or Byte Immediate", SpuInstructionFormat.RI10, "01000110", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode xorhi =
-				new SpuOpCode("xorhi", "Exclusive Or Halfword Immediate", SpuInstructionFormat.RI10, "01000101");
+				new SpuOpCode("xorhi", "Exclusive Or Halfword Immediate", SpuInstructionFormat.RI10, "01000101", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode xori =
-				new SpuOpCode("xori", "Exclusive Or Word Immediate", SpuInstructionFormat.RI10, "01000100");
+				new SpuOpCode("xori", "Exclusive Or Word Immediate", SpuInstructionFormat.RI10, "01000100", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode nand =
-				new SpuOpCode("nand", "Nand", SpuInstructionFormat.RR, "00011001001");
+				new SpuOpCode("nand", "Nand", SpuInstructionFormat.RR, "00011001001", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode nor =
-				new SpuOpCode("nor", "Nor", SpuInstructionFormat.RR, "00001001001");
+				new SpuOpCode("nor", "Nor", SpuInstructionFormat.RR, "00001001001", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode eqv =
-				new SpuOpCode("eqv", "Equivalent", SpuInstructionFormat.RR, "01001001001");
+				new SpuOpCode("eqv", "Equivalent", SpuInstructionFormat.RR, "01001001001", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode selb =
-				new SpuOpCode("selb", "Select Bits", SpuInstructionFormat.RRR, "1000");
+				new SpuOpCode("selb", "Select Bits", SpuInstructionFormat.RRR, "1000", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode shufb =
-				new SpuOpCode("shufb", "Shuffle Bytes", SpuInstructionFormat.RRR, "1011");
+				new SpuOpCode("shufb", "Shuffle Bytes", SpuInstructionFormat.RRR, "1011", SpuPipeline.Odd, 4);
 
 		// 6. Shift and Rotate OpCodes
 		public static readonly SpuOpCode shlh =
-				new SpuOpCode("shlh", "Shift Left Halfword", SpuInstructionFormat.RR, "00001011111");
+				new SpuOpCode("shlh", "Shift Left Halfword", SpuInstructionFormat.RR, "00001011111", SpuPipeline.Even, 4);
 		public static readonly SpuOpCode shlhi =
-				new SpuOpCode("shlhi", "Shift Left Halfword Immediate", SpuInstructionFormat.RI7, "00001111111");
+				new SpuOpCode("shlhi", "Shift Left Halfword Immediate", SpuInstructionFormat.RI7, "00001111111", SpuPipeline.Even, 4);
 		public static readonly SpuOpCode shl =
-				new SpuOpCode("shl", "Shift Left Word", SpuInstructionFormat.RR, "00001011011");
+				new SpuOpCode("shl", "Shift Left Word", SpuInstructionFormat.RR, "00001011011", SpuPipeline.Even, 4);
 		public static readonly SpuOpCode shli =
-				new SpuOpCode("shli", "Shift Left Word Immediate", SpuInstructionFormat.RI7, "00001111011");
+				new SpuOpCode("shli", "Shift Left Word Immediate", SpuInstructionFormat.RI7, "00001111011", SpuPipeline.Even, 4);
 		public static readonly SpuOpCode shlqbi =
-				new SpuOpCode("shlqbi", "Shift Left Quadword by Bits", SpuInstructionFormat.RR, "00111011011");
+				new SpuOpCode("shlqbi", "Shift Left Quadword by Bits", SpuInstructionFormat.RR, "00111011011", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode shlqbii =
-				new SpuOpCode("shlqbii", "Shift Left Quadword by Bits Immediate", SpuInstructionFormat.RI7, "00111111011");
+				new SpuOpCode("shlqbii", "Shift Left Quadword by Bits Immediate", SpuInstructionFormat.RI7, "00111111011", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode shlqby =
-				new SpuOpCode("shlqby", "Shift Left Quadword by Bytes", SpuInstructionFormat.RR, "00111011111");
+				new SpuOpCode("shlqby", "Shift Left Quadword by Bytes", SpuInstructionFormat.RR, "00111011111", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode shlqbyi =
-				new SpuOpCode("shlqbyi", "Shift Left Quadword by Bytes Immediate", SpuInstructionFormat.RI7, "00111111111");
+				new SpuOpCode("shlqbyi", "Shift Left Quadword by Bytes Immediate", SpuInstructionFormat.RI7, "00111111111", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode shlqbybi =
-				new SpuOpCode("shlqbybi", "Shift Left Quadword by Bytes from Bit Shift Count", SpuInstructionFormat.RR, "00111001111");
+				new SpuOpCode("shlqbybi", "Shift Left Quadword by Bytes from Bit Shift Count", SpuInstructionFormat.RR, "00111001111", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode roth =
-				new SpuOpCode("roth", "Rotate Halfword", SpuInstructionFormat.RR, "00001011100");
+				new SpuOpCode("roth", "Rotate Halfword", SpuInstructionFormat.RR, "00001011100", SpuPipeline.Even, 4);
 		public static readonly SpuOpCode rothi =
-				new SpuOpCode("rothi", "Rotate Halfword Immediate", SpuInstructionFormat.RI7, "00001111100");
+				new SpuOpCode("rothi", "Rotate Halfword Immediate", SpuInstructionFormat.RI7, "00001111100", SpuPipeline.Even, 4);
 		public static readonly SpuOpCode rot =
-				new SpuOpCode("rot", "Rotate Word", SpuInstructionFormat.RR, "00001011000");
+				new SpuOpCode("rot", "Rotate Word", SpuInstructionFormat.RR, "00001011000", SpuPipeline.Even, 4);
 		public static readonly SpuOpCode roti =
-				new SpuOpCode("roti", "Rotate Word Immediate", SpuInstructionFormat.RI7, "00001111000");
+				new SpuOpCode("roti", "Rotate Word Immediate", SpuInstructionFormat.RI7, "00001111000", SpuPipeline.Even, 4);
 		public static readonly SpuOpCode rotqby =
-				new SpuOpCode("rotqby", "Rotate Quadword by Bytes", SpuInstructionFormat.RR, "00111011100");
+				new SpuOpCode("rotqby", "Rotate Quadword by Bytes", SpuInstructionFormat.RR, "00111011100", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode rotqbyi =
-				new SpuOpCode("rotqbyi", "Rotate Quadword by Bytes Immediate", SpuInstructionFormat.RI7, "00111111100");
+				new SpuOpCode("rotqbyi", "Rotate Quadword by Bytes Immediate", SpuInstructionFormat.RI7, "00111111100", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode rotqbybi =
-				new SpuOpCode("rotqbybi", "Rotate Quadword by Bytes from Bit Shift Count", SpuInstructionFormat.RR, "00111001100");
+				new SpuOpCode("rotqbybi", "Rotate Quadword by Bytes from Bit Shift Count", SpuInstructionFormat.RR, "00111001100", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode rotqbi =
-				new SpuOpCode("rotqbi", "Rotate Quadword by Bits", SpuInstructionFormat.RR, "00111011000");
+				new SpuOpCode("rotqbi", "Rotate Quadword by Bits", SpuInstructionFormat.RR, "00111011000", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode rotqbii =
-				new SpuOpCode("rotqbii", "Rotate Quadword by Bits Immediate", SpuInstructionFormat.RI7, "00111111000");
+				new SpuOpCode("rotqbii", "Rotate Quadword by Bits Immediate", SpuInstructionFormat.RI7, "00111111000", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode rothm =
-				new SpuOpCode("rothm", "Rotate and Mask Halfword", SpuInstructionFormat.RR, "00001011101");
+				new SpuOpCode("rothm", "Rotate and Mask Halfword", SpuInstructionFormat.RR, "00001011101", SpuPipeline.Even, 4);
 		public static readonly SpuOpCode rothmi =
-				new SpuOpCode("rothmi", "Rotate and Mask Halfword Immediate", SpuInstructionFormat.RI7, "00001111101");
+				new SpuOpCode("rothmi", "Rotate and Mask Halfword Immediate", SpuInstructionFormat.RI7, "00001111101", SpuPipeline.Even, 4);
 		public static readonly SpuOpCode rotm =
-				new SpuOpCode("rotm", "Rotate and Mask Word", SpuInstructionFormat.RR, "00001011001");
+				new SpuOpCode("rotm", "Rotate and Mask Word", SpuInstructionFormat.RR, "00001011001", SpuPipeline.Even, 4);
 		public static readonly SpuOpCode rotmi =
-				new SpuOpCode("rotmi", "Rotate and Mask Word Immediate", SpuInstructionFormat.RI7, "00001111001");
+				new SpuOpCode("rotmi", "Rotate and Mask Word Immediate", SpuInstructionFormat.RI7, "00001111001", SpuPipeline.Even, 4);
 		public static readonly SpuOpCode rotqmby =
-				new SpuOpCode("rotqmby", "Rotate and Mask Quadword by Bytes", SpuInstructionFormat.RR, "00111011101");
+				new SpuOpCode("rotqmby", "Rotate and Mask Quadword by Bytes", SpuInstructionFormat.RR, "00111011101", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode rotqmbyi =
-				new SpuOpCode("rotqmbyi", "Rotate and Mask Quadword by Bytes Immediate", SpuInstructionFormat.RI7, "00111111101");
+				new SpuOpCode("rotqmbyi", "Rotate and Mask Quadword by Bytes Immediate", SpuInstructionFormat.RI7, "00111111101", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode rotqmbybi =
-				new SpuOpCode("rotqmbybi", "Rotate and Mask Quadword Bytes from Bit Shift Count", SpuInstructionFormat.RR, "00111001101");
+				new SpuOpCode("rotqmbybi", "Rotate and Mask Quadword Bytes from Bit Shift Count", SpuInstructionFormat.RR, "00111001101", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode rotqmbi =
-				new SpuOpCode("rotqmbi", "Rotate and Mask Quadword by Bits", SpuInstructionFormat.RR, "00111011001");
+				new SpuOpCode("rotqmbi", "Rotate and Mask Quadword by Bits", SpuInstructionFormat.RR, "00111011001", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode rotqmbii =
-				new SpuOpCode("rotqmbii", "Rotate and Mask Quadword by Bits Immediate", SpuInstructionFormat.RI7, "00111111001");
+				new SpuOpCode("rotqmbii", "Rotate and Mask Quadword by Bits Immediate", SpuInstructionFormat.RI7, "00111111001", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode rotmah =
-				new SpuOpCode("rotmah", "Rotate and Mask Algebraic Halfword", SpuInstructionFormat.RR, "00001011110");
+				new SpuOpCode("rotmah", "Rotate and Mask Algebraic Halfword", SpuInstructionFormat.RR, "00001011110", SpuPipeline.Even, 4);
 		public static readonly SpuOpCode rotmahi =
-				new SpuOpCode("rotmahi", "Rotate and Mask Algebraic Halfword Immediate", SpuInstructionFormat.RI7, "00001111110");
+				new SpuOpCode("rotmahi", "Rotate and Mask Algebraic Halfword Immediate", SpuInstructionFormat.RI7, "00001111110", SpuPipeline.Even, 4);
 		public static readonly SpuOpCode rotma =
-				new SpuOpCode("rotma", "Rotate and Mask Algebraic Word", SpuInstructionFormat.RR, "00001011010");
+				new SpuOpCode("rotma", "Rotate and Mask Algebraic Word", SpuInstructionFormat.RR, "00001011010", SpuPipeline.Even, 4);
 		public static readonly SpuOpCode rotmai =
-				new SpuOpCode("rotmai", "Rotate and Mask Algebraic Word Immediate", SpuInstructionFormat.RI7, "00001111010");
+				new SpuOpCode("rotmai", "Rotate and Mask Algebraic Word Immediate", SpuInstructionFormat.RI7, "00001111010", SpuPipeline.Even, 4);
 
 		// 7. Compare, Branch, and Halt OpCodes
 		public static readonly SpuOpCode heq =
-				new SpuOpCode("heq", "Halt If Equal", SpuInstructionFormat.RR, "01111011000");
+				new SpuOpCode("heq", "Halt If Equal", SpuInstructionFormat.RR, "01111011000", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode heqi =
-				new SpuOpCode("heqi", "Halt If Equal Immediate", SpuInstructionFormat.RI10, "01111111");
+				new SpuOpCode("heqi", "Halt If Equal Immediate", SpuInstructionFormat.RI10, "01111111", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode hgt =
-				new SpuOpCode("hgt", "Halt If Greater Than", SpuInstructionFormat.RR, "01001011000");
+				new SpuOpCode("hgt", "Halt If Greater Than", SpuInstructionFormat.RR, "01001011000", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode hgti =
-				new SpuOpCode("hgti", "Halt If Greater Than Immediate", SpuInstructionFormat.RI10, "01001111");
+				new SpuOpCode("hgti", "Halt If Greater Than Immediate", SpuInstructionFormat.RI10, "01001111", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode hlgt =
-				new SpuOpCode("hlgt", "Halt If Logically Greater Than", SpuInstructionFormat.RR, "01011011000");
+				new SpuOpCode("hlgt", "Halt If Logically Greater Than", SpuInstructionFormat.RR, "01011011000", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode hlgti =
-				new SpuOpCode("hlgti", "Halt If Logically Greater Than Immediate", SpuInstructionFormat.RI10, "01011111");
+				new SpuOpCode("hlgti", "Halt If Logically Greater Than Immediate", SpuInstructionFormat.RI10, "01011111", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode ceqb =
-				new SpuOpCode("ceqb", "Compare Equal Byte", SpuInstructionFormat.RR, "01111010000");
+				new SpuOpCode("ceqb", "Compare Equal Byte", SpuInstructionFormat.RR, "01111010000", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode ceqbi =
-				new SpuOpCode("ceqbi", "Compare Equal Byte Immediate", SpuInstructionFormat.RI10, "01111110");
+				new SpuOpCode("ceqbi", "Compare Equal Byte Immediate", SpuInstructionFormat.RI10, "01111110", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode ceqh =
-				new SpuOpCode("ceqh", "Compare Equal Halfword", SpuInstructionFormat.RR, "01111001000");
+				new SpuOpCode("ceqh", "Compare Equal Halfword", SpuInstructionFormat.RR, "01111001000", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode ceqhi =
-				new SpuOpCode("ceqhi", "Compare Equal Halfword Immediate", SpuInstructionFormat.RI10, "01111101");
+				new SpuOpCode("ceqhi", "Compare Equal Halfword Immediate", SpuInstructionFormat.RI10, "01111101", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode ceq =
-				new SpuOpCode("ceq", "Compare Equal Word", SpuInstructionFormat.RR, "01111000000");
+				new SpuOpCode("ceq", "Compare Equal Word", SpuInstructionFormat.RR, "01111000000", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode ceqi =
-				new SpuOpCode("ceqi", "Compare Equal Word Immediate", SpuInstructionFormat.RI10, "01111100");
+				new SpuOpCode("ceqi", "Compare Equal Word Immediate", SpuInstructionFormat.RI10, "01111100", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode cgtb =
-				new SpuOpCode("cgtb", "Compare Greater Than Byte", SpuInstructionFormat.RR, "01001010000");
+				new SpuOpCode("cgtb", "Compare Greater Than Byte", SpuInstructionFormat.RR, "01001010000", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode cgtbi =
-				new SpuOpCode("cgtbi", "Compare Greater Than Byte Immediate", SpuInstructionFormat.RI10, "01001110");
+				new SpuOpCode("cgtbi", "Compare Greater Than Byte Immediate", SpuInstructionFormat.RI10, "01001110", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode cgth =
-				new SpuOpCode("cgth", "Compare Greater Than Halfword", SpuInstructionFormat.RR, "01001001000");
+				new SpuOpCode("cgth", "Compare Greater Than Halfword", SpuInstructionFormat.RR, "01001001000", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode cgthi =
-				new SpuOpCode("cgthi", "Compare Greater Than Halfword Immediate", SpuInstructionFormat.RI10, "01001101");
+				new SpuOpCode("cgthi", "Compare Greater Than Halfword Immediate", SpuInstructionFormat.RI10, "01001101", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode cgt =
-				new SpuOpCode("cgt", "Compare Greater Than Word", SpuInstructionFormat.RR, "01001000000");
+				new SpuOpCode("cgt", "Compare Greater Than Word", SpuInstructionFormat.RR, "01001000000", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode cgti =
-				new SpuOpCode("cgti", "Compare Greater Than Word Immediate", SpuInstructionFormat.RI10, "01001100");
+				new SpuOpCode("cgti", "Compare Greater Than Word Immediate", SpuInstructionFormat.RI10, "01001100", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode clgtb =
-				new SpuOpCode("clgtb", "Compare Logical Greater Than Byte", SpuInstructionFormat.RR, "01011010000");
+				new SpuOpCode("clgtb", "Compare Logical Greater Than Byte", SpuInstructionFormat.RR, "01011010000", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode clgtbi =
-				new SpuOpCode("clgtbi", "Compare Logical Greater Than Byte Immediate", SpuInstructionFormat.RI10, "01011110");
+				new SpuOpCode("clgtbi", "Compare Logical Greater Than Byte Immediate", SpuInstructionFormat.RI10, "01011110", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode clgth =
-				new SpuOpCode("clgth", "Compare Logical Greater Than Halfword", SpuInstructionFormat.RR, "01011001000");
+				new SpuOpCode("clgth", "Compare Logical Greater Than Halfword", SpuInstructionFormat.RR, "01011001000", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode clgthi =
-				new SpuOpCode("clgthi", "Compare Logical Greater Than Halfword Immediate", SpuInstructionFormat.RI10, "01011101");
+				new SpuOpCode("clgthi", "Compare Logical Greater Than Halfword Immediate", SpuInstructionFormat.RI10, "01011101", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode clgt =
-				new SpuOpCode("clgt", "Compare Logical Greater Than Word", SpuInstructionFormat.RR, "01011000000");
+				new SpuOpCode("clgt", "Compare Logical Greater Than Word", SpuInstructionFormat.RR, "01011000000", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode clgti =
-				new SpuOpCode("clgti", "Compare Logical Greater Than Word Immediate", SpuInstructionFormat.RI10, "01011100");
+				new SpuOpCode("clgti", "Compare Logical Greater Than Word Immediate", SpuInstructionFormat.RI10, "01011100", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode br =
-				new SpuOpCode("br", "Branch Relative", SpuInstructionFormat.RI16NoRegs, "001100100");
+				new SpuOpCode("br", "Branch Relative", SpuInstructionFormat.RI16NoRegs, "001100100", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode bra =
-				new SpuOpCode("bra", "Branch Absolute", SpuInstructionFormat.RI16NoRegs, "001100000");
+				new SpuOpCode("bra", "Branch Absolute", SpuInstructionFormat.RI16NoRegs, "001100000", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode brsl =
-				new SpuOpCode("brsl", "Branch Relative and Set Link", SpuInstructionFormat.RI16, "001100110");
+				new SpuOpCode("brsl", "Branch Relative and Set Link", SpuInstructionFormat.RI16, "001100110", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode brasl =
-				new SpuOpCode("brasl", "Branch Absolute and Set Link", SpuInstructionFormat.RI16, "001100010");
+				new SpuOpCode("brasl", "Branch Absolute and Set Link", SpuInstructionFormat.RI16, "001100010", SpuPipeline.Odd, 4);
 		// p175
 		public static readonly SpuOpCode bi =
-				new SpuOpCode("bi", "Branch Indirect", SpuInstructionFormat.RR1, "00110101000", SpuOpCodeSpecialFeatures.BitDE);
+				new SpuOpCode("bi", "Branch Indirect", SpuInstructionFormat.RR1, "00110101000", SpuOpCodeSpecialFeatures.BitDE, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode iret =
-				new SpuOpCode("iret", "Interrupt Return", SpuInstructionFormat.RR1, "00110101010", SpuOpCodeSpecialFeatures.BitDE);
+				new SpuOpCode("iret", "Interrupt Return", SpuInstructionFormat.RR1, "00110101010", SpuOpCodeSpecialFeatures.BitDE, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode bisled =
-				new SpuOpCode("bisled", "Branch Indirect and Set Link if External Data", SpuInstructionFormat.RR2, "00110101011", SpuOpCodeSpecialFeatures.BitDE);
+				new SpuOpCode("bisled", "Branch Indirect and Set Link if External Data", SpuInstructionFormat.RR2, "00110101011", SpuOpCodeSpecialFeatures.BitDE, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode bisl =
-				new SpuOpCode("bisl", "Branch Indirect and Set Link", SpuInstructionFormat.RR2, "00110101001", SpuOpCodeSpecialFeatures.BitDE);
+				new SpuOpCode("bisl", "Branch Indirect and Set Link", SpuInstructionFormat.RR2, "00110101001", SpuOpCodeSpecialFeatures.BitDE, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode brnz =
-				new SpuOpCode("brnz", "Branch If Not Zero Word", SpuInstructionFormat.RI16, "001000010");
+				new SpuOpCode("brnz", "Branch If Not Zero Word", SpuInstructionFormat.RI16, "001000010", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode brz =
-				new SpuOpCode("brz", "Branch If Zero Word", SpuInstructionFormat.RI16, "001000000");
+				new SpuOpCode("brz", "Branch If Zero Word", SpuInstructionFormat.RI16, "001000000", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode brhnz =
-				new SpuOpCode("brhnz", "Branch If Not Zero Halfword", SpuInstructionFormat.RI16, "001000110");
+				new SpuOpCode("brhnz", "Branch If Not Zero Halfword", SpuInstructionFormat.RI16, "001000110", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode brhz =
-				new SpuOpCode("brhz", "Branch If Zero Halfword", SpuInstructionFormat.RI16, "001000100");
+				new SpuOpCode("brhz", "Branch If Zero Halfword", SpuInstructionFormat.RI16, "001000100", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode biz =
-				new SpuOpCode("biz", "Branch Indirect If Zero", SpuInstructionFormat.RR2, "00100101000", SpuOpCodeSpecialFeatures.BitDE);
+				new SpuOpCode("biz", "Branch Indirect If Zero", SpuInstructionFormat.RR2, "00100101000", SpuOpCodeSpecialFeatures.BitDE, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode binz =
-				new SpuOpCode("binz", "Branch Indirect If Not Zero", SpuInstructionFormat.RR2, "00100101001", SpuOpCodeSpecialFeatures.BitDE);
+				new SpuOpCode("binz", "Branch Indirect If Not Zero", SpuInstructionFormat.RR2, "00100101001", SpuOpCodeSpecialFeatures.BitDE, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode bihz =
-				new SpuOpCode("bihz", "Branch Indirect If Zero Halfword", SpuInstructionFormat.RR2, "0100101010", SpuOpCodeSpecialFeatures.BitDE);
+				new SpuOpCode("bihz", "Branch Indirect If Zero Halfword", SpuInstructionFormat.RR2, "0100101010", SpuOpCodeSpecialFeatures.BitDE, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode bihnz =
-				new SpuOpCode("bihnz", "Branch Indirect If Not Zero Halfword", SpuInstructionFormat.RR2, "00100101011", SpuOpCodeSpecialFeatures.BitDE);
+				new SpuOpCode("bihnz", "Branch Indirect If Not Zero Halfword", SpuInstructionFormat.RR2, "00100101011", SpuOpCodeSpecialFeatures.BitDE, SpuPipeline.Odd, 4);
 		// 8. Hint-for-Branch OpCodes: Unusual instruction format, so currently omitted.
 
 		// 9. Floating point.
 		public static readonly SpuOpCode fa =
-				new SpuOpCode("fa", "Floating Add", SpuInstructionFormat.RR, "01011000100");
+				new SpuOpCode("fa", "Floating Add", SpuInstructionFormat.RR, "01011000100", SpuPipeline.Even, 6);
 		public static readonly SpuOpCode dfa =
-				new SpuOpCode("dfa", "Double Floating Add", SpuInstructionFormat.RR, "01011001100");
+				new SpuOpCode("dfa", "Double Floating Add", SpuInstructionFormat.RR, "01011001100", SpuPipeline.Even, 13);
 		public static readonly SpuOpCode fs =
-				new SpuOpCode("fs", "Floating Subtract", SpuInstructionFormat.RR, "01011000101");
+				new SpuOpCode("fs", "Floating Subtract", SpuInstructionFormat.RR, "01011000101", SpuPipeline.Even, 6);
 		public static readonly SpuOpCode dfs =
-				new SpuOpCode("dfs", "Double Floating Subtract", SpuInstructionFormat.RR, "01011001101");
+				new SpuOpCode("dfs", "Double Floating Subtract", SpuInstructionFormat.RR, "01011001101", SpuPipeline.Even, 13);
 		public static readonly SpuOpCode fm =
-				new SpuOpCode("fm", "Floating Multiply", SpuInstructionFormat.RR, "01011000110");
+				new SpuOpCode("fm", "Floating Multiply", SpuInstructionFormat.RR, "01011000110", SpuPipeline.Even, 6);
 		public static readonly SpuOpCode dfm =
-				new SpuOpCode("dfm", "Double Floating Multiply", SpuInstructionFormat.RR, "01011001110");
+				new SpuOpCode("dfm", "Double Floating Multiply", SpuInstructionFormat.RR, "01011001110", SpuPipeline.Even, 13);
 		public static readonly SpuOpCode fma =
-				new SpuOpCode("fma", "Floating Multiply and Add", SpuInstructionFormat.RRR, "1110");
+				new SpuOpCode("fma", "Floating Multiply and Add", SpuInstructionFormat.RRR, "1110", SpuPipeline.Even, 6);
 		public static readonly SpuOpCode dfma =
-				new SpuOpCode("dfma", "Double Floating Multiply and Add", SpuInstructionFormat.RR, "01101011100");
+				new SpuOpCode("dfma", "Double Floating Multiply and Add", SpuInstructionFormat.RR, "01101011100", SpuPipeline.Even, 13);
 		public static readonly SpuOpCode fnms =
-				new SpuOpCode("fnms", "Floating Negative Multiply and Subtract", SpuInstructionFormat.RRR, "1101");
+				new SpuOpCode("fnms", "Floating Negative Multiply and Subtract", SpuInstructionFormat.RRR, "1101", SpuPipeline.Even, 6);
 		public static readonly SpuOpCode dfnms =
-				new SpuOpCode("dfnms", "Double Floating Negative Multiply and Subtract", SpuInstructionFormat.RR, "01101011110");
+				new SpuOpCode("dfnms", "Double Floating Negative Multiply and Subtract", SpuInstructionFormat.RR, "01101011110", SpuPipeline.Even, 13);
 		public static readonly SpuOpCode fms =
-				new SpuOpCode("fms", "Floating Multiply and Subtract", SpuInstructionFormat.RRR, "1111");
+				new SpuOpCode("fms", "Floating Multiply and Subtract", SpuInstructionFormat.RRR, "1111", SpuPipeline.Even, 6);
 		public static readonly SpuOpCode dfms =
-				new SpuOpCode("dfms", "Double Floating Multiply and Subtract", SpuInstructionFormat.RR, "01101011101");
+				new SpuOpCode("dfms", "Double Floating Multiply and Subtract", SpuInstructionFormat.RR, "01101011101", SpuPipeline.Even, 6);
 		public static readonly SpuOpCode dfnma =
-				new SpuOpCode("dfnma", "Double Floating Negative Multiply and Add", SpuInstructionFormat.RR, "01101011111");
+				new SpuOpCode("dfnma", "Double Floating Negative Multiply and Add", SpuInstructionFormat.RR, "01101011111", SpuPipeline.Even, 13);
 		public static readonly SpuOpCode frest =
-				new SpuOpCode("frest", "Floating Reciprocal Estimate", SpuInstructionFormat.RR2, "00110111000");
+				new SpuOpCode("frest", "Floating Reciprocal Estimate", SpuInstructionFormat.RR2, "00110111000", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode frsqest =
-				new SpuOpCode("frsqest", "Floating Reciprocal Absolute Square Root Estimate", SpuInstructionFormat.RR2, "00110111001");
+				new SpuOpCode("frsqest", "Floating Reciprocal Absolute Square Root Estimate", SpuInstructionFormat.RR2, "00110111001", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode fi =
-				new SpuOpCode("fi", "Floating Interpolate", SpuInstructionFormat.RR, "01111010100");
+				new SpuOpCode("fi", "Floating Interpolate", SpuInstructionFormat.RR, "01111010100", SpuPipeline.Even, 7);
 		// p220
 		public static readonly SpuOpCode csflt =
-				new SpuOpCode("csflt", "Convert Signed Integer to Floating", SpuInstructionFormat.RI8, "0111011010");
+				new SpuOpCode("csflt", "Convert Signed Integer to Floating", SpuInstructionFormat.RI8, "0111011010", SpuPipeline.Even, 7);
 		public static readonly SpuOpCode cflts =
-				new SpuOpCode("cflts", "Convert Floating to Signed Integer", SpuInstructionFormat.RI8, "0111011000");
+				new SpuOpCode("cflts", "Convert Floating to Signed Integer", SpuInstructionFormat.RI8, "0111011000", SpuPipeline.Even, 7);
 		public static readonly SpuOpCode cuflt =
-				new SpuOpCode("cuflt", "Convert Unsigned Integer to Floating", SpuInstructionFormat.RI8, "0111011011");
+				new SpuOpCode("cuflt", "Convert Unsigned Integer to Floating", SpuInstructionFormat.RI8, "0111011011", SpuPipeline.Even, 7);
 		public static readonly SpuOpCode cfltu =
-				new SpuOpCode("cfltu", "Convert Floating to Unsigned Integer", SpuInstructionFormat.RI8, "0111011001");
+				new SpuOpCode("cfltu", "Convert Floating to Unsigned Integer", SpuInstructionFormat.RI8, "0111011001", SpuPipeline.Even, 7);
 		public static readonly SpuOpCode frds =
-				new SpuOpCode("frds", "Floating Round Double to Single", SpuInstructionFormat.RR2, "01110111001");
+				new SpuOpCode("frds", "Floating Round Double to Single", SpuInstructionFormat.RR2, "01110111001", SpuPipeline.Even, 13);
 		public static readonly SpuOpCode fesd =
-				new SpuOpCode("fesd", "Floating Extend Single to Double", SpuInstructionFormat.RR2, "01110111000");
+				new SpuOpCode("fesd", "Floating Extend Single to Double", SpuInstructionFormat.RR2, "01110111000", SpuPipeline.Even, 13);
+
+		// Can't find latency info for these.
 		public static readonly SpuOpCode dfceq =
-				new SpuOpCode("dfceq", "Double Floating Compare Equal", SpuInstructionFormat.RR, "01111000011");
+				new SpuOpCode("dfceq", "Double Floating Compare Equal", SpuInstructionFormat.RR, "01111000011", SpuPipeline.None, 0);
 		public static readonly SpuOpCode dfcmeq =
-				new SpuOpCode("dfcmeq", "Double Floating Compare Magnitude Equal", SpuInstructionFormat.RR, "01111001011");
+				new SpuOpCode("dfcmeq", "Double Floating Compare Magnitude Equal", SpuInstructionFormat.RR, "01111001011", SpuPipeline.None, 0);
 		public static readonly SpuOpCode dfcgt =
-				new SpuOpCode("dfcgt", "Double Floating Compare Greater Than", SpuInstructionFormat.RR, "01011000011");
+				new SpuOpCode("dfcgt", "Double Floating Compare Greater Than", SpuInstructionFormat.RR, "01011000011", SpuPipeline.None, 0);
 		public static readonly SpuOpCode dfcmgt =
-				new SpuOpCode("dfcmgt", "Double Floating Compare Magnitude Greater Than", SpuInstructionFormat.RR, "01011001011");
+				new SpuOpCode("dfcmgt", "Double Floating Compare Magnitude Greater Than", SpuInstructionFormat.RR, "01011001011", SpuPipeline.None, 0);
 		public static readonly SpuOpCode dftsv =
-				new SpuOpCode("dftsv", "Double Floating Test Special Value", SpuInstructionFormat.RI7, "01110111111");
+				new SpuOpCode("dftsv", "Double Floating Test Special Value", SpuInstructionFormat.RI7, "01110111111", SpuPipeline.None, 0);
+
 		public static readonly SpuOpCode fceq =
-				new SpuOpCode("fceq", "Floating Compare Equal", SpuInstructionFormat.RR, "01111000010");
+				new SpuOpCode("fceq", "Floating Compare Equal", SpuInstructionFormat.RR, "01111000010", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode fcmeq =
-				new SpuOpCode("fcmeq", "Floating Compare Magnitude Equal", SpuInstructionFormat.RR, "01111001010");
+				new SpuOpCode("fcmeq", "Floating Compare Magnitude Equal", SpuInstructionFormat.RR, "01111001010", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode fcgt =
-				new SpuOpCode("fcgt", "Floating Compare Greater Than", SpuInstructionFormat.RR, "01011000010");
+				new SpuOpCode("fcgt", "Floating Compare Greater Than", SpuInstructionFormat.RR, "01011000010", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode fcmgt =
-				new SpuOpCode("fcmgt", "Floating Compare Magnitude Greater Than", SpuInstructionFormat.RR, "01011001010");
+				new SpuOpCode("fcmgt", "Floating Compare Magnitude Greater Than", SpuInstructionFormat.RR, "01011001010", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode fscrwr =
-				new SpuOpCode("fscrwr", "Floating-Point Status and Control Register Write", SpuInstructionFormat.RR2, "01110111010");
+				new SpuOpCode("fscrwr", "Floating-Point Status and Control Register Write", SpuInstructionFormat.RR2, "01110111010", SpuPipeline.Even, 7);
 		public static readonly SpuOpCode fscrrd =
-				new SpuOpCode("fscrrd", "Floating-Point Status and Control Register Read", SpuInstructionFormat.RR1, "01110011000");
+				new SpuOpCode("fscrrd", "Floating-Point Status and Control Register Read", SpuInstructionFormat.RR1, "01110011000", SpuPipeline.Even, 13);
 		// 10. Control OpCodes
 		// p238
 		//			};
-		/// <summary>
-		/// Using <see cref="SpuInstructionFormat.RI16NoRegs"/> for this is cheating a bit....
-		/// </summary>
 		public static readonly SpuOpCode stop =
-				new SpuOpCode("stop", "Stop and Signal", SpuInstructionFormat.RI14, "00000000000");
+				new SpuOpCode("stop", "Stop and Signal", SpuInstructionFormat.RI14, "00000000000", SpuPipeline.Odd, 4);
 
 		public static readonly SpuOpCode lnop =
-			new SpuOpCode("lnop", "No Operation (Load)", SpuInstructionFormat.WEIRD, "00000000001");
+			new SpuOpCode("lnop", "No Operation (Load)", SpuInstructionFormat.WEIRD, "00000000001", SpuPipeline.Odd, 0);
 
 		public static readonly SpuOpCode nop =
-			new SpuOpCode("nop", "No Operation (Execute)", SpuInstructionFormat.WEIRD, "01000000001");
+			new SpuOpCode("nop", "No Operation (Execute)", SpuInstructionFormat.WEIRD, "01000000001", SpuPipeline.Even, 0);
 
 		public static readonly SpuOpCode rdch =
-			new SpuOpCode("rdch", "Read Channel", SpuInstructionFormat.Channel, "00000001101");
+			new SpuOpCode("rdch", "Read Channel", SpuInstructionFormat.Channel, "00000001101", SpuPipeline.Odd, 6);
 		public static readonly SpuOpCode rchcnt =
-			new SpuOpCode("rchcnt", "Read Channel Count", SpuInstructionFormat.Channel, "00000001111");
+			new SpuOpCode("rchcnt", "Read Channel Count", SpuInstructionFormat.Channel, "00000001111", SpuPipeline.Odd, 6);
 		public static readonly SpuOpCode wrch =
-			new SpuOpCode("wrch", "Write Channel", SpuInstructionFormat.Channel, "00100001101");
+			new SpuOpCode("wrch", "Write Channel", SpuInstructionFormat.Channel, "00100001101", SpuPipeline.Odd, 6);
 
 
 		// *****************************************
@@ -831,9 +854,9 @@ namespace CellDotNet
 		/// This is a pseudo-instruction.
 		/// </summary>
 		public static readonly SpuOpCode move = 
-			new SpuOpCode("move", "Move (pseudo)", SpuInstructionFormat.Custom, "0", SpuOpCodeSpecialFeatures.Pseudo);
+			new SpuOpCode("move", "Move (pseudo)", SpuInstructionFormat.Custom, "0", SpuOpCodeSpecialFeatures.Pseudo, SpuPipeline.None, 0);
 		public static readonly SpuOpCode ret =
-			new SpuOpCode("ret", "Function return (pseudo)", SpuInstructionFormat.Custom, "0", SpuOpCodeSpecialFeatures.Pseudo);
+			new SpuOpCode("ret", "Function return (pseudo)", SpuInstructionFormat.Custom, "0", SpuOpCodeSpecialFeatures.Pseudo, SpuPipeline.None, 0);
 
 	}
 
