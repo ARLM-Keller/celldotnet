@@ -297,6 +297,14 @@ namespace CellDotNet
 			return RunProgram(cc, arguments);
 		}
 
+		public static object UnitTestRunProgram(Delegate del, params object[] args)
+		{
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			return UnitTestRunProgram(cc, args);
+		}
+
 		/// <summary>
 		/// This method can be used to execute a method even on windows. It will attempt to 
 		/// perform DMA ops as an SPE would.
@@ -642,7 +650,7 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="count"></param>
 		/// <param name="elementSize"></param>
-		private static unsafe AlignedMemory<T> AllocateAlignedFourByteElementArray<T>(int count, int elementSize) where T : struct
+		private static AlignedMemory<T> AllocateAlignedFourByteElementArray<T>(int count, int elementSize) where T : struct
 		{
 			// Minimal padding to ensure that a final 16-byte dma write can't damage other data.
 			int paddedByteCount = Utilities.Align16(count * elementSize);

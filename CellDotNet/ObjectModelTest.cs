@@ -68,12 +68,7 @@ namespace CellDotNet
 					return arr.Length;
 				};
 
-			IntReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
-			if (!SpeContext.HasSpeHardware)
-				return;
-
-			int val = del2();
-			AreEqual(5, val);
+			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(del));
 		}
 
 		[Test]
@@ -186,11 +181,8 @@ namespace CellDotNet
 					return s.ReturnArg(i);
 				};
 
-			CompileContext cc = new CompileContext(del.Method);
-			cc.PerformProcessing(CompileContextState.S8Complete);
-
 			int arg = 7913;
-			AreEqual(del(arg), (int)SpeContext.UnitTestRunProgram(cc, arg));
+			AreEqual(del(arg), (int)SpeContext.UnitTestRunProgram(del, arg));
 		}
 
 		[Test]
@@ -208,10 +200,7 @@ namespace CellDotNet
 					return s.ReturnSum();
 				};
 
-			CompileContext cc = new CompileContext(del.Method);
-			cc.PerformProcessing(CompileContextState.S8Complete);
-
-			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(cc));
+			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(del));
 		}
 
 		[Test]
@@ -229,10 +218,7 @@ namespace CellDotNet
 						return s.i1 + s.i2 + s.i3 + s.i4;
 					};
 
-			CompileContext cc = new CompileContext(del.Method);
-			cc.PerformProcessing(CompileContextState.S8Complete);
-
-			AreEqual(del(), (int) SpeContext.UnitTestRunProgram(cc));
+			AreEqual(del(), (int) SpeContext.UnitTestRunProgram(del));
 		}
 
 		[Test]
@@ -246,10 +232,7 @@ namespace CellDotNet
 					return s.i1 + s.i2 + s.i3 + s.i4;
 				};
 
-			CompileContext cc = new CompileContext(del.Method);
-			cc.PerformProcessing(CompileContextState.S8Complete);
-
-			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(cc));
+			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(del));
 		}
 
 		[Test]
@@ -263,10 +246,7 @@ namespace CellDotNet
 					return s.i1 + s.i2 + s.i3 + s.i4;
 				};
 
-			CompileContext cc = new CompileContext(del.Method);
-			cc.PerformProcessing(CompileContextState.S8Complete);
-
-			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(cc));
+			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(del));
 		}
 
 		[Test]
@@ -290,10 +270,7 @@ namespace CellDotNet
 					return s1.i1 + s1.i2 + s1.i3 + s1.i4 + s2.i1 + s2.i2 + s2.i3 + s2.i4;
 				};
 
-			CompileContext cc = new CompileContext(del.Method);
-			cc.PerformProcessing(CompileContextState.S8Complete);
-
-			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(cc));
+			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(del));
 		}
 
 
@@ -648,10 +625,31 @@ namespace CellDotNet
 					return c.i1 + c.i2 + c.i3 + c.i4;
 				};
 
-			CompileContext cc = new CompileContext(del.Method);
-			cc.PerformProcessing(CompileContextState.S8Complete);
+			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(del));
+		}
 
-			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(cc));
+		static void ReassignByrefClassArgument(ref ClassWithInts arg, int i1, int i2, int i3, int i4)
+		{
+			arg = new ClassWithInts();
+			arg.i1 = i1;
+			arg.i2 = i2;
+			arg.i3 = i3;
+			arg.i4 = i4;
+		}
+
+		[Test]
+		public void TestClass_ArgumentByref()
+		{
+			IntReturnDelegate del =
+				delegate
+				{
+					ClassWithInts c = new ClassWithInts(1, 10, 100, 1000);
+					ReassignByrefClassArgument(ref c, 101, 102, 103, 104);
+
+					return c.i1 + c.i2 + c.i3 + c.i4;
+				};
+
+			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(del));
 		}
 
 		class PpeClass
@@ -847,7 +845,7 @@ namespace CellDotNet
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(3, cc.Methods.Count); // call to objec() included.
+			AreEqual(3, cc.Methods.Count); // call to object() included.
 
 			PpeClass inst = new PpeClass();
 

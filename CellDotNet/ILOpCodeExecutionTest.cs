@@ -523,8 +523,8 @@ namespace CellDotNet
 
 			corect = dividend / divisor;
 			result = (float)SpeContext.UnitTestRunProgram(cc, dividend, divisor);
-			resultint = RecursiveInstructionSelector.ReinterpretAsInt(result);
-			corectint = RecursiveInstructionSelector.ReinterpretAsInt(corect);
+			resultint = Utilities.ReinterpretAsInt(result);
+			corectint = Utilities.ReinterpretAsInt(corect);
 			Console.WriteLine("{0} / {1} Mono: {2} SPU: {3}4", dividend, divisor, corect, result);
 //			Console.WriteLine("{0}", Convert.ToString(resultint, 2));
 //			Console.WriteLine("{0}", Convert.ToString(corectint, 2));

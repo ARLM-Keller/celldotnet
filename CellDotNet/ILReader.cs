@@ -414,18 +414,16 @@ namespace CellDotNet
 			}
 		}
 
-		private unsafe float ReadSingle()
+		private float ReadSingle()
 		{
 			int i = ReadInt32();
-			Utilities.PretendVariableIsUsed(i);
-			return *(((float*)&i));
+			return Utilities.ReinterpretAsSingle(i);
 		}
 
-		private unsafe double ReadDouble()
+		private double ReadDouble()
 		{
 			long i = ReadInt64();
-			Utilities.PretendVariableIsUsed(i);
-			return *(((double*)&i));
+			return Utilities.ReinterpretAsDouble(i);
 		}
 
 		/// <summary>

@@ -85,6 +85,12 @@ namespace CellDotNet
 			}
 		}
 
+		/// <summary>
+		/// Applies <paramref name="converter"/> to each node in the tree; when the converter return non-null, the current
+		/// node is replaced with the return value.
+		/// </summary>
+		/// <param name="blocks"></param>
+		/// <param name="converter"></param>
 		static public void ConvertTreeInstructions(IEnumerable<IRBasicBlock> blocks, Converter<TreeInstruction, TreeInstruction> converter)
 		{
 			foreach (IRBasicBlock block in blocks)
@@ -108,16 +114,6 @@ namespace CellDotNet
 				foreach (TreeInstruction inst in block.EnumerateInstructions())
 					yield return inst;
 			}
-		}
-
-		public String toString()
-		{
-			String result = "";
-			foreach (TreeInstruction root in _roots)
-			{
-				result += string.Format("{0}\n", root.DebuggerTreeDisplay());
-			}
-			return result;
 		}
 	}
 }

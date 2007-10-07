@@ -25,12 +25,6 @@ namespace CellDotNet
 			throw new InvalidOperationException();
 		}
 
-		[IntrinsicMethod(SpuIntrinsicMethod.Mfc_Put)]
-		static unsafe public void Put(void *ls, int ea, int size, uint tag, uint tid, uint rid)
-		{
-			throw new InvalidOperationException();			
-		}
-
 		static public void Get(int[] target, MainStorageArea ea)
 		{
 			Get(target, ea, (short) target.Length, 31);

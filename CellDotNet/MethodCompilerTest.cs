@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
 
@@ -28,16 +27,6 @@ namespace CellDotNet
 
 			MethodCompiler mc = new MethodCompiler(del.Method);
 			mc.PerformProcessing(MethodCompileState.S8AddressPatchingDone);
-
-
-//			Console.WriteLine("Disassembly - prolog:");
-//			Console.Write(mc.GetPrologWriter().Disassemble());
-//			Console.WriteLine();
-//			Console.WriteLine("Disassembly - body:");
-//			Console.Write(mc.GetBodyWriter().Disassemble());
-//			Console.WriteLine();
-//			Console.WriteLine("Disassembly - epilog:");
-//			Console.Write(mc.GetEpilogWriter().Disassemble());
 
 			mc.GetPrologWriter().AssertNoPseudoInstructions();
 			mc.GetBodyWriter().AssertNoPseudoInstructions();

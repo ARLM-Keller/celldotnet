@@ -49,7 +49,7 @@ namespace CellDotNet
 
 		private static byte[] EncodeLittleEndian(float f)
 		{
-			uint u = RecursiveInstructionSelector.ReinterpretAsUInt(f);
+			uint u = Utilities.ReinterpretAsUInt(f);
 			return new byte[] { (byte)(u & 0xff), (byte)((u >> 8) & 0xff), (byte)((u >> 16) & 0xff), (byte)((u >> 24) & 0xff) };
 		}
 

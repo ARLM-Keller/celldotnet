@@ -282,5 +282,25 @@ namespace CellDotNet
 			s.AddAll(e);
 			return s;
 		}
+
+		static internal unsafe uint ReinterpretAsUInt(float f)
+		{
+			return *((uint*) &f);
+		}
+
+		static internal unsafe int ReinterpretAsInt(float f)
+		{
+			return *((int*)&f);
+		}
+
+		internal static unsafe float ReinterpretAsSingle(int i)
+		{
+			return *(((float*)&i));
+		}
+
+		internal static unsafe double ReinterpretAsDouble(long i)
+		{
+			return *(((double*)&i));
+		}
 	}
 }

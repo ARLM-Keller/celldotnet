@@ -559,65 +559,18 @@ namespace CellDotNet
 			Console.WriteLine();
 		}
 
-		private static Guid g = Guid.NewGuid();
-
-		struct MyStruct
+		static void m(int i)
 		{
-			public int i1;
-			public int l1;
-
-
-			public MyStruct(int i1)
-			{
-				this.i1 = i1;
-				l1 = 3;
-			}
-
-			public MyStruct ACopy
-			{
-				get { return this;}
-			}
-
-			public int I1
-			{
-				get { return i1; }
-			}
+			int[,] arr = new int[3,9];
+//			arr[10, 2] = 234;
+			arr[1, 2] = 234;
 		}
-
-//		private delegate void xx();
-
-		static void Method2(ref Int32Vector arg)
-		{
-			int i = arg.E2;
-//			return new MyStruct(arg.I1);
-		}
-
-//		static void Method2(ref MyStruct arg)
-//		{
-//			arg = arg.ACopy;
-////			return new MyStruct(arg.I1);
-//		}
 
 		private unsafe static void RunRasmus()
 		{
-//			RuntimeMethodHandle mh = MethodBase.GetCurrentMethod().MethodHandle;
-//			byte[] buf = new byte[100];
-//			IntPtr ptr = Marshal.UnsafeAddrOfPinnedArrayElement(buf, 0);
-//			Marshal.StructureToPtr(mh, ptr, false);
-//
-//			RuntimeMethodHandle mh2 = (RuntimeMethodHandle) Marshal.PtrToStructure(ptr, typeof (RuntimeMethodHandle));
+			MethodInfo m = new Action<int>(Class1.m).Method;
 
-//			new VectorTypeTest().TestVectorFloat_ConstructorRefArg();
-//			new SpuInstructionTest().TestRI10();
-//			new SpuInstructionTest().TestRI10_2();
-//			new ObjectModelTest().TestClass_FieldAndConstructor();
-//			new ObjectModelTest().TestPpeClass_InstanceMethodCall_ReturnInt();
-			new ObjectModelTest().TestPpeClass_InstanceMethodCall_ReturnBigStruct();
-//			new LibraryTest().TestElfStaticLibrary();
-//			new SpeContextTest().TestPpeCallFailureTest();
-//			new SpeContextTest().TestStopCode_OutOfMemoryException();
-//			new ObjectModelTest().TestClass_InstanceMethodAndFields();
-//			new MarshalerTest().TestReferenceTypes();
+//			new ObjectModelTest().TestPpeClass_InstanceMethodCall_ReturnBigStruct();
 		}
 	}
 }

@@ -55,12 +55,7 @@ namespace CellDotNet
 				CompileContext cc = new CompileContext(del.Method);
 				cc.PerformProcessing(CompileContextState.S8Complete);
 
-//				Disassembler.DisassembleToConsole(cc);
-//				cc.WriteAssemblyToFile("TestDma_GetIntArray_asm.s", mem.GetArea());
-
 				object rv = SpeContext.UnitTestRunProgram(cc, mem.GetArea());
-//				int correctVal = del(mem.GetArea());
-//				AreEqual(20, correctVal);
 				AreEqual(20, (int) rv);
 			}
 		}
@@ -125,29 +120,16 @@ namespace CellDotNet
 						};
 
 				CompileContext cc = new CompileContext(del.Method);
-
-				cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
-
-				Disassembler.DisassembleUnconditional(cc, Console.Out);
-
 				cc.PerformProcessing(CompileContextState.S8Complete);
 
-				Disassembler.DisassembleToConsole(cc);
-
-//				cc.WriteAssemblyToFile("TestDma_GetIntArray_DEBUG_asm.s", mem.GetArea());
+				int correctVal = del(mem.GetArea());
 
 				if (!SpeContext.HasSpeHardware)
 					return;
 
 				object rv = new SpeContext().RunProgram(cc, mem.GetArea());
-
-//				Console.WriteLine("Result: {0:x}", MainStorageArea.GetEffectiveAddress(mem.GetArea()));
-
-//				Console.WriteLine("Result: {0:x}", (int) rv);
-
-//				int correctVal = del(mem.GetArea());
-//				AreEqual(20, correctVal);
-//				AreEqual(20, (int)rv);
+				AreEqual(20, correctVal);
+				AreEqual(20, (int)rv);
 			}
 		}
 
@@ -168,11 +150,8 @@ namespace CellDotNet
 
 				CompileContext cc = new CompileContext(del.Method);
 				cc.PerformProcessing(CompileContextState.S8Complete);
-//				Disassembler.DisassembleToConsole(cc);
-//				cc.WriteAssemblyToFile("TestDma_PutIntArray_asm.s", mem.GetArea());
 
 				// Run locally.
-//				del(mem.GetArea());
 				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
 				{
 //					AreEqual(5, mem.ArraySegment.Array[i]);
@@ -182,13 +161,7 @@ namespace CellDotNet
 				// Run on spu.
 				object rv = SpeContext.UnitTestRunProgram(cc, mem.GetArea());
 
-//				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
-//					Console.WriteLine("mem.ArraySegment.Array[{0}] = {1}", i, mem.ArraySegment.Array[i]);
-
 				IsNull(rv);
-
-//				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
-//					AreEqual(i - mem.ArraySegment.Offset, mem.ArraySegment.Array[i]);
 			}
 		}
 
