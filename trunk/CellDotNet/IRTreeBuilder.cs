@@ -85,7 +85,7 @@ namespace CellDotNet
 			}
 
 
-			public StackTypeDescription PeakType()
+			public StackTypeDescription PeekType()
 			{
 				if (InstructionStack.Count > 0)
 					return  InstructionStack[InstructionStack.Count - 1].StackType;
@@ -211,35 +211,32 @@ namespace CellDotNet
 		private ParseStack _parseStack;
 
 
-		static private object s_lock = new object();
-
-		private Dictionary<short, IROpCode> _irmap = GetIROpCodeMap();
+		private Dictionary<short, IROpCode> _irmap = GetILToIRMap();
 		private static Dictionary<short, IROpCode> s_iropcodemap;
+
 		/// <summary>
 		/// Returns a map from the IL opcode subset that maps directly to the IR opcodes.
 		/// </summary>
 		/// <returns></returns>
-		static Dictionary<short, IROpCode> GetIROpCodeMap()
+		static Dictionary<short, IROpCode> GetILToIRMap()
 		{
-			lock (s_lock)
+			if (s_iropcodemap == null)
 			{
-				if (s_iropcodemap == null)
-				{
-					s_iropcodemap = new Dictionary<short, IROpCode>();
+				Dictionary<short, IROpCode> map = new Dictionary<short, IROpCode>();
 
-					FieldInfo[] fields = typeof(IROpCodes).GetFields(BindingFlags.Public | BindingFlags.Static);
-					foreach (FieldInfo field in fields)
-					{
-						IROpCode oc = (IROpCode)field.GetValue(null);
-						if (oc.ReflectionOpCode != null)
-							s_iropcodemap.Add(oc.ReflectionOpCode.Value.Value, oc);
-					}
+				FieldInfo[] fields = typeof(IROpCodes).GetFields(BindingFlags.Public | BindingFlags.Static);
+				foreach (FieldInfo field in fields)
+				{
+					IROpCode oc = (IROpCode)field.GetValue(null);
+					if (oc.ReflectionOpCode != null)
+						map.Add(oc.ReflectionOpCode.Value.Value, oc);
 				}
+
+				s_iropcodemap = map;
 			}
 
 			return s_iropcodemap;
 		}
-
 
 		public List<IRBasicBlock> BuildBasicBlocks(MethodBase method, ILReader reader, 
 		                                           List<MethodVariable> variables, ReadOnlyCollection<MethodParameter> parameters)
@@ -350,12 +347,12 @@ namespace CellDotNet
 
 			reader.Reset();
 
-			while (reader.Read(_parseStack.PeakType()))
+			while (reader.Read(_parseStack.PeekType()))
 			{
 				if (prevInst != null && prevInst.Opcode.FlowControl == FlowControl.Branch)
 				{
 					// Skip unreachablwe instructions.
-					while (!branchTargets.ContainsKey(reader.Offset) && reader.Read(_parseStack.PeakType()))
+					while (!branchTargets.ContainsKey(reader.Offset) && reader.Read(_parseStack.PeekType()))
 					{}
 
 					if (reader.ILReader.State == ILReader.ReadState.EOF)

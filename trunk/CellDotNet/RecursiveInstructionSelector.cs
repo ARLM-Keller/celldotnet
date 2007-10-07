@@ -111,16 +111,6 @@ namespace CellDotNet
 			}
 		}
 
-		static internal unsafe uint ReinterpretAsUInt(float f)
-		{
-			return *((uint*) &f);
-		}
-
-		static internal unsafe int ReinterpretAsInt(float f)
-		{
-			return *((int*)&f);
-		}
-
 		private VirtualRegister GenerateCode(TreeInstruction inst)
 		{
 			VirtualRegister vrleft = null, vrright = null;
@@ -177,7 +167,7 @@ namespace CellDotNet
 					break;
 				case IRCode.Ldc_R4:
 					{
-						uint val = ReinterpretAsUInt((float) inst.Operand);
+						uint val = Utilities.ReinterpretAsUInt((float) inst.Operand);
 						return _writer.WriteLoadI4((int) val);
 
 //						VirtualRegister reg = _writer.WriteIlhu((int) ((val >> 16) & 0xffff));
@@ -206,98 +196,7 @@ namespace CellDotNet
 						return IntrinsicsWriter.GenerateIntrinsicMethod(_writer, (SpuIntrinsicMethod) callInst.Operand, childregs);
 					}
 				case IRCode.PpeCall:
-					{
-						int areaSlot = 0;
-
-						// Write method to be called.
-						MethodInfo method = inst.OperandAsPpeMethod.Method;
-						IntPtr mptr = method.MethodHandle.Value;
-						Console.WriteLine("Ppe call inst ptr: 0x{0:x}", (uint)mptr);
-						VirtualRegister handlereg = _writer.WriteLoadIntPtr(mptr);
-
-						ObjectWithAddress argaddress = _specialSpeObjects.PpeCallDataArea;
-						_writer.WriteStore(handlereg, argaddress, areaSlot++);
-
-						// Write parameters to the ppe call area.
-						MethodCallInstruction mci = (MethodCallInstruction) inst;
-						for (int paramidx = 0; paramidx < mci.Parameters.Count; paramidx++)
-						{
-							TreeInstruction param = mci.Parameters[paramidx];
-							StackTypeDescription type = param.StackType;
-							if (type.IndirectionLevel == 0)
-							{
-								// Byval value types.
-								Utilities.Assert(type.CliType != CliType.ObjectType, "type.CliType != CliType.ObjectType");
-								if (type.CliType == CliType.ValueType && !type.IsImmutableSingleRegisterType)
-								{
-									// It's on the stack.
-									for (int qnum = 0; qnum < type.ComplexType.QuadWordCount; qnum++)
-									{
-										VirtualRegister val = _writer.WriteLqd(childregs[paramidx], qnum);
-										_writer.WriteStore(val, argaddress, areaSlot++);
-									}
-								}
-								else
-								{
-									// The value is in a single register.
-									_writer.WriteStore(childregs[paramidx], argaddress, areaSlot++);
-								}
-							}
-							else if (type.IndirectionLevel == 1)
-							{
-								StackTypeDescription etype = type.Dereference();
-								if (etype.CliType != CliType.ObjectType)
-									throw new NotSupportedException(
-										"Argument type '" + type + "' is not supported. Unmanaged pointers are not supported.");
-
-								// Should be a PPE reference type handle.
-								_writer.WriteStore(childregs[paramidx], argaddress, areaSlot++);
-							}
-							else
-								throw new NotSupportedException("Argument type '" + type + "' is not supported.");
-						}
-
-						// Perform the call.
-						_writer.WriteStop(SpuStopCode.PpeCall);
-
-
-						// Move return value back.
-						StackTypeDescription rettype = mci.StackType;
-						if (rettype != StackTypeDescription.None)
-						{
-							VirtualRegister retval;
-							if (rettype.DereferencedCliType == CliType.ObjectType)
-							{
-								Utilities.Assert(rettype.IndirectionLevel == 1, "mci.StackType.IndirectionLevel == 1");
-								retval = _writer.WriteLoad(argaddress, 0);
-							}
-							else
-							{
-								Utilities.Assert(rettype.IndirectionLevel == 0, "rettype.IndirectionLevel == 0");
-								if (rettype.CliType != CliType.ValueType || rettype.IsImmutableSingleRegisterType)
-									retval = _writer.WriteLoad(argaddress, 0);
-								else
-								{
-									// Save the struct to a new stack position.
-									int varStackPos = _spillAllocator(rettype.ComplexType.QuadWordCount);
-									retval = _writer.WriteAi(HardwareRegister.SP, varStackPos * 16);
-									for (int qnum = 0; qnum < rettype.ComplexType.QuadWordCount; qnum++)
-									{
-										VirtualRegister val = _writer.WriteLoad(argaddress, qnum);
-										int stackPos = varStackPos + qnum;
-										_writer.WriteStqd(val, HardwareRegister.SP, stackPos);
-									}
-								}
-							}
-
-							Utilities.Assert(areaSlot*16 <= _specialSpeObjects.PpeCallDataArea.Size,
-							                 "areaSlot * 16 < _specialSpeObjects.PpeCallDataArea.Size");
-
-							return retval;
-						}
-
-						return null;
-					}
+					return WritePpeMethodCall(inst, childregs);
 				case IRCode.Newobj:
 					{
 						Type cls = inst.OperandAsMethodCompiler.MethodBase.DeclaringType;
@@ -837,11 +736,27 @@ namespace CellDotNet
 				case IRCode.Ldobj:
 					if (lefttype.CliType.Equals(CliType.ManagedPointer))
 					{
-						switch (lefttype.Dereference().CliType)
+						StackTypeDescription type = lefttype.Dereference();
+						switch (type.CliType)
 						{
 							case CliType.Int32Vector:
 							case CliType.Float32Vector:
 								return _writer.WriteLqd(vrleft, 0);
+							case CliType.ValueType:
+								if (!type.IsImmutableSingleRegisterType)
+								{
+									// Copy to new stack position.
+									int stackpos = _spillAllocator(type.ComplexType.QuadWordCount);
+									for (int i = 0; i < type.ComplexType.QuadWordCount; i++)
+									{
+										VirtualRegister val = _writer.WriteLqd(vrleft, i);
+										_writer.WriteStqd(val, HardwareRegister.SP, stackpos + i);
+									}
+
+									return _writer.WriteAi(HardwareRegister.SP, stackpos);
+								}
+								else 
+									break;
 						}
 					}
 					break;
@@ -904,11 +819,27 @@ namespace CellDotNet
 				case IRCode.Stobj:
 					if (lefttype.CliType == CliType.ManagedPointer)
 					{
-						switch (lefttype.Dereference().CliType)
+						StackTypeDescription desttype = lefttype.Dereference();
+
+						switch (desttype.CliType)
 						{
 							case CliType.Int32Vector:
 							case CliType.Float32Vector:
 								_writer.WriteStqd(vrright, vrleft, 0);
+								return null;
+							case CliType.ValueType:
+								if (!desttype.IsImmutableSingleRegisterType)
+								{
+									for (int i = 0; i < desttype.ComplexType.QuadWordCount; i++)
+									{
+										VirtualRegister w = _writer.WriteLqd(vrright, i);
+										_writer.WriteStqd(w, vrleft, i);
+									}
+								}
+								else
+								{
+									_writer.WriteStqd(vrright, vrleft, 0);
+								}
 								return null;
 						}
 					}
@@ -1136,7 +1067,7 @@ namespace CellDotNet
 					{
 						case CliType.NativeInt:
 						case CliType.Int32:
-							if(righttype.CliType == CliType.NativeInt || righttype.CliType == CliType.Int32)
+							if (righttype.CliType == CliType.NativeInt || righttype.CliType == CliType.Int32)
 							{
 								VirtualRegister val = _writer.WriteClgt(vrleft, vrright);
 								return _writer.WriteAndi(val, 1);
@@ -1235,14 +1166,7 @@ namespace CellDotNet
 					{
 						MethodVariable var = ((MethodVariable) inst.Operand);
 						if (var.Escapes != null && var.Escapes.Value)
-						{
-							// This is a sanity check for stack overflow.
-							Utilities.Assert(var.StackLocation*4 < 32*1024, "Immediated overflow");
-//							VirtualRegister r = _writer.WriteIl(var.StackLocation * 16);
-//							_writer.WriteA(r, HardwareRegister.SP, r);
-							VirtualRegister r = _writer.WriteAi(HardwareRegister.SP, var.StackLocation*16);
-							return r;
-						}
+							return _writer.WriteAi(HardwareRegister.SP, var.StackLocation*16);
 						else
 							throw new Exception("Escaping variable with no stack location.");
 					}
@@ -1284,6 +1208,100 @@ namespace CellDotNet
 
 			_unimplementedOpCodes.Add(inst.Opcode);
 			return new VirtualRegister(-1);
+		}
+
+		private VirtualRegister WritePpeMethodCall(TreeInstruction inst, List<VirtualRegister> childregs)
+		{
+			int areaSlot = 0;
+
+			// Write method to be called.
+			MethodInfo method = inst.OperandAsPpeMethod.Method;
+			IntPtr mptr = method.MethodHandle.Value;
+			Console.WriteLine("Ppe call inst ptr: 0x{0:x}", (uint)mptr);
+			VirtualRegister handlereg = _writer.WriteLoadIntPtr(mptr);
+
+			ObjectWithAddress argaddress = _specialSpeObjects.PpeCallDataArea;
+			_writer.WriteStore(handlereg, argaddress, areaSlot++);
+
+			// Write parameters to the ppe call area.
+			MethodCallInstruction mci = (MethodCallInstruction) inst;
+			for (int paramidx = 0; paramidx < mci.Parameters.Count; paramidx++)
+			{
+				TreeInstruction param = mci.Parameters[paramidx];
+				StackTypeDescription type = param.StackType;
+				if (type.IndirectionLevel == 0)
+				{
+					// Byval value types.
+					Utilities.Assert(type.CliType != CliType.ObjectType, "type.CliType != CliType.ObjectType");
+					if (type.IsStackValueType)
+					{
+						// It's on the stack.
+						for (int qnum = 0; qnum < type.ComplexType.QuadWordCount; qnum++)
+						{
+							VirtualRegister val = _writer.WriteLqd(childregs[paramidx], qnum);
+							_writer.WriteStore(val, argaddress, areaSlot++);
+						}
+					}
+					else
+					{
+						// The value is in a single register.
+						_writer.WriteStore(childregs[paramidx], argaddress, areaSlot++);
+					}
+				}
+				else if (type.IndirectionLevel == 1)
+				{
+					StackTypeDescription etype = type.Dereference();
+					if (etype.CliType != CliType.ObjectType)
+						throw new NotSupportedException(
+							"Argument type '" + type + "' is not supported. Unmanaged pointers are not supported.");
+
+					// Should be a PPE reference type handle.
+					_writer.WriteStore(childregs[paramidx], argaddress, areaSlot++);
+				}
+				else
+					throw new NotSupportedException("Argument type '" + type + "' is not supported.");
+
+				Utilities.Assert(areaSlot * 16 <= _specialSpeObjects.PpeCallDataArea.Size,
+				                 "areaSlot * 16 < _specialSpeObjects.PpeCallDataArea.Size");
+			}
+
+			// Perform the call.
+			_writer.WriteStop(SpuStopCode.PpeCall);
+
+
+			// Move return value back.
+			StackTypeDescription rettype = mci.StackType;
+			if (rettype != StackTypeDescription.None)
+			{
+				VirtualRegister retval;
+				if (rettype.DereferencedCliType == CliType.ObjectType)
+				{
+					Utilities.Assert(rettype.IndirectionLevel == 1, "mci.StackType.IndirectionLevel == 1");
+					retval = _writer.WriteLoad(argaddress, 0);
+				}
+				else
+				{
+					Utilities.Assert(rettype.IndirectionLevel == 0, "rettype.IndirectionLevel == 0");
+					if (!rettype.IsStackValueType)
+						retval = _writer.WriteLoad(argaddress, 0);
+					else
+					{
+						// Save the struct to a new stack position.
+						int varStackPos = _spillAllocator(rettype.ComplexType.QuadWordCount);
+						retval = _writer.WriteAi(HardwareRegister.SP, varStackPos * 16);
+						for (int qnum = 0; qnum < rettype.ComplexType.QuadWordCount; qnum++)
+						{
+							VirtualRegister val = _writer.WriteLoad(argaddress, qnum);
+							int stackPos = varStackPos + qnum;
+							_writer.WriteStqd(val, HardwareRegister.SP, stackPos);
+						}
+					}
+				}
+
+				return retval;
+			}
+
+			return null;
 		}
 
 		private VirtualRegister WriteMethodCall(MethodCallInstruction callInst, List<VirtualRegister> childregs)

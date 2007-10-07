@@ -16,6 +16,33 @@ namespace CellDotNet
 			_opcode = opcode;
 		}
 
+		public TreeInstruction(IROpCode opcode, StackTypeDescription stackType, object operand, int offset)
+		{
+			_opcode = opcode;
+			_operand = operand;
+			_offset = offset;
+			_stackType = stackType;
+		}
+
+		public TreeInstruction(IROpCode opcode, StackTypeDescription stackType, object operand, int offset, TreeInstruction left)
+		{
+			_left = left;
+			_opcode = opcode;
+			_operand = operand;
+			_offset = offset;
+			_stackType = stackType;
+		}
+
+		public TreeInstruction(IROpCode opcode, StackTypeDescription stackType, object operand, int offset, TreeInstruction left, TreeInstruction right)
+		{
+			_left = left;
+			_opcode = opcode;
+			_operand = operand;
+			_offset = offset;
+			_stackType = stackType;
+			_right = right;
+		}
+
 		private TreeInstruction _left;
 		public TreeInstruction Left
 		{
@@ -31,6 +58,7 @@ namespace CellDotNet
 		public virtual TreeInstruction[] GetChildInstructions()
 		{
 			Utilities.PretendVariableIsUsed(DebuggerDisplay);
+			Utilities.PretendVariableIsUsed(SubTreeText);
 
 			if (Right != null)
 				return new TreeInstruction[] {Left, Right};
@@ -180,6 +208,13 @@ namespace CellDotNet
 
 		#region Tree iteration / checking.
 
+		/// <summary>
+		/// Applies <paramref name="converter"/> to each node in the tree; when the converter return non-null, the current
+		/// node is replaced with the return value.
+		/// </summary>
+		/// <param name="root"></param>
+		/// <param name="converter"></param>
+		/// <returns></returns>
 		public static TreeInstruction ForeachTreeInstruction(TreeInstruction root, Converter<TreeInstruction, TreeInstruction> converter)
 		{
 			if (root == null)
@@ -187,11 +222,11 @@ namespace CellDotNet
 
 			TreeInstruction newRoot = null;
 
-			Stack<TreeInstruction> parrentlist = new Stack<TreeInstruction>();
-			Stack<int> chieldIndexList = new Stack<int>();
+			Stack<TreeInstruction> parentlist = new Stack<TreeInstruction>();
+			Stack<int> childIndexList = new Stack<int>();
 
-			TreeInstruction parrent = null;
-			int chieldIndex = 0;
+			TreeInstruction parent = null;
+			int childIndex = 0;
 
 			TreeInstruction inst = root;
 
@@ -202,8 +237,8 @@ namespace CellDotNet
 				if (newInst != null)
 				{
 					inst = newInst;
-					if (parrent != null)
-						parrent.ReplaceChild(chieldIndex, newInst);
+					if (parent != null)
+						parent.ReplaceChild(childIndex, newInst);
 					else
 						newRoot = newInst;
 				}
@@ -211,33 +246,33 @@ namespace CellDotNet
 				// Go to the nest instruction.
 				if (inst.GetChildInstructions().Length > 0)
 				{
-					parrentlist.Push(parrent);
-					chieldIndexList.Push(chieldIndex);
+					parentlist.Push(parent);
+					childIndexList.Push(childIndex);
 
-					parrent = inst;
-					chieldIndex = 0;
+					parent = inst;
+					childIndex = 0;
 
 					inst = inst.GetChildInstructions()[0];
 				}
-				else if (parrent != null && chieldIndex + 1 < parrent.GetChildInstructions().Length)
+				else if (parent != null && childIndex + 1 < parent.GetChildInstructions().Length)
 				{
-					inst = parrent.GetChildInstructions()[++chieldIndex];
+					inst = parent.GetChildInstructions()[++childIndex];
 				}
-				else if (parrent != null)
+				else if (parent != null)
 				{
-					while(parrent != null && chieldIndex + 1 >= parrent.GetChildInstructions().Length)
+					while(parent != null && childIndex + 1 >= parent.GetChildInstructions().Length)
 					{
-						parrent = parrentlist.Pop();
-						chieldIndex = chieldIndexList.Pop();
+						parent = parentlist.Pop();
+						childIndex = childIndexList.Pop();
 					}
 
-					if(parrent != null)
-						inst = parrent.GetChildInstructions()[++chieldIndex];
+					if(parent != null)
+						inst = parent.GetChildInstructions()[++childIndex];
 
 					//					parrent = parrentlist.Peek();
 					//					chieldIndex = chieldIndexList.Peek();
 				}
-			} while (parrent != null);
+			} while (parent != null);
 			return newRoot;
 		}
 
@@ -263,23 +298,6 @@ namespace CellDotNet
 				Left.BuildPreorder(list);
 			if (Right != null)
 				Right.BuildPreorder(list);
-		}
-
-		/// <summary>
-		/// For checking tree construction.
-		/// </summary>
-		public int TreeSize
-		{
-			get
-			{
-				int i = 0;
-				foreach (TreeInstruction instruction in IterateSubtree())
-				{
-					i++;
-					Utilities.PretendVariableIsUsed(instruction);
-				}
-				return i;
-			}
 		}
 
 		#endregion

@@ -135,11 +135,6 @@ namespace CellDotNet
 			IRBasicBlock.ForeachTreeInstruction(Blocks, action);
 		}
 
-		public IEnumerable<TreeInstruction> EnumerateTreeInstructions()
-		{
-			return IRBasicBlock.EnumerateTreeInstructions(Blocks);
-		}
-
 		private void AssertMinimumState(MethodCompileState requiredState)
 		{
 			if (State < requiredState)
@@ -388,8 +383,6 @@ namespace CellDotNet
 			}
 		}
 
-		private delegate TReturn Func<T1, T2, TReturn>(T1 t1, T2 t2);
-
 		private static TreeInstruction DivConverter(TreeInstruction inst)
 		{
 			MethodBase div_un_mb = new Func<uint, uint, uint>(SpuMath.Div_Un).Method;
@@ -398,9 +391,6 @@ namespace CellDotNet
 			MethodBase rem_un_mb = new Func<uint, uint, uint>(SpuMath.Rem_Un).Method;
 			MethodBase rem_mb = new Func<int, int, int>(SpuMath.Rem).Method;
 			
-			Utilities.AssertNotNull(div_mb, "");
-			Utilities.AssertNotNull(div_un_mb, "");
-
 			MethodCallInstruction newInst = null;
 
 			if (inst.Opcode == IROpCodes.Div)
@@ -408,9 +398,7 @@ namespace CellDotNet
 				if ((inst.Left.StackType == StackTypeDescription.Int32 || inst.Left.StackType == StackTypeDescription.NativeInt) &&
 					(inst.Right.StackType == StackTypeDescription.Int32 || inst.Right.StackType == StackTypeDescription.NativeInt))
 				{
-//					MethodBase mb = typeof(CellDotNet.SpuMath).GetMethod("Div", new Type[] { typeof(int), typeof(int) });
-					MethodBase mb = div_mb;
-					newInst = new MethodCallInstruction(mb, IROpCodes.Call);
+					newInst = new MethodCallInstruction(div_mb, IROpCodes.Call);
 
 					newInst.Parameters.AddRange(inst.GetChildInstructions());
 					newInst.Offset = inst.Offset;
@@ -425,9 +413,7 @@ namespace CellDotNet
 				if ((inst.Left.StackType == StackTypeDescription.Int32 || inst.Left.StackType == StackTypeDescription.NativeInt) &&
 					(inst.Right.StackType == StackTypeDescription.Int32 || inst.Right.StackType == StackTypeDescription.NativeInt))
 				{
-//					MethodBase mb = typeof(CellDotNet.SpuMath).GetMethod("Div_Un", new Type[] { typeof(uint), typeof(uint) });
-					MethodBase mb = div_un_mb;
-					newInst = new MethodCallInstruction(mb, IROpCodes.Call);
+					newInst = new MethodCallInstruction(div_un_mb, IROpCodes.Call);
 
 					newInst.Parameters.AddRange(inst.GetChildInstructions());
 					newInst.Offset = inst.Offset;
@@ -442,8 +428,7 @@ namespace CellDotNet
 				if ((inst.Left.StackType == StackTypeDescription.Int32 || inst.Left.StackType == StackTypeDescription.NativeInt) &&
 					(inst.Right.StackType == StackTypeDescription.Int32 || inst.Right.StackType == StackTypeDescription.NativeInt))
 				{
-					MethodBase mb = rem_mb;
-					newInst = new MethodCallInstruction(mb, IROpCodes.Call);
+					newInst = new MethodCallInstruction(rem_mb, IROpCodes.Call);
 
 					newInst.Parameters.AddRange(inst.GetChildInstructions());
 					newInst.Offset = inst.Offset;
@@ -458,15 +443,14 @@ namespace CellDotNet
 				if ((inst.Left.StackType == StackTypeDescription.Int32 || inst.Left.StackType == StackTypeDescription.NativeInt) &&
 					(inst.Right.StackType == StackTypeDescription.Int32 || inst.Right.StackType == StackTypeDescription.NativeInt))
 				{
-					MethodBase mb = rem_un_mb;
-					newInst = new MethodCallInstruction(mb, IROpCodes.Call);
+					newInst = new MethodCallInstruction(rem_un_mb, IROpCodes.Call);
 
 					newInst.Parameters.AddRange(inst.GetChildInstructions());
 					newInst.Offset = inst.Offset;
 				}
 			}
 
-			if(newInst != null)
+			if (newInst != null)
 				new TypeDeriver().DeriveType(newInst);
 
 			return newInst;
@@ -495,7 +479,7 @@ namespace CellDotNet
 					if ((inst.Left.StackType == StackTypeDescription.Int32 || inst.Left.StackType == StackTypeDescription.NativeInt) &&
 						(inst.Right.StackType == StackTypeDescription.Int32 || inst.Right.StackType == StackTypeDescription.NativeInt))
 					{
-						MethodBase mb = typeof(CellDotNet.SpuMath).GetMethod("Div", new Type[] { typeof(int), typeof(int) });
+						MethodBase mb = typeof(SpuMath).GetMethod("Div", new Type[] { typeof(int), typeof(int) });
 						MethodCallInstruction newInst = new MethodCallInstruction(mb, IROpCodes.Call);
 
 						newInst.Parameters.AddRange(inst.GetChildInstructions());
@@ -515,7 +499,7 @@ namespace CellDotNet
 					if ((inst.Left.StackType == StackTypeDescription.Int32 || inst.Left.StackType == StackTypeDescription.NativeInt) &&
 						(inst.Right.StackType == StackTypeDescription.Int32 || inst.Right.StackType == StackTypeDescription.NativeInt))
 					{
-						MethodBase mb = typeof(CellDotNet.SpuMath).GetMethod("Div_Un", new Type[] { typeof(uint), typeof(uint) });
+						MethodBase mb = typeof(SpuMath).GetMethod("Div_Un", new Type[] { typeof(uint), typeof(uint) });
 						MethodCallInstruction newInst = new MethodCallInstruction(mb, IROpCodes.Call);
 
 						newInst.Parameters.AddRange(inst.GetChildInstructions());
@@ -651,7 +635,7 @@ namespace CellDotNet
 					var.VirtualRegister = NextRegister();
 
 				// Custom mutable structs always go on the stack.
-				if (var.StackType.CliType == CliType.ValueType && !var.StackType.IsImmutableSingleRegisterType)
+				if (var.StackType.IsStackValueType)
 				{
 					var.Escapes = true;
 					var.StackLocation = GetNewSpillQuadOffset(var.StackType.ComplexType.QuadWordCount);

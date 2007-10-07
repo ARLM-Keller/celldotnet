@@ -154,8 +154,17 @@ namespace CellDotNet
 		}
 
 		/// <summary>
-		/// You probably shouldn't use this property.
+		/// A shorcut for CliType == CliType.IsStackValueType &amp;&amp; !<see cref="IsImmutableSingleRegisterType"/>.
+		/// Custom structs always go on the stack.
 		/// </summary>
+		public bool IsStackValueType
+		{
+			get
+			{
+				return CliType == CliType.ValueType && !IsImmutableSingleRegisterType;
+			}
+		}
+
 		internal CliType CliType
 		{
 			get
