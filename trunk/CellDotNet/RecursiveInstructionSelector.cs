@@ -1226,9 +1226,10 @@ namespace CellDotNet
 						{
 							// Save to new stack location.
 							int count = var.StackType.ComplexType.QuadWordCount;
-							VirtualRegister stackloc = _writer.WriteAi(HardwareRegister.SP, _stackAllocate(count) * 16);
-							WriteMoveQuadWords(HardwareRegister.SP, var.StackLocation, stackloc, 0, count);
-							return stackloc;
+							int newstackloc = _stackAllocate(count);
+							VirtualRegister stackptr = _writer.WriteAi(HardwareRegister.SP, newstackloc * 16);
+							WriteMoveQuadWords(HardwareRegister.SP, var.StackLocation, HardwareRegister.SP, newstackloc, count);
+							return stackptr;
 						}
 						else if (var.Escapes != null && var.Escapes.Value)
 						{
@@ -1242,10 +1243,10 @@ namespace CellDotNet
 				case IRCode.Ldloca:
 					{
 						MethodVariable var = ((MethodVariable) inst.Operand);
-						if (var.Escapes != null && var.Escapes.Value)
+						if (var.StackType.IsStackValueType)
 							return _writer.WriteAi(HardwareRegister.SP, var.StackLocation*16);
-						else if (var.StackType.IsStackValueType)
-							return var.VirtualRegister;
+						else if (var.Escapes != null && var.Escapes.Value)
+							return _writer.WriteAi(HardwareRegister.SP, var.StackLocation*16);
 						else
 							throw new Exception("Escaping variable with no stack location.");
 					}
