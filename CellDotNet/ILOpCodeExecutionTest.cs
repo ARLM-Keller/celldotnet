@@ -419,6 +419,46 @@ namespace CellDotNet
 		}
 
 		[Test]
+		public void Test_Cgt_R4()
+		{
+			ExecuteAndVerifyComparator(OpCodes.Cgt, 5f, 3f, 1);
+			ExecuteAndVerifyComparator(OpCodes.Cgt, 5f, 5f, 0);
+			ExecuteAndVerifyComparator(OpCodes.Cgt, 5f, 7f, 0);
+		}
+
+		[Test, Ignore]
+		public void Test_Cgt_R8()
+		{
+			ExecuteAndVerifyComparator(OpCodes.Cgt, 5, 3, 1);
+			ExecuteAndVerifyComparator(OpCodes.Cgt, 5, 5, 0);
+			ExecuteAndVerifyComparator(OpCodes.Cgt, 5, 7, 0);
+		}
+
+		[Test]
+		public void Test_Clt_I4()
+		{
+			ExecuteAndVerifyComparator(OpCodes.Clt, 5, 3, 0);
+			ExecuteAndVerifyComparator(OpCodes.Clt, 5, 5, 0);
+			ExecuteAndVerifyComparator(OpCodes.Clt, 5, 7, 1);
+		}
+
+		[Test]
+		public void Test_Clt_R4()
+		{
+			ExecuteAndVerifyComparator(OpCodes.Clt, 5f, 3f, 0);
+			ExecuteAndVerifyComparator(OpCodes.Clt, 5f, 5f, 0);
+			ExecuteAndVerifyComparator(OpCodes.Clt, 5f, 7f, 1);
+		}
+
+		[Test, Ignore]
+		public void Test_Clt_R8()
+		{
+			ExecuteAndVerifyComparator(OpCodes.Clt, 5, 3, 0);
+			ExecuteAndVerifyComparator(OpCodes.Clt, 5, 5, 0);
+			ExecuteAndVerifyComparator(OpCodes.Clt, 5, 7, 1);
+		}
+
+		[Test]
 		public void Test_Cgt_Un_I4()
 		{
 			ExecuteAndVerifyComparator(OpCodes.Cgt_Un, -3, 5, 1);
@@ -602,6 +642,25 @@ namespace CellDotNet
 
 			TestExecution(w, -3.14f);
 		}
+
+		private delegate double DoubleDelegate();
+
+		[Test, Ignore]
+		public void Test_Ldc_R8()
+		{
+			const double magicnumber = -4203.57;
+			DoubleDelegate del = delegate {return magicnumber;};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			if(!SpeContext.HasSpeHardware)
+				return;
+
+			double resutl = (double)new SpeContext().RunProgram(cc);
+			AreEqual(magicnumber, resutl);
+		}
+
 
 		private static int f1()
 		{
