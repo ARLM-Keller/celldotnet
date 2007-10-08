@@ -318,42 +318,40 @@ namespace CellDotNet
 			List<TreeInstruction> branches = new List<TreeInstruction>();
 
 			List<IRBasicBlock> blocks = new List<IRBasicBlock>();
-//			int nextForwardBranchTarget = int.MaxValue;
 			TypeDeriver typederiver = new TypeDeriver();
 
 			TreeInstruction prevInst = default(TreeInstruction);
 
+
+			// Start by finding all branch targets.
 			Dictionary<int, IRBasicBlock> branchTargets = new Dictionary<int, IRBasicBlock>();
-
 			branchTargets.Add(0, new IRBasicBlock());
-
-			// Looks for branch targets.
 			while (readerIn.Read())
 			{
 				if (readerIn.OpCode.FlowControl == FlowControl.Branch ||
-					readerIn.OpCode.FlowControl == FlowControl.Cond_Branch)
+				    readerIn.OpCode.FlowControl == FlowControl.Cond_Branch)
 				{
-					int targetOffset = (int)readerIn.Operand;
-					if(!branchTargets.ContainsKey(targetOffset))
+					int targetOffset = (int) readerIn.Operand;
+					if (!branchTargets.ContainsKey(targetOffset))
 						branchTargets.Add(targetOffset, new IRBasicBlock());
 				}
 			}
 
-			currblock = branchTargets[0];
 
+			// Start over, this time actually reading the instructions.
 			readerIn.Reset();
-
 			IlReaderWrapper reader = new IlReaderWrapper(readerIn);
 
-			reader.Reset();
-
+			currblock = branchTargets[0];
 			while (reader.Read(_parseStack.PeekType()))
 			{
 				if (prevInst != null && prevInst.Opcode.FlowControl == FlowControl.Branch)
 				{
-					// Skip unreachablwe instructions.
+					// Skip unreachable instructions.
 					while (!branchTargets.ContainsKey(reader.Offset) && reader.Read(_parseStack.PeekType()))
-					{}
+					{
+						// Nothing.
+					}
 
 					if (reader.ILReader.State == ILReader.ReadState.EOF)
 						break;
@@ -393,40 +391,33 @@ namespace CellDotNet
 					currblock = branchTargets[reader.Offset];
 				}
 
-//				Utilities.Assert(nextForwardBranchTarget > reader.Offset, 
-//					"nextForwardBranchTarget > reader.Offset");
-
-				if(reader.lastCreatedMethodVariable != null)
+				if (reader.lastCreatedMethodVariable != null)
 					variables.Add(reader.lastCreatedMethodVariable);
 
 				PopBehavior popbehavior = IROpCode.GetPopBehavior(reader.OpCode.StackBehaviourPop);
 				int pushcount = GetPushCount(reader.OpCode);
 
 
-				// Replace variable and parameter references with our own types, and insert call instad of Div and Div_Un.
+				// Replace variable and parameter references with our own types.
 				if (treeinst.Opcode.IRCode == IRCode.Ldloc || treeinst.Opcode.IRCode == IRCode.Stloc ||
 				    treeinst.Opcode.IRCode == IRCode.Ldloca)
 				{
 					LocalVariableInfo lvi = reader.Operand as LocalVariableInfo;
-					if(lvi != null)
+					if (lvi != null)
 						treeinst.Operand = variables[lvi.LocalIndex];
 					else
-					{
 						treeinst.Operand = reader.Operand;
-					}
 				}
 				else if (treeinst.Opcode.IRCode == IRCode.Ldarg || treeinst.Opcode.IRCode == IRCode.Starg ||
 				         treeinst.Opcode.IRCode == IRCode.Ldarga)
 				{
-					// reader.Operand is null when its represent the this parameter.
-					if(reader.Operand == null)
-					{
+					// reader.Operand is null when its represents the this parameter.
+					if (reader.Operand == null)
 						treeinst.Operand = parameters[0];
-					}
 					else
 					{
-						ParameterInfo pi = (ParameterInfo)reader.Operand;
-						treeinst.Operand = parameters[pi.Position + (hasThisArgument?1:0)];
+						ParameterInfo pi = (ParameterInfo) reader.Operand;
+						treeinst.Operand = parameters[pi.Position + (hasThisArgument ? 1 : 0)];
 					}
 				}
 				else if (reader.Operand is Type)
@@ -515,14 +506,6 @@ namespace CellDotNet
 						treeinst.Offset = -1;
 
 					treeinst.Operand = branchTargets[targetOffset];
-
-//					if (targetOffset > reader.Offset && 
-//						targetOffset < nextForwardBranchTarget)
-//					{
-//						// The target is closer than the previous one, 
-//						// so put the old one back in line and start looking for the new one.
-//						nextForwardBranchTarget = _parseStack.GetNextForwardBranchAddress(reader.Offset);
-//					}
 				}
 
 				if (_parseStack.InstructionStack.Count == 0) //FIXME TODO skal det ikke være TotalStackSize?

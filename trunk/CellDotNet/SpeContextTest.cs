@@ -21,8 +21,7 @@ namespace CellDotNet
 				ctxt.LoadProgram(new int[] { 13 });
 
 				int[] lsa = ctxt.GetCopyOfLocalStorage16K();
-				if (lsa[0] != 13)
-					Assert.Fail("DMA error.");
+				AreEqual(13, lsa[0], "DMA error.");
 			}
 		}
 
