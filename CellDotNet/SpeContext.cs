@@ -374,6 +374,7 @@ namespace CellDotNet
 				case CliType.Int32Vector:
 					return DmaGetValue<Int32Vector>(lsAddress);
 				case CliType.Float64:
+					return DmaGetValue<double>(lsAddress);
 				case CliType.ValueType:
 				case CliType.ObjectType:
 				case CliType.ManagedPointer:
@@ -388,35 +389,36 @@ namespace CellDotNet
 		/// <param name="lsAddress"></param>
 		internal unsafe T DmaGetValue<T>(LocalStorageAddress lsAddress) where T : struct
 		{
-			byte* buf = stackalloc byte[31];
-			IntPtr ptr = Utilities.Align16((IntPtr) buf);
-
-			uint DMA_tag = 1;
-			spe_mfcio_put(lsAddress, ptr, 16, DMA_tag, 0, 0);
-
-			uint tag_status = 0;
-			int waitresult = UnsafeNativeMethods.spe_mfcio_tag_status_read(_handle, 0, SPE_TAG_ANY, ref tag_status);
-			if (waitresult != 0)
-				throw new LibSpeException("spe_mfcio_tag_status_read failed.");
+			byte[] buff = GetLocalStorageMax16K(lsAddress, 16);
 
 			switch(Type.GetTypeCode(typeof(T)))
 			{
+				case TypeCode.Double:
+				case TypeCode.Single:
+				case TypeCode.Int16:
 				case TypeCode.Int32:
-					T? val;
-					val = Marshal.ReadInt32(ptr) as T?;
-					return val.Value;
+				case TypeCode.Int64:
+					return (T)new Marshaler().GetValue(buff, typeof(T));
 				case TypeCode.Object:
 					if (typeof(T) == typeof(LocalStorageAddress))
 						goto case TypeCode.Int32;
 					else
 						goto default;
-				case TypeCode.Single:
-					val = *((float*)ptr) as T?;
-					return val.Value;
 				default:
 					if (typeof(T).Equals(typeof(Int32Vector)) || typeof(T).Equals(typeof(Float32Vector)))
 					{
-						return (T) Marshal.PtrToStructure(ptr, typeof(T));
+						byte* buf = stackalloc byte[31];
+						IntPtr ptr = Utilities.Align16((IntPtr) buf);
+
+						uint DMA_tag = 1;
+						spe_mfcio_put(lsAddress, ptr, 16, DMA_tag, 0, 0);
+
+						uint tag_status = 0;
+						int waitresult = UnsafeNativeMethods.spe_mfcio_tag_status_read(_handle, 0, SPE_TAG_ANY, ref tag_status);
+						if (waitresult != 0)
+							throw new LibSpeException("spe_mfcio_tag_status_read failed.");
+
+						return (T)Marshal.PtrToStructure(ptr, typeof(T));
 					}
 					else
 					{

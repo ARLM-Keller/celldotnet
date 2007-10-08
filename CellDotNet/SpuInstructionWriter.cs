@@ -372,7 +372,7 @@ namespace CellDotNet
 			AssertRegisterNotNull(rt, "rt");
 
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.stqr);
-			inst.Constant = quadWordOffset;
+			inst.Constant = quadWordOffset*4;
 			inst.ObjectWithAddress = target;
 			inst.Rt = rt;
 			AddInstruction(inst);
@@ -416,6 +416,27 @@ namespace CellDotNet
 				return quad;
 		}
 
+		public void WriteStoreDoubleWord(VirtualRegister ptr, int pointerQwOffset, int doubleWordNumberAddend, VirtualRegister value)
+		{
+			VirtualRegister loadedvalue = WriteLqd(ptr, pointerQwOffset);
+			VirtualRegister mask = WriteCdd(ptr, doubleWordNumberAddend * 8);
+			VirtualRegister combined = WriteShufb(value, loadedvalue, mask);
+			WriteStqd(combined, ptr, pointerQwOffset);
+		}
+
+		public VirtualRegister WriteLoadDoubleWord(VirtualRegister ptr, int pointerQwOffset, int doubleWordNumber)
+		{
+			Utilities.AssertArgumentRange(doubleWordNumber >= 0 && doubleWordNumber <= 1, "doubleWordNumber", doubleWordNumber, "doubleWordNumber >= 0 && doubleWordNumber <= 1");
+
+			VirtualRegister quad = WriteLqd(ptr, pointerQwOffset);
+
+			// Move word to preferred slot if necessary.
+			if (doubleWordNumber != 0)
+				return WriteShlqbyi(quad, doubleWordNumber * 8);
+			else
+				return quad;
+		}
+
 		/// <summary>
 		/// This will generate an instruction that must be patched with a <see cref="SpuBasicBlock"/>.
 		/// </summary>
@@ -438,7 +459,7 @@ namespace CellDotNet
 
 			SpuInstruction inst = new SpuInstruction(SpuOpCode.lqr);
 			inst.ObjectWithAddress = owa;
-			inst.Constant = quadWordOffset;
+			inst.Constant = quadWordOffset*4;
 			inst.Rt = rt;
 			AddInstruction(inst);
 		}
@@ -487,6 +508,29 @@ namespace CellDotNet
 		{
 			VirtualRegister rt = NextRegister();
 			WriteLoadI4(rt, i);
+
+			return rt;
+		}
+
+		public void WriteLoadR8(VirtualRegister rt, double i)
+		{
+			long il = Utilities.ReinterpretAsLong(i);
+
+			int high = (int) (il >> 32);
+
+			WriteIlhu(rt, high >> 16);
+			WriteIohl(rt, high);
+
+			WriteShlqbyi(rt, 4);
+
+			WriteIlhu(rt, (int)il >> 16);
+			WriteIohl(rt, (int)il);
+		}
+
+		public VirtualRegister WriteLoadR8(double i)
+		{
+			VirtualRegister rt = NextRegister();
+			WriteLoadR8(rt, i);
 
 			return rt;
 		}

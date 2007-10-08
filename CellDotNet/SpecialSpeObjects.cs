@@ -20,6 +20,7 @@ namespace CellDotNet
 		private ManualRoutine _stackOverflow;
 		private ManualRoutine _outOfMemory;
 
+		private DataObject _doubleCompareDataArea = DataObject.FromQuadWords(4, "DoubleCompareDataArea");
 
 		public SpecialSpeObjects()
 		{
@@ -72,6 +73,11 @@ namespace CellDotNet
 			get { return _outOfMemory; }
 		}
 
+		public DataObject DoubleCompareDataArea
+		{
+			get { return _doubleCompareDataArea; }
+		}
+
 		/// <summary>
 		/// Returns all the objects that require storage.
 		/// </summary>
@@ -85,7 +91,8 @@ namespace CellDotNet
 				DebugValueObject,
 				StackOverflow, 
 				OutOfMemory, 
-				PpeCallDataArea
+				PpeCallDataArea,
+				DoubleCompareDataArea
 			};
 		}
 
@@ -136,6 +143,17 @@ namespace CellDotNet
 				return _stackSize;
 			}
 		}
+
+		private int[] _doubleCompareData = unchecked(new int[] {
+			0x7fffffff, (int)0xffffffff, 0x7fffffff, (int)0xffffffff,
+			0x7ff00000,      0x00000000, 0x7ff00000,      0x00000000,
+			0x04050607, (int)0xc0c0c0c0, 0x0c0d0e0f, (int)0xc0c0c0c0,
+			0x00010203,      0x00010203, 0x08090a0b,      0x08090a0b});
+
+		public int[] DoubleCompareData()
+		{
+			return _doubleCompareData;
+		} 
 
 		public void SetMemorySettings(int initialStackPointer, int stackSize, int nextAllocationStart, int allocatableByteCount)
 		{
