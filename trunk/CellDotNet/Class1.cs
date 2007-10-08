@@ -89,7 +89,13 @@ namespace CellDotNet
 
 //			new ILOpCodeExecutionTest().Test_Beq();
 
-			new SimpleProgramsTest().TestDivisionSigned();
+//			new SimpleProgramsTest().TestDivisionSigned();
+
+//			new ObjectModelTest().TestArray_Int_4();
+
+//			new ObjectModelTest().TestArray_Double_1();
+
+			new ILOpCodeExecutionTest().Test_Ldc_R8();
 
 			Console.WriteLine("Running RunKlaus done.");
 		}

@@ -175,6 +175,10 @@ namespace CellDotNet
 //						return reg;
 					}
 				case IRCode.Ldc_R8:
+//					{
+//						long val = Utilities.ReinterpretAsLong((double) inst.Operand);
+//						return _writer.WriteLoadR8(val);
+//					}
 					break;
 				case IRCode.Dup:
 					// This is rewritten to stloc, ldloc, ldloc.
@@ -526,10 +530,33 @@ namespace CellDotNet
 						return null;
 					}
 				case IRCode.Stind_I8:
+//					{
+//						if (lefttype.IndirectionLevel != 1 && lefttype != StackTypeDescription.NativeInt)
+//							throw new InvalidIRTreeException("Invalid level of indirection for stind. Stack type: " + lefttype);
+//						VirtualRegister ptr = vrleft;
+//
+//						_writer.WriteStoreDoubleWord(ptr, 0, 0, vrright);
+//						return null;
+//					}
 					break;
 				case IRCode.Stind_R4:
-					break;
+					{
+						if (lefttype.IndirectionLevel != 1 && lefttype != StackTypeDescription.NativeInt)
+							throw new InvalidIRTreeException("Invalid level of indirection for stind. Stack type: " + lefttype);
+						VirtualRegister ptr = vrleft;
+
+						_writer.WriteStoreWord(ptr, 0, 0, vrright);
+						return null;
+					}
 				case IRCode.Stind_R8:
+//					{
+//						if (lefttype.IndirectionLevel != 1 && lefttype != StackTypeDescription.NativeInt)
+//							throw new InvalidIRTreeException("Invalid level of indirection for stind. Stack type: " + lefttype);
+//						VirtualRegister ptr = vrleft;
+//
+//						_writer.WriteStoreDoubleWord(ptr, 0, 0, vrright);
+//						return null;
+//					}
 					break;
 				case IRCode.Add:
 					switch (lefttype.CliType)
@@ -539,6 +566,8 @@ namespace CellDotNet
 							return _writer.WriteA(vrleft, vrright);
 						case CliType.Float32:
 							return _writer.WriteFa(vrleft, vrright);
+//						case CliType.Float64:
+//							return _writer.WriteDfa(vrleft, vrright);
 					}
 					break;
 				case IRCode.Sub:
@@ -571,6 +600,8 @@ namespace CellDotNet
 							return rt;
 						case CliType.Float32:
 							return _writer.WriteFm(vrleft, vrright);
+//						case CliType.Float64:
+//							return _writer.WriteDfm(vrleft, vrright);
 					}
 					break;
 				case IRCode.Div:
@@ -579,27 +610,55 @@ namespace CellDotNet
 					switch (lefttype.CliType)
 					{
 						case CliType.Float32:
-							VirtualRegister r2 = vrright;
-							VirtualRegister r3 = vrleft;
-							VirtualRegister r4 = new VirtualRegister();
-							VirtualRegister r5 = new VirtualRegister();
-							VirtualRegister r6 = new VirtualRegister();
+							{
+								VirtualRegister r2 = vrright;
+								VirtualRegister r3 = vrleft;
+								VirtualRegister r4 = new VirtualRegister();
+								VirtualRegister r5 = new VirtualRegister();
+								VirtualRegister r6 = new VirtualRegister();
 
-							_writer.WriteFrest(r5, r2);
-							_writer.WriteFi(r5, r2, r5);
+								_writer.WriteFrest(r5, r2);
+								_writer.WriteFi(r5, r2, r5);
 
-							_writer.WriteFm(r6, r3, r5);
+								_writer.WriteFm(r6, r3, r5);
 
-							_writer.WriteFnms(r4, r6, r2, r3);
-							_writer.WriteFma(r5, r4, r5, r6);
+								_writer.WriteFnms(r4, r6, r2, r3);
+								_writer.WriteFma(r5, r4, r5, r6);
 
-							_writer.WriteAi(r6, r5, 1);
-							_writer.WriteFnms(r4, r2, r6, r3);
-							_writer.WriteCgti(r4, r4, -1);
-							_writer.WriteSelb(r4, r5, r6, r4);
+								_writer.WriteAi(r6, r5, 1);
+								_writer.WriteFnms(r4, r2, r6, r3);
+								_writer.WriteCgti(r4, r4, -1);
+								_writer.WriteSelb(r4, r5, r6, r4);
 
-							return r4;
+								return r4;
+							}
+//						case CliType.Float64:
+//							{
+//								// TODO temporary implementation.
+//								VirtualRegister r2 = _writer.WriteFrds(vrright); ;
+//								VirtualRegister r3 = _writer.WriteFrds(vrleft); ;
+//
+//								VirtualRegister r4 = new VirtualRegister();
+//								VirtualRegister r5 = new VirtualRegister();
+//								VirtualRegister r6 = new VirtualRegister();
+//
+//								_writer.WriteFrest(r5, r2);
+//								_writer.WriteFi(r5, r2, r5);
+//
+//								_writer.WriteFm(r6, r3, r5);
+//
+//								_writer.WriteFnms(r4, r6, r2, r3);
+//								_writer.WriteFma(r5, r4, r5, r6);
+//
+//								_writer.WriteAi(r6, r5, 1);
+//								_writer.WriteFnms(r4, r2, r6, r3);
+//								_writer.WriteCgti(r4, r4, -1);
+//								_writer.WriteSelb(r4, r5, r6, r4);
+//
+//								return r4;
+//							}
 					}
+
 					break;
 				case IRCode.Rem:
 					break;
@@ -726,6 +785,15 @@ namespace CellDotNet
 					}
 					break;
 				case IRCode.Conv_R8:
+//					switch (lefttype.CliType)
+//					{
+//						case CliType.Int32:
+//						case CliType.NativeInt:
+//							VirtualRegister r = _writer.WriteCsflt(vrleft, 155);
+//							return _writer.WriteFesd(r);
+//						case CliType.Int64:
+//							break;
+//					}
 					break;
 				case IRCode.Conv_U4:
 					break;
@@ -879,6 +947,8 @@ namespace CellDotNet
 							bytesize = _writer.WriteShli(elementcount, 2);
 						else if (elementByteSize == 16)
 							bytesize = _writer.WriteShli(elementcount, 4);
+						else if (elementByteSize == 8)
+							bytesize = _writer.WriteShli(elementcount, 3);
 						else
 							throw new NotSupportedException("Element size of " + elementByteSize + " is not supported.");
 
@@ -914,6 +984,8 @@ namespace CellDotNet
 						VirtualRegister byteoffset;
 						if (elementsize == 4)
 							byteoffset = _writer.WriteShli(index, 2);
+						else if (elementsize == 8)
+							byteoffset = _writer.WriteShli(index, 3);
 						else if (elementsize == 16)
 							byteoffset = _writer.WriteShli(index, 4);
 						else
@@ -947,6 +1019,20 @@ namespace CellDotNet
 					}
 				case IRCode.Ldelem_I8:
 				case IRCode.Ldelem_R8:
+//					{
+//						VirtualRegister array = vrleft;
+//						VirtualRegister index = vrright;
+//
+//						// Load.
+//						VirtualRegister byteoffset = _writer.WriteShli(index, 3);
+//						VirtualRegister quad = _writer.WriteLqx(array, byteoffset);
+//
+//						// Move word to preferred slot.
+//						// We're going to use shlqby (Shift Left Quadword by Bytes),
+//						// so we have to clear bit 27 from the byte offset.
+//						VirtualRegister addrMod16 = _writer.WriteAndi(byteoffset, 0xf);
+//						return _writer.WriteShlqby(quad, addrMod16);
+//					}
 					break;
 				case IRCode.Ldelem_Ref:
 					break;
@@ -1060,6 +1146,8 @@ namespace CellDotNet
 								return _writer.WriteAndi(val, 1);
 							}
 							break;
+//						case CliType.Float64:
+//							return WriteCltFloat64(vrright, vrleft);
 					}
 					break;
 				case IRCode.Cgt_Un:
@@ -1080,6 +1168,8 @@ namespace CellDotNet
 								return _writer.WriteAndi(val, 1);
 							}
 							break;
+//						case CliType.Float64:
+//							return WriteCltFloat64(vrright, vrleft);
 					}
 					break;
 				case IRCode.Clt:
@@ -1087,8 +1177,19 @@ namespace CellDotNet
 					{
 						case CliType.NativeInt:
 						case CliType.Int32:
-							VirtualRegister val = _writer.WriteCgt(vrright, vrleft);
-							return _writer.WriteAndi(val, 1);
+							{
+								VirtualRegister val = _writer.WriteCgt(vrright, vrleft);
+								return _writer.WriteAndi(val, 1);
+							}
+						case CliType.Float32:
+							if (righttype.CliType == CliType.Float32)
+							{
+								VirtualRegister val = _writer.WriteFcgt(vrright, vrleft);
+								return _writer.WriteAndi(val, 1);
+							}
+							break;
+//						case CliType.Float64:
+//							return WriteCltFloat64(vrleft, vrright);
 					}
 					break;
 				case IRCode.Clt_Un:
@@ -1109,6 +1210,8 @@ namespace CellDotNet
 								return _writer.WriteAndi(val, 1);
 							}
 							break;
+//						case CliType.Float64:
+//							return WriteCltFloat64(vrleft, vrright);
 					}
 					break;
 				case IRCode.Ldftn:
@@ -1684,6 +1787,59 @@ namespace CellDotNet
 			MethodVariable var = (MethodVariable) inst.Operand;
 			Utilities.AssertNotNull(var.VirtualRegister, "var.VirtualRegister");
 			return var.VirtualRegister;
+		}
+
+		private VirtualRegister WriteCltFloat64(VirtualRegister ra, VirtualRegister rb)
+		{
+			VirtualRegister r4 = rb;
+			VirtualRegister r3 = ra;
+
+			VirtualRegister r34 = _writer.WriteIl(0);
+			VirtualRegister r40 = _writer.WriteLoad(_specialSpeObjects.DoubleCompareDataArea, 0);
+			VirtualRegister r36 = _writer.WriteRotmai(r4, -31);
+			_writer.WriteNop();
+			_writer.WriteNop();
+			VirtualRegister r38 = _writer.WriteLoad(_specialSpeObjects.DoubleCompareDataArea, 2);
+			VirtualRegister r35 = _writer.WriteRotmai(r3, -31);
+			VirtualRegister r13 = _writer.WriteLoad(_specialSpeObjects.DoubleCompareDataArea, 3);
+			VirtualRegister r25 = _writer.WriteLoad(_specialSpeObjects.DoubleCompareDataArea, 1);
+			_writer.WriteNop();
+			VirtualRegister r26 = _writer.WriteAnd(r3, r40);
+			VirtualRegister r33 = _writer.WriteAnd(r4, r40);
+			VirtualRegister r37 = _writer.WriteBg(r26, r34);
+			VirtualRegister r32 = _writer.WriteShufb(r36, r36, r13);
+			VirtualRegister r39 = _writer.WriteBg(r33, r34);
+			VirtualRegister r30 = _writer.WriteShufb(r35, r35, r13);
+			VirtualRegister r23 = _writer.WriteClgt(r33, r25);
+			_writer.WriteNop();
+			_writer.WriteNop();
+			VirtualRegister r29 = _writer.WriteShufb(r37, r37, r38);
+			VirtualRegister r17 = _writer.WriteClgt(r26, r25);
+			VirtualRegister r31 = _writer.WriteShufb(r39, r39, r38);
+			VirtualRegister r28 = _writer.WriteCeq(r33, r25);
+			VirtualRegister r27 = _writer.WriteRotqbyi(r23, 4);
+			VirtualRegister r22 = _writer.WriteCeq(r26, r25);
+			VirtualRegister r21 = _writer.WriteRotqbyi(r17, 4);
+			_writer.WriteSfx(r29, r26, r34);
+			_writer.WriteSfx(r31, r33, r34);
+			VirtualRegister r15 = _writer.WriteSelb(r26, r29, r30);
+			VirtualRegister r16 = _writer.WriteSelb(r33, r31, r32);
+			VirtualRegister r24 = _writer.WriteAnd(r28, r27);
+			VirtualRegister r20 = _writer.WriteClgt(r16, r15);
+			VirtualRegister r18 = _writer.WriteAnd(r22, r21);
+			VirtualRegister r11 = _writer.WriteCeq(r16, r15);
+			VirtualRegister r12 = _writer.WriteRotqbyi(r20, 4);
+			VirtualRegister r19 = _writer.WriteOr(r23, r24);
+			r4 = _writer.WriteCgt(r16, r15);
+			VirtualRegister r14 = _writer.WriteOr(r17, r18);
+			VirtualRegister r9 = _writer.WriteShufb(r19, r19, r13);
+			VirtualRegister r10 = _writer.WriteAnd(r11, r12);
+			VirtualRegister r8 = _writer.WriteShufb(r14, r14, r13);
+			VirtualRegister r5 = _writer.WriteOr(r4, r10);
+			VirtualRegister r2 = _writer.WriteShufb(r5, r5, r13);
+			VirtualRegister r7 = _writer.WriteOr(r9, r8);
+			VirtualRegister r6 = _writer.WriteAndc(r2, r7);
+			return _writer.WriteSfi(r6, 0);
 		}
 	}
 }

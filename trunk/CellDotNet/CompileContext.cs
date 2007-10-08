@@ -330,6 +330,8 @@ namespace CellDotNet
 				_emittedCode[_specialSpeObjects.StackPointerObject.Offset / 4 + 3] = _specialSpeObjects.StackSize;
 			}
 
+			Buffer.BlockCopy(_specialSpeObjects.DoubleCompareData(), 0, _emittedCode, _specialSpeObjects.DoubleCompareDataArea.Offset, _specialSpeObjects.DoubleCompareData().Length*4);
+
 			// Get external libraries.
 			foreach (Library lib in LibMan.Libraries)
 			{

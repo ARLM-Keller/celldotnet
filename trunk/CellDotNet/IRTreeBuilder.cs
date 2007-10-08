@@ -661,9 +661,15 @@ namespace CellDotNet
 				case IRCode.Stelem_I4:
 					stindOpcode = IROpCodes.Stind_I4;
 					break;
+//				case IRCode.Stelem_I8:
+//					stindOpcode = IROpCodes.Stind_I8;
+//					break;
 				case IRCode.Stelem_R4:
 					stindOpcode = IROpCodes.Stind_R4;
 					break;
+//				case IRCode.Stelem_R8:
+//					stindOpcode = IROpCodes.Stind_R8;
+//					break;
 				case IRCode.Stelem:
 					stindOpcode = IROpCodes.Stobj;
 					break;

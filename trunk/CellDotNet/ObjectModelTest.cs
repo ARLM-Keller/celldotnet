@@ -8,6 +8,7 @@ namespace CellDotNet
 	public class ObjectModelTest : UnitTest
 	{
 		private delegate int IntReturnDelegate();
+		private delegate double DoubleReturnDelegate();
 		private delegate void SimpleDelegate();
 
 		[Test]
@@ -138,6 +139,102 @@ namespace CellDotNet
 			int retval = del2();
 			AreEqual(60, retval);
 		}
+
+		[Test]
+		public void TestArray_Int_4()
+		{
+			Converter<int, int> del =
+				delegate(int index)
+				{
+					int[] arr = new int[8];
+
+					for(int i = 0; i < arr.Length; i++)
+						arr[i] = i;
+
+					return arr[index];
+				};
+
+//			Converter<int, int> del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+
+			CompileContext cc = new CompileContext(del.Method);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			for(int i = 0; i < 8; i++)
+			{
+				int retval = (int)SpeContext.UnitTestRunProgram(cc, i);
+				AreEqual(i, retval);
+			}
+		}
+
+//		[Test]
+//		public void TestArray_Double_1()
+//		{
+//			const double MagicNumber = -123455678	;
+//			DoubleReturnDelegate del =
+//				delegate
+//				{
+//					double[] arr = new double[10];
+//					arr[0] = MagicNumber;
+//					arr[1] = 20;
+//					return arr[0];
+//				};
+//			DoubleReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+//
+//			if (!SpeContext.HasSpeHardware)
+//				return;
+//
+//			double retval = del2();
+//			AreEqual(MagicNumber, retval);
+//		}
+//
+//		[Test]
+//		public void TestArray_Double_2()
+//		{
+//			const double MagicNumber = 0xbababa;
+//			DoubleReturnDelegate del =
+//				delegate
+//				{
+//					// Check that arr2 doesn't overwrite arr1.
+//					double[] arr1 = new double[1];
+//					arr1[0] = MagicNumber;
+//					double[] arr2 = new double[1];
+//					arr2[0] = 50;
+//
+//					return arr1[0];
+//				};
+//
+//			DoubleReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+//
+//			if (!SpeContext.HasSpeHardware)
+//				return;
+//
+//			double retval = del2();
+//			AreEqual(MagicNumber, retval);
+//		}
+//
+//		[Test]
+//		public void TestArray_Double_3()
+//		{
+//			DoubleReturnDelegate del =
+//				delegate
+//				{
+//					double[] arr1 = new double[2];
+//					arr1[0] = 10;
+//					arr1[1] = 50;
+//
+//					return arr1[0] + arr1[1];
+//				};
+//
+//			DoubleReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+//
+//			if (!SpeContext.HasSpeHardware)
+//				return;
+//
+//			double retval = del2();
+//			AreEqual(60.0, retval);
+//		}
 
 		#region QWStruct
 
