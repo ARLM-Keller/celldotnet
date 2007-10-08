@@ -107,7 +107,15 @@ namespace CellDotNet
 				MethodParameter parameter = _parameters[i];
 
 				VirtualRegister src = HardwareRegister.GetHardwareArgumentRegister(i);
-				_writer.WriteMove(src, parameter.VirtualRegister);
+				if (!parameter.StackType.IsStackValueType)
+				{
+					_writer.WriteMove(src, parameter.VirtualRegister);
+				}
+				else
+				{
+					// Copy struct to stack.
+					WriteMoveQuadWords(src, 0, HardwareRegister.SP, parameter.StackLocation, parameter.StackType.ComplexType.QuadWordCount);
+				}
 			}
 		}
 
@@ -1231,7 +1239,7 @@ namespace CellDotNet
 							WriteMoveQuadWords(HardwareRegister.SP, var.StackLocation, HardwareRegister.SP, newstackloc, count);
 							return stackptr;
 						}
-						else if (var.Escapes != null && var.Escapes.Value)
+						else if (var.Escapes.GetValueOrDefault(true))
 						{
 							_writer.WriteLqd(var.VirtualRegister, HardwareRegister.SP, var.StackLocation);
 							return var.VirtualRegister;
@@ -1243,9 +1251,7 @@ namespace CellDotNet
 				case IRCode.Ldloca:
 					{
 						MethodVariable var = ((MethodVariable) inst.Operand);
-						if (var.StackType.IsStackValueType)
-							return _writer.WriteAi(HardwareRegister.SP, var.StackLocation*16);
-						else if (var.Escapes != null && var.Escapes.Value)
+						if (var.StackType.IsStackValueType || var.Escapes.GetValueOrDefault(true))
 							return _writer.WriteAi(HardwareRegister.SP, var.StackLocation*16);
 						else
 							throw new Exception("Escaping variable with no stack location.");
@@ -1254,18 +1260,13 @@ namespace CellDotNet
 				case IRCode.Stloc:
 					{
 						MethodVariable var = ((MethodVariable) inst.Operand);
-						if (!var.StackType.IsStackValueType)
-						{
-							if (var.Escapes ?? false)
-								_writer.WriteStqd(vrleft, HardwareRegister.SP, var.StackLocation);
-							else
-								_writer.WriteMove(vrleft, var.VirtualRegister);
-						}
+						if (var.StackType.IsStackValueType)
+							WriteMoveQuadWords(vrleft, 0, HardwareRegister.SP, var.StackLocation, var.StackType.ComplexType.QuadWordCount);
+						else if (var.Escapes.GetValueOrDefault(false))
+							_writer.WriteStqd(vrleft, HardwareRegister.SP, var.StackLocation);
 						else
-						{
-							WriteMoveQuadWords(vrleft, 0, HardwareRegister.SP, 
-								var.StackLocation, var.StackType.ComplexType.QuadWordCount);
-						}
+							_writer.WriteMove(vrleft, var.VirtualRegister);
+
 						return null;
 					}
 				case IRCode.Localloc:

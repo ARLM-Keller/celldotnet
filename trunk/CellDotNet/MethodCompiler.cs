@@ -238,7 +238,7 @@ namespace CellDotNet
 			// This one should be before escape determination, since some of the address ops might be removed.
 			RemoveAddressOperations();
 
-			DetermineEscapes();
+			DetermineEscapesAndAllocateStackVariables();
 
 			_partialEvaluator.Evaluate(this);
 
@@ -626,7 +626,7 @@ namespace CellDotNet
 		/// <summary>
 		/// Determines escapes in the tree and allocates virtual registers to them.
 		/// </summary>
-		private void DetermineEscapes()
+		private void DetermineEscapesAndAllocateStackVariables()
 		{
 			foreach (MethodVariable var in Variables)
 			{
@@ -634,7 +634,6 @@ namespace CellDotNet
 				if (var.VirtualRegister == null)
 					var.VirtualRegister = NextRegister();
 
-				// Custom mutable structs always go on the stack.
 				if (var.StackType.IsStackValueType)
 				{
 					var.Escapes = true;
@@ -647,19 +646,20 @@ namespace CellDotNet
 				p.Escapes = false;
 
 				// The linear register allocator will move physical argument registers into these virtual registers.
-				p.VirtualRegister = NextRegister();
+
+				if (p.StackType.IsStackValueType)
+				{
+					p.Escapes = true;
+					p.StackLocation = GetNewSpillQuadOffset(p.StackType.ComplexType.QuadWordCount);
+				}
+				else
+					p.VirtualRegister = NextRegister();
 			}
 
 			Action<TreeInstruction> action =
 				delegate(TreeInstruction obj)
 					{
-						if (obj.Opcode.IRCode == IRCode.Ldarga)
-						{
-							((MethodParameter) obj.Operand).Escapes = true;
-							if (((MethodParameter) obj.Operand).StackLocation == 0)
-								((MethodParameter) obj.Operand).StackLocation = GetNewSpillQuadOffset(1);
-						}
-						else if (obj.Opcode.IRCode == IRCode.Ldloca)
+						if (obj.Opcode.IRCode == IRCode.Ldarga || obj.Opcode.IRCode == IRCode.Ldloca)
 						{
 							((MethodVariable) obj.Operand).Escapes = true;
 							if (((MethodVariable)obj.Operand).StackLocation == 0)
