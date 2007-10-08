@@ -108,6 +108,11 @@ namespace CellDotNet
 			return argmem;
 		}
 
+		public object GetValue(byte[] buf, Type type)
+		{
+			return GetValues(buf, new Type[] {type})[0];
+		}
+
 		public object[] GetValues(byte[] buf, Type[] types)
 		{
 			return GetValues(buf, types, 0);	
