@@ -217,6 +217,7 @@ namespace CellDotNet
 	/// <remarks>
 	/// This struct will be laid out so that the effective address will be in the preferred slot.
 	/// </remarks>
+	[Immutable]
 	public struct MainStorageArea
 	{
 		private uint _effectiveAddress;

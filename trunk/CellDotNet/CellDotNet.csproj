@@ -59,6 +59,7 @@
     <Compile Include="ILReader.cs" />
     <Compile Include="ILReaderTest.cs" />
     <Compile Include="ILWriter.cs" />
+    <Compile Include="ImmutableAttribute.cs" />
     <Compile Include="InterferenceGraph.cs" />
     <Compile Include="IntrinsicMethodAttribute.cs" />
     <Compile Include="IntrinsicsManager.cs" />

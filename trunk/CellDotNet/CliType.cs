@@ -146,15 +146,15 @@ namespace CellDotNet
 
 		/// <summary>
 		/// When this returns true, we can perform some operations in registers. The CLI basic types are not 
-		/// covered by this property; it is for the vector types.
+		/// covered by this property.
 		/// </summary>
 		public bool IsImmutableSingleRegisterType
 		{
-			get { return this == Int32Vector || this == Float32Vector; }
+			get { return this == Int32Vector || this == Float32Vector || (CliType == CliType.ValueType && ComplexType.IsImmutableSingleRegisterStruct); }
 		}
 
 		/// <summary>
-		/// A shorcut for CliType == CliType.IsStackValueType &amp;&amp; !<see cref="IsImmutableSingleRegisterType"/>.
+		/// A shorcut for CliType == CliType.ValueType &amp;&amp; !<see cref="IsImmutableSingleRegisterType"/>.
 		/// Custom structs always go on the stack.
 		/// </summary>
 		public bool IsStackValueType

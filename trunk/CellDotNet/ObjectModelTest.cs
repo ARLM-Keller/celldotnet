@@ -571,7 +571,9 @@ namespace CellDotNet
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
 			new TreeDrawer().DrawMethod(cc.EntryPointAsMetodCompiler);
+			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
 			cc.PerformProcessing(CompileContextState.S8Complete);
+			Disassembler.DisassembleUnconditionalToConsole(cc);
 
 			AreEqual(i5value, (int) SpeContext.UnitTestRunProgram(cc));
 		}
