@@ -187,8 +187,8 @@ namespace CellDotNet
 	public enum SpuPipeline
 	{
 		None,
+		Odd,
 		Even,
-		Odd
 	}
 
 	/// <summary>

@@ -22,18 +22,18 @@ namespace CellDotNet
 		private List<IROpCode> _unimplementedOpCodes;
 
 		private SpecialSpeObjects _specialSpeObjects;
-		private NewSpillOffsetDelegate _spillAllocator;
+		private StackSpaceAllocator _stackAllocate;
 
 
 		public RecursiveInstructionSelector()
 		{
 		}
 
-		public RecursiveInstructionSelector(SpecialSpeObjects specialSpeObjects, NewSpillOffsetDelegate spillAllocator)
+		public RecursiveInstructionSelector(SpecialSpeObjects specialSpeObjects, StackSpaceAllocator spaceAllocator)
 		{
 			Utilities.AssertArgumentNotNull(specialSpeObjects, "specialSpeObjects");
 			_specialSpeObjects = specialSpeObjects;
-			_spillAllocator = spillAllocator;
+			_stackAllocate = spaceAllocator;
 		}
 
 		public void GenerateCode(List<IRBasicBlock> basicBlocks, ReadOnlyCollection<MethodParameter> parameters, SpuInstructionWriter writer)
@@ -814,7 +814,7 @@ namespace CellDotNet
 								if (!type.IsImmutableSingleRegisterType)
 								{
 									// Copy to new stack position.
-									int stackpos = _spillAllocator(type.ComplexType.QuadWordCount);
+									int stackpos = _stackAllocate(type.ComplexType.QuadWordCount);
 									for (int i = 0; i < type.ComplexType.QuadWordCount; i++)
 									{
 										VirtualRegister val = _writer.WriteLqd(vrleft, i);
@@ -1219,44 +1219,9 @@ namespace CellDotNet
 				case IRCode.Ldvirtftn:
 					break;
 				case IRCode.Ldarg:
-					{
-						MethodVariable var = ((MethodVariable) inst.Operand);
-						if (var.Escapes != null && var.Escapes.Value)
-						{
-							_writer.WriteLqd(var.VirtualRegister, HardwareRegister.SP, var.StackLocation);
-							return var.VirtualRegister;
-						}
-						else
-							return var.VirtualRegister;
-						// Do nothing.
-//						return GetMethodVariableRegister(inst);
-					}
-				case IRCode.Ldarga:
-					{
-						MethodVariable var = ((MethodVariable) inst.Operand);
-						if (var.Escapes != null && var.Escapes.Value)
-						{
-							Utilities.Assert(var.StackLocation*4 < 32*1024, "Immediated overflow");
-							VirtualRegister r = _writer.WriteIl(var.StackLocation*16);
-							_writer.WriteA(r, HardwareRegister.SP, r);
-							return r;
-						}
-						else
-							throw new Exception("Escaping variable with no stack location.");
-					}
-				case IRCode.Starg:
-					{
-						MethodVariable var = ((MethodVariable) inst.Operand);
-						if (var.Escapes != null && var.Escapes.Value)
-							_writer.WriteStqd(vrleft, HardwareRegister.SP, var.StackLocation);
-						else
-							_writer.WriteMove(vrleft, var.VirtualRegister);
-
-						return null;
-					}
 				case IRCode.Ldloc:
 					{
-						MethodVariable var = ((MethodVariable) inst.Operand);
+						MethodVariable var = ((MethodVariable)inst.Operand);
 						if (var.Escapes != null && var.Escapes.Value)
 						{
 							_writer.WriteLqd(var.VirtualRegister, HardwareRegister.SP, var.StackLocation);
@@ -1265,22 +1230,36 @@ namespace CellDotNet
 						else
 							return var.VirtualRegister;
 					}
+				case IRCode.Ldarga:
 				case IRCode.Ldloca:
 					{
 						MethodVariable var = ((MethodVariable) inst.Operand);
+//						if (var.StackType.CliType == CliType.ValueType)
+//							return var.VirtualRegister;
+//						else
 						if (var.Escapes != null && var.Escapes.Value)
 							return _writer.WriteAi(HardwareRegister.SP, var.StackLocation*16);
 						else
 							throw new Exception("Escaping variable with no stack location.");
 					}
+				case IRCode.Starg:
 				case IRCode.Stloc:
 					{
 						MethodVariable var = ((MethodVariable) inst.Operand);
-						if (var.Escapes ?? false)
-							_writer.WriteStqd(vrleft, HardwareRegister.SP, var.StackLocation);
+						if (var.StackType.CliType != CliType.ValueType)
+						{
+							if (var.Escapes ?? false)
+								_writer.WriteStqd(vrleft, HardwareRegister.SP, var.StackLocation);
+							else
+								_writer.WriteMove(vrleft, var.VirtualRegister);
+						}
 						else
-							_writer.WriteMove(vrleft, var.VirtualRegister);
-
+						{
+							// Save to new stack location.
+							int count = var.StackType.ComplexType.QuadWordCount;
+							VirtualRegister dest = _writer.WriteAi(HardwareRegister.SP, _stackAllocate(count) * 16);
+							WriteMoveQuadWords(var.VirtualRegister, dest, count);
+						}
 						return null;
 					}
 				case IRCode.Localloc:
@@ -1311,6 +1290,22 @@ namespace CellDotNet
 
 			_unimplementedOpCodes.Add(inst.Opcode);
 			return new VirtualRegister(-1);
+		}
+
+		/// <summary>
+		/// Writes loads and stores to move the requested number of quadwords from <paramref name="sourceAddress"/> 
+		/// to <paramref name="destinationAddress"/>.
+		/// </summary>
+		/// <param name="sourceAddress"></param>
+		/// <param name="destinationAddress"></param>
+		/// <param name="quadWordCount"></param>
+		private void WriteMoveQuadWords(VirtualRegister sourceAddress, VirtualRegister destinationAddress, int quadWordCount)
+		{
+			for (int i = 0; i < quadWordCount; i++)
+			{
+				VirtualRegister val = _writer.WriteLqd(sourceAddress, i);
+				_writer.WriteStqd(val, destinationAddress, i);
+			}
 		}
 
 		private VirtualRegister WritePpeMethodCall(TreeInstruction inst, List<VirtualRegister> childregs)
@@ -1390,7 +1385,7 @@ namespace CellDotNet
 					else
 					{
 						// Save the struct to a new stack position.
-						int varStackPos = _spillAllocator(rettype.ComplexType.QuadWordCount);
+						int varStackPos = _stackAllocate(rettype.ComplexType.QuadWordCount);
 						retval = _writer.WriteAi(HardwareRegister.SP, varStackPos * 16);
 						for (int qnum = 0; qnum < rettype.ComplexType.QuadWordCount; qnum++)
 						{

@@ -37,7 +37,7 @@ namespace CellDotNet
 	/// </summary>
 	/// <param name="quadWordCount"></param>
 	/// <returns></returns>
-	internal delegate int NewSpillOffsetDelegate(int quadWordCount);
+	internal delegate int StackSpaceAllocator(int quadWordCount);
 
 	/// <summary>
 	/// Data used during compilation of a method.

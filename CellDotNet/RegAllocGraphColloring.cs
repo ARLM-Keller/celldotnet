@@ -15,7 +15,7 @@ namespace CellDotNet
 
 		private List<SpuBasicBlock> basicBlocks;
 
-		private NewSpillOffsetDelegate NewSpillOffset;
+		private StackSpaceAllocator _StackSpaceAllocator;
 
 		private int maxInstNr = 0; // note første inst har nr = 1
 
@@ -111,13 +111,13 @@ namespace CellDotNet
 		private int allocLoopCount = 0;
 
 		// TODO evt. tage kode og en delagate, der kan allokere plads i frames, som argument.
-		public void Alloc(List<SpuBasicBlock> inputBasicBlocks, NewSpillOffsetDelegate inputNewSpillOffset, Dictionary<VirtualRegister, int> inputRegisterWeight)
+		public void Alloc(List<SpuBasicBlock> inputBasicBlocks, StackSpaceAllocator inputStackSpaceAllocator, Dictionary<VirtualRegister, int> inputRegisterWeight)
 		{
 			allocCalls++;
 
 			basicBlocks = inputBasicBlocks;
 
-			NewSpillOffset = inputNewSpillOffset;
+			_StackSpaceAllocator = inputStackSpaceAllocator;
 
 //			basicBlocks = new List<SpuBasicBlock>();
 //
@@ -1207,10 +1207,10 @@ namespace CellDotNet
 				VirtualRegister v = intToReg[vint];
 
 				regToInt.Remove(v);
-				if (NewSpillOffset == null)
+				if (_StackSpaceAllocator == null)
 					throw new Exception("Unable to spill.");
 
-				int spillOffset = NewSpillOffset(1);
+				int spillOffset = _StackSpaceAllocator(1);
 
 				foreach (SpuBasicBlock basicBlock in basicBlocks)
 				{
