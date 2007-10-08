@@ -302,5 +302,9 @@ namespace CellDotNet
 		{
 			return *(((double*)&i));
 		}
+		static internal unsafe long ReinterpretAsLong(double f)
+		{
+			return *((long*)&f);
+		}
 	}
 }

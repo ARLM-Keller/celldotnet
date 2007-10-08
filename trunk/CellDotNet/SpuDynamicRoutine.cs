@@ -118,7 +118,7 @@ namespace CellDotNet
 						// Instructions and therefore branch offsets are 4-byte aligned, 
 						// and the ISA uses that fact for relative loads, stores an branches.
 						// Constant is assumed to be a quadwords ooffset.
-						inst.Constant = inst.Constant * 4 + (bytediff >> 2);
+						inst.Constant = inst.Constant + (bytediff >> 2);
 					}
 
 					curroffset += 4;
