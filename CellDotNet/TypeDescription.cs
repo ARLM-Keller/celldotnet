@@ -44,6 +44,12 @@ namespace CellDotNet
 			}
 		}
 
+		private bool _isImmutableSingleRegisterStruct;
+		public bool IsImmutableSingleRegisterStruct
+		{
+			get { return _isImmutableSingleRegisterStruct; }
+		}
+
 		public TypeDescription(Type type)
 		{
 			if (type == null)
@@ -55,6 +61,12 @@ namespace CellDotNet
 				throw new ArgumentException("Argument is array.");
 			if (type.IsGenericTypeDefinition)
 				throw new ArgumentException("Argument is a generic type.");
+			if (type.IsValueType && type.IsDefined(typeof(ImmutableAttribute), false))
+			{
+				// Should actually check size.
+				_isImmutableSingleRegisterStruct = true;
+			}
+			
 
 			_reflectionType = type;
 		}

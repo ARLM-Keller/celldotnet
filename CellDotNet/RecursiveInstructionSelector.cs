@@ -1222,7 +1222,15 @@ namespace CellDotNet
 				case IRCode.Ldloc:
 					{
 						MethodVariable var = ((MethodVariable)inst.Operand);
-						if (var.Escapes != null && var.Escapes.Value)
+						if (var.StackType.IsStackValueType)
+						{
+							// Save to new stack location.
+							int count = var.StackType.ComplexType.QuadWordCount;
+							VirtualRegister stackloc = _writer.WriteAi(HardwareRegister.SP, _stackAllocate(count) * 16);
+							WriteMoveQuadWords(HardwareRegister.SP, var.StackLocation, stackloc, 0, count);
+							return stackloc;
+						}
+						else if (var.Escapes != null && var.Escapes.Value)
 						{
 							_writer.WriteLqd(var.VirtualRegister, HardwareRegister.SP, var.StackLocation);
 							return var.VirtualRegister;
@@ -1234,11 +1242,10 @@ namespace CellDotNet
 				case IRCode.Ldloca:
 					{
 						MethodVariable var = ((MethodVariable) inst.Operand);
-//						if (var.StackType.CliType == CliType.ValueType)
-//							return var.VirtualRegister;
-//						else
 						if (var.Escapes != null && var.Escapes.Value)
 							return _writer.WriteAi(HardwareRegister.SP, var.StackLocation*16);
+						else if (var.StackType.IsStackValueType)
+							return var.VirtualRegister;
 						else
 							throw new Exception("Escaping variable with no stack location.");
 					}
@@ -1246,7 +1253,7 @@ namespace CellDotNet
 				case IRCode.Stloc:
 					{
 						MethodVariable var = ((MethodVariable) inst.Operand);
-						if (var.StackType.CliType != CliType.ValueType)
+						if (!var.StackType.IsStackValueType)
 						{
 							if (var.Escapes ?? false)
 								_writer.WriteStqd(vrleft, HardwareRegister.SP, var.StackLocation);
@@ -1255,10 +1262,8 @@ namespace CellDotNet
 						}
 						else
 						{
-							// Save to new stack location.
-							int count = var.StackType.ComplexType.QuadWordCount;
-							VirtualRegister dest = _writer.WriteAi(HardwareRegister.SP, _stackAllocate(count) * 16);
-							WriteMoveQuadWords(var.VirtualRegister, dest, count);
+							WriteMoveQuadWords(vrleft, 0, HardwareRegister.SP, 
+								var.StackLocation, var.StackType.ComplexType.QuadWordCount);
 						}
 						return null;
 					}
@@ -1299,12 +1304,12 @@ namespace CellDotNet
 		/// <param name="sourceAddress"></param>
 		/// <param name="destinationAddress"></param>
 		/// <param name="quadWordCount"></param>
-		private void WriteMoveQuadWords(VirtualRegister sourceAddress, VirtualRegister destinationAddress, int quadWordCount)
+		private void WriteMoveQuadWords(VirtualRegister sourceAddress, int sourceQwOffset, VirtualRegister destinationAddress, int destinationQwOffset, int quadWordCount)
 		{
 			for (int i = 0; i < quadWordCount; i++)
 			{
-				VirtualRegister val = _writer.WriteLqd(sourceAddress, i);
-				_writer.WriteStqd(val, destinationAddress, i);
+				VirtualRegister val = _writer.WriteLqd(sourceAddress, sourceQwOffset + i);
+				_writer.WriteStqd(val, destinationAddress, destinationQwOffset + i);
 			}
 		}
 
