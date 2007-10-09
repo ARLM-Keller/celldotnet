@@ -11,6 +11,56 @@ namespace CellDotNet
 		private delegate T Operator<T>(T e1, T e2);
 
 		[Test]
+		public void TestSpuMath_ConvertToInteger()
+		{
+			Converter<Float32Vector, Int32Vector> del =
+				delegate(Float32Vector v) { return SpuMath.ConvertToInteger(v); };
+
+			CompileContext cc = new CompileContext(del.Method);
+
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			Float32Vector arg = new Float32Vector(32, 65, 8, 3);
+
+			Int32Vector corret = del(arg);
+
+			Int32Vector result = (Int32Vector)SpeContext.UnitTestRunProgram(del, arg);
+
+//			Console.WriteLine("{0}", arg);
+//			Console.WriteLine("Correct: {0} result: {1}", corret, result);
+
+			AreEqual(corret, result);
+		}
+
+		[Test]
+		public void TestSpuMath_ConvertToFloat()
+		{
+			Converter<Int32Vector, Float32Vector> del =
+				delegate(Int32Vector v) { return SpuMath.ConvertToFloat(v); };
+
+			CompileContext cc = new CompileContext(del.Method);
+
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			Int32Vector arg = new Int32Vector(32, 65, 8, 3);
+
+			Float32Vector corret = del(arg);
+
+			Float32Vector result = (Float32Vector)SpeContext.UnitTestRunProgram(del, arg);
+
+			//			Console.WriteLine("{0}", arg);
+			//			Console.WriteLine("Correct: {0} result: {1}", corret, result);
+
+			AreEqual(corret, result);
+		}
+
+		[Test]
 		public void TestSpuMath_CompareGreaterThanAndSelectIntInt()
 		{
 			ComparAndSelector<Int32Vector, Int32Vector> del =

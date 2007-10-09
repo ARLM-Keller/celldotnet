@@ -774,11 +774,17 @@ namespace CellDotNet
 					break;
 				case IRCode.Conv_I4:
 					{
-						StackTypeDescription srctype = lefttype;
-						if (srctype.CliType == CliType.NativeInt)
-							return vrleft;
-
-//						throw new NotSupportedException();
+						switch(lefttype.CliType)
+						{
+							case CliType.Int32:
+							case CliType.NativeInt:
+								return vrleft;
+							case CliType.Float32:
+								return _writer.WriteCflts(vrleft, 173);
+						}
+//						StackTypeDescription srctype = lefttype;
+//						if (srctype.CliType == CliType.NativeInt)
+//							return vrleft;
 					}
 					break;
 				case IRCode.Conv_I8:
