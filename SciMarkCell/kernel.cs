@@ -16,7 +16,7 @@ namespace SciMarkCell
 	public class kernel
 	{
 		// each measurement returns approx Mflops
-		public static double measureFFT(int N, double mintime, System.Random R)
+		public static double measureFFT(int N, double mintime, Random R)
 		{
 			// initialize FFT data as complex (N real/img pairs)
 			
@@ -48,7 +48,7 @@ namespace SciMarkCell
 		}
 		
 		
-		public static double measureSOR(int N, double min_time, System.Random R)
+		public static double measureSOR(int N, double min_time, Random R)
 		{
 			double[][] G = RandomMatrix(N, N, R);
 			
@@ -68,7 +68,7 @@ namespace SciMarkCell
 			return SOR.num_flops(N, N, cycles) / Q.read() * 1.0e-6;
 		}
 		
-		public static double measureMonteCarlo(double min_time, System.Random R)
+		public static double measureMonteCarlo(double min_time, Random R)
 		{
 			Stopwatch Q = new Stopwatch();
 			
@@ -88,7 +88,7 @@ namespace SciMarkCell
 		}
 		
 		
-		public static double measureSparseMatmult(int N, int nz, double min_time, System.Random R)
+		public static double measureSparseMatmult(int N, int nz, double min_time, Random R)
 		{
 			// initialize vector multipliers and storage for result
 			// y = A*y;
@@ -161,7 +161,7 @@ namespace SciMarkCell
 		}
 		
 		
-		public static double measureLU(int N, double min_time, System.Random R)
+		public static double measureLU(int N, double min_time, Random R)
 		{
 			// compute approx Mlfops, or O if LU yields large errors
 			
@@ -263,26 +263,26 @@ namespace SciMarkCell
 			}
 		}
 		
-		private static double[][] RandomMatrix(int M, int N, System.Random R)
+		private static double[][] RandomMatrix(int M, int N, Random R)
 		{
 			double[][] A = new double[M][];
 			 for (int i = 0; i < M; i++)
 			{
 				A[i] = new double[N];
 			}
-			
-			 for (int i = 0; i < N; i++)
-				 for (int j = 0; j < N; j++)
-					A[i][j] = R.nextDouble();
+
+			for (int i = 0; i < N; i++)
+				for (int j = 0; j < N; j++)
+					A[i][j] = R.nextFloat();
 			return A;
 		}
 		
-		private static double[] RandomVector(int N, System.Random R)
+		private static double[] RandomVector(int N, Random R)
 		{
 			double[] A = new double[N];
-			
-			 for (int i = 0; i < N; i++)
-				A[i] = R.nextDouble();
+
+			for (int i = 0; i < N; i++)
+				A[i] = R.nextFloat();
 			return A;
 		}
 		

@@ -54,20 +54,6 @@ namespace SciMarkCell
 				float x = R.nextFloat();
 				float y = R.nextFloat();
 
-				float z = -3;
-
-				int a=4, b=7;
-
-				if (a >= b)
-				{
-					System.Math.Abs(x);
-				}
-				if (x * x <= 1.0f)
-				{
-					System.Math.Abs(x);
-				}
-					
-
 				if (x*x + y*y <= 1.0f)
 					under_curve++;
 			}
