@@ -1845,6 +1845,20 @@ namespace CellDotNet
 							VirtualRegister r1 = writer.WriteCeq(childregs[0], childregs[1]);
 							return writer.WriteSelb(childregs[3], childregs[2], r1);
 						}
+					case SpuIntrinsicMethod.Vector_ConvertToInteger:
+						{
+							if (childregs.Count < 1)
+								throw new ArgumentException("Too few argument register to intrinsic Vector_ConvertToInteger.");
+
+							return writer.WriteCflts(childregs[0], 173);
+						}
+					case SpuIntrinsicMethod.Vector_ConvertToFloat:
+						{
+							if (childregs.Count < 1)
+								throw new ArgumentException("Too few argument register to intrinsic Vector_ConvertToFloat.");
+
+							return writer.WriteCsflt(childregs[0], 155);
+						}
 					default:
 						throw new ArgumentException();
 				}

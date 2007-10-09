@@ -193,20 +193,16 @@ namespace CellDotNet
 			}
 		} /* signed_divide */
 
-		[SpuOpCode(SpuOpCodeEnum.Cflts)]
-		[return: SpuInstructionPart(SpuInstructionPart.Rt)]
-		public static Int32Vector ConvertToInteger(
-			[SpuInstructionPart(SpuInstructionPart.Ra)]Float32Vector v)
+		[IntrinsicMethod(SpuIntrinsicMethod.Vector_ConvertToInteger)]
+		public static Int32Vector ConvertToInteger(Float32Vector v)
 		{
 			Int32Vector r = new Int32Vector((int)v.E1, (int)v.E2, (int)v.E3, (int)v.E4);
 
 			return r;
 		}
 
-		[SpuOpCode(SpuOpCodeEnum.Csflt)]
-		[return: SpuInstructionPart(SpuInstructionPart.Rt)]
-		public static Float32Vector ConvertToFloat(
-			[SpuInstructionPart(SpuInstructionPart.Ra)]Int32Vector v)
+		[IntrinsicMethod(SpuIntrinsicMethod.Vector_ConvertToFloat)]
+		public static Float32Vector ConvertToFloat(Int32Vector v)
 		{
 			Float32Vector r = new Float32Vector(v.E1, v.E2, v.E3, v.E4);
 
