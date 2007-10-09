@@ -67,7 +67,6 @@ namespace CellDotNet
 				delegate(Int32Vector c1, Int32Vector c2, Int32Vector e1, Int32Vector e2) { return SpuMath.CompareGreaterThanAndSelect(c1, c2, e1, e2); };
 
 			CompileContext cc = new CompileContext(del.Method);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			if(!SpeContext.HasSpeHardware) 
@@ -78,14 +77,14 @@ namespace CellDotNet
 			Int32Vector arg3 = new Int32Vector(14, 1243, 324, 3);
 			Int32Vector arg4 = new Int32Vector(745, 664, 82, 17);
 
-			Int32Vector corret = del(arg1, arg2, arg3, arg4);
+			Int32Vector correct = del(arg1, arg2, arg3, arg4);
 
 			Int32Vector result = (Int32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2, arg3, arg4);
 
-			Console.WriteLine("{0} {1} {2} {3}", arg1, arg2, arg3, arg4);
-			Console.WriteLine("Correct: {0} result: {1}", corret, result);
+//			Console.WriteLine("{0} {1} {2} {3}", arg1, arg2, arg3, arg4);
+//			Console.WriteLine("Correct: {0} result: {1}", correct, result);
 
-			AreEqual(corret, result);
+			AreEqual(correct, result);
 		}
 
 		[Test]
@@ -95,7 +94,6 @@ namespace CellDotNet
 				delegate(Int32Vector c1, Int32Vector c2, Float32Vector e1, Float32Vector e2) { return SpuMath.CompareGreaterThanAndSelect(c1, c2, e1, e2); };
 
 			CompileContext cc = new CompileContext(del.Method);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			if (!SpeContext.HasSpeHardware)
@@ -106,14 +104,14 @@ namespace CellDotNet
 			Float32Vector arg3 = new Float32Vector(14, 1243, 324, 3);
 			Float32Vector arg4 = new Float32Vector(745, 664, 82, 17);
 
-			Float32Vector corret = del(arg1, arg2, arg3, arg4);
+			Float32Vector correct = del(arg1, arg2, arg3, arg4);
 
 			Float32Vector result = (Float32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2, arg3, arg4);
 
-			Console.WriteLine("{0} {1} {2} {3}", arg1, arg2, arg3, arg4);
-			Console.WriteLine("Correct: {0} result: {1}", corret, result);
+//			Console.WriteLine("{0} {1} {2} {3}", arg1, arg2, arg3, arg4);
+//			Console.WriteLine("Correct: {0} result: {1}", corret, result);
 
-			AreEqual(corret, result);
+			AreEqual(correct, result);
 		}
 
 		[Test]
@@ -123,7 +121,6 @@ namespace CellDotNet
 				delegate(Float32Vector c1, Float32Vector c2, Int32Vector e1, Int32Vector e2) { return SpuMath.CompareGreaterThanAndSelect(c1, c2, e1, e2); };
 
 			CompileContext cc = new CompileContext(del.Method);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			if (!SpeContext.HasSpeHardware)
@@ -134,14 +131,14 @@ namespace CellDotNet
 			Int32Vector arg3 = new Int32Vector(14, 1243, 324, 3);
 			Int32Vector arg4 = new Int32Vector(745, 664, 82, 17);
 
-			Int32Vector corret = del(arg1, arg2, arg3, arg4);
+			Int32Vector correct = del(arg1, arg2, arg3, arg4);
 
 			Int32Vector result = (Int32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2, arg3, arg4);
 
-			Console.WriteLine("{0} {1} {2} {3}", arg1, arg2, arg3, arg4);
-			Console.WriteLine("Correct: {0} result: {1}", corret, result);
+//			Console.WriteLine("{0} {1} {2} {3}", arg1, arg2, arg3, arg4);
+//			Console.WriteLine("Correct: {0} result: {1}", correct, result);
 
-			AreEqual(corret, result);
+			AreEqual(correct, result);
 		}
 
 		[Test]
@@ -151,7 +148,6 @@ namespace CellDotNet
 				delegate(Float32Vector c1, Float32Vector c2, Float32Vector e1, Float32Vector e2) { return SpuMath.CompareGreaterThanAndSelect(c1, c2, e1, e2); };
 
 			CompileContext cc = new CompileContext(del.Method);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			if (!SpeContext.HasSpeHardware)
@@ -162,14 +158,14 @@ namespace CellDotNet
 			Float32Vector arg3 = new Float32Vector(14, 1243, 324, 3);
 			Float32Vector arg4 = new Float32Vector(745, 664, 82, 17);
 
-			Float32Vector corret = del(arg1, arg2, arg3, arg4);
+			Float32Vector correct = del(arg1, arg2, arg3, arg4);
 
 			Float32Vector result = (Float32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2, arg3, arg4);
 
-			Console.WriteLine("{0} {1} {2} {3}", arg1, arg2, arg3, arg4);
-			Console.WriteLine("Correct: {0} result: {1}", corret, result);
+//			Console.WriteLine("{0} {1} {2} {3}", arg1, arg2, arg3, arg4);
+//			Console.WriteLine("Correct: {0} result: {1}", correct, result);
 
-			AreEqual(corret, result);
+			AreEqual(correct, result);
 		}
 
 		[Test]
@@ -179,7 +175,6 @@ namespace CellDotNet
 				delegate(Int32Vector c1, Int32Vector c2, Int32Vector e1, Int32Vector e2) { return SpuMath.CompareEqualsAndSelect(c1, c2, e1, e2); };
 
 			CompileContext cc = new CompileContext(del.Method);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			if (!SpeContext.HasSpeHardware)
@@ -190,14 +185,14 @@ namespace CellDotNet
 			Int32Vector arg3 = new Int32Vector(14, 1243, 324, 3);
 			Int32Vector arg4 = new Int32Vector(745, 664, 82, 17);
 
-			Int32Vector corret = del(arg1, arg2, arg3, arg4);
+			Int32Vector correct = del(arg1, arg2, arg3, arg4);
 
 			Int32Vector result = (Int32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2, arg3, arg4);
 
-			Console.WriteLine("{0} {1} {2} {3}", arg1, arg2, arg3, arg4);
-			Console.WriteLine("Correct: {0} result: {1}", corret, result);
+//			Console.WriteLine("{0} {1} {2} {3}", arg1, arg2, arg3, arg4);
+//			Console.WriteLine("Correct: {0} result: {1}", correct, result);
 
-			AreEqual(corret, result);
+			AreEqual(correct, result);
 		}
 
 		[Test]
@@ -207,7 +202,6 @@ namespace CellDotNet
 				delegate(Int32Vector v) { return SpuMath.Abs(v); };
 
 			CompileContext cc = new CompileContext(del.Method);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			if (!SpeContext.HasSpeHardware)
@@ -215,11 +209,11 @@ namespace CellDotNet
 
 			Int32Vector arg = new Int32Vector(32, -65, 34568, -4374573);
 
-			Int32Vector corret = del(arg);
+			Int32Vector correct = del(arg);
 
 			Int32Vector result = (Int32Vector)SpeContext.UnitTestRunProgram(del, arg);
 
-			AreEqual(corret, result);
+			AreEqual(correct, result);
 		}
 
 		[Test]
@@ -229,7 +223,6 @@ namespace CellDotNet
 				delegate(Int32Vector v1, Int32Vector v2) { return SpuMath.Min(v1, v2); };
 
 			CompileContext cc = new CompileContext(del.Method);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			if (!SpeContext.HasSpeHardware)
@@ -238,11 +231,11 @@ namespace CellDotNet
 			Int32Vector arg1 = new Int32Vector(32, -65, 34568, -44573);
 			Int32Vector arg2 = new Int32Vector(324, -60, 348, -4374573);
 
-			Int32Vector corret = del(arg1, arg2);
+			Int32Vector correct = del(arg1, arg2);
 
 			Int32Vector result = (Int32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2);
 
-			AreEqual(corret, result);
+			AreEqual(correct, result);
 		}
 
 		[Test]
@@ -252,7 +245,6 @@ namespace CellDotNet
 				delegate(Int32Vector v1, Int32Vector v2) { return SpuMath.Max(v1, v2); };
 
 			CompileContext cc = new CompileContext(del.Method);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			if (!SpeContext.HasSpeHardware)
@@ -261,11 +253,11 @@ namespace CellDotNet
 			Int32Vector arg1 = new Int32Vector(32, -65, 34568, -44573);
 			Int32Vector arg2 = new Int32Vector(324, -60, 348, -4374573);
 
-			Int32Vector corret = del(arg1, arg2);
+			Int32Vector correct = del(arg1, arg2);
 
 			Int32Vector result = (Int32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2);
 
-			AreEqual(corret, result);
+			AreEqual(correct, result);
 		}
 
 		[Test]
@@ -275,7 +267,6 @@ namespace CellDotNet
 				delegate(Float32Vector v) { return SpuMath.Abs(v); };
 
 			CompileContext cc = new CompileContext(del.Method);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			if (!SpeContext.HasSpeHardware)
@@ -283,11 +274,11 @@ namespace CellDotNet
 
 			Float32Vector arg = new Float32Vector(32, -65, 34568, -4374573);
 
-			Float32Vector corret = del(arg);
+			Float32Vector correct = del(arg);
 
 			Float32Vector result = (Float32Vector)SpeContext.UnitTestRunProgram(del, arg);
 
-			AreEqual(corret, result);
+			AreEqual(correct, result);
 		}
 
 		[Test]
@@ -297,7 +288,6 @@ namespace CellDotNet
 				delegate(Float32Vector v1, Float32Vector v2) { return SpuMath.Min(v1, v2); };
 
 			CompileContext cc = new CompileContext(del.Method);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			if (!SpeContext.HasSpeHardware)
@@ -306,11 +296,11 @@ namespace CellDotNet
 			Float32Vector arg1 = new Float32Vector(32, -65, 34568, -44573);
 			Float32Vector arg2 = new Float32Vector(324, -60, 348, -4374573);
 
-			Float32Vector corret = del(arg1, arg2);
+			Float32Vector correct = del(arg1, arg2);
 
 			Float32Vector result = (Float32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2);
 
-			AreEqual(corret, result);
+			AreEqual(correct, result);
 		}
 
 		[Test]
@@ -320,7 +310,6 @@ namespace CellDotNet
 				delegate(Float32Vector v1, Float32Vector v2) { return SpuMath.Max(v1, v2); };
 
 			CompileContext cc = new CompileContext(del.Method);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			if (!SpeContext.HasSpeHardware)
@@ -329,12 +318,11 @@ namespace CellDotNet
 			Float32Vector arg1 = new Float32Vector(32, -65, 34568, -44573);
 			Float32Vector arg2 = new Float32Vector(324, -60, 348, -4374573);
 
-			Float32Vector corret = del(arg1, arg2);
+			Float32Vector correct = del(arg1, arg2);
 
 			Float32Vector result = (Float32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2);
 
-			AreEqual(corret, result);
+			AreEqual(correct, result);
 		}
-
 	}
 }

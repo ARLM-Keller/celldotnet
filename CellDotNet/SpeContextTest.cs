@@ -205,36 +205,6 @@ namespace CellDotNet
 			}
 		}
 
-/*		[Test, ExpectedException(typeof(SpeStackOverflowException))]*/
-		internal void TestRecursion_StackOverflow_Debug()
-		{
-			SimpleDelegateIntInt del = Recursion;
-
-			CompileContext cc = new CompileContext(del.Method);
-
-			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
-
-//			foreach (MethodCompiler method in cc.Methods)
-//				method.Naked = true;
-
-			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
-
-			Disassembler.DisassembleUnconditional(cc, Console.Out);
-
-			cc.PerformProcessing(CompileContextState.S8Complete);
-
-			Disassembler.DisassembleToConsole(cc);
-
-			if (!SpeContext.HasSpeHardware)
-				throw new SpeStackOverflowException();
-
-			using (SpeContext sc = new SpeContext())
-			{
-				sc.RunProgram(cc, 10000); // generates at least 320K stack.
-			}
-		}
-
-
 		[Test]
 		public void TestRecursion_WithoutStackOverflow()
 		{
@@ -273,12 +243,6 @@ namespace CellDotNet
 			BasicTestDelegate del = OutOfMemory;
 
 			CompileContext cc = new CompileContext(del.Method);
-
-			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
-			Disassembler.DisassembleUnconditionalToConsole(cc);
-
-
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			if (!SpeContext.HasSpeHardware)
