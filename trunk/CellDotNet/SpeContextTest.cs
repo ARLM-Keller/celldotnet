@@ -18,7 +18,7 @@ namespace CellDotNet
 
 			using (SpeContext ctxt = new SpeContext())
 			{
-				ctxt.LoadProgram(new int[] { 13 });
+				ctxt.LoadProgram(new int[] { 13, 14, 15, 16 });
 
 				int[] lsa = ctxt.GetCopyOfLocalStorage16K();
 				AreEqual(13, lsa[0], "DMA error.");
@@ -27,7 +27,7 @@ namespace CellDotNet
 
 		private delegate void BasicTestDelegate();
 
-		[Test, Ignore("Pointer is not supported eany more.")]
+		[Test, Ignore("Pointers are no longer supported.")]
 		unsafe public void TestFirstCellProgram()
 		{
 			BasicTestDelegate del = delegate
@@ -42,27 +42,14 @@ namespace CellDotNet
 			MethodCompiler mc = new MethodCompiler(method);
 			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 
-//			new TreeDrawer().DrawMethod(mc);
-
-
 			mc.PerformProcessing(MethodCompileState.S4InstructionSelectionDone);
 			mc.GetBodyWriter().WriteStop();
 
-//			Console.WriteLine();
-//			Console.WriteLine("Disassembly: ");
-//			Console.WriteLine(mc.GetBodyWriter().Disassemble());
-
 			mc.PerformProcessing(MethodCompileState.S5RegisterAllocationDone);
 
-//			Console.WriteLine();
-//			Console.WriteLine("Disassembly after regalloc: ");
-//			Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
 			mc.PerformProcessing(MethodCompileState.S7RemoveRedundantMoves);
 
-//			Console.WriteLine();
-//			Console.WriteLine("Disassembly after remove of redundant moves: ");
-//			Console.WriteLine(mc.GetBodyWriter().Disassemble());
 
 			int[] bincode = SpuInstruction.Emit(mc.GetBodyWriter().GetAsList());
 
@@ -78,7 +65,7 @@ namespace CellDotNet
 
 				if (ls[0x40 / 4] != 34)
 				{
-					Console.WriteLine("øv");
+					Console.WriteLine("Damn");
 					Console.WriteLine("Value: {0}", ls[0x40/4]);
 				}
 			}
@@ -434,9 +421,9 @@ namespace CellDotNet
 		{
 			const int magicNumber = 40;
 			IntReturnDelegate del = delegate { return magicNumber; };
+
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
-//			Disassembler.DisassembleToConsole(cc);
 
 			int[] code = cc.GetEmittedCode();
 
@@ -447,7 +434,7 @@ namespace CellDotNet
 			{
 				ctx.LoadProgram(code);
 
-				Utilities.DumpMemory(ctx, (LocalStorageAddress)0, 0x70, Console.Out);
+//				Utilities.DumpMemory(ctx, (LocalStorageAddress)0, 0x70, Console.Out);
 
 				ctx.Run();
 
@@ -462,15 +449,9 @@ namespace CellDotNet
 			const int magicNumber = 40;
 			IntReturnDelegate del = delegate { return magicNumber; };
 
-			if (!SpeContext.HasSpeHardware)
-				return;
-
-			using (SpeContext ctx = new SpeContext())
-			{
-				object retval = ctx.RunProgram(del);
-				AreEqual(typeof(int), retval.GetType());
-				AreEqual(magicNumber, (int)retval);
-			}
+			object retval = SpeContext.UnitTestRunProgram(del);
+			AreEqual(typeof(int), retval.GetType());
+			AreEqual(magicNumber, (int)retval);
 		}
 
 		[Test]
@@ -482,12 +463,9 @@ namespace CellDotNet
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			using (SpeContext ctx = new SpeContext())
-			{
-				object retval = ctx.RunProgram(del);
-				AreEqual(typeof(float), retval.GetType());
-				AreEqual(magicNumber, (float)retval);
-			}
+			object retval = SpeContext.UnitTestRunProgram(del);
+			AreEqual(typeof(float), retval.GetType());
+			AreEqual(magicNumber, (float)retval);
 		}
 
 		[Test]

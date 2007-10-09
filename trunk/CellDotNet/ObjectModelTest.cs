@@ -839,7 +839,7 @@ namespace CellDotNet
 
 			public int SomePublicFieldWhichIsNotAccessibleFromSpu;
 
-			public void Hit(object ppeobject, int number2)
+			public void Hit(object ppeobject)
 			{
 				_hitcount++;
 				_hitObject = ppeobject;
@@ -919,7 +919,7 @@ namespace CellDotNet
 		[Test]
 		public void TestPpeClass_InstanceMethodCall_ArgsPpeRefType()
 		{
-			Action<PpeClass, object> del = delegate(PpeClass obj, object o) { obj.Hit(o, PpeClass.MagicNumber2); };
+			Action<PpeClass, object> del = delegate(PpeClass obj, object o) { obj.Hit(o); };
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -941,7 +941,7 @@ namespace CellDotNet
 		[Test]
 		public void TestPpeClass_InstanceMethodCall_ArgsSpeRefTypeFailure()
 		{
-			Action<PpeClass> del = delegate(PpeClass obj) { obj.Hit(new SpeClass(), PpeClass.MagicNumber2); };
+			Action<PpeClass> del = delegate(PpeClass obj) { obj.Hit(new SpeClass()); };
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);

@@ -169,6 +169,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>rem copy /Y "$(TargetPath)" \\ps3\homes\celldotnet</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>
