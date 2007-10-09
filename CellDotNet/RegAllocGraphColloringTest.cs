@@ -11,7 +11,7 @@ namespace CellDotNet
 
 		private delegate void BasicTestDelegate();
 
-		[Test, Ignore("Pointer is not supported eany more.")]
+		[Test, Ignore("Pointers are no longer supported.")]
 		public unsafe void SimpleTest()
 		{
 			BasicTestDelegate del = delegate
@@ -27,23 +27,12 @@ namespace CellDotNet
 
 			mc.PerformProcessing(MethodCompileState.S4InstructionSelectionDone);
 
-//			new TreeDrawer().DrawMethod(mc);
-
 			mc.GetBodyWriter().WriteStop();
 
-//			Console.WriteLine();
-//			Console.WriteLine("Disassembly: ");
-//			Console.WriteLine(mc.GetBodyWriter().Disassemble());
-
 			mc.PerformProcessing(MethodCompileState.S5RegisterAllocationDone);
-
-//			Console.WriteLine();
-//			Console.WriteLine("Disassembly after regalloc: ");
-//			Console.WriteLine(mc.GetBodyWriter().Disassemble());
-
 		}
 
-		[Test, Ignore("Pointer is not supported eany more.")]
+		[Test, Ignore("Pointers are no longer supported.")]
 		public unsafe void LargeTest()
 		{
 			BasicTestDelegate del = delegate

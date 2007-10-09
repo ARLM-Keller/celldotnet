@@ -283,7 +283,17 @@ namespace CellDotNet
 			object retval = null;
 			if (cc.EntryPoint.ReturnType != StackTypeDescription.None)
 			{
-				retval = DmaGetValue(cc.EntryPoint.ReturnType, cc.ReturnValueAddress);
+				if (cc.EntryPoint.ReturnType.CliType == CliType.ObjectType || 
+					cc.EntryPoint.ReturnType.CliType == CliType.ValueType)
+				{
+					// Hopefully suitable size...
+					int retvalsize = 8*16;
+
+					byte[] retmem = GetLocalStorageMax16K(cc.ReturnValueAddress, retvalsize);
+					retval = marshaler.GetValue(retmem, cc.EntryPoint.ReturnType.ComplexType.ReflectionType);
+				}
+				else
+					retval = DmaGetValue(cc.EntryPoint.ReturnType, cc.ReturnValueAddress);
 			}
 
 			return retval;
@@ -407,18 +417,7 @@ namespace CellDotNet
 				default:
 					if (typeof(T).Equals(typeof(Int32Vector)) || typeof(T).Equals(typeof(Float32Vector)))
 					{
-						byte* buf = stackalloc byte[31];
-						IntPtr ptr = Utilities.Align16((IntPtr) buf);
-
-						uint DMA_tag = 1;
-						spe_mfcio_put(lsAddress, ptr, 16, DMA_tag, 0, 0);
-
-						uint tag_status = 0;
-						int waitresult = UnsafeNativeMethods.spe_mfcio_tag_status_read(_handle, 0, SPE_TAG_ANY, ref tag_status);
-						if (waitresult != 0)
-							throw new LibSpeException("spe_mfcio_tag_status_read failed.");
-
-						return (T)Marshal.PtrToStructure(ptr, typeof(T));
+						return (T) new Marshaler().GetValue(buff, typeof (T));
 					}
 					else
 					{

@@ -43,6 +43,9 @@ namespace CellDotNet
 		public static readonly StackTypeDescription Float32Vector =
 			new StackTypeDescription(CliType.Float32Vector, CliNumericSize.SixteenBytes, true);
 
+		/// <summary>
+		/// TODO: Remove this; use CliType instead.
+		/// </summary>
 		public static readonly StackTypeDescription ObjectType =
 			new StackTypeDescription(CliType.ObjectType, CliNumericSize.None, false);
 
@@ -173,10 +176,11 @@ namespace CellDotNet
 				{
 					if (_isManaged)
 						return CliType.ManagedPointer;
-					else if (_isArray)
+					else
+					{
+						Utilities.Assert(IndirectionLevel == 1, "IndirectionLevel == 1 for object type.");
 						return CliType.ObjectType;
-					else if (IndirectionLevel > 0)
-						return CliType.NativeInt;
+					}
 				}
 
 				return _cliType;
