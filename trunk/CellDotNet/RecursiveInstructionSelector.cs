@@ -856,14 +856,32 @@ namespace CellDotNet
 						Type vt = field.DeclaringType;
 
 						int qwoffset;
-						int wordoffset;
-						GetStructFieldData(lefttype, vt, field, out qwoffset, out wordoffset);
+						int byteoffset;
+						int fieldsize;
+						GetStructFieldData(lefttype, vt, field, out qwoffset, out byteoffset, out fieldsize);
 
 						if (lefttype.CliType == CliType.ManagedPointer && lefttype.Dereference().CliType == CliType.ValueType)
-							return _writer.WriteLoadWord(vrleft, qwoffset, wordoffset);
+						{
+							if (byteoffset == 0)
+								return _writer.WriteLqd(vrleft, qwoffset);
+							else if (byteoffset + fieldsize <= 16)
+							{
+								VirtualRegister r = _writer.WriteLqd(vrleft, qwoffset);
+								return _writer.WriteShlqbyi(r, byteoffset);
+							}
+							else
+							{
+								VirtualRegister rqw1 = _writer.WriteLqd(vrleft, qwoffset);
+								VirtualRegister rqw2 = _writer.WriteLqd(vrleft, qwoffset + 1);
+								VirtualRegister r1 = _writer.WriteShlqbyi(rqw1, byteoffset);
+								VirtualRegister r2 = _writer.WriteRotqmbyi(rqw2, -(16 - byteoffset));
+
+								return _writer.WriteOr(r1, r2);
+							}
+						}
 						else
 						{
-							Utilities.Assert(wordoffset == 0, "wordoffset == 0");
+							Utilities.Assert(byteoffset == 0, "wordoffset == 0");
 							return _writer.WriteLqd(vrleft, qwoffset);
 						}
 					}
@@ -873,17 +891,77 @@ namespace CellDotNet
 						Type vt = field.DeclaringType;
 
 						int qwoffset;
-						int wordoffset;
-						GetStructFieldData(lefttype, vt, field, out qwoffset, out wordoffset);
+//						int wordoffset;
+						int byteoffset;
+						int fieldsize;
+						GetStructFieldData(lefttype, vt, field, out qwoffset, out byteoffset, out fieldsize);
 
 						if (lefttype.CliType == CliType.ManagedPointer && lefttype.Dereference().CliType == CliType.ValueType)
-							_writer.WriteStoreWord(vrleft, qwoffset, wordoffset, vrright);
+						{
+							// if the field do NOT cross a quard word boundary.
+							if (byteoffset + fieldsize <= 16)
+							{
+								switch (fieldsize)
+								{
+									case 4:
+										_writer.WriteStoreWord(vrleft, qwoffset, byteoffset / 4, vrright);
+										break;
+									case 16:
+										_writer.WriteStqd(vrright, vrleft, qwoffset);
+										break;
+									default:
+										throw new NotSupportedException();
+								}
+								return null;
+							}
+							else
+							{
+								Utilities.Assert(fieldsize == 16, "fieldsize == 16");
+
+								VirtualRegister qw1 = _writer.WriteLqd(vrleft, qwoffset);
+								VirtualRegister qw2 = _writer.WriteLqd(vrleft, qwoffset + 1);
+
+								if (byteoffset == 8)
+								{
+									VirtualRegister rcdd1 = _writer.WriteCdd(vrleft, byteoffset);
+									VirtualRegister rcdd2 = _writer.WriteCdd(vrleft, byteoffset+8);
+
+									_writer.WriteShufb(qw1, vrright, qw1, rcdd1);
+
+									VirtualRegister r = _writer.WriteShli(vrright, 2);
+
+									_writer.WriteShufb(qw2, r, qw2, rcdd2);
+								}
+								else if (byteoffset == 12 || byteoffset == 4)
+								{
+									VirtualRegister rcwd1 = _writer.WriteCwd(vrleft, byteoffset);
+									VirtualRegister rcdd1 = _writer.WriteCdd(vrleft, byteoffset + 4);
+									VirtualRegister rcwd2 = _writer.WriteCwd(vrleft, byteoffset + 12);
+
+									_writer.WriteShufb(qw1, vrright, qw1, rcwd1);
+
+									VirtualRegister r = _writer.WriteShlqbyi(vrright, 4);
+
+									if (byteoffset == 4)
+										_writer.WriteShufb(qw1, r, qw1, rcdd1);
+									else
+										_writer.WriteShufb(qw2, r, qw2, rcdd1);
+
+									_writer.WriteShlqbyi(r, r, 8);
+
+									_writer.WriteShufb(qw2, r, qw2, rcwd2);
+
+								}
+								_writer.WriteStqd(qw1, vrleft, qwoffset);
+								_writer.WriteStqd(qw2, vrleft, qwoffset + 1);
+							}
+						}
 						else
 						{
-							Utilities.Assert(wordoffset == 0, "wordoffset == 0");
-							_writer.WriteStqd(vrright, vrleft, qwoffset);
+							Utilities.Assert(byteoffset == 0, "byteoffset == 0");
+							if (byteoffset == 0)
+								_writer.WriteStqd(vrright, vrleft, qwoffset);
 						}
-
 						return null;
 					}
 				case IRCode.Ldsfld:
@@ -1483,11 +1561,11 @@ namespace CellDotNet
 			}
 		}
 
-		private void GetStructFieldData(StackTypeDescription refType, Type complexType, FieldInfo field, out int qwoffset, out int wordoffset)
+		private void GetStructFieldData(StackTypeDescription refType, Type complexType, FieldInfo field, out int qwoffset, out int byteoffset, out int valuesize)
 		{
 			Utilities.AssertArgument(refType.CliType == CliType.ValueType || refType.IndirectionLevel == 1, "refType.IndirectionLevel != 1");
 
-			int byteoffset;
+//			int byteoffset;
 			switch (refType.Dereference().CliType)
 			{
 				case CliType.ValueType:
@@ -1506,16 +1584,27 @@ namespace CellDotNet
 			    fieldtype == StackTypeDescription.ObjectType)
 				throw new NotSupportedException("Only simple field types are supported.");
 
-			if (fieldtype.IndirectionLevel != 1 && fieldtype.NumericSize != CliNumericSize.FourBytes)
-				throw new NotSupportedException("Only four-byte fields are supported.");
-			int valuesize = (int) fieldtype.NumericSize;
+			if (fieldtype != StackTypeDescription.Int32Vector && fieldtype != StackTypeDescription.Float32Vector)
+				if (fieldtype.IndirectionLevel != 1 && fieldtype.NumericSize != CliNumericSize.FourBytes)
+					throw new NotSupportedException("Only four-byte fields are supported.");
+
+			valuesize = (int) fieldtype.NumericSize;
 
 			// We don't do unaligned.
-			if (byteoffset % valuesize != 0)
-				throw new NotSupportedException();
-
+			if (fieldtype == StackTypeDescription.Int32Vector || fieldtype == StackTypeDescription.Float32Vector)
+			{
+				// Asumes minnimum 8 byte alignment.
+				if (byteoffset % 4 != 0)
+					throw new NotSupportedException();
+			}
+			else
+			{
+				if (byteoffset%valuesize != 0)
+					throw new NotSupportedException();
+			}
 			qwoffset = byteoffset / 16;
-			wordoffset = (byteoffset % 16) / 4;
+			byteoffset = (byteoffset % 16);
+//			wordoffset = (byteoffset % 16) / 4;
 		}
 
 		class IntrinsicsWriter

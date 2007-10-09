@@ -95,7 +95,9 @@ namespace CellDotNet
 
 //			new ObjectModelTest().TestArray_Double_1();
 
-			new ILOpCodeExecutionTest().Test_Ldc_R8();
+//			new ILOpCodeExecutionTest().Test_Ldc_R8();
+
+			new ObjectModelTest().TestStruct_BigField_4();
 
 			Console.WriteLine("Running RunKlaus done.");
 		}
