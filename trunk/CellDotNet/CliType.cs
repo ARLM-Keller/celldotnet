@@ -43,11 +43,11 @@ namespace CellDotNet
 		public static readonly StackTypeDescription Float32Vector =
 			new StackTypeDescription(CliType.Float32Vector, CliNumericSize.SixteenBytes, true);
 
-		/// <summary>
-		/// TODO: Remove this; use CliType instead.
-		/// </summary>
-		public static readonly StackTypeDescription ObjectType =
-			new StackTypeDescription(CliType.ObjectType, CliNumericSize.None, false);
+//		/// <summary>
+//		/// TODO: Remove this; use CliType instead.
+//		/// </summary>
+//		public static readonly StackTypeDescription ObjectType =
+//			new StackTypeDescription(CliType.ObjectType, CliNumericSize.None, false);
 
 		public static readonly StackTypeDescription NativeInt =
 			new StackTypeDescription(CliType.NativeInt, CliNumericSize.None, true);
@@ -229,12 +229,6 @@ namespace CellDotNet
 			get { return _indirectionLevel; }
 		}
 
-//		public bool IsByRef
-//		{
-//			// TODO array?
-//			get { return IndirectionLevel > 0; }
-//		}
-
 		public StackTypeDescription GetManagedPointer()
 		{
 			if (_isManaged)
@@ -244,18 +238,6 @@ namespace CellDotNet
 			rv._isManaged = true;
 			rv._indirectionLevel++;
 			return rv;
-		}
-
-		/// <summary>
-		/// Only relevant for pointer type: Says whether the pointer is managed or unmanaged.
-		/// </summary>
-		public bool IsManagedPointer
-		{
-			get
-			{
-				Utilities.Assert(_indirectionLevel > 0, "_indirectionLevel > 0");
-				return _isManaged;
-			}
 		}
 
 		/// <summary>
@@ -294,16 +276,6 @@ namespace CellDotNet
 			std._indirectionLevel--;
 
 			return std;
-		}
-
-		public StackTypeDescription GetPointer()
-		{
-			if (_isManaged || _isArray)
-				throw new InvalidOperationException();
-
-			StackTypeDescription rv = this;
-			rv._indirectionLevel++;
-			return rv;
 		}
 
 		/// <summary>
@@ -366,6 +338,8 @@ namespace CellDotNet
 
 			StackTypeDescription e = this;
 			e._indirectionLevel--;
+			Utilities.Assert(_indirectionLevel >= 0 && (_indirectionLevel >= 1 || _cliType != CliType.ObjectType),
+			                 "Low indirection level.");
 			e._isManaged = false;
 			return e;
 		}
@@ -375,7 +349,7 @@ namespace CellDotNet
 			get { return _cliType; }
 		}
 
-		public StackTypeDescription DereferenceFully()
+		private StackTypeDescription DereferenceFully()
 		{
 			if (IndirectionLevel == 0 || _isArray)
 				throw new InvalidOperationException("ReflectionType is not byref.");
@@ -386,57 +360,30 @@ namespace CellDotNet
 			return e;
 		}
 
-		/// <summary>
-		/// Returns the <see cref="System.Type"/> representation of the type, also if it is a simle type.
-		/// Throws an <see cref="InvalidOperationException"/> if this type is a pointer type - that is, if <see cref="IndirectionLevel"/> > 0.
-		/// </summary>
-		/// <returns></returns>
-		public Type GetNonPointerType()
-		{
-			if (IndirectionLevel > 0)
-				throw new InvalidOperationException("Only valid for non-pointer types.");
-
-			switch (CliType)
-			{
-				case CliType.None:
-					return null;
-				case CliType.Int32:
-					return typeof (int);
-				case CliType.Int64:
-					return typeof (long);
-				case CliType.NativeInt:
-					return typeof (IntPtr);
-				case CliType.Float32:
-					return typeof (sbyte);
-				case CliType.Float64:
-					return typeof (float);
-				case CliType.ValueType:
-				case CliType.ObjectType:
-					return ComplexType.ReflectionType;
-				case CliType.ManagedPointer:
-				default:
-					throw new InvalidOperationException();
-			}
-		}
-
 		public override string ToString()
 		{
 			string s;
+			int lvl = IndirectionLevel;
+
 			if (IsArray)
 				s = GetArrayElementType().CliType.ToString();
-			else if (IndirectionLevel > 0)
+			else if (lvl > 0)
 				s = DereferenceFully().CliType.ToString();
 			else
 				s = CliType.ToString();
 
-			if (IndirectionLevel > 0)
+			if (lvl > 0)
 			{
 				// I guess this is not entirely correct if you got an unmanaged pointer to
 				// a managed pointer...
 				if (_isManaged)
-					s += new string('&', IndirectionLevel);
+				{
+					if (CliType == CliType.ObjectType)
+						lvl--;
+					s += new string('&', lvl);
+				}
 				else
-					s += new string('*', IndirectionLevel - 1);
+					s += new string('*', lvl - 1);
 			}
 
 			if (IsArray)

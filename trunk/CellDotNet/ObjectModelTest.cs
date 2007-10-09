@@ -888,7 +888,6 @@ namespace CellDotNet
 
 					return c.i1 + c.i2 + c.i3 + c.i4;
 				};
-
 			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(del));
 		}
 
