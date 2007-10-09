@@ -16,7 +16,7 @@ namespace SciMarkCell
 
 			SpuVectorBenchMark();
 
-			System.Console.WriteLine("");
+			Console.WriteLine("");
 		}
 
 
