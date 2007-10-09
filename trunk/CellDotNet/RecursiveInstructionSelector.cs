@@ -1322,7 +1322,6 @@ namespace CellDotNet
 			// Write method to be called.
 			MethodInfo method = inst.OperandAsPpeMethod.Method;
 			IntPtr mptr = method.MethodHandle.Value;
-			Console.WriteLine("Ppe call inst ptr: 0x{0:x}", (uint)mptr);
 			VirtualRegister handlereg = _writer.WriteLoadIntPtr(mptr);
 
 			ObjectWithAddress argaddress = _specialSpeObjects.PpeCallDataArea;

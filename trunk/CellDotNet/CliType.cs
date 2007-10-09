@@ -306,6 +306,36 @@ namespace CellDotNet
 			return rv;
 		}
 
+		/// <summary>
+		/// Return the <see cref="Type"/> representation of the <paramref name="clitype"/> argument.
+		/// </summary>
+		/// <exception cref="ArgumentException">
+		/// If the cli type is not a concrete type, ie. ValueType, ObjectType ManagedPointer.</exception>
+		/// <param name="clitype"></param>
+		/// <returns></returns>
+		public static Type TypeFromCliType(CliType clitype)
+		{
+			switch (clitype)
+			{
+				case CliType.Int32:
+					return typeof (int);
+				case CliType.Int64:
+					return typeof(long);
+				case CliType.NativeInt:
+					return typeof(IntPtr);
+				case CliType.Float32:
+					return typeof(float);
+				case CliType.Float64:
+					return typeof(double);
+				case CliType.Int32Vector:
+					return typeof(int);
+				case CliType.Float32Vector:
+					return typeof(Float32Vector);
+				default:
+					throw new ArgumentException();
+			}
+		}
+
 		public int GetSizeWithPadding()
 		{
 			switch (CliType)
