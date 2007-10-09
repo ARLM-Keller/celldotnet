@@ -565,18 +565,9 @@ namespace CellDotNet
 			Console.WriteLine();
 		}
 
-		static void m(int i)
-		{
-			int[,] arr = new int[3,9];
-//			arr[10, 2] = 234;
-			arr[1, 2] = 234;
-		}
-
-
 		private unsafe static void RunRasmus()
 		{
-			MethodInfo m = new Action<int>(Class1.m).Method;
-
+			new ILOpCodeExecutionTest().Test_Beq();
 //			new ObjectModelTest().TestPpeClass_InstanceMethodCall_ReturnBigStruct();
 		}
 	}
