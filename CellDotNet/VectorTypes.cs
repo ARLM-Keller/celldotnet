@@ -78,13 +78,13 @@ namespace CellDotNet
 			return new Float32Vector(r1, r2, r3, r4);
 		}
 
-		[IntrinsicMethod(SpuIntrinsicMethod.FloatVectorType_Equals)]
+		[IntrinsicMethod(SpuIntrinsicMethod.Float_Equals)]
 		public static bool operator ==(Float32Vector v1, Float32Vector v2)
 		{
 			return v1.e1 == v2.e1 && v1.e2 == v2.e2 && v1.e3 == v2.e3 && v1.e4 == v2.e4;
 		}
 
-		[IntrinsicMethod(SpuIntrinsicMethod.FloatVectorType_NotEquals)]
+		[IntrinsicMethod(SpuIntrinsicMethod.Float_NotEquals)]
 		public static bool operator !=(Float32Vector v1, Float32Vector v2)
 		{
 			return !(v1 == v2);
@@ -222,13 +222,13 @@ namespace CellDotNet
 			return new Int32Vector(r1, r2, r3, r4);
 		}
 
-		[IntrinsicMethod(SpuIntrinsicMethod.IntVectorType_Equals)]
+		[IntrinsicMethod(SpuIntrinsicMethod.Int_Equals)]
 		public static bool operator ==(Int32Vector v1, Int32Vector v2)
 		{
 			return v1.e1 == v2.e1 && v1.e2 == v2.e2 && v1.e3 == v2.e3 && v1.e4 == v2.e4;
 		}
 
-		[IntrinsicMethod(SpuIntrinsicMethod.IntVectorType_NotEquals)]
+		[IntrinsicMethod(SpuIntrinsicMethod.Int_NotEquals)]
 		public static bool operator !=(Int32Vector v1, Int32Vector v2)
 		{
 			return !(v1 == v2);

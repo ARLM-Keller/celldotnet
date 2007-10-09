@@ -298,32 +298,12 @@ namespace CellDotNet
 			Utilities.PretendVariableIsUsed(arrayb);
 		}
 
-//		private static void NotOutOfMemory()
-//		{
-//			int[] sizes = new int[2];
-//
-//			int[] arraya = new int[32 * 1024];
-//			int[] arrayb = new int[16 * 1024];
-//
-//			sizes[0] = arraya[0] + arrayb[0];
-//		}
-//
 		[Test]
 		public void TestNotOutOfMemory()
 		{
 			BasicTestDelegate del = NotOutOfMemory;
 
-//			MethodCompiler mc = new MethodCompiler(del.Method);
-//			mc.PerformProcessing(MethodCompileState.S4InstructionSelectionDone);
-//			Disassembler.DisassembleUnconditionalToConsole(mc);
-//			return;
-
 			CompileContext cc = new CompileContext(del.Method);
-
-			
-			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
-			Disassembler.DisassembleUnconditionalToConsole(cc);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			if (!SpeContext.HasSpeHardware)

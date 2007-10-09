@@ -830,7 +830,7 @@ namespace CellDotNet
 										_writer.WriteStqd(val, HardwareRegister.SP, stackpos + i);
 									}
 
-									return _writer.WriteAi(HardwareRegister.SP, stackpos);
+									return _writer.WriteAi(HardwareRegister.SP, stackpos * 16);
 								}
 								else 
 									break;
@@ -1762,14 +1762,14 @@ namespace CellDotNet
 							VirtualRegister cwdreg = writer.WriteCwd(index, 0);
 							return writer.WriteShufb(childregs[0], childregs[1], cwdreg);
 						}
-					case SpuIntrinsicMethod.IntVectorType_Equals:
+					case SpuIntrinsicMethod.Int_Equals:
 						{
 							VirtualRegister r1 = writer.WriteCeq(childregs[0], childregs[1]);
 							VirtualRegister r2 = writer.WriteGb(r1);
 							VirtualRegister r3 = writer.WriteCeqi(r2, 0x0f);
 							return writer.WriteAndi(r3, 1);
 						}
-					case SpuIntrinsicMethod.IntVectorType_NotEquals:
+					case SpuIntrinsicMethod.Int_NotEquals:
 						{
 							VirtualRegister r1 = writer.WriteCeq(childregs[0], childregs[1]);
 							VirtualRegister r2 = writer.WriteGb(r1);
@@ -1777,14 +1777,14 @@ namespace CellDotNet
 							VirtualRegister r4 = writer.WriteAndi(r3, 1);
 							return writer.WriteXori(r4, 0x01);
 						}
-					case SpuIntrinsicMethod.FloatVectorType_Equals:
+					case SpuIntrinsicMethod.Float_Equals:
 						{
 							VirtualRegister r1 = writer.WriteFceq(childregs[0], childregs[1]);
 							VirtualRegister r2 = writer.WriteGb(r1);
 							VirtualRegister r3 = writer.WriteCeqi(r2, 0x0f);
 							return writer.WriteAndi(r3, 1);
 						}
-					case SpuIntrinsicMethod.FloatVectorType_NotEquals:
+					case SpuIntrinsicMethod.Float_NotEquals:
 						{
 							VirtualRegister r1 = writer.WriteFceq(childregs[0], childregs[1]);
 							VirtualRegister r2 = writer.WriteGb(r1);
