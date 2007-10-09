@@ -897,6 +897,7 @@ namespace CellDotNet
 		{
 			public ClassWithReferenceTypeFields ReferenceTypeField1;
 			public ClassWithReferenceTypeFields ReferenceTypeField2;
+			public int IntField;
 		}
 
 		[Test]
@@ -905,17 +906,22 @@ namespace CellDotNet
 			Func<int> del = 
 				delegate
 					{
-						ClassWithReferenceTypeFields c1 = new ClassWithReferenceTypeFields();
-						c1.ReferenceTypeField1 = new ClassWithReferenceTypeFields();
-						c1.ReferenceTypeField2 = new ClassWithReferenceTypeFields();
+						ClassWithReferenceTypeFields c = new ClassWithReferenceTypeFields();
+						c.ReferenceTypeField1 = new ClassWithReferenceTypeFields();
+						c.ReferenceTypeField1.IntField = 500;
+						c.ReferenceTypeField2 = new ClassWithReferenceTypeFields();
+						c.ReferenceTypeField2.IntField = 700;
 
-						int addressDiff = SpuRuntime.UnsafeGetAddress(c1.ReferenceTypeField2) - 
-							SpuRuntime.UnsafeGetAddress(c1.ReferenceTypeField2);
+						int addressDiff = SpuRuntime.UnsafeGetAddress(c.ReferenceTypeField2) - 
+							SpuRuntime.UnsafeGetAddress(c.ReferenceTypeField1);
 
-						if (addressDiff != 16)
-							return 4;
+						if (addressDiff != 3 *16)
+							return addressDiff;
 
-						return 0;
+						if (c.ReferenceTypeField2.IntField - c.ReferenceTypeField1.IntField != 200)
+							return 200;
+
+						return 1000;
 					};
 
 			CompileContext cc = new CompileContext(del.Method);
@@ -924,7 +930,7 @@ namespace CellDotNet
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			AreEqual(0, (int) SpeContext.UnitTestRunProgram(cc));
+			AreEqual(1000, (int) SpeContext.UnitTestRunProgram(cc));
 		}
 
 		class PpeClass

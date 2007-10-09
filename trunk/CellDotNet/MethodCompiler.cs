@@ -874,25 +874,9 @@ namespace CellDotNet
 		{
 			AssertState(MethodCompileState.S5RegisterAllocationDone - 1);
 
-
-//			RegAllocGraphColloring regalloc = new RegAllocGraphColloring();
-//			regalloc.Alloc(SpuBasicBlocks, GetNewSpillQuadOffset, registerWeight);
-
-//			Console.WriteLine("Disassemble before register allocation:");
-//			Disassembler.DisassembleUnconditionalToConsole(this);
-
 			new LinearRegisterAllocator().Allocate(SpuBasicBlocks, GetNewSpillQuadOffset, _innerEpilog);
 
-//			Console.WriteLine("Disassemble after register allocation:");
-//			Disassembler.DisassembleUnconditionalToConsole(this);
-
-//			SimpleRegAlloc.Alloc(SpuBasicBlocks, GetNewSpillQuadOffset);
-
-//			List<SpuInstruction> asm = _instructions.GetAsList();
-//			regalloc.alloc(asm, 16);
-
 			State = MethodCompileState.S5RegisterAllocationDone;
-			
 		}
 
 		private void PerformRemoveRedundantMoves()

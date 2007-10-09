@@ -25,9 +25,9 @@ namespace CellDotNet
 			w.WriteAi(arg0_4, 7);
 
 
-			StringWriter sw = new StringWriter();
-			Disassembler.DisassembleInstructions(w.GetAsList(), 0, sw);
-			Console.WriteLine(sw.GetStringBuilder());
+//			StringWriter sw = new StringWriter();
+//			Disassembler.DisassembleInstructions(w.GetAsList(), 0, sw);
+//			Console.WriteLine(sw.GetStringBuilder());
 
 			List<LiveInterval> intlist = LinearRegisterAllocator.CreateSortedLiveIntervals(w.BasicBlocks);
 			Dictionary <VirtualRegister, LiveInterval> intdict = new Dictionary<VirtualRegister, LiveInterval>();
