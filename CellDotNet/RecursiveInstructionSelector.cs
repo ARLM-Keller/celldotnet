@@ -521,9 +521,10 @@ namespace CellDotNet
 				case IRCode.Ldind_R8:
 					break;
 				case IRCode.Ldind_Ref:
-					break;
+					return _writer.WriteLqd(vrleft, 0);
 				case IRCode.Stind_Ref:
-					break;
+					_writer.WriteStqd(vrleft, vrright, 0);
+					return null;
 				case IRCode.Stind_I1:
 					break;
 				case IRCode.Stind_I2:
@@ -1581,7 +1582,7 @@ namespace CellDotNet
 			StackTypeDescription fieldtype = new TypeDeriver().GetStackTypeDescription(field.FieldType);
 			if (fieldtype == StackTypeDescription.None || 
 			    fieldtype.CliType == CliType.ValueType || 
-			    fieldtype == StackTypeDescription.ObjectType)
+			    fieldtype.CliType == CliType.ObjectType)
 				throw new NotSupportedException("Only simple field types are supported.");
 
 			if (fieldtype != StackTypeDescription.Int32Vector && fieldtype != StackTypeDescription.Float32Vector)

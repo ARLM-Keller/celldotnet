@@ -147,7 +147,7 @@ namespace CellDotNet
 					t = StackTypeDescription.None;
 					break;
 				case IRCode.Ldnull: // ldnull
-					t = StackTypeDescription.ObjectType;
+					t = StackTypeDescription.NativeInt;
 					break;
 				case IRCode.Ldc_I4: // ldc.i4
 					t = StackTypeDescription.Int32;
@@ -197,7 +197,7 @@ namespace CellDotNet
 					t = StackTypeDescription.Float64;
 					break;
 				case IRCode.Ldind_Ref: // ldind.ref
-					t = StackTypeDescription.ObjectType;
+					t = inst.Left.StackType.Dereference();
 					break;
 				case IRCode.Stind_Ref: // stind.ref
 				case IRCode.Stind_I1: // stind.i1

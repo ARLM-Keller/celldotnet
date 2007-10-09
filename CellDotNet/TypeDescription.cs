@@ -78,14 +78,17 @@ namespace CellDotNet
 			if (genericParameters == null || genericParameters.Length == 0)
 				throw new ArgumentException("genericParameters");
 
-			// Create the type with the runtime to verify that the combination is okay.
-			List<Type> genTypes = new List<Type>();
-			foreach (StackTypeDescription t in genericParameters)
-				genTypes.Add(t.GetNonPointerType());
-			_reflectionType = genericType.Type.MakeGenericType(genTypes.ToArray());
-
 			_genericType = genericType;
 			_genericParameters = genericParameters;
+
+			throw new NotImplementedException();
+
+//			// Create the type with the runtime to verify that the combination is okay.
+//			List<Type> genTypes = new List<Type>();
+//			foreach (StackTypeDescription t in genericParameters)
+//				genTypes.Add(t.GetNonPointerType());
+//			_reflectionType = genericType.Type.MakeGenericType(genTypes.ToArray());
+//
 		}
 
 		/// <summary>
