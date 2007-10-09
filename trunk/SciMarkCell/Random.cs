@@ -1,27 +1,32 @@
-using System.Runtime.CompilerServices;
+using System;
 
 namespace SciMarkCell
 {
 	public struct Random
 	{
-		internal int seed;
+		internal int _seed; // readonly
 		
-		private int[] m;
+		private int[] m; // readonly
 		private int i;
 		private int j;
 		
 		private const int mdig = 32;
 		private const int one = 1;
-		private int m1;
-		private int m2;
+		private int m1; // ReadOnly
+		private int m2; // ReadOnly, only used in initialize
 		
-		private float dm1;
+		private float dm1; //readonly
 		
-		private bool haveRange;
-		private float left;
-		private float right;
-		private float width;
-		
+		private bool haveRange; // readonly
+		private float _left; // readonly
+		private float _right;
+		private float _width; // readonly
+
+		public Random(int seed)
+		{
+			throw new NotSupportedException();
+		}
+
 		public void initializeRandomCell(int seed)
 		{
 			initializeState();
@@ -32,12 +37,17 @@ namespace SciMarkCell
 		{
 			initializeState();
 			initializeSeed(seed);
-			this.left = left;
-			this.right = right;
-			width = right - left;
+			_left = left;
+			_right = right;
+			_width = right - left;
 			haveRange = true;
 		}
 		
+//		public double nextDouble()
+//		{
+//			throw new NotSupportedException();
+//		}
+
 		public float nextFloat()
 		{
 			int k;
@@ -58,9 +68,9 @@ namespace SciMarkCell
 				j--;
 		
 			if (haveRange)
-				return left + dm1 * (float) k * width;
+				return _left + dm1 * k * _width;
 			else
-				return dm1 * (float) k;
+				return dm1 * k;
 		}
 		
 		public void nextFloat(float[] x)
@@ -88,7 +98,7 @@ namespace SciMarkCell
 					else
 						j--;
 				
-					x[count] = left + dm1 * (float) k * width;
+					x[count] = _left + dm1 * k * _width;
 				}
 			
 			}
@@ -114,7 +124,7 @@ namespace SciMarkCell
 						j--;
 				
 				
-					x[count] = dm1 * (float) k;
+					x[count] = dm1 * k;
 				}
 			
 				for (int count = remainder; count < N; count += 4)
@@ -131,7 +141,7 @@ namespace SciMarkCell
 						j = 16;
 					else
 						j--;
-					x[count] = dm1 * (float) k;
+					x[count] = dm1 * k;
 				
 				
 					k = m[i] - m[j];
@@ -146,7 +156,7 @@ namespace SciMarkCell
 						j = 16;
 					else
 						j--;
-					x[count + 1] = dm1 * (float) k;
+					x[count + 1] = dm1 * k;
 				
 				
 					k = m[i] - m[j];
@@ -161,7 +171,7 @@ namespace SciMarkCell
 						j = 16;
 					else
 						j--;
-					x[count + 2] = dm1 * (float) k;
+					x[count + 2] = dm1 * k;
 				
 				
 					k = m[i] - m[j];
@@ -176,7 +186,7 @@ namespace SciMarkCell
 						j = 16;
 					else
 						j--;
-					x[count + 3] = dm1 * (float) k;
+					x[count + 3] = dm1 * k;
 				}
 			}
 		}
@@ -190,15 +200,15 @@ namespace SciMarkCell
 			// First the initialization of the member variables;
 			m1 = (one << mdig - 2) + ((one << mdig - 2) - one);
 			m2 = one << mdig / 2;
-			dm1 = 1.0f / (float) m1;
+			dm1 = 1.0f / m1;
 		
 			int jseed, k0, k1, j0, j1, iloop;
 			
-			this.seed = seed;
+			_seed = seed;
 			
 			m = new int[17];
 			
-			jseed = System.Math.Min(System.Math.Abs(seed), m1);
+			jseed = Math.Min(Math.Abs(seed), m1);
 			if (jseed % 2 == 0)
 				--jseed;
 			k0 = 9069 % m2;
@@ -219,15 +229,15 @@ namespace SciMarkCell
 
 		private void initializeState()
 		{
-			seed = 0;
+			_seed = 0;
 
 			i = 4;
 			j = 16;
 
 			haveRange = false;
-			left = 0.0f;
-			right = 1.0f;
-			width = 1.0f;
+			_left = 0.0f;
+			_right = 1.0f;
+			_width = 1.0f;
 		}
 	}
 }

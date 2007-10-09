@@ -22,7 +22,6 @@ namespace SciMarkCell
 			object result = SpeContext.UnitTestRunProgram(cc, n);
 
 			Console.WriteLine("MonetCarlo result n={0} pi={1}", n, (float)result);
-
 		}
 	}
 }

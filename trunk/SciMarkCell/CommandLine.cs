@@ -85,7 +85,7 @@ namespace SciMarkCell
             res[5] = kernel.measureLU(LU_size, min_time, R);			
 
 			res[0] = (res[1] + res[2] + res[3] + res[4] + res[5]) / 5;
-			
+				
 			
 			// print out results
 			Console.WriteLine();
