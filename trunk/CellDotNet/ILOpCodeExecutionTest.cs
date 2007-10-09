@@ -47,15 +47,24 @@ namespace CellDotNet
 			TestExecution(w, 7);
 		}
 
-		// NOTE: this function requires short form branch instruction as argument.
+		/// <summary>
+		/// NOTE: this function requires short form branch instruction as argument.
+		/// </summary>
+		/// <param name="opcode"></param>
+		/// <param name="i1"></param>
+		/// <param name="i2"></param>
+		/// <param name="branch"></param>
 		public void ConditionalBranchTest(OpCode opcode, int i1, int i2, bool branch)
 		{
 			ILWriter w = new ILWriter();
 
+			// Load constants.
 			w.WriteOpcode(OpCodes.Ldc_I4);
 			w.WriteInt32(i1);
 			w.WriteOpcode(OpCodes.Ldc_I4);
 			w.WriteInt32(i2);
+
+			// Conditionally branch 3 bytes.
 			w.WriteOpcode(opcode);
 			w.WriteByte(3);
 
@@ -68,7 +77,7 @@ namespace CellDotNet
 
 			w.WriteOpcode(OpCodes.Ret);
 
-			if(branch)
+			if (branch)
 				TestExecution(w, 2);
 			else
 				TestExecution(w, 1);

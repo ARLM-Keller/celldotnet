@@ -27,13 +27,14 @@ namespace CellDotNet
 		private static Dictionary<MethodBase, MethodBase> InitializeMap()
 		{
 			Dictionary<MethodBase, MethodBase> map = new Dictionary<MethodBase, MethodBase>();
-			map.Add(typeof(System.Math).GetMethod("Abs", new Type[] { typeof(Single) }), typeof(CellDotNet.SpuMath).GetMethod("Abs", new Type[] { typeof(Single) }));
-			map.Add(typeof(System.Math).GetMethod("Min", new Type[] { typeof(Single), typeof(Single) }), typeof(CellDotNet.SpuMath).GetMethod("Min", new Type[] { typeof(Single), typeof(Single) }));
-			map.Add(typeof(System.Math).GetMethod("Max", new Type[] { typeof(Single), typeof(Single) }), typeof(CellDotNet.SpuMath).GetMethod("Max", new Type[] { typeof(Single), typeof(Single) }));
 
-			map.Add(typeof(System.Math).GetMethod("Abs", new Type[] { typeof(int)}), typeof(CellDotNet.SpuMath).GetMethod("Abs", new Type[] { typeof(int)}));
-			map.Add(typeof(System.Math).GetMethod("Min", new Type[] { typeof(int), typeof(int) }), typeof(CellDotNet.SpuMath).GetMethod("Min", new Type[] { typeof(int), typeof(int) }));
-			map.Add(typeof(System.Math).GetMethod("Max", new Type[] { typeof(int), typeof(int) }), typeof(CellDotNet.SpuMath).GetMethod("Max", new Type[] { typeof(int), typeof(int) }));
+			map.Add(new Converter<float, float>(Math.Abs).Method, new Converter<float, float>(SpuMath.Abs).Method);
+			map.Add(new Func<float, float, float>(Math.Min).Method, new Func<float, float, float>(SpuMath.Min).Method);
+			map.Add(new Func<float, float, float>(Math.Max).Method, new Func<float, float, float>(SpuMath.Max).Method);
+
+			map.Add(new Converter<int, int>(Math.Abs).Method, new Converter<int, int>(SpuMath.Abs).Method);
+			map.Add(new Func<int, int, int>(Math.Min).Method, new Func<int, int, int>(SpuMath.Min).Method);
+			map.Add(new Func<int, int, int>(Math.Max).Method, new Func<int, int, int>(SpuMath.Max).Method);
 
 			return map;
 		}

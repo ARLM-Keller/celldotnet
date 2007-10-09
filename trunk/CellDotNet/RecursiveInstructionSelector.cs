@@ -1239,7 +1239,7 @@ namespace CellDotNet
 							WriteMoveQuadWords(HardwareRegister.SP, var.StackLocation, HardwareRegister.SP, newstackloc, count);
 							return stackptr;
 						}
-						else if (var.Escapes.GetValueOrDefault(true))
+						else if (var.Escapes.GetValueOrDefault(false))
 						{
 							_writer.WriteLqd(var.VirtualRegister, HardwareRegister.SP, var.StackLocation);
 							return var.VirtualRegister;
