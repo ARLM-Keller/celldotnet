@@ -294,9 +294,9 @@ namespace CellDotNet
 			object result2 = SpeContext.UnitTestRunProgram(cc, 123.45f);
 			object result3 = SpeContext.UnitTestRunProgram(cc, 435643.23f);
 
-			Utilities.AssertWithinLimets((float)result1, 6.28f / 3.14f, 0.000001f, "6.28f / 3.14f failed.");
-			Utilities.AssertWithinLimets((float)result2, 123.45f / 3.14f, 0.000001f, "123.45f / 3.14f failed.");
-			Utilities.AssertWithinLimets((float)result3, 435643.23f / 3.14f, 0.000001f, "435643.23f / 3.14f failed.");
+			Utilities.AssertWithinLimits((float)result1, 6.28f / 3.14f, 0.000001f, "6.28f / 3.14f failed.");
+			Utilities.AssertWithinLimits((float)result2, 123.45f / 3.14f, 0.000001f, "123.45f / 3.14f failed.");
+			Utilities.AssertWithinLimits((float)result3, 435643.23f / 3.14f, 0.000001f, "435643.23f / 3.14f failed.");
 		}
 
 		[Test]

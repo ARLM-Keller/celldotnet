@@ -602,27 +602,20 @@ namespace CellDotNet
 		private static void Test_Div_Float_Helper(CompileContext cc, float dividend, float divisor, float error)
 		{
 			float result;
-			float corect;
+			float correct;
 			int resultint;
-			int corectint;
+			int correctint;
 
-			corect = dividend / divisor;
+			correct = dividend / divisor;
 			result = (float)SpeContext.UnitTestRunProgram(cc, dividend, divisor);
 			resultint = Utilities.ReinterpretAsInt(result);
-			corectint = Utilities.ReinterpretAsInt(corect);
-			Console.WriteLine("{0} / {1} Mono: {2} SPU: {3}4", dividend, divisor, corect, result);
-//			Console.WriteLine("{0}", Convert.ToString(resultint, 2));
-//			Console.WriteLine("{0}", Convert.ToString(corectint, 2));
+			correctint = Utilities.ReinterpretAsInt(correct);
+//			Console.WriteLine("{0} / {1} Mono: {2} SPU: {3}4", dividend, divisor, correct, result);
 
-			Utilities.AssertWithinLimets(result, corect, error, "");
-
-//			if(Math.Abs(corect) < error)
-//				IsTrue(Math.Abs(result) < error);
-//			else
-//				IsTrue(Math.Abs(result) < Math.Abs(corect) * (1 + error) && Math.Abs(result) > Math.Abs(corect) * (1 - error) && Math.Sign(result) == Math.Sign(corect));
+			Utilities.AssertWithinLimits(result, correct, error, "");
 
 			Utilities.PretendVariableIsUsed(resultint);
-			Utilities.PretendVariableIsUsed(corectint);
+			Utilities.PretendVariableIsUsed(correctint);
 		}
 
 		[Test]

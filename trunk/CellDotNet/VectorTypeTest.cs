@@ -157,13 +157,8 @@ namespace CellDotNet
 				object vSPU1 = sc.RunProgram(cc, v1, v2);
 				object vSPU2 = sc.RunProgram(cc, v2, v3);
 
-				Console.WriteLine(vSPU1);
-				Console.WriteLine(vPPU1);
-				Console.WriteLine(vSPU2);
-				Console.WriteLine(vPPU2);
-
-				IsTrue((Int32Vector)vSPU1 == vPPU1, "First test failed.");
-				IsTrue((Int32Vector)vSPU2 == vPPU2, "Second test failed.");
+				AreEqual(vPPU1, (Int32Vector)vSPU1, "First test failed.");
+				AreEqual(vPPU2, (Int32Vector)vSPU2, "Second test failed.");
 			}
 		}
 
@@ -311,8 +306,6 @@ namespace CellDotNet
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			new TreeDrawer().DrawMethod(cc.EntryPointAsMetodCompiler);
-
 			List<MethodVariable> vlist = Utilities.FindAll(cc.EntryPointAsMetodCompiler.Variables,
 				delegate(MethodVariable var) { return var.StackType == StackTypeDescription.Int32Vector; });
 
@@ -391,10 +384,6 @@ namespace CellDotNet
 				object vSPU1 = sc.RunProgram(cc, v1, v2);
 				object vSPU2 = sc.RunProgram(cc, v2, v3);
 
-				Console.WriteLine(vSPU1);
-				Console.WriteLine(vPPU1);
-				Console.WriteLine(vSPU2);
-				Console.WriteLine(vPPU2);
 
 				IsTrue((Float32Vector)vSPU1 == vPPU1, "First test failed.");
 				IsTrue((Float32Vector)vSPU2 == vPPU2, "Second test failed.");
@@ -452,8 +441,8 @@ namespace CellDotNet
 				object vSPU1 = sc.RunProgram(cc, v1, v2);
 				object vSPU2 = sc.RunProgram(cc, v2, v3);
 
-				Utilities.AssertWithinLimets((Float32Vector)vSPU1, vPPU1, 0.00001f, "First test failed.");
-				Utilities.AssertWithinLimets((Float32Vector)vSPU2, vPPU2, 0.00001f, "Second test failed.");
+				Utilities.AssertWithinLimits((Float32Vector)vSPU1, vPPU1, 0.00001f, "First test failed.");
+				Utilities.AssertWithinLimits((Float32Vector)vSPU2, vPPU2, 0.00001f, "Second test failed.");
 
 //				IsTrue((Float32Vector)vSPU1 == vPPU1, "First test failed.");
 //				IsTrue((Float32Vector)vSPU2 == vPPU2, "Second test failed.");
@@ -483,8 +472,8 @@ namespace CellDotNet
 				object vSPU1 = sc.RunProgram(cc, v1, v2);
 				object vSPU2 = sc.RunProgram(cc, v2, v3);
 
-				Utilities.AssertWithinLimets((Float32Vector)vSPU1, vPPU1, 0.00001f, "First test failed.");
-				Utilities.AssertWithinLimets((Float32Vector)vSPU2, vPPU2, 0.00001f, "Second test failed.");
+				Utilities.AssertWithinLimits((Float32Vector)vSPU1, vPPU1, 0.00001f, "First test failed.");
+				Utilities.AssertWithinLimits((Float32Vector)vSPU2, vPPU2, 0.00001f, "Second test failed.");
 
 //				IsTrue((Float32Vector)vSPU1 == vPPU1, "First test failed.");
 //				IsTrue((Float32Vector)vSPU2 == vPPU2, "Second test failed.");

@@ -77,14 +77,14 @@ namespace CellDotNet
 		/// <param name="target"></param>
 		/// <param name="error"></param>
 		/// <param name="message"></param>
-		static public void AssertWithinLimets(float value, float target, float error, string message)
+		static public void AssertWithinLimits(float value, float target, float error, string message)
 		{
 			if(!(Math.Abs(target) < error && Math.Abs(value) < error))
 				if(Math.Abs(value) > Math.Abs(target) * (1 + error) || Math.Abs(value) < Math.Abs(target) * (1 - error) || Math.Sign(value) != Math.Sign(target))
 					throw new DebugAssertException(message);
 		}
 
-		static public void AssertWithinLimets(Float32Vector value, Float32Vector target, float error, string message)
+		static public void AssertWithinLimits(Float32Vector value, Float32Vector target, float error, string message)
 		{
 			if (!(Math.Abs(target.E1) < error && Math.Abs(value.E1) < error))
 				if (Math.Abs(value.E1) > Math.Abs(target.E1) * (1 + error) || Math.Abs(value.E1) < Math.Abs(target.E1) * (1 - error) || Math.Sign(value.E1) != Math.Sign(target.E1))
