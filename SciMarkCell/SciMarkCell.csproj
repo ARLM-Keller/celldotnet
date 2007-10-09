@@ -100,7 +100,6 @@
     <Compile Include="Constants.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="FFTTest.cs" />
     <Compile Include="MonteCarloDouble.cs" />
     <Compile Include="MonteCarloDoubleTest.cs" />
     <Compile Include="MonteCarloTest.cs" />
