@@ -109,6 +109,7 @@
     <Compile Include="SimpleProgramsTest.cs" />
     <Compile Include="SpuChannel.cs" />
     <Compile Include="SpuDynamicRoutine.cs" />
+    <Compile Include="SpuMathTest.cs" />
     <Compile Include="SpuOpCode.cs" />
     <Compile Include="SpuOpCodeAttribute.cs" />
     <Compile Include="SpuOpCodeAttributeTest.cs" />

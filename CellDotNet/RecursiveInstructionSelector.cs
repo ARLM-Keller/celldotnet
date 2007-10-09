@@ -1726,6 +1726,37 @@ namespace CellDotNet
 
 							return v012_3;
 						}
+					case SpuIntrinsicMethod.Splat:
+						{
+							VirtualRegister pattern = writer.WriteIlhu(0x0001);
+							writer.WriteIohl(pattern, 0x0203);
+
+							return writer.WriteShufb(childregs[0], childregs[0], pattern);
+						}
+					case SpuIntrinsicMethod.Vector_CompareAndSelectInt:
+						{
+							if (childregs.Count < 4)
+								throw new ArgumentException("Too few argument register to intrinsic Vector_CompareAndSelectInt.");
+
+							VirtualRegister r1 = writer.WriteCgt(childregs[0], childregs[1]);
+							return writer.WriteSelb(childregs[3], childregs[2], r1);
+						}
+					case SpuIntrinsicMethod.Vector_CompareAndSelectFloat:
+						{
+							if (childregs.Count < 4)
+								throw new ArgumentException("Too few argument register to intrinsic Vector_CompareAndSelectFloat.");
+
+							VirtualRegister r1 = writer.WriteFcgt(childregs[0], childregs[1]);
+							return writer.WriteSelb(childregs[3], childregs[2], r1);
+						}
+					case SpuIntrinsicMethod.Vector_CompareEqualsAndSelectInt:
+						{
+							if (childregs.Count < 4)
+								throw new ArgumentException("Too few argument register to intrinsic Vector_CompareEqualsAndSelectInt.");
+
+							VirtualRegister r1 = writer.WriteCeq(childregs[0], childregs[1]);
+							return writer.WriteSelb(childregs[3], childregs[2], r1);
+						}
 					default:
 						throw new ArgumentException();
 				}

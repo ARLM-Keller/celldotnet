@@ -1,5 +1,3 @@
-using System;
-
 namespace CellDotNet
 {
 	public struct Float32Vector
@@ -13,6 +11,12 @@ namespace CellDotNet
 			this.e2 = e2;
 			this.e3 = e3;
 			this.e4 = e4;
+		}
+
+		[IntrinsicMethod(SpuIntrinsicMethod.Splat)]
+		public static Float32Vector Splat(float e)
+		{
+			return new Float32Vector(e, e, e, e);
 		}
 
 		[SpuOpCode(SpuOpCodeEnum.Fa)]
@@ -61,6 +65,17 @@ namespace CellDotNet
 			r.e4 = v1.e4 * v2.e4;
 
 			return r;
+		}
+
+		// TODO can probably be implemented much more faster
+		public static Float32Vector operator /(Float32Vector v1, Float32Vector v2)
+		{
+			float r1 = v1.E1 / v2.E1;
+			float r2 = v1.E2 / v2.E2;
+			float r3 = v1.E3 / v2.E3;
+			float r4 = v1.E4 / v2.E4;
+
+			return new Float32Vector(r1, r2, r3, r4);
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.FloatVectorType_Equals)]
@@ -139,6 +154,12 @@ namespace CellDotNet
 			this.e4 = e4;
 		}
 
+		[IntrinsicMethod(SpuIntrinsicMethod.Splat)]
+		public static Int32Vector Splat(int e)
+		{
+			return new Int32Vector(e, e, e, e);
+		}
+
 		[SpuOpCode(SpuOpCodeEnum.A)]
 		[return: SpuInstructionPart(SpuInstructionPart.Rt)]
 		public static Int32Vector operator +(
@@ -169,6 +190,36 @@ namespace CellDotNet
 			r.e4 = v1.e4 - v2.e4;
 
 			return r;
+		}
+
+		// TODO can probably be implemented much more faster
+		public static Int32Vector operator *(Int32Vector v1, Int32Vector v2)
+		{
+			int r1 = v1.E1 * v2.E1;
+			int r2 = v1.E2 * v2.E2;
+			int r3 = v1.E3 * v2.E3;
+			int r4 = v1.E4 * v2.E4;
+			return new Int32Vector(r1, r2, r3, r4);
+		}
+
+		// TODO can probably be implemented much more faster
+		public static Int32Vector operator /(Int32Vector v1, Int32Vector v2)
+		{
+			int r1 = v1.E1 / v2.E1;
+			int r2 = v1.E2 / v2.E2;
+			int r3 = v1.E3 / v2.E3;
+			int r4 = v1.E4 / v2.E4;
+			return new Int32Vector(r1, r2, r3, r4);
+		}
+
+		// TODO can probably be implemented much more faster
+		public static Int32Vector operator %(Int32Vector v1, Int32Vector v2)
+		{
+			int r1 = v1.E1 % v2.E1;
+			int r2 = v1.E2 % v2.E2;
+			int r3 = v1.E3 % v2.E3;
+			int r4 = v1.E4 % v2.E4;
+			return new Int32Vector(r1, r2, r3, r4);
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.IntVectorType_Equals)]

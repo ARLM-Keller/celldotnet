@@ -129,6 +129,10 @@ namespace CellDotNet
 		FloatVectorType_Equals,
 		FloatVectorType_NotEquals,
 		ReturnArgument1,
-		CombineFourWords
+		CombineFourWords,
+		Vector_CompareAndSelectInt,
+		Vector_CompareAndSelectFloat,
+		Splat,
+		Vector_CompareEqualsAndSelectInt
 	}
 }
