@@ -569,11 +569,7 @@ namespace CellDotNet
 					};
 
 			CompileContext cc = new CompileContext(del.Method);
-			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
-			new TreeDrawer().DrawMethod(cc.EntryPointAsMetodCompiler);
-			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
 			cc.PerformProcessing(CompileContextState.S8Complete);
-			Disassembler.DisassembleUnconditionalToConsole(cc);
 
 			AreEqual(i5value, (int) SpeContext.UnitTestRunProgram(cc));
 		}
@@ -814,7 +810,6 @@ namespace CellDotNet
 
 			public int HitWithMagicIntReturnValue()
 			{
-				Console.WriteLine("Return magic: " + MagicReturn);
 				_hitcount++;
 				return MagicReturn;
 			}
@@ -963,8 +958,6 @@ namespace CellDotNet
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
-			cc.WriteAssemblyToFile("returnint.s", 0);
-//			Disassembler.DisassembleToConsole(cc);
 
 			AreEqual(1, cc.Methods.Count);
 
@@ -1001,9 +994,6 @@ namespace CellDotNet
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
-			new TreeDrawer().DrawMethod(cc.EntryPointAsMetodCompiler);
-			cc.WriteAssemblyToFile("returnbig.s");
-			Disassembler.DisassembleToConsole(cc);
 
 			AreEqual(1, cc.Methods.Count);
 

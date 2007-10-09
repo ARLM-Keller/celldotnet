@@ -158,8 +158,6 @@ namespace CellDotNet
 							byte[] returnmem = PerformPpeCall(argmem, marshaler);
 							if (returnmem != null && returnmem.Length > 0)
 							{
-								Console.WriteLine("ppe return:");
-								Utilities.DumpMemoryToConsole(returnmem);
 								PutLocalStorage(returnmem, (LocalStorageAddress) ppeCallDataArea.Offset, returnmem.Length);
 							}
 							runAgain = true;
@@ -370,27 +368,8 @@ namespace CellDotNet
 
 		internal object DmaGetValue(StackTypeDescription datatype, LocalStorageAddress lsAddress)
 		{
-			switch (datatype.CliType)
-			{
-				case CliType.Int32:
-				case CliType.NativeInt:
-					return DmaGetValue<int>(lsAddress);
-				case CliType.Int64:
-					break;
-				case CliType.Float32:
-					return DmaGetValue<float>(lsAddress);
-				case CliType.Float32Vector:
-					return DmaGetValue<Float32Vector>(lsAddress);
-				case CliType.Int32Vector:
-					return DmaGetValue<Int32Vector>(lsAddress);
-				case CliType.Float64:
-					return DmaGetValue<double>(lsAddress);
-				case CliType.ValueType:
-				case CliType.ObjectType:
-				case CliType.ManagedPointer:
-					throw new NotSupportedException();
-			}
-			throw new NotSupportedException("Data type is not supported: " + datatype);
+			byte[] buff = GetLocalStorageMax16K(lsAddress, 16);
+			return new Marshaler().GetValue(buff, StackTypeDescription.TypeFromCliType(datatype.CliType));
 		}
 
 		/// <summary>
@@ -400,30 +379,7 @@ namespace CellDotNet
 		internal unsafe T DmaGetValue<T>(LocalStorageAddress lsAddress) where T : struct
 		{
 			byte[] buff = GetLocalStorageMax16K(lsAddress, 16);
-
-			switch(Type.GetTypeCode(typeof(T)))
-			{
-				case TypeCode.Double:
-				case TypeCode.Single:
-				case TypeCode.Int16:
-				case TypeCode.Int32:
-				case TypeCode.Int64:
-					return (T)new Marshaler().GetValue(buff, typeof(T));
-				case TypeCode.Object:
-					if (typeof(T) == typeof(LocalStorageAddress))
-						goto case TypeCode.Int32;
-					else
-						goto default;
-				default:
-					if (typeof(T).Equals(typeof(Int32Vector)) || typeof(T).Equals(typeof(Float32Vector)))
-					{
-						return (T) new Marshaler().GetValue(buff, typeof (T));
-					}
-					else
-					{
-						throw new NotSupportedException("Type not handled.");
-					}
-			}
+			return (T) new Marshaler().GetValue(buff, typeof (T));
 		}
 
 		/// <summary>
@@ -431,43 +387,10 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="lsAddress"></param>
 		/// <param name="value"></param>
-		internal unsafe void DmaPutValue(LocalStorageAddress lsAddress, ValueType value)
+		internal void DmaPutValue(LocalStorageAddress lsAddress, ValueType value)
 		{
-			uint DMA_tag = 1;
-			byte* buf = stackalloc byte[31];
-			IntPtr ptr = Utilities.Align16((IntPtr)buf);
-
-#warning Use Marshaler here.
-
-			switch (Type.GetTypeCode(value.GetType()))
-			{
-				case TypeCode.Int32:
-					*((int*)ptr) = (int)value;
-					break;
-				case TypeCode.Single:
-					float f = (float) value;
-					*((float*)ptr) = f;
-					break;
-				default:
-					throw new NotSupportedException("Argument type " + value.GetType().Name + " not supported.");
-			}
-
-			spe_mfcio_get(lsAddress, ptr, 16, DMA_tag, 0, 0);
-
-			uint tag_status = 0;
-			int waitresult = UnsafeNativeMethods.spe_mfcio_tag_status_read(_handle, 0, SPE_TAG_ANY, ref tag_status);
-			if (waitresult != 0)
-				throw new LibSpeException("spe_mfcio_tag_status_read failed.");
-		}
-
-		/// <summary>
-		/// Puts a value type to the specified local storage address.
-		/// </summary>
-		/// <param name="lsAddress"></param>
-		/// <param name="value"></param>
-		internal void DmaPutValue<T>(LocalStorageAddress lsAddress, T value) where T : struct
-		{
-			DmaPutValue(lsAddress, (ValueType) value);
+			byte[] mem = new Marshaler().GetImage(new object[] { value });
+			PutLocalStorage(mem, lsAddress, mem.Length);
 		}
 
 		private unsafe byte[] GetLocalStorageMax16K(LocalStorageAddress lsa, int size)
@@ -541,7 +464,7 @@ namespace CellDotNet
 		}
 
 		/// <summary>
-		/// Transfers the data to LS. Can handle big transfers.
+		/// Transfers the data to LS. Can handle big transfers and assumes that the buffer is properly aligned.
 		/// </summary>
 		/// <param name="buffer"></param>
 		/// <param name="transferSize"></param>
