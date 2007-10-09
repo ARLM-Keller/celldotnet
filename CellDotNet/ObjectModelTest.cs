@@ -445,6 +445,151 @@ namespace CellDotNet
 			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(cc));
 		}
 
+		#region BigFieldStructs
+
+		struct BigFieldStruct_1
+		{
+			public Int32Vector v1;
+		}
+
+		struct BigFieldStruct_2
+		{
+			public int i1;
+			public Int32Vector v1;
+			public int i2;
+			public Int32Vector v2;
+			public int i3;
+			public Int32Vector v3;
+			public int i4;
+			public Int32Vector v4;
+		}
+
+		#endregion
+
+
+		[Test]
+		public void TestStruct_BigField_1()
+		{
+			Converter<int, Int32Vector> del =
+				delegate(int input)
+				{
+					BigFieldStruct_1 s = new BigFieldStruct_1();
+
+					s.v1 = new Int32Vector(7, 9, 13, 17);
+
+					return s.v1;
+				};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(del(0), (Int32Vector)SpeContext.UnitTestRunProgram(cc, 0));
+		}
+
+		[Test]
+		public void TestStruct_BigField_2()
+		{
+			Converter<int, Int32Vector> del =
+				delegate(int input)
+				{
+					BigFieldStruct_2 s = new BigFieldStruct_2();
+
+					s.v1 = new Int32Vector(21, 22, 23, 24);
+					s.v2 = new Int32Vector(5, 6, 7, 8);
+					s.v3 = new Int32Vector(5, 6, 7, 8);
+					s.v4 = new Int32Vector(5, 6, 7, 8);
+					s.i1 = 1;
+					s.i2 = 2;
+					s.i3 = 3;
+					s.i4 = 4;
+
+					return s.v1;
+				};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(del(0), (Int32Vector)SpeContext.UnitTestRunProgram(cc, 0));
+		}
+
+		[Test]
+		public void TestStruct_BigField_3()
+		{
+			Converter<int, Int32Vector> del =
+				delegate(int input)
+				{
+					BigFieldStruct_2 s = new BigFieldStruct_2();
+
+					s.v2 = new Int32Vector(21, 22, 23, 24);
+					s.v1 = new Int32Vector(5, 6, 7, 8);
+					s.v3 = new Int32Vector(5, 6, 7, 8);
+					s.v4 = new Int32Vector(5, 6, 7, 8);
+					s.i1 = 1;
+					s.i2 = 2;
+					s.i3 = 3;
+					s.i4 = 4;
+
+					return s.v2;
+				};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(del(0), (Int32Vector)SpeContext.UnitTestRunProgram(cc, 0));
+		}
+
+		[Test]
+		public void TestStruct_BigField_4()
+		{
+			Converter<int, Int32Vector> del =
+				delegate(int input)
+				{
+					BigFieldStruct_2 s = new BigFieldStruct_2();
+
+					s.v3 = new Int32Vector(21, 22, 23, 24);
+					s.v1 = new Int32Vector(5, 6, 7, 8);
+					s.v2 = new Int32Vector(5, 6, 7, 8);
+					s.v4 = new Int32Vector(5, 6, 7, 8);
+					s.i1 = 1;
+					s.i2 = 2;
+					s.i3 = 3;
+					s.i4 = 4;
+
+					return s.v3;
+				};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(del(0), (Int32Vector)SpeContext.UnitTestRunProgram(cc, 0));
+		}
+
+		[Test]
+		public void TestStruct_BigField_5()
+		{
+			Converter<int, Int32Vector> del =
+				delegate(int input)
+				{
+					BigFieldStruct_2 s = new BigFieldStruct_2();
+
+					s.v4 = new Int32Vector(21, 22, 23, 24);
+					s.v1 = new Int32Vector(5, 6, 7, 8);
+					s.v2 = new Int32Vector(5, 6, 7, 8);
+					s.v3 = new Int32Vector(5, 6, 7, 8);
+					s.i1 = 1;
+					s.i2 = 2;
+					s.i3 = 3;
+					s.i4 = 4;
+
+					return s.v4;
+				};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(del(0), (Int32Vector)SpeContext.UnitTestRunProgram(cc, 0));
+		}
+
 		private static void ChangeBigStructByval(BigStruct bs, int newi5Value)
 		{
 			bs.i5 = newi5Value;
