@@ -290,10 +290,10 @@ namespace CellDotNet
 
 			List<MethodVariable> vlist = Utilities.FindAll(cc.EntryPointAsMetodCompiler.Variables,
 				delegate(MethodVariable var) { return var.StackType == StackTypeDescription.Int32Vector; });
-			AreEqual(1, vlist.Count);
-			IsFalse(vlist[0].Escapes.Value);
-
-			cc.WriteAssemblyToFile("vector.s");
+			if (vlist.Count == 1)
+				IsFalse(vlist[0].Escapes.Value);
+			else
+				AreEqual(0, vlist.Count);
 
 			AreEqual(new Int32Vector(1, 2, 3, 4), (Int32Vector) SpeContext.UnitTestRunProgram(cc));
 		}
