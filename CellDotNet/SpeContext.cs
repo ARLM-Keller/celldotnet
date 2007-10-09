@@ -103,7 +103,7 @@ namespace CellDotNet
 		public SpeContext()
 		{
 			_handle = UnsafeNativeMethods.spe_context_create(0, IntPtr.Zero);
-			if (_handle == IntPtr.Zero || _handle == null)
+			if (_handle == IntPtr.Zero)
 				throw new Exception();
 
 			_localStorageSize = UnsafeNativeMethods.spe_ls_size_get(_handle);

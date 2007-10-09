@@ -692,6 +692,7 @@ namespace CellDotNet
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
+			Disassembler.DisassembleToConsole(cc);
 
 			AreEqual(i5value, (int) SpeContext.UnitTestRunProgram(cc));
 		}
@@ -889,6 +890,41 @@ namespace CellDotNet
 					return c.i1 + c.i2 + c.i3 + c.i4;
 				};
 			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(del));
+		}
+
+
+		class ClassWithReferenceTypeFields
+		{
+			public ClassWithReferenceTypeFields ReferenceTypeField1;
+			public ClassWithReferenceTypeFields ReferenceTypeField2;
+		}
+
+		[Test]
+		public void TestClass_ReferenceTypeField()
+		{
+			Func<int> del = 
+				delegate
+					{
+						ClassWithReferenceTypeFields c1 = new ClassWithReferenceTypeFields();
+						c1.ReferenceTypeField1 = new ClassWithReferenceTypeFields();
+						c1.ReferenceTypeField2 = new ClassWithReferenceTypeFields();
+
+						int addressDiff = SpuRuntime.UnsafeGetAddress(c1.ReferenceTypeField2) - 
+							SpuRuntime.UnsafeGetAddress(c1.ReferenceTypeField2);
+
+						if (addressDiff != 16)
+							return 4;
+
+						return 0;
+					};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			AreEqual(0, (int) SpeContext.UnitTestRunProgram(cc));
 		}
 
 		class PpeClass

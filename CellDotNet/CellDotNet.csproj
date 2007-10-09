@@ -77,6 +77,7 @@
     <Compile Include="LinearRegisterAllocatorTest.cs" />
     <Compile Include="LivenessAnalyzer.cs" />
     <Compile Include="LocalStorageAddress.cs" />
+    <Compile Include="MainStorageArea.cs" />
     <Compile Include="ManualRoutine.cs" />
     <Compile Include="Marshaler.cs" />
     <Compile Include="MarshalerTest.cs" />
@@ -89,7 +90,6 @@
     <Compile Include="Exceptions.cs" />
     <Compile Include="HardwareRegister.cs" />
     <Compile Include="IrOpCode.cs" />
-    <Compile Include="CliType.cs" />
     <Compile Include="LiveInterval.cs" />
     <Compile Include="MethodCallInstruction.cs" />
     <Compile Include="Mfc.cs" />
@@ -136,6 +136,7 @@
     <Compile Include="SpuInstructionWriter_autogen.cs" />
     <Compile Include="SpuRuntimeTest.cs" />
     <Compile Include="StackLocation.cs" />
+    <Compile Include="StackTypeDescription.cs" />
     <Compile Include="StaticFileLibraryResolver.cs" />
     <Compile Include="StaticFileLibraryResolverTest.cs" />
     <Compile Include="StoreLocation.cs" />

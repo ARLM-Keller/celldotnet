@@ -73,6 +73,9 @@ namespace CellDotNet
 			get { return _outOfMemory; }
 		}
 
+		/// <summary>
+		/// Static data used for some DP ops.
+		/// </summary>
 		public DataObject DoubleCompareDataArea
 		{
 			get { return _doubleCompareDataArea; }

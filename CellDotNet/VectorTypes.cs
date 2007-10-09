@@ -13,7 +13,7 @@ namespace CellDotNet
 			this.e4 = e4;
 		}
 
-		[IntrinsicMethod(SpuIntrinsicMethod.Splat)]
+		[IntrinsicMethod(SpuIntrinsicMethod.SplatWord)]
 		public static Float32Vector Splat(float e)
 		{
 			return new Float32Vector(e, e, e, e);
@@ -92,25 +92,25 @@ namespace CellDotNet
 
 		public float E1
 		{
-			[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE1)]
+			[IntrinsicMethod(SpuIntrinsicMethod.Vector_GetWord0)]
 			get { return e1; }
 		}
 
 		public float E2
 		{
-			[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE2)]
+			[IntrinsicMethod(SpuIntrinsicMethod.Vector_GetWord1)]
 			get { return e2; }
 		}
 
 		public float E3
 		{
-			[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE3)]
+			[IntrinsicMethod(SpuIntrinsicMethod.Vector_GetWord2)]
 			get { return e3; }
 		}
 
 		public float E4
 		{
-			[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE4)]
+			[IntrinsicMethod(SpuIntrinsicMethod.Vector_GetWord3)]
 			get { return e4; }
 		}
 
@@ -154,7 +154,7 @@ namespace CellDotNet
 			this.e4 = e4;
 		}
 
-		[IntrinsicMethod(SpuIntrinsicMethod.Splat)]
+		[IntrinsicMethod(SpuIntrinsicMethod.SplatWord)]
 		public static Int32Vector Splat(int e)
 		{
 			return new Int32Vector(e, e, e, e);
@@ -236,62 +236,62 @@ namespace CellDotNet
 
 		public int E1
 		{
-			[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE1)]
+			[IntrinsicMethod(SpuIntrinsicMethod.Vector_GetWord0)]
 			get { return e1; }
 		}
 
 		public int E2
 		{
-			[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE2)]
+			[IntrinsicMethod(SpuIntrinsicMethod.Vector_GetWord1)]
 			get { return e2; }
 		}
 
 		public int E3
 		{
-			[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE3)]
+			[IntrinsicMethod(SpuIntrinsicMethod.Vector_GetWord2)]
 			get { return e3; }
 		}
 
 		public int E4
 		{
-			[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE4)]
+			[IntrinsicMethod(SpuIntrinsicMethod.Vector_GetWord3)]
 			get { return e4; }
 		}
 
-//		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE3)]
+//		[IntrinsicMethod(SpuIntrinsicMethod.Vector_GetWord2)]
 //		public static int GetE3(Int32Vector v)
 //		{
 //			return v.e3;
 //		}
 //
-//		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_getE4)]
+//		[IntrinsicMethod(SpuIntrinsicMethod.Vector_GetWord3)]
 //		public static int GetE4(Int32Vector v)
 //		{
 //			return v.e4;
 //		}
 //
-//		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_putE1)]
+//		[IntrinsicMethod(SpuIntrinsicMethod.Vector_PutWord0)]
 //		public static Int32Vector PutE1(Int32Vector v, Int32 i)
 //		{
 //			Int32Vector r = new Int32Vector(i, v.e2, v.e3, v.e4);
 //			return r;
 //		}
 //
-//		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_putE2)]
+//		[IntrinsicMethod(SpuIntrinsicMethod.Vector_PutWord1)]
 //		public static Int32Vector PutE2(Int32Vector v, Int32 i)
 //		{
 //			Int32Vector r = new Int32Vector(v.e1, i, v.e3, v.e4);
 //			return r;
 //		}
 //
-//		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_putE3)]
+//		[IntrinsicMethod(SpuIntrinsicMethod.Vector_PutWord2)]
 //		public static Int32Vector PutE3(Int32Vector v, Int32 i)
 //		{
 //			Int32Vector r = new Int32Vector(v.e1, v.e2, i, v.e4);
 //			return r;
 //		}
 //
-//		[IntrinsicMethod(SpuIntrinsicMethod.VectorType_putE4)]
+//		[IntrinsicMethod(SpuIntrinsicMethod.Vector_PutWord3)]
 //		public static Int32Vector PutE4(Int32Vector v, Int32 i)
 //		{
 //			Int32Vector r = new Int32Vector(v.e1, v.e2, v.e3, i);
