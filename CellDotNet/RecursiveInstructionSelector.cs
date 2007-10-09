@@ -928,7 +928,7 @@ namespace CellDotNet
 
 									_writer.WriteShufb(qw1, vrright, qw1, rcdd1);
 
-									VirtualRegister r = _writer.WriteShli(vrright, 2);
+									VirtualRegister r = _writer.WriteShlqbyi(vrright, 8);
 
 									_writer.WriteShufb(qw2, r, qw2, rcdd2);
 								}
