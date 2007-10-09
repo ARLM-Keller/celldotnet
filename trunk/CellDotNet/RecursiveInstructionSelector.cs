@@ -1581,15 +1581,17 @@ namespace CellDotNet
 
 			StackTypeDescription fieldtype = new TypeDeriver().GetStackTypeDescription(field.FieldType);
 			if (fieldtype == StackTypeDescription.None || 
-			    fieldtype.CliType == CliType.ValueType || 
-			    fieldtype.CliType == CliType.ObjectType)
+			    fieldtype.CliType == CliType.ValueType)
 				throw new NotSupportedException("Only simple field types are supported.");
 
 			if (fieldtype != StackTypeDescription.Int32Vector && fieldtype != StackTypeDescription.Float32Vector)
 				if (fieldtype.IndirectionLevel != 1 && fieldtype.NumericSize != CliNumericSize.FourBytes)
 					throw new NotSupportedException("Only four-byte fields are supported.");
 
-			valuesize = (int) fieldtype.NumericSize;
+			if (fieldtype.CliType == CliType.ObjectType)
+				valuesize = 4;
+			else
+				valuesize = (int) fieldtype.NumericSize;
 
 			// We don't do unaligned.
 			if (fieldtype == StackTypeDescription.Int32Vector || fieldtype == StackTypeDescription.Float32Vector)
@@ -1728,37 +1730,33 @@ namespace CellDotNet
 //					case SpuIntrinsicMethod.Mfc_Put:
 //						WriteMfcDmaCommand(writer, Mfc.MfcDmaCommand.Put, childregs);
 //						return null;
-					case SpuIntrinsicMethod.MainStorageArea_get_EffectiveAddress:
-						// The address is the only component.
+					case SpuIntrinsicMethod.Vector_GetWord0:
 						return childregs[0];
-					case SpuIntrinsicMethod.VectorType_getE1:
-//						return writer.WriteRotqbyi(childregs[0], 0*4);
-						return childregs[0];
-					case SpuIntrinsicMethod.VectorType_getE2:
+					case SpuIntrinsicMethod.Vector_GetWord1:
 						return writer.WriteRotqbyi(childregs[0], 1*4);
-					case SpuIntrinsicMethod.VectorType_getE3:
+					case SpuIntrinsicMethod.Vector_GetWord2:
 						return writer.WriteRotqbyi(childregs[0], 2*4);
-					case SpuIntrinsicMethod.VectorType_getE4:
+					case SpuIntrinsicMethod.Vector_GetWord3:
 						return writer.WriteRotqbyi(childregs[0], 3*4);
-					case SpuIntrinsicMethod.VectorType_putE1:
+					case SpuIntrinsicMethod.Vector_PutWord0:
 						{
 							VirtualRegister index = writer.WriteIl(0);
 							VirtualRegister cwdreg = writer.WriteCwd(index, 0);
 							return writer.WriteShufb(childregs[0], childregs[1], cwdreg);	
 						}
-					case SpuIntrinsicMethod.VectorType_putE2:
+					case SpuIntrinsicMethod.Vector_PutWord1:
 						{
 							VirtualRegister index = writer.WriteIl(1*4);
 							VirtualRegister cwdreg = writer.WriteCwd(index, 0);
 							return writer.WriteShufb(childregs[0], childregs[1], cwdreg);
 						}
-					case SpuIntrinsicMethod.VectorType_putE3:
+					case SpuIntrinsicMethod.Vector_PutWord2:
 						{
 							VirtualRegister index = writer.WriteIl(2*4);
 							VirtualRegister cwdreg = writer.WriteCwd(index, 0);
 							return writer.WriteShufb(childregs[0], childregs[1], cwdreg);
 						}
-					case SpuIntrinsicMethod.VectorType_putE4:
+					case SpuIntrinsicMethod.Vector_PutWord3:
 						{
 							VirtualRegister index = writer.WriteIl(3*4);
 							VirtualRegister cwdreg = writer.WriteCwd(index, 0);
@@ -1815,48 +1813,46 @@ namespace CellDotNet
 
 							return v012_3;
 						}
-					case SpuIntrinsicMethod.Splat:
+					case SpuIntrinsicMethod.SplatWord:
 						{
-							VirtualRegister pattern = writer.WriteIlhu(0x0001);
-							writer.WriteIohl(pattern, 0x0203);
-
+							VirtualRegister pattern = writer.WriteIla(0x00010203);
 							return writer.WriteShufb(childregs[0], childregs[0], pattern);
 						}
-					case SpuIntrinsicMethod.Vector_CompareAndSelectInt:
+					case SpuIntrinsicMethod.CompareGreaterThanAndSelectInt:
 						{
 							if (childregs.Count < 4)
-								throw new ArgumentException("Too few argument register to intrinsic Vector_CompareAndSelectInt.");
+								throw new ArgumentException("Too few argument register to intrinsic CompareGreaterThanAndSelectInt.");
 
 							VirtualRegister r1 = writer.WriteCgt(childregs[0], childregs[1]);
 							return writer.WriteSelb(childregs[3], childregs[2], r1);
 						}
-					case SpuIntrinsicMethod.Vector_CompareAndSelectFloat:
+					case SpuIntrinsicMethod.CompareGreaterThanAndSelectFloat:
 						{
 							if (childregs.Count < 4)
-								throw new ArgumentException("Too few argument register to intrinsic Vector_CompareAndSelectFloat.");
+								throw new ArgumentException("Too few argument register to intrinsic CompareGreaterThanAndSelectFloat.");
 
 							VirtualRegister r1 = writer.WriteFcgt(childregs[0], childregs[1]);
 							return writer.WriteSelb(childregs[3], childregs[2], r1);
 						}
-					case SpuIntrinsicMethod.Vector_CompareEqualsAndSelectInt:
+					case SpuIntrinsicMethod.CompareEqualsAndSelectInt:
 						{
 							if (childregs.Count < 4)
-								throw new ArgumentException("Too few argument register to intrinsic Vector_CompareEqualsAndSelectInt.");
+								throw new ArgumentException("Too few argument register to intrinsic CompareEqualsAndSelectInt.");
 
 							VirtualRegister r1 = writer.WriteCeq(childregs[0], childregs[1]);
 							return writer.WriteSelb(childregs[3], childregs[2], r1);
 						}
-					case SpuIntrinsicMethod.Vector_ConvertToInteger:
+					case SpuIntrinsicMethod.ConvertFloatToInteger:
 						{
 							if (childregs.Count < 1)
-								throw new ArgumentException("Too few argument register to intrinsic Vector_ConvertToInteger.");
+								throw new ArgumentException("Too few argument register to intrinsic ConvertFloatToInteger.");
 
 							return writer.WriteCflts(childregs[0], 173);
 						}
-					case SpuIntrinsicMethod.Vector_ConvertToFloat:
+					case SpuIntrinsicMethod.ConvertIntToFloat:
 						{
 							if (childregs.Count < 1)
-								throw new ArgumentException("Too few argument register to intrinsic Vector_ConvertToFloat.");
+								throw new ArgumentException("Too few argument register to intrinsic ConvertIntToFloat.");
 
 							return writer.WriteCsflt(childregs[0], 155);
 						}

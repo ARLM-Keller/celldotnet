@@ -37,19 +37,19 @@ namespace CellDotNet
 
 			if (SpuRuntime.IsRunningOnSpu)
 			{
-				Get(ref target[0], MainStorageArea.GetEffectiveAddress(ea), bytecount, 0xfffff, 0, 0); //TODO få styr på tag
+				Get(ref target[0], ea.EffectiveAddress, bytecount, 0xfffff, 0, 0); //TODO få styr på tag
 			}
 			else
 			{
-				AssertValidEffectiveAddress(MainStorageArea.GetEffectiveAddress(ea), bytecount);
-				Marshal.Copy((IntPtr)MainStorageArea.GetEffectiveAddress(ea), target, 0, count);
+				AssertValidEffectiveAddress(ea.EffectiveAddress, bytecount);
+				Marshal.Copy((IntPtr)ea.EffectiveAddress, target, 0, count);
 			}
 		}
 
 		static public void Get_DEBUG(int[] target, MainStorageArea ea, short count, uint tag)
 		{
 			int bytecount = count * 4;
-			Get(ref target[0], MainStorageArea.GetEffectiveAddress(ea), bytecount, tag, 0, 0);
+			Get(ref target[0], ea.EffectiveAddress, bytecount, tag, 0, 0);
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.Runtime_Stop)]
@@ -87,12 +87,12 @@ namespace CellDotNet
 
 			if (SpuRuntime.IsRunningOnSpu)
 			{
-				Put(ref source[0], MainStorageArea.GetEffectiveAddress(ea), bytecount, tag, 0, 0);
+				Put(ref source[0], ea.EffectiveAddress, bytecount, tag, 0, 0);
 			}
 			else
 			{
-				AssertValidEffectiveAddress(MainStorageArea.GetEffectiveAddress(ea), bytecount);
-				Marshal.Copy(source, 0, (IntPtr)MainStorageArea.GetEffectiveAddress(ea), count);
+				AssertValidEffectiveAddress(ea.EffectiveAddress, bytecount);
+				Marshal.Copy(source, 0, (IntPtr)ea.EffectiveAddress, count);
 			}
 		}
 
