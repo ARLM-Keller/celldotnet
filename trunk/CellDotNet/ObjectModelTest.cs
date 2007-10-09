@@ -590,6 +590,59 @@ namespace CellDotNet
 			AreEqual(del(0), (Int32Vector)SpeContext.UnitTestRunProgram(cc, 0));
 		}
 
+		#region  dsfdsf
+
+		struct StructWithArray
+		{
+			public int[] arr;
+		}
+
+		#endregion
+
+		[Test]
+		public void TestStruct_ArrayField_1()
+		{
+			Converter<int, int> del =
+				delegate(int input)
+				{
+					int [] array = new int[6];
+					for (int i = 0; i < array.Length; i++)
+						array[i] = i;
+
+					StructWithArray s = new StructWithArray();
+
+					s.arr = array;
+
+					return s.arr[input];
+				};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(del(0), (int)SpeContext.UnitTestRunProgram(cc, 0));
+		}
+
+		[Test]
+		public void TestStruct_ArrayField_2()
+		{
+			Converter<int, int> del =
+				delegate(int input)
+				{
+					StructWithArray s = new StructWithArray();
+
+					s.arr = new int[6];
+					for (int i = 0; i < s.arr.Length; i++)
+						s.arr[i] = i;
+
+					return s.arr[input];
+				};
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			AreEqual(del(0), (int)SpeContext.UnitTestRunProgram(cc, 0));
+		}
+
 		private static void ChangeBigStructByval(BigStruct bs, int newi5Value)
 		{
 			bs.i5 = newi5Value;
