@@ -568,7 +568,7 @@ namespace CellDotNet
 		private unsafe static void RunRasmus()
 		{
 //			new ILOpCodeExecutionTest().Test_Beq();
-			new ObjectModelTest().TestPpeClass_InstanceMethodCall_ReturnPpeRefType();
+			new ObjectModelTest().TestPpeClass_InstanceMethodCall_ReturnVector();
 		}
 	}
 }

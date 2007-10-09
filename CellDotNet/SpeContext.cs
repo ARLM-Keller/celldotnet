@@ -369,7 +369,7 @@ namespace CellDotNet
 		internal object DmaGetValue(StackTypeDescription datatype, LocalStorageAddress lsAddress)
 		{
 			byte[] buff = GetLocalStorageMax16K(lsAddress, 16);
-			return new Marshaler().GetValue(buff, StackTypeDescription.TypeFromCliType(datatype.CliType));
+			return new Marshaler().GetValue(buff, StackTypeDescription.GetReflectionType(datatype.CliType));
 		}
 
 		/// <summary>

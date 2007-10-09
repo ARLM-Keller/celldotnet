@@ -313,7 +313,7 @@ namespace CellDotNet
 		/// If the cli type is not a concrete type, ie. ValueType, ObjectType ManagedPointer.</exception>
 		/// <param name="clitype"></param>
 		/// <returns></returns>
-		public static Type TypeFromCliType(CliType clitype)
+		public static Type GetReflectionType(CliType clitype)
 		{
 			switch (clitype)
 			{
@@ -328,7 +328,7 @@ namespace CellDotNet
 				case CliType.Float64:
 					return typeof(double);
 				case CliType.Int32Vector:
-					return typeof(int);
+					return typeof(Int32Vector);
 				case CliType.Float32Vector:
 					return typeof(Float32Vector);
 				default:

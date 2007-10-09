@@ -7,8 +7,6 @@ namespace CellDotNet
 	[TestFixture]
 	public class ObjectModelTest : UnitTest
 	{
-		private delegate int IntReturnDelegate();
-		private delegate double DoubleReturnDelegate();
 		private delegate void SimpleDelegate();
 
 		[Test]
@@ -38,7 +36,7 @@ namespace CellDotNet
 		[Test]
 		public void TestArray_Length()
 		{
-			IntReturnDelegate del = 
+			Func<int> del = 
 				delegate
 					{
 						int[] arr = new int[0];
@@ -62,7 +60,7 @@ namespace CellDotNet
 		[Test]
 		public void TestArray_Length2()
 		{
-			IntReturnDelegate del =
+			Func<int> del =
 				delegate
 				{
 					int[] arr = new int[5];
@@ -76,7 +74,7 @@ namespace CellDotNet
 		public void TestArray_Int()
 		{
 			const int MagicNumber = 0xbababa;
-			IntReturnDelegate del = 
+			Func<int> del = 
 				delegate
 					{
 						int[] arr = new int[10];
@@ -84,7 +82,7 @@ namespace CellDotNet
 						arr[1] = 20;
 						return arr[0];
 					};
-			IntReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+			Func<int> del2 = SpeDelegateRunner.CreateSpeDelegate(del);
 
 			if (!SpeContext.HasSpeHardware)
 				return;
@@ -97,7 +95,7 @@ namespace CellDotNet
 		public void TestArray_Int2()
 		{
 			const int MagicNumber = 0xbababa;
-			IntReturnDelegate del =
+			Func<int> del =
 				delegate
 				{
 					// Check that arr2 doesn't overwrite arr1.
@@ -109,7 +107,7 @@ namespace CellDotNet
 					return arr1[0];
 				};
 
-			IntReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+			Func<int> del2 = SpeDelegateRunner.CreateSpeDelegate(del);
 
 			if (!SpeContext.HasSpeHardware)
 				return;
@@ -121,7 +119,7 @@ namespace CellDotNet
 		[Test]
 		public void TestArray_Int3()
 		{
-			IntReturnDelegate del =
+			Func<int> del =
 				delegate
 				{
 					int[] arr1 = new int[2];
@@ -131,7 +129,7 @@ namespace CellDotNet
 					return arr1[0] + arr1[1];
 				};
 
-			IntReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+			Func<int> del2 = SpeDelegateRunner.CreateSpeDelegate(del);
 
 			if (!SpeContext.HasSpeHardware)
 				return;
@@ -285,7 +283,7 @@ namespace CellDotNet
 		[Test]
 		public void TestStruct_InstanceMethodAndFields()
 		{
-			IntReturnDelegate del =
+			Func<int> del =
 				delegate
 				{
 					QWStruct s = new QWStruct();
@@ -303,7 +301,7 @@ namespace CellDotNet
 		[Test]
 		public void TestStruct_Fields()
 		{
-			IntReturnDelegate del = 
+			Func<int> del = 
 				delegate
 					{
 						QWStruct s = new QWStruct();
@@ -321,7 +319,7 @@ namespace CellDotNet
 		[Test]
 		public void TestStruct_FieldsCleared()
 		{
-			IntReturnDelegate del =
+			Func<int> del =
 				delegate
 				{
 					QWStruct s = new QWStruct();
@@ -335,7 +333,7 @@ namespace CellDotNet
 		[Test]
 		public void TestStruct_ConstructorAndFields()
 		{
-			IntReturnDelegate del =
+			Func<int> del =
 				delegate
 				{
 					QWStruct s = new QWStruct(1, 2, 11, 12);
@@ -349,7 +347,7 @@ namespace CellDotNet
 		[Test]
 		public void TestStruct_Fields_Multiple()
 		{
-			IntReturnDelegate del =
+			Func<int> del =
 				delegate
 				{
 					// Checks that the allocated stack positions don't overlap.
@@ -408,7 +406,7 @@ namespace CellDotNet
 		[Test]
 		public void TestStruct_Field_Big()
 		{
-			IntReturnDelegate del =
+			Func<int> del =
 				delegate
 				{
 					BigStruct s = new BigStruct();
@@ -433,7 +431,7 @@ namespace CellDotNet
 		[Test]
 		public void TestStruct_FieldsCleared_Big()
 		{
-			IntReturnDelegate del =
+			Func<int> del =
 				delegate
 				{
 					BigStruct s = new BigStruct();
@@ -605,7 +603,7 @@ namespace CellDotNet
 		[Test]
 		public void TestClass_Field()
 		{
-			IntReturnDelegate del = 
+			Func<int> del = 
 				delegate
 					{
 						ClassWithInts c = new ClassWithInts();
@@ -626,7 +624,7 @@ namespace CellDotNet
 		[Test]
 		public void TestClass_InstanceMethod()
 		{
-			IntReturnDelegate del =
+			Func<int> del =
 				delegate
 				{
 					ClassWithInts c = new ClassWithInts();
@@ -643,7 +641,7 @@ namespace CellDotNet
 		[Test]
 		public void TestClass_InstanceMethodAndFields()
 		{
-			IntReturnDelegate del =
+			Func<int> del =
 				delegate
 				{
 					ClassWithInts c = new ClassWithInts();
@@ -664,7 +662,7 @@ namespace CellDotNet
 		[Test]
 		public void TestClass_AllocateMultiple()
 		{
-			IntReturnDelegate del =
+			Func<int> del =
 				delegate
 					{
 						// This should detect if they overlap.
@@ -692,7 +690,7 @@ namespace CellDotNet
 		[Test]
 		public void TestClass_AllocateMultiple2()
 		{
-			IntReturnDelegate del =
+			Func<int> del =
 				delegate
 				{
 					ClassWithInts c1 = new ClassWithInts();
@@ -714,7 +712,7 @@ namespace CellDotNet
 		[Test]
 		public void TestClass_FieldAndConstructor()
 		{
-			IntReturnDelegate del =
+			Func<int> del =
 				delegate
 				{
 					ClassWithInts c = new ClassWithInts(1, 10, 100, 1000);
@@ -737,7 +735,7 @@ namespace CellDotNet
 		[Test]
 		public void TestClass_ArgumentByref()
 		{
-			IntReturnDelegate del =
+			Func<int> del =
 				delegate
 				{
 					ClassWithInts c = new ClassWithInts(1, 10, 100, 1000);
