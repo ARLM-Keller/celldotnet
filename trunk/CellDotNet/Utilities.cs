@@ -70,6 +70,39 @@ namespace CellDotNet
 				throw new DebugAssertException(message);
 		}
 
+		/// <summary>
+		/// Note, if <code>target &lt; error</code> then it is sufficient for <code>value</code> to be within <code>+/- error</code> from 0.
+		/// </summary>
+		/// <param name="value"></param>
+		/// <param name="target"></param>
+		/// <param name="error"></param>
+		/// <param name="message"></param>
+		static public void AssertWithinLimets(float value, float target, float error, string message)
+		{
+			if(!(Math.Abs(target) < error && Math.Abs(value) < error))
+				if(Math.Abs(value) > Math.Abs(target) * (1 + error) || Math.Abs(value) < Math.Abs(target) * (1 - error) || Math.Sign(value) != Math.Sign(target))
+					throw new DebugAssertException(message);
+		}
+
+		static public void AssertWithinLimets(Float32Vector value, Float32Vector target, float error, string message)
+		{
+			if (!(Math.Abs(target.E1) < error && Math.Abs(value.E1) < error))
+				if (Math.Abs(value.E1) > Math.Abs(target.E1) * (1 + error) || Math.Abs(value.E1) < Math.Abs(target.E1) * (1 - error) || Math.Sign(value.E1) != Math.Sign(target.E1))
+					throw new DebugAssertException(message);
+
+			if (!(Math.Abs(target.E2) < error && Math.Abs(value.E2) < error))
+				if (Math.Abs(value.E2) > Math.Abs(target.E2) * (1 + error) || Math.Abs(value.E2) < Math.Abs(target.E2) * (1 - error) || Math.Sign(value.E2) != Math.Sign(target.E2))
+					throw new DebugAssertException(message);
+
+			if (!(Math.Abs(target.E3) < error && Math.Abs(value.E3) < error))
+				if (Math.Abs(value.E3) > Math.Abs(target.E3) * (1 + error) || Math.Abs(value.E3) < Math.Abs(target.E3) * (1 - error) || Math.Sign(value.E3) != Math.Sign(target.E3))
+					throw new DebugAssertException(message);
+
+			if (!(Math.Abs(target.E4) < error && Math.Abs(value.E4) < error))
+				if (Math.Abs(value.E4) > Math.Abs(target.E4) * (1 + error) || Math.Abs(value.E4) < Math.Abs(target.E4) * (1 - error) || Math.Sign(value.E4) != Math.Sign(target.E4))
+					throw new DebugAssertException(message);
+		}
+
 		static public void AssertOperation(bool condition, string message)
 		{
 			if (!condition)

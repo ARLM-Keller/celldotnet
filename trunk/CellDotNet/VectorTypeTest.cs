@@ -196,6 +196,90 @@ namespace CellDotNet
 		}
 
 		[Test]
+		public void TestVectorInt_Mul()
+		{
+			Int32VDelegateInt32VInt32V del = delegate(Int32Vector arg1, Int32Vector arg2) { return arg1 * arg2; };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			Int32Vector v1 = new Int32Vector(5, -6, 7, 8);
+			Int32Vector v2 = new Int32Vector(1, 2, -3, 4);
+			Int32Vector v3 = new Int32Vector(-16, -32, -128, -324);
+
+			Int32Vector vPPU1 = del(v1, v2);
+			Int32Vector vPPU2 = del(v2, v3);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			using (SpeContext sc = new SpeContext())
+			{
+				object vSPU1 = sc.RunProgram(cc, v1, v2);
+				object vSPU2 = sc.RunProgram(cc, v2, v3);
+
+				IsTrue((Int32Vector)vSPU1 == vPPU1, "First test failed.");
+				IsTrue((Int32Vector)vSPU2 == vPPU2, "Second test failed.");
+			}
+		}
+
+		[Test]
+		public void TestVectorInt_Div()
+		{
+			Int32VDelegateInt32VInt32V del = delegate(Int32Vector arg1, Int32Vector arg2) { return arg1 / arg2; };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			Int32Vector v1 = new Int32Vector(5543, -654, 7345, 8553);
+			Int32Vector v2 = new Int32Vector(5, 7, 53, 14);
+			Int32Vector v3 = new Int32Vector(-6, -52, -128, -324);
+
+			Int32Vector vPPU1 = del(v1, v2);
+			Int32Vector vPPU2 = del(v2, v3);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			using (SpeContext sc = new SpeContext())
+			{
+				object vSPU1 = sc.RunProgram(cc, v1, v2);
+				object vSPU2 = sc.RunProgram(cc, v2, v3);
+
+				IsTrue((Int32Vector)vSPU1 == vPPU1, "First test failed.");
+				IsTrue((Int32Vector)vSPU2 == vPPU2, "Second test failed.");
+			}
+		}
+
+		[Test]
+		public void TestVectorInt_Rem()
+		{
+			Int32VDelegateInt32VInt32V del = delegate(Int32Vector arg1, Int32Vector arg2) { return arg1 % arg2; };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			Int32Vector v1 = new Int32Vector(5543, -654, 7345, 8553);
+			Int32Vector v2 = new Int32Vector(5, 7, 53, 14);
+			Int32Vector v3 = new Int32Vector(-6, -52, -128, -324);
+
+			Int32Vector vPPU1 = del(v1, v2);
+			Int32Vector vPPU2 = del(v2, v3);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			using (SpeContext sc = new SpeContext())
+			{
+				object vSPU1 = sc.RunProgram(cc, v1, v2);
+				object vSPU2 = sc.RunProgram(cc, v2, v3);
+
+				IsTrue((Int32Vector)vSPU1 == vPPU1, "First test failed.");
+				IsTrue((Int32Vector)vSPU2 == vPPU2, "Second test failed.");
+			}
+		}
+
+		[Test]
 		public void TestVectorInt_Constructor()
 		{
 			// This will use newobj.
@@ -239,6 +323,21 @@ namespace CellDotNet
 				IsFalse(vlist[1].Escapes.Value);
 
 			AreEqual(new Int32Vector(1, 2, 3, 4), (Int32Vector)SpeContext.UnitTestRunProgram(cc));
+		}
+
+		[Test]
+		public void TestVectorInt_Splat()
+		{
+			// This will use newobj.
+			Converter<int, Int32Vector> del = delegate(int input) { return Int32Vector.Splat(input); };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			int arg = 17;
+
+			AreEqual(new Int32Vector(arg, arg, arg, arg), Int32Vector.Splat(arg));
+			AreEqual(Int32Vector.Splat(arg), (Int32Vector)SpeContext.UnitTestRunProgram(cc, arg));
 		}
 
 		[Test, Ignore("Currently we can't handle bools.")]
@@ -353,8 +452,42 @@ namespace CellDotNet
 				object vSPU1 = sc.RunProgram(cc, v1, v2);
 				object vSPU2 = sc.RunProgram(cc, v2, v3);
 
-				IsTrue((Float32Vector)vSPU1 == vPPU1, "First test failed.");
-				IsTrue((Float32Vector)vSPU2 == vPPU2, "Second test failed.");
+				Utilities.AssertWithinLimets((Float32Vector)vSPU1, vPPU1, 0.00001f, "First test failed.");
+				Utilities.AssertWithinLimets((Float32Vector)vSPU2, vPPU2, 0.00001f, "Second test failed.");
+
+//				IsTrue((Float32Vector)vSPU1 == vPPU1, "First test failed.");
+//				IsTrue((Float32Vector)vSPU2 == vPPU2, "Second test failed.");
+			}
+		}
+
+		[Test]
+		public void TestVectorFloat_Div()
+		{
+			Float32VDelegateFloat32VFloat32V del = delegate(Float32Vector arg1, Float32Vector arg2) { return arg1 / arg2; };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			Float32Vector v1 = new Float32Vector(5, -6, 7, 8);
+			Float32Vector v2 = new Float32Vector(1, 2, -3, 4);
+			Float32Vector v3 = new Float32Vector(-16, -32, -128, -324);
+
+			Float32Vector vPPU1 = del(v1, v2);
+			Float32Vector vPPU2 = del(v2, v3);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			using (SpeContext sc = new SpeContext())
+			{
+				object vSPU1 = sc.RunProgram(cc, v1, v2);
+				object vSPU2 = sc.RunProgram(cc, v2, v3);
+
+				Utilities.AssertWithinLimets((Float32Vector)vSPU1, vPPU1, 0.00001f, "First test failed.");
+				Utilities.AssertWithinLimets((Float32Vector)vSPU2, vPPU2, 0.00001f, "Second test failed.");
+
+//				IsTrue((Float32Vector)vSPU1 == vPPU1, "First test failed.");
+//				IsTrue((Float32Vector)vSPU2 == vPPU2, "Second test failed.");
 			}
 		}
 
@@ -405,6 +538,21 @@ namespace CellDotNet
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			AreEqual(new Float32Vector(1, 2, 3, 4), (Float32Vector)SpeContext.UnitTestRunProgram(cc));
+		}
+
+		[Test]
+		public void TestVectorFloat_Splat()
+		{
+			// This will use newobj.
+			Converter<float, Float32Vector> del = delegate(float input) { return Float32Vector.Splat(input); };
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			float arg = 17;
+
+			AreEqual(new Float32Vector(arg, arg, arg, arg), Float32Vector.Splat(arg));
+			AreEqual(Float32Vector.Splat(arg), (Float32Vector)SpeContext.UnitTestRunProgram(cc, arg));
 		}
 
 		private delegate float FloatElementDelegate(Float32Vector v, int elementno);
