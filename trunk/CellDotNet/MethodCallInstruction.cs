@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -133,6 +132,8 @@ namespace CellDotNet
 		Vector_CompareAndSelectInt,
 		Vector_CompareAndSelectFloat,
 		Splat,
-		Vector_CompareEqualsAndSelectInt
+		Vector_CompareEqualsAndSelectInt,
+		Vector_ConvertToFloat,
+		Vector_ConvertToInteger
 	}
 }
