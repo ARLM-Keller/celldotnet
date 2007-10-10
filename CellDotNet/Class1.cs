@@ -101,7 +101,9 @@ namespace CellDotNet
 
 //			new ILOpCodeExecutionTest().Test_Div_Un();
 
-			new VectorTypeTest().TestVectorInt_Div();
+//			new VectorTypeTest().TestVectorInt_Div();
+
+			new SimpleProgramsTest().Test_FloatCompare();
 
 			Console.WriteLine("Running RunKlaus done.");
 		}

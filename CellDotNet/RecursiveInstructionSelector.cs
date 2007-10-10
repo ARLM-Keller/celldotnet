@@ -279,7 +279,7 @@ namespace CellDotNet
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Float32:
-								vr = _writer.WriteFceq(vrright, vrleft);
+								vr = _writer.WriteFcgt(vrright, vrleft);
 								_writer.WriteXori(vr, vr, 0xfffffff);
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
@@ -304,7 +304,7 @@ namespace CellDotNet
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Float32:
-								vr = _writer.WriteFceq(vrleft, vrright);
+								vr = _writer.WriteFcgt(vrleft, vrright);
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Int64:
@@ -330,7 +330,7 @@ namespace CellDotNet
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Float32:
-								vr = _writer.WriteFceq(vrleft, vrright);
+								vr = _writer.WriteFcgt(vrleft, vrright);
 								_writer.WriteXori(vr, vr, 0xfffffff);
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
@@ -356,7 +356,7 @@ namespace CellDotNet
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Float32:
-								vr = _writer.WriteFceq(vrright, vrleft);
+								vr = _writer.WriteFcgt(vrright, vrleft);
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Int64:
@@ -408,7 +408,7 @@ namespace CellDotNet
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Float32:
-								vr = _writer.WriteFceq(vrright, vrleft);
+								vr = _writer.WriteFcgt(vrright, vrleft);
 								_writer.WriteXori(vr, vr, 0xfffffff);
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
@@ -433,7 +433,7 @@ namespace CellDotNet
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Float32:
-								vr = _writer.WriteFceq(vrleft, vrright);
+								vr = _writer.WriteFcgt(vrleft, vrright);
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Int64:
@@ -459,7 +459,7 @@ namespace CellDotNet
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Float32:
-								vr = _writer.WriteFceq(vrleft, vrright);
+								vr = _writer.WriteFcgt(vrleft, vrright);
 								_writer.WriteXori(vr, vr, 0xfffffff);
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
@@ -485,7 +485,7 @@ namespace CellDotNet
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Float32:
-								vr = _writer.WriteFceq(vrright, vrleft);
+								vr = _writer.WriteFcgt(vrright, vrleft);
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Int64:
