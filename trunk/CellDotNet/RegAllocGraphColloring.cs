@@ -127,8 +127,8 @@ namespace CellDotNet
 			bool redoAlloc;
 
 			K = 0;
-			K += HardwareRegister.getCallerSavesCellRegisters().Length;
-			K += HardwareRegister.getCalleeSavesCellRegisters().Length;
+			K += HardwareRegister.GetCallerSavesCellRegisters().Length;
+			K += HardwareRegister.GetCalleeSavesCellRegisters().Length;
 			//TODO overvej en mere smart/fleksibel måde.
 			// f.eks. mulighed for dynamisk at angive antallet af tilgængelige registre.
 			// eller at alloc tager som argument de registre der må bruges.
@@ -1155,12 +1155,12 @@ namespace CellDotNet
 
 		private void AssignColors()
 		{
-			BitVector initOkColors = new BitVector(HardwareRegister.getCallerSavesCellRegisters().Length + HardwareRegister.getCalleeSavesCellRegisters().Length);
+			BitVector initOkColors = new BitVector(HardwareRegister.GetCallerSavesCellRegisters().Length + HardwareRegister.GetCalleeSavesCellRegisters().Length);
 
-			foreach (CellRegister register in HardwareRegister.getCallerSavesCellRegisters())
+			foreach (CellRegister register in HardwareRegister.GetCallerSavesCellRegisters())
 				initOkColors.Add((int)register);
 
-			foreach (CellRegister register in HardwareRegister.getCalleeSavesCellRegisters())
+			foreach (CellRegister register in HardwareRegister.GetCalleeSavesCellRegisters())
 				initOkColors.Add((int)register);
 
 			while (selectStack.Count > 0)
@@ -1168,9 +1168,9 @@ namespace CellDotNet
 				uint n = selectStack.Pop();
 				selectStackBitVector.Remove((int) n);
 
-//				Set<CellRegister> okColors = new Set<CellRegister>(HardwareRegister.getCallerSavesCellRegisters().Length + HardwareRegister.getCalleeSavesCellRegisters().Length);
-//				okColors.AddAll(HardwareRegister.getCallerSavesCellRegisters());
-//				okColors.AddAll(HardwareRegister.getCalleeSavesCellRegisters());
+//				Set<CellRegister> okColors = new Set<CellRegister>(HardwareRegister.GetCallerSavesCellRegisters().Length + HardwareRegister.GetCalleeSavesCellRegisters().Length);
+//				okColors.AddAll(HardwareRegister.GetCallerSavesCellRegisters());
+//				okColors.AddAll(HardwareRegister.GetCalleeSavesCellRegisters());
 
 				BitVector okColors = new BitVector(initOkColors);
 

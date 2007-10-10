@@ -1162,7 +1162,7 @@ namespace CellDotNet
 			SpeContext.UnitTestRunProgram(cc, inst, s);
 
 			AreEqual(1, inst.Hitcount);
-			AreSame(s, inst.HitObject);
+			AreSame(inst.HitObject, s);
 		}
 
 		class SpeClass

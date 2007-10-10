@@ -149,9 +149,9 @@ namespace CellDotNet
 
 		NoRegisterWrite = 1 << 6,
 		ChannelAccess = 1 << 7,
-		MemoryRead = 1 << 7,
-		MemoryWrite = 1 << 8,
-		MethodCall = 1 << 9,
+		MemoryRead = 1 << 8,
+		MemoryWrite = 1 << 9,
+		MethodCall = 1 << 10,
 	}
 
 	/// <summary>
@@ -193,8 +193,8 @@ namespace CellDotNet
 	public enum SpuPipeline
 	{
 		None,
-		Odd,
-		Even,
+		Odd = 1,
+		Even = 2,
 	}
 
 	/// <summary>

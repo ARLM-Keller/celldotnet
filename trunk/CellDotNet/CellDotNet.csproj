@@ -76,6 +76,7 @@
     <Compile Include="LinearRegisterAllocator.cs" />
     <Compile Include="LinearRegisterAllocatorTest.cs" />
     <Compile Include="ListInstructionScheduler.cs" />
+    <Compile Include="ListInstructionSchedulerTest.cs" />
     <Compile Include="LivenessAnalyzer.cs" />
     <Compile Include="LocalStorageAddress.cs" />
     <Compile Include="MainStorageArea.cs" />

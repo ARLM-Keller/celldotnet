@@ -231,9 +231,6 @@ namespace CellDotNet
 					_methodBase.DeclaringType.Name, _methodBase.Name), e);
 			}
 
-//			Console.WriteLine("Method " + _methodBase.Name + " before modifications:");
-//			new TreeDrawer().DrawMethod(this);
-
 			PatchSystemLib();
 
 //			PatchDivOperator();
@@ -244,10 +241,6 @@ namespace CellDotNet
 			DetermineEscapesAndAllocateStackVariables();
 
 			_partialEvaluator.Evaluate(this);
-
-//			Console.WriteLine("Method " + _methodBase.Name + " after partial evaluation:");
-//			new TreeDrawer().DrawMethod(this);
-
 
 			IRBasicBlock.ConvertTreeInstructions(Blocks, DivConverter);
 
@@ -272,7 +265,6 @@ namespace CellDotNet
 					bool isConstructorCall = mci != null && root.Opcode == IROpCodes.IntrinsicNewObj;
 					if (!isConstructorCall)
 						continue;
-//					continue;
 
 					Utilities.Assert(mci.Parameters.Count >= 1, "mci.Parameters.Count >= 1");
 
@@ -725,6 +717,12 @@ namespace CellDotNet
 					_instructions.WriteMove(calleTemps[i], HardwareRegister.GetHardwareRegister(i+80));
 				}
 			}
+
+//			// Instruction scheduling.
+//			ListInstructionScheduler scheduler = new ListInstructionScheduler();
+//			foreach (SpuBasicBlock bb in _instructions.BasicBlocks)
+//				scheduler.Schedule(bb);
+
 
 			State = MethodCompileState.S4InstructionSelectionDone;
 		}

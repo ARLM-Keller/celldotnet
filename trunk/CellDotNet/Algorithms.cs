@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
@@ -22,9 +21,17 @@ namespace CellDotNet
 			return l2;
 		}
 
-		public static bool AreEqualSets<T>(ICollection<T> s1, ICollection<T> s2, IComparer<T> comparer)
+		public static bool AreEqualSets<T>(IEnumerable<T> s1, IEnumerable<T> s2)
 		{
-			if (s1.Count != s2.Count)
+			return AreEqualSets(s1, s2, Comparer<T>.Default);
+		}
+
+		public static bool AreEqualSets<T>(IEnumerable<T> s1, IEnumerable<T> s2, IComparer<T> comparer)
+		{
+			ICollection<T> c1 = s1 as ICollection<T>;
+			ICollection<T> c2 = s2 as ICollection<T>;
+
+			if (c1 != null && c2 != null && c1.Count != c2.Count)
 				return false;
 
 			List<T> l1 = new List<T>(s1);

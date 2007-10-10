@@ -20,6 +20,16 @@ namespace CellDotNet
 			dict = new Dictionary<T, bool>(capacity);
 		}
 
+		public Set(IEnumerable<T> initialElements)
+		{
+			if (initialElements is ICollection<T>)
+				dict = new Dictionary<T, bool>(((ICollection<T>)initialElements).Count);
+			else
+				dict = new Dictionary<T, bool>();
+
+			AddAll(initialElements);
+		}
+
 		public void Add(T item)
 		{
 			dict[item] = true;

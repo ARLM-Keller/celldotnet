@@ -147,6 +147,17 @@ namespace CellDotNet
 			return l;
 		}
 
+		public static List<TReturn> ConvertAll<T, TReturn>(IEnumerable<T> set, Converter<T, TReturn> conv)
+		{
+			List<TReturn> l = new List<TReturn>();
+			foreach (T t in set)
+			{
+				l.Add(conv(t));
+			}
+
+			return l;
+		}
+
 		/// <summary>
 		/// You can use this one to make resharper think that a variable is used so that it won't
 		/// show a warning. Can be handy when the variable isn't used for anything but debugging, 
