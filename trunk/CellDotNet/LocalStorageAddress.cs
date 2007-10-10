@@ -31,9 +31,9 @@ namespace CellDotNet
 			return new LocalStorageAddress(baseAddr._value + bytes);
 		}
 
-		public static LocalStorageAddress operator%(LocalStorageAddress baseAddr, int divisor)
+		public static int operator%(LocalStorageAddress baseAddr, int divisor)
 		{
-			return new LocalStorageAddress(baseAddr._value % divisor);
+			return baseAddr._value % divisor;
 		}
 
 		#region IFormattable Members

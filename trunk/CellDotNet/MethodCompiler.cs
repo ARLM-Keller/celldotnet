@@ -231,6 +231,9 @@ namespace CellDotNet
 					_methodBase.DeclaringType.Name, _methodBase.Name), e);
 			}
 
+//			Console.WriteLine("Method " + _methodBase.Name + " before modifications:");
+//			new TreeDrawer().DrawMethod(this);
+
 			PatchSystemLib();
 
 //			PatchDivOperator();
@@ -241,6 +244,10 @@ namespace CellDotNet
 			DetermineEscapesAndAllocateStackVariables();
 
 			_partialEvaluator.Evaluate(this);
+
+//			Console.WriteLine("Method " + _methodBase.Name + " after partial evaluation:");
+//			new TreeDrawer().DrawMethod(this);
+
 
 			IRBasicBlock.ConvertTreeInstructions(Blocks, DivConverter);
 

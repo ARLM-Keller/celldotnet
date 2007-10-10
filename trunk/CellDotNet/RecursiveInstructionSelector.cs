@@ -1823,26 +1823,26 @@ namespace CellDotNet
 							VirtualRegister pattern = writer.WriteIla(0x00010203);
 							return writer.WriteShufb(childregs[0], childregs[0], pattern);
 						}
-					case SpuIntrinsicMethod.CompareGreaterThanAndSelectInt:
+					case SpuIntrinsicMethod.CompareGreaterThanIntAndSelect:
 						{
 							if (childregs.Count < 4)
-								throw new ArgumentException("Too few argument register to intrinsic CompareGreaterThanAndSelectInt.");
+								throw new ArgumentException("Too few argument register to intrinsic CompareGreaterThanIntAndSelect.");
 
 							VirtualRegister r1 = writer.WriteCgt(childregs[0], childregs[1]);
 							return writer.WriteSelb(childregs[3], childregs[2], r1);
 						}
-					case SpuIntrinsicMethod.CompareGreaterThanAndSelectFloat:
+					case SpuIntrinsicMethod.CompareGreaterThanFloatAndSelect:
 						{
 							if (childregs.Count < 4)
-								throw new ArgumentException("Too few argument register to intrinsic CompareGreaterThanAndSelectFloat.");
+								throw new ArgumentException("Too few argument register to intrinsic CompareGreaterThanFloatAndSelect.");
 
 							VirtualRegister r1 = writer.WriteFcgt(childregs[0], childregs[1]);
 							return writer.WriteSelb(childregs[3], childregs[2], r1);
 						}
-					case SpuIntrinsicMethod.CompareEqualsAndSelectInt:
+					case SpuIntrinsicMethod.CompareEqualsIntAndSelect:
 						{
 							if (childregs.Count < 4)
-								throw new ArgumentException("Too few argument register to intrinsic CompareEqualsAndSelectInt.");
+								throw new ArgumentException("Too few argument register to intrinsic CompareEqualsIntAndSelect.");
 
 							VirtualRegister r1 = writer.WriteCeq(childregs[0], childregs[1]);
 							return writer.WriteSelb(childregs[3], childregs[2], r1);
@@ -1914,16 +1914,6 @@ namespace CellDotNet
 			_writer.LastInstruction.Rt = conditionregister;
 			_writer.LastInstruction.JumpTarget = target;
 //			_branchInstructions.Add(new KeyValuePair<SpuInstruction, IRBasicBlock>(_writer.LastInstruction, target));
-		}
-
-		private static VirtualRegister GetMethodVariableRegister(TreeInstruction inst)
-		{
-			if (!(inst.Operand is MethodVariable))
-				throw new InvalidOperationException();
-
-			MethodVariable var = (MethodVariable) inst.Operand;
-			Utilities.AssertNotNull(var.VirtualRegister, "var.VirtualRegister");
-			return var.VirtualRegister;
 		}
 
 		private VirtualRegister WriteCltFloat64(VirtualRegister ra, VirtualRegister rb)

@@ -13,7 +13,7 @@ namespace CellDotNet
 	/// non-wrapped <code>Get</code> and <code>Put</code>.
 	/// 
 	/// </summary>
-	static class Mfc
+	public static class Mfc
 	{
 		/// <summary>
 		/// Returns the number of MFC queue entries that currently are unused.
@@ -158,8 +158,9 @@ namespace CellDotNet
 
 		static private void Put(ref int lsStart, uint ea, int byteCount, uint tag, uint tid, uint rid)
 		{
-			if (!SpuRuntime.IsRunningOnSpu)
-				throw new InvalidOperationException();
+			// 20071010: Removed this check since the partial evaluator can have issues removing it.
+//			if (!SpuRuntime.IsRunningOnSpu)
+//				throw new InvalidOperationException();
 
 			// MFC_CMD_WORD(_tid, _rid, _cmd) (((_tid)<<24)|((_rid)<<16)|(_cmd))
 			uint cmd = (uint)MfcDmaCommand.Put;

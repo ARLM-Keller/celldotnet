@@ -547,12 +547,14 @@ namespace CellDotNet
 			else if (size == 8)
 			{
 				Utilities.AssertArgument(Utilities.IsDoubleWordAligned(lsa), "Not 8-byte aligned LSA.");
-				Utilities.AssertArgument(ea == null || Utilities.IsDoubleWordAligned(ea.Value), "Not 8-byte aligned EA.");
+				if (ea != null)
+					Utilities.AssertArgument((ea.Value.ToInt32() % 16) == lsa % 16, "Different ea and lsa remainders for 8-byte transfer.");
 			}
 			else if (size == 4)
 			{
 				Utilities.AssertArgument(Utilities.IsWordAligned(lsa), "Not 4-byte aligned LSA.");
-				Utilities.AssertArgument(ea == null || Utilities.IsWordAligned(ea.Value), "Not 4-byte aligned EA.");
+				if (ea != null)
+					Utilities.AssertArgument((ea.Value.ToInt32() % 16) == lsa % 16, "Different ea and lsa remainders for 8-byte transfer.");
 			}
 			else throw new ArgumentException("Bad transfer size and/or alignment.");
 
