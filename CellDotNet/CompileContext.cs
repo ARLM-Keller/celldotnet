@@ -960,6 +960,10 @@ main:
 
 		#endregion
 
+		public void DisassembleToConsole()
+		{
+			Disassembler.DisassembleToConsole(this);
+		}
 
 		public int[] GetEmittedCode()
 		{

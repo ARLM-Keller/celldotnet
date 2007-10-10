@@ -133,6 +133,8 @@ namespace CellDotNet
 		CompareGreaterThanFloatAndSelect,
 		CompareEqualsIntAndSelect,
 		ConvertIntToFloat,
-		ConvertFloatToInteger
+		ConvertFloatToInteger,
+		ConditionalSelectWord,
+		ConditionalSelectVector
 	}
 }

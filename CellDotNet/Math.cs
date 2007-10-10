@@ -314,5 +314,76 @@ namespace CellDotNet
 
 			return new Float32Vector(r1, r2, r3, r4);
 		}
+
+		[IntrinsicMethod(SpuIntrinsicMethod.CompareEqualsIntAndSelect)]
+		public static int CompareEqualsAndSelect(int c1, int c2, int e1, int e2)
+		{
+			return c1 == c2 ? e1 : e2;
+		}
+
+		[IntrinsicMethod(SpuIntrinsicMethod.CompareEqualsIntAndSelect)]
+		public static float CompareEqualsAndSelect(int c1, int c2, float e1, float e2)
+		{
+			return c1 == c2 ? e1 : e2;
+		}
+
+		[IntrinsicMethod(SpuIntrinsicMethod.CompareGreaterThanIntAndSelect)]
+		public static int CompareGreaterThanAndSelect(int c1, int c2, int e1, int e2)
+		{
+			return c1 > c2 ? e1 : e2;
+		}
+
+		[IntrinsicMethod(SpuIntrinsicMethod.CompareGreaterThanIntAndSelect)]
+		public static float CompareGreaterThanAndSelect(int c1, int c2, float e1, float e2)
+		{
+			return c1 > c2 ? e1 : e2;
+		}
+
+		[IntrinsicMethod(SpuIntrinsicMethod.CompareGreaterThanFloatAndSelect)]
+		public static int CompareGreaterThanAndSelect(float c1, float c2, int e1, int e2)
+		{
+			return c1 > c2 ? e1 : e2;
+		}
+
+		[IntrinsicMethod(SpuIntrinsicMethod.CompareGreaterThanFloatAndSelect)]
+		public static float CompareGreaterThanAndSelect(float c1, float c2, float e1, float e2)
+		{
+			return c1 > c2 ? e1 : e2;
+		}
+
+		[IntrinsicMethod(SpuIntrinsicMethod.ConditionalSelectWord)]
+		public static int ConditionalSelect(bool c, int e1, int e2)
+		{
+			return c ? e1 : e2;
+		}
+
+		[IntrinsicMethod(SpuIntrinsicMethod.ConditionalSelectWord)]
+		public static float ConditionalSelect(bool c, float e1, float e2)
+		{
+			return c ? e1 : e2;
+		}
+
+		[IntrinsicMethod(SpuIntrinsicMethod.ConditionalSelectVector)]
+		public static Int32Vector ConditionalSelect(bool c, Int32Vector e1, Int32Vector e2)
+		{
+			return c ? e1 : e2;
+		}
+
+		[IntrinsicMethod(SpuIntrinsicMethod.ConditionalSelectVector)]
+		public static Float32Vector ConditionalSelect(bool c, Float32Vector e1, Float32Vector e2)
+		{
+			return c ? e1 : e2;
+		}
+
+		[SpuOpCode(SpuOpCodeEnum.Fma)]
+		[return: SpuInstructionPart(SpuInstructionPart.Rt)]
+		public static Float32Vector MultiplyAdd(
+			[SpuInstructionPart(SpuInstructionPart.Ra)]Float32Vector v1,
+			[SpuInstructionPart(SpuInstructionPart.Rb)]Float32Vector v2,
+			[SpuInstructionPart(SpuInstructionPart.Rc)]Float32Vector v3)
+		{
+			return (v1 * v2) + v3;
+		}
+
 	}
 }

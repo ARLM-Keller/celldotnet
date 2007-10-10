@@ -505,7 +505,7 @@ namespace CellDotNet
 
 				if (realtype.GetArrayRank() != 1)
 					throw new NotSupportedException("Only 1D arrays are supported.");
-				if (!elementtype.IsValueType || !(elementtype.IsPrimitive || elementtype.Equals(typeof(Int32Vector))))
+				if (!elementtype.IsValueType || !(elementtype.IsPrimitive || elementtype.Equals(typeof(Int32Vector)) || elementtype.Equals(typeof(Float32Vector))))
 					throw new NotSupportedException("Only 1D primitive value type arrays are supported.");
 
 				StackTypeDescription elementstd = s_metadataCilTypes[elementtype];
