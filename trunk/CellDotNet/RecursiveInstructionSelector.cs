@@ -1847,6 +1847,23 @@ namespace CellDotNet
 							VirtualRegister r1 = writer.WriteCeq(childregs[0], childregs[1]);
 							return writer.WriteSelb(childregs[3], childregs[2], r1);
 						}
+					case SpuIntrinsicMethod.ConditionalSelectWord:
+						{
+							if (childregs.Count < 3)
+								throw new ArgumentException("Too few argument register to intrinsic ConditionalSelectWord.");
+
+							VirtualRegister r1 = writer.WriteFsm(childregs[0]);
+							return writer.WriteSelb(childregs[2], childregs[1], r1);
+						}
+					case SpuIntrinsicMethod.ConditionalSelectVector:
+						{
+							if (childregs.Count < 3)
+								throw new ArgumentException("Too few argument register to intrinsic ConditionalSelectWord.");
+
+							VirtualRegister r1 = writer.WriteFsm(childregs[0]);
+							VirtualRegister r2 = writer.WriteFsm(r1);
+							return writer.WriteSelb(childregs[2], childregs[1], r2);
+						}
 					case SpuIntrinsicMethod.ConvertFloatToInteger:
 						{
 							if (childregs.Count < 1)
