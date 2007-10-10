@@ -7,7 +7,7 @@ using System.Reflection.Emit;
 namespace CellDotNet
 {
 	/// <summary>
-	/// Wraps an ILReader and expands some IL instructions to sequence of instructions.
+	/// Wraps an ILReader and expands some IL instructions to a sequence of instructions.
 	/// </summary>
 	class IlReaderWrapper
 	{
@@ -25,7 +25,7 @@ namespace CellDotNet
 
 		private MethodVariable _lastCreatedMethodVariable = null;
 
-		public MethodVariable lastCreatedMethodVariable
+		public MethodVariable LastCreatedMethodVariable
 		{
 			get { return _lastCreatedMethodVariable; }
 		}
@@ -61,7 +61,7 @@ namespace CellDotNet
 				if(opcode == OpCodes.Dup)
 				{
 					if (type == StackTypeDescription.None)
-						throw new Exception("Incompatible type.");
+						throw new ArgumentException("Incompatible type.");
 
 					MethodVariable mv = new MethodVariable(_variableCount + 2000, type);
 					_opcodeQueue.Enqueue(OpCodes.Stloc);
@@ -72,20 +72,6 @@ namespace CellDotNet
 					_operandQueue.Enqueue(mv);
 					_lastCreatedMethodVariable = mv;
 				}
-//				else if (opcode == OpCodes.Div && (type.CliType == CliType.Int32 || type.CliType == CliType.NativeInt))
-//				{
-//					_opcodeQueue.Enqueue(OpCodes.Call);
-//					MethodBase mb = typeof (CellDotNet.SpuMath).GetMethod("Div", new Type[] {typeof (int), typeof (int)});
-//					Utilities.AssertNotNull(mb, "Could not finde division function.");
-//					_operandQueue.Enqueue(mb);
-//				}
-//				else if (opcode == OpCodes.Div_Un && (type.CliType == CliType.Int32 || type.CliType == CliType.NativeInt))
-//				{
-//					_opcodeQueue.Enqueue(OpCodes.Call);
-//					MethodBase mb = typeof(CellDotNet.SpuMath).GetMethod("Div_Un", new Type[] { typeof(uint), typeof(uint) });
-//					Utilities.AssertNotNull(mb, "Could not finde division function.");
-//					_operandQueue.Enqueue(mb);
-//				}
 				else
 				{
 					_opcodeQueue.Enqueue(opcode);
@@ -109,7 +95,6 @@ namespace CellDotNet
 		{
 			get { return _operandQueue.Peek(); }
 		}
-
 	}
 
 	[DebuggerDisplay("{DebuggerDisplay}")]
@@ -158,12 +143,6 @@ namespace CellDotNet
 		private Dictionary<short, OpCode> _ocmap = GetReflectionOpCodeMap();
 		private MethodBase _method;
 		private MethodBody _body;
-
-//		/// <summary>
-//		/// Used to decompose branch macro instructions.
-//		/// The value part is branch offset.
-//		/// </summary>
-//		Stack<KeyValuePair<IROpCode, int>> _opcodestack = new Stack<KeyValuePair<IROpCode, int>>();
 
 		public ReadState State
 		{

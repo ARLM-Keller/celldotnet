@@ -6,13 +6,11 @@ namespace CellDotNet
 	[TestFixture]
 	public class MfcTest : UnitTest
 	{
-		private delegate int IntDelegate();
-
 		[Test]
 		public void TestGetQueueDepth()
 		{
-			IntDelegate del = delegate { return Mfc.GetAvailableQueueEntries(); };
-			IntDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+			Func<int> del = delegate { return Mfc.GetAvailableQueueEntries(); };
+			Func<int> del2 = SpeDelegateRunner.CreateSpeDelegate(del);
 
 			SpeDelegateRunner runner = (SpeDelegateRunner) del2.Target;
 			AreEqual(1, runner.CompileContext.Methods.Count);

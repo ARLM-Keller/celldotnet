@@ -1181,10 +1181,15 @@ namespace CellDotNet
 
 			PpeClass inst = new PpeClass();
 
-			// This should fail somehow.
-			SpeContext.UnitTestRunProgram(cc, inst);
-
-			Fail();
+			try
+			{
+				SpeContext.UnitTestRunProgram(cc, inst);
+				Fail();
+			}
+			catch (ArgumentException)
+			{
+				// Ok
+			}
 		}
 
 		[Test]

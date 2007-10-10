@@ -320,28 +320,14 @@ namespace CellDotNet
 			List<IRBasicBlock> blocks = new List<IRBasicBlock>();
 			TypeDeriver typederiver = new TypeDeriver();
 
-			TreeInstruction prevInst = default(TreeInstruction);
 
-
-			// Start by finding all branch targets.
-			Dictionary<int, IRBasicBlock> branchTargets = new Dictionary<int, IRBasicBlock>();
-			branchTargets.Add(0, new IRBasicBlock());
-			while (readerIn.Read())
-			{
-				if (readerIn.OpCode.FlowControl == FlowControl.Branch ||
-				    readerIn.OpCode.FlowControl == FlowControl.Cond_Branch)
-				{
-					int targetOffset = (int) readerIn.Operand;
-					if (!branchTargets.ContainsKey(targetOffset))
-						branchTargets.Add(targetOffset, new IRBasicBlock());
-				}
-			}
-
+			Dictionary<int, IRBasicBlock> branchTargets = CreateBasicBlocks(readerIn);
 
 			// Start over, this time actually reading the instructions.
 			readerIn.Reset();
 			IlReaderWrapper reader = new IlReaderWrapper(readerIn);
 
+			TreeInstruction prevInst = null;
 			currblock = branchTargets[0];
 			while (reader.Read(_parseStack.PeekType()))
 			{
@@ -391,8 +377,8 @@ namespace CellDotNet
 					currblock = branchTargets[reader.Offset];
 				}
 
-				if (reader.lastCreatedMethodVariable != null)
-					variables.Add(reader.lastCreatedMethodVariable);
+				if (reader.LastCreatedMethodVariable != null)
+					variables.Add(reader.LastCreatedMethodVariable);
 
 				PopBehavior popbehavior = IROpCode.GetPopBehavior(reader.OpCode.StackBehaviourPop);
 				int pushcount = GetPushCount(reader.OpCode);
@@ -525,6 +511,35 @@ namespace CellDotNet
 			foreach (List<MethodVariable> methodVariables in _parseStack.BranchTargetStackVariables.Values)
 			{
 				variables.AddRange(methodVariables);
+			}
+
+			return blocks;
+		}
+
+		private static Dictionary<int, IRBasicBlock> CreateBasicBlocks(ILReader reader)
+		{
+			// Find all branch sources and targets and create basic blocks accordingly.
+			Dictionary<int, IRBasicBlock> blocks = new Dictionary<int, IRBasicBlock>();
+			blocks.Add(0, new IRBasicBlock());
+
+			bool nextInstructionStartsBlock = false;
+			while (reader.Read())
+			{
+				if (reader.OpCode.FlowControl == FlowControl.Branch ||
+				    reader.OpCode.FlowControl == FlowControl.Cond_Branch)
+				{
+					int targetOffset = (int) reader.Operand;
+					if (!blocks.ContainsKey(targetOffset))
+						blocks.Add(targetOffset, new IRBasicBlock());
+
+					nextInstructionStartsBlock = true;
+				}
+//				else if (nextInstructionStartsBlock)
+//				{
+//					if (!blocks.ContainsKey(reader.Offset))
+//						blocks.Add(reader.Offset, new IRBasicBlock());
+//					nextInstructionStartsBlock = false;
+//				}
 			}
 
 			return blocks;

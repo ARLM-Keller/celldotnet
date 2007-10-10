@@ -219,7 +219,7 @@ namespace CellDotNet
 		/// <param name="e1"></param>
 		/// <param name="e2"></param>
 		/// <returns></returns>
-		[IntrinsicMethod(SpuIntrinsicMethod.CompareGreaterThanAndSelectInt)]
+		[IntrinsicMethod(SpuIntrinsicMethod.CompareGreaterThanIntAndSelect)]
 		public static Int32Vector CompareGreaterThanAndSelect(Int32Vector c1, Int32Vector c2, Int32Vector e1, Int32Vector e2)
 		{
 			int r1 = c1.E1 > c2.E1 ? e1.E1 : e2.E1;
@@ -240,7 +240,7 @@ namespace CellDotNet
 		/// <param name="e1"></param>
 		/// <param name="e2"></param>
 		/// <returns></returns>
-		[IntrinsicMethod(SpuIntrinsicMethod.CompareGreaterThanAndSelectInt)]
+		[IntrinsicMethod(SpuIntrinsicMethod.CompareGreaterThanIntAndSelect)]
 		public static Float32Vector CompareGreaterThanAndSelect(Int32Vector c1, Int32Vector c2, Float32Vector e1, Float32Vector e2)
 		{
 			float r1 = c1.E1 > c2.E1 ? e1.E1 : e2.E1;
@@ -261,7 +261,7 @@ namespace CellDotNet
 		/// <param name="e1"></param>
 		/// <param name="e2"></param>
 		/// <returns></returns>
-		[IntrinsicMethod(SpuIntrinsicMethod.CompareGreaterThanAndSelectFloat)]
+		[IntrinsicMethod(SpuIntrinsicMethod.CompareGreaterThanFloatAndSelect)]
 		public static Int32Vector CompareGreaterThanAndSelect(Float32Vector c1, Float32Vector c2, Int32Vector e1, Int32Vector e2)
 		{
 			int r1 = c1.E1 > c2.E1 ? e1.E1 : e2.E1;
@@ -282,7 +282,7 @@ namespace CellDotNet
 		/// <param name="e1"></param>
 		/// <param name="e2"></param>
 		/// <returns></returns>
-		[IntrinsicMethod(SpuIntrinsicMethod.CompareGreaterThanAndSelectFloat)]
+		[IntrinsicMethod(SpuIntrinsicMethod.CompareGreaterThanFloatAndSelect)]
 		public static Float32Vector CompareGreaterThanAndSelect(Float32Vector c1, Float32Vector c2, Float32Vector e1, Float32Vector e2)
 		{
 			float r1 = c1.E1 > c2.E1 ? e1.E1 : e2.E1;
@@ -293,7 +293,7 @@ namespace CellDotNet
 			return new Float32Vector(r1, r2, r3, r4);
 		}
 
-		[IntrinsicMethod(SpuIntrinsicMethod.CompareEqualsAndSelectInt)]
+		[IntrinsicMethod(SpuIntrinsicMethod.CompareEqualsIntAndSelect)]
 		public static Int32Vector CompareEqualsAndSelect(Int32Vector c1, Int32Vector c2, Int32Vector e1, Int32Vector e2)
 		{
 			int r1 = c1.E1 == c2.E1 ? e1.E1 : e2.E1;
@@ -304,7 +304,7 @@ namespace CellDotNet
 			return new Int32Vector(r1, r2, r3, r4);
 		}
 
-		[IntrinsicMethod(SpuIntrinsicMethod.CompareEqualsAndSelectInt)]
+		[IntrinsicMethod(SpuIntrinsicMethod.CompareEqualsIntAndSelect)]
 		public static Float32Vector CompareEqualsAndSelect(Int32Vector c1, Int32Vector c2, Float32Vector e1, Float32Vector e2)
 		{
 			float r1 = c1.E1 == c2.E1 ? e1.E1 : e2.E1;

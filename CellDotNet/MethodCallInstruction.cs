@@ -129,9 +129,9 @@ namespace CellDotNet
 		ReturnArgument1,
 		CombineFourWords,
 		SplatWord,
-		CompareGreaterThanAndSelectInt,
-		CompareGreaterThanAndSelectFloat,
-		CompareEqualsAndSelectInt,
+		CompareGreaterThanIntAndSelect,
+		CompareGreaterThanFloatAndSelect,
+		CompareEqualsIntAndSelect,
 		ConvertIntToFloat,
 		ConvertFloatToInteger
 	}
