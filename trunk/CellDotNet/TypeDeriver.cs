@@ -88,7 +88,7 @@ namespace CellDotNet
 							DeriveType(param);
 
 						MethodBase methodBase = mci.IntrinsicMethod ?? mci.OperandMethod;
-						if (mci.Opcode == IROpCodes.Newobj)
+						if (mci.Opcode == IROpCodes.Newobj || mci.Opcode == IROpCodes.IntrinsicNewObj)
 							t = GetStackTypeDescription(methodBase.DeclaringType);
 						else if (methodBase is MethodInfo && ((MethodInfo)methodBase).ReturnType != typeof (void))
 							t = GetStackTypeDescription(((MethodInfo)methodBase).ReturnType);

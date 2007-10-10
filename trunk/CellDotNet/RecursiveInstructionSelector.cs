@@ -230,10 +230,9 @@ namespace CellDotNet
 					break;
 				case IRCode.Ret:
 					if (inst.StackType != StackTypeDescription.None)
-					{
 						_writer.WriteMove(vrleft, HardwareRegister.GetHardwareRegister((int) CellRegister.REG_3));
-						_writer.WriteReturn();
-					}
+
+					_writer.WriteReturn();
 					return null;
 				case IRCode.Br:
 					WriteUnconditionalBranch(SpuOpCode.br, (IRBasicBlock) inst.Operand);
