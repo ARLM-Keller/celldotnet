@@ -101,7 +101,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MonteCarlo.cs" />
-    <Compile Include="MonteCarloSingleCellTest.cs" />
     <Compile Include="MonteCarloVector.cs" />
     <Compile Include="Random.cs" />
     <Compile Include="RandomSingleCell.cs" />

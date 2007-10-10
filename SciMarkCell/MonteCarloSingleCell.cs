@@ -9,7 +9,7 @@
 /// anihilate your screen and corrupt all your disks, so you it at your
 /// own risk.
 /// </license>
-namespace SciMarkCell
+namespace SciMark2Cell
 {
 	/// <summary>Estimate Pi by approximating the area of a circle.
 	/// How: generate N random numbers in the unit square, (0,0) to (1,1)
@@ -31,7 +31,7 @@ namespace SciMarkCell
 	/// total # points
 	/// </pre>
 	/// </summary>
-	public class MonteCarlo
+	public class MonteCarloSingleCell
 	{
 		internal const int SEED = 113;
 
@@ -44,7 +44,7 @@ namespace SciMarkCell
 
 		public static float integrate(int Num_samples)
 		{
-			Random R = new Random();
+			RandomSingleCell R = new RandomSingleCell();
 
 			R.initializeRandomCell(SEED);
 
