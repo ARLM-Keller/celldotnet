@@ -1,8 +1,8 @@
 using System;
 
-namespace SciMarkCell
+namespace SciMark2Cell
 {
-	public struct Random
+	public struct RandomSingleCell
 	{
 		internal int _seed; // readonly
 		
@@ -22,7 +22,7 @@ namespace SciMarkCell
 		private float _right;
 		private float _width; // readonly
 
-		public Random(int seed)
+		public RandomSingleCell(int seed)
 		{
 			throw new NotSupportedException();
 		}
