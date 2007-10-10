@@ -9,7 +9,7 @@
 /// own risk.
 /// </license>
 
-namespace SciMarkCell
+namespace SciMark2
 {
 	public class Constants
 	{

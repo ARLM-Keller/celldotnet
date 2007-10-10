@@ -11,7 +11,7 @@
 
 using System;
 
-namespace SciMarkCell
+namespace SciMark2
 {
 	
 	/// <summary>Computes FFT's of complex, double precision data where n is an integer power of 2.

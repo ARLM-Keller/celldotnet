@@ -100,11 +100,11 @@
     <Compile Include="Constants.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MonteCarloDouble.cs" />
-    <Compile Include="MonteCarloDoubleTest.cs" />
-    <Compile Include="MonteCarloTest.cs" />
+    <Compile Include="MonteCarlo.cs" />
+    <Compile Include="MonteCarloSingleCellTest.cs" />
     <Compile Include="MonteCarloVector.cs" />
     <Compile Include="Random.cs" />
+    <Compile Include="RandomSingleCell.cs" />
     <Compile Include="FFT.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -114,10 +114,9 @@
     <Compile Include="LU.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MonteCarlo.cs">
+    <Compile Include="MonteCarloSingleCell.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="RandomDouble.cs" />
     <Compile Include="RandomVector.cs" />
     <Compile Include="SOR.cs">
       <SubType>Code</SubType>
