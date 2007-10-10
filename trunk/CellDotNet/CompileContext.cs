@@ -526,6 +526,7 @@ namespace CellDotNet
 
 			// The types whose methods should only be executed on the ppe.
 			Set<Type> _ppeTypes = new Set<Type>();
+			_ppeTypes.Add(typeof(Console));
 			foreach (ParameterInfo param in _entryPointMethod.GetParameters())
 			{
 				Type t = param.ParameterType;

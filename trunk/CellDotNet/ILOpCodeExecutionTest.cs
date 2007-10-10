@@ -83,6 +83,42 @@ namespace CellDotNet
 				TestExecution(w, 1);
 		}
 
+		/// <summary>
+		/// NOTE: this function requires short form branch instruction as argument.
+		/// </summary>
+		/// <param name="opcode"></param>
+		/// <param name="i1"></param>
+		/// <param name="i2"></param>
+		/// <param name="branch"></param>
+		public void ConditionalBranchTest(OpCode opcode, float i1, float i2, bool branch)
+		{
+			ILWriter w = new ILWriter();
+
+			// Load constants.
+			w.WriteOpcode(OpCodes.Ldc_R4);
+			w.WriteFloat(i1);
+			w.WriteOpcode(OpCodes.Ldc_R4);
+			w.WriteFloat(i2);
+
+			// Conditionally branch 3 bytes.
+			w.WriteOpcode(opcode);
+			w.WriteByte(3);
+
+			w.WriteOpcode(OpCodes.Ldc_I4_1);
+
+			w.WriteOpcode(OpCodes.Br_S);
+			w.WriteByte(1);
+
+			w.WriteOpcode(OpCodes.Ldc_I4_2);
+
+			w.WriteOpcode(OpCodes.Ret);
+
+			if (branch)
+				TestExecution(w, 2);
+			else
+				TestExecution(w, 1);
+		}
+
 		[Test]
 		public void Test_Br()
 		{
@@ -227,6 +263,8 @@ namespace CellDotNet
 		{
 			ConditionalBranchTest(OpCodes.Beq_S, 2, 2, true);
 			ConditionalBranchTest(OpCodes.Beq_S, 5, 2, false);
+			ConditionalBranchTest(OpCodes.Beq_S, 2f, 2f, true);
+			ConditionalBranchTest(OpCodes.Beq_S, 5f, 2f, false);
 		}
 
 		[Test]
@@ -234,6 +272,8 @@ namespace CellDotNet
 		{
 			ConditionalBranchTest(OpCodes.Bne_Un_S, 2, 2, false);
 			ConditionalBranchTest(OpCodes.Bne_Un_S, 5, 2, true);
+			ConditionalBranchTest(OpCodes.Bne_Un_S, 2f, 2f, false);
+			ConditionalBranchTest(OpCodes.Bne_Un_S, 5f, 2f, true);
 		}
 
 		[Test]
@@ -242,6 +282,9 @@ namespace CellDotNet
 			ConditionalBranchTest(OpCodes.Bge_S, 5, 2, true);
 			ConditionalBranchTest(OpCodes.Bge_S, 5, 5, true);
 			ConditionalBranchTest(OpCodes.Bge_S, 2, 5, false);
+			ConditionalBranchTest(OpCodes.Bge_S, 5f, 2f, true);
+			ConditionalBranchTest(OpCodes.Bge_S, 5f, 5f, true);
+			ConditionalBranchTest(OpCodes.Bge_S, 2f, 5f, false);
 		}
 
 		[Test]
@@ -250,6 +293,9 @@ namespace CellDotNet
 			ConditionalBranchTest(OpCodes.Bgt_S, 5, 2, true);
 			ConditionalBranchTest(OpCodes.Bgt_S, 5, 5, false);
 			ConditionalBranchTest(OpCodes.Bgt_S, 2, 5, false);
+			ConditionalBranchTest(OpCodes.Bgt_S, 5f, 2f, true);
+			ConditionalBranchTest(OpCodes.Bgt_S, 5f, 5f, false);
+			ConditionalBranchTest(OpCodes.Bgt_S, 2f, 5f, false);
 		}
 
 		[Test]
@@ -258,6 +304,9 @@ namespace CellDotNet
 			ConditionalBranchTest(OpCodes.Ble_S, 5, 2, false);
 			ConditionalBranchTest(OpCodes.Ble_S, 5, 5, true);
 			ConditionalBranchTest(OpCodes.Ble_S, 2, 5, true);
+			ConditionalBranchTest(OpCodes.Ble_S, 5f, 2f, false);
+			ConditionalBranchTest(OpCodes.Ble_S, 5f, 5f, true);
+			ConditionalBranchTest(OpCodes.Ble_S, 2f, 5f, true);
 		}
 
 		[Test]
@@ -266,6 +315,9 @@ namespace CellDotNet
 			ConditionalBranchTest(OpCodes.Blt_S, 5, 2, false);
 			ConditionalBranchTest(OpCodes.Blt_S, 5, 5, false);
 			ConditionalBranchTest(OpCodes.Blt_S, 2, 5, true);
+			ConditionalBranchTest(OpCodes.Blt_S, 5f, 2f, false);
+			ConditionalBranchTest(OpCodes.Blt_S, 5f, 5f, false);
+			ConditionalBranchTest(OpCodes.Blt_S, 2f, 5f, true);
 		}
 
 		[Test]
@@ -274,6 +326,9 @@ namespace CellDotNet
 			ConditionalBranchTest(OpCodes.Bge_Un_S, 5, 2, true);
 			ConditionalBranchTest(OpCodes.Bge_Un_S, 5, 5, true);
 			ConditionalBranchTest(OpCodes.Bge_Un_S, 2, 5, false);
+			ConditionalBranchTest(OpCodes.Bge_Un_S, 5f, 2f, true);
+			ConditionalBranchTest(OpCodes.Bge_Un_S, 5f, 5f, true);
+			ConditionalBranchTest(OpCodes.Bge_Un_S, 2f, 5f, false);
 		}
 
 		[Test]
@@ -282,6 +337,9 @@ namespace CellDotNet
 			ConditionalBranchTest(OpCodes.Bgt_Un_S, 5, 2, true);
 			ConditionalBranchTest(OpCodes.Bgt_Un_S, 5, 5, false);
 			ConditionalBranchTest(OpCodes.Bgt_Un_S, 2, 5, false);
+			ConditionalBranchTest(OpCodes.Bgt_Un_S, 5f, 2f, true);
+			ConditionalBranchTest(OpCodes.Bgt_Un_S, 5f, 5f, false);
+			ConditionalBranchTest(OpCodes.Bgt_Un_S, 2f, 5f, false);
 		}
 
 		[Test]
@@ -290,6 +348,9 @@ namespace CellDotNet
 			ConditionalBranchTest(OpCodes.Ble_Un_S, 5, 2, false);
 			ConditionalBranchTest(OpCodes.Ble_Un_S, 5, 5, true);
 			ConditionalBranchTest(OpCodes.Ble_Un_S, 2, 5, true);
+			ConditionalBranchTest(OpCodes.Ble_Un_S, 5f, 2f, false);
+			ConditionalBranchTest(OpCodes.Ble_Un_S, 5f, 5f, true);
+			ConditionalBranchTest(OpCodes.Ble_Un_S, 2f, 5f, true);
 		}
 
 		[Test]
@@ -298,6 +359,9 @@ namespace CellDotNet
 			ConditionalBranchTest(OpCodes.Blt_Un_S, 5, 2, false);
 			ConditionalBranchTest(OpCodes.Blt_Un_S, 5, 5, false);
 			ConditionalBranchTest(OpCodes.Blt_Un_S, 2, 5, true);
+			ConditionalBranchTest(OpCodes.Blt_Un_S, 5f, 2f, false);
+			ConditionalBranchTest(OpCodes.Blt_Un_S, 5f, 5f, false);
+			ConditionalBranchTest(OpCodes.Blt_Un_S, 2f, 5f, true);
 		}
 
 		[Test]

@@ -330,5 +330,36 @@ namespace CellDotNet
 			Assert.AreEqual(SpuMath.Div(123454, -3), 123454 / -3, "SpuMath.Div failed.");
 			Assert.AreEqual(SpuMath.Div(-16524, 23), -16524 / 23, "SpuMath.Div failed.");
 		}
+
+		[Test]
+		public void Test_FloatCompare()
+		{
+			Converter<int, float> fun = delegate(int input)
+											{
+												float a = 0;
+
+												if ((float)input * (float)input <= 1.0f)
+													a++;
+
+												return a;
+											};
+			CompileContext cc = new CompileContext(fun.Method);
+
+			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
+
+			new TreeDrawer().DrawMethods(cc);
+
+			Disassembler.DisassembleUnconditionalToConsole(cc);
+
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			Disassembler.DisassembleToConsole(cc);
+
+			int n = 10;
+
+			float result = (float)SpeContext.UnitTestRunProgram(cc, n);
+
+			AreEqual(0f, result);
+		}
 	}
 }
