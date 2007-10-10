@@ -1,4 +1,3 @@
-	
 /// <license>
 /// This is a port of the SciMark2a Java Benchmark to C# by
 /// Chris Re (cmr28@cornell.edu) and Werner Vogels (vogels@cs.cornell.edu)
@@ -9,8 +8,10 @@
 /// anihilate your screen and corrupt all your disks, so you it at your
 /// own risk.
 /// </license>
-namespace SciMarkCell
-{
+
+using System;
+namespace SciMark2
+{	
 	/// <summary>Estimate Pi by approximating the area of a circle.
 	/// How: generate N random numbers in the unit square, (0,0) to (1,1)
 	/// and see how are within a radius of 1 or less, i.e.
@@ -31,34 +32,39 @@ namespace SciMarkCell
 	/// total # points
 	/// </pre>
 	/// </summary>
+	
 	public class MonteCarlo
 	{
 		internal const int SEED = 113;
-
-		public static float num_flops(int Num_samples)
+		
+		public static double num_flops(int Num_samples)
 		{
 			// 3 flops in x^2+y^2 and 1 flop in random routine
-
-			return Num_samples*4.0f;
+			
+			return ((double) Num_samples) * 4.0;
+			
 		}
-
-		public static float integrate(int Num_samples)
+		
+		
+		
+		public static double integrate(int Num_samples)
 		{
-			Random R = new Random();
-
-			R.initializeRandomCell(SEED);
-
+			
+			SciMark2.Random R = new SciMark2.Random(SEED);
+			
+			
 			int under_curve = 0;
-			for (int count = 0; count < Num_samples; count++)
+			 for (int count = 0; count < Num_samples; count++)
 			{
-				float x = R.nextFloat();
-				float y = R.nextFloat();
-
-				if (x*x + y*y <= 1.0f)
+				double x = R.nextDouble();
+				double y = R.nextDouble();
+				
+				if (x * x + y * y <= 1.0)
 					under_curve++;
+				
 			}
-
-			return ((float) under_curve/Num_samples)*4.0f;
+			
+			return ((double) under_curve / Num_samples) * 4.0;
 		}
 	}
 }

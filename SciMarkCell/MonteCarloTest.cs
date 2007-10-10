@@ -11,7 +11,7 @@ namespace SciMarkCell
 		[Test]
 		public void TestMonteCarloSingle()
 		{
-			Converter<int, float> fun = MonteCarlo.integrate;
+			Converter<int, float> fun = MonteCarloSingle.integrate;
 
 			CompileContext cc = new CompileContext(fun.Method);
 
