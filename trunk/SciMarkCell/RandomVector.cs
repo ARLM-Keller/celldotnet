@@ -1,6 +1,6 @@
 using CellDotNet;
 
-namespace SciMarkCell
+namespace SciMark2Cell
 {
 	public struct RandomVector
 	{

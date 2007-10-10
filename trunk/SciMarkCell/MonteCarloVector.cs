@@ -10,7 +10,7 @@ using CellDotNet;
 /// anihilate your screen and corrupt all your disks, so you it at your
 /// own risk.
 /// </license>
-namespace SciMarkCell
+namespace SciMark2Cell
 {
 	/// <summary>Estimate Pi by approximating the area of a circle.
 	/// How: generate N random numbers in the unit square, (0,0) to (1,1)

@@ -11,7 +11,7 @@
 
 using System;
 
-namespace SciMarkCell
+namespace SciMark2
 {
 	/// <summary>
 	/// SciMark2: A Java numerical benchmark measuring performance
@@ -70,7 +70,7 @@ namespace SciMarkCell
 		
 			// run the benchmark
 			double[] res = new double[6];
-			SciMarkCell.RandomSingle R = new SciMarkCell.RandomSingle(Constants.RANDOM_SEED);
+			SciMark2.Random R = new SciMark2.Random(Constants.RANDOM_SEED);
 			
 			Console.WriteLine("Mininum running time = {0} seconds", min_time);
 			
@@ -85,7 +85,7 @@ namespace SciMarkCell
             res[5] = kernel.measureLU(LU_size, min_time, R);			
 
 			res[0] = (res[1] + res[2] + res[3] + res[4] + res[5]) / 5;
-				
+			
 			
 			// print out results
 			Console.WriteLine();

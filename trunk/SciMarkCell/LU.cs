@@ -11,7 +11,7 @@
 
 using System;
 
-namespace SciMarkCell
+namespace SciMark2
 {
 	
 	/// <summary>
