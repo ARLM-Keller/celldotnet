@@ -169,7 +169,8 @@ namespace CellDotNet
 
 			foreach (SpuInstruction inst in instructions)
 			{
-				tw.Write("{0:x4}: ", offset);
+//DEBUG
+//				tw.Write("{0:x4}: ", offset);
 				switch (inst.OpCode.Format)
 				{
 					case SpuInstructionFormat.None:

@@ -534,13 +534,13 @@ namespace CellDotNet
 			CompileContext cc = new CompileContext(fun.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(1 / 1, (int)SpeContext.UnitTestRunProgram(cc, 1, 1), "");
-			AreEqual(0 / 1, (int)SpeContext.UnitTestRunProgram(cc, 0, 1), "");
-			AreEqual(17 / 7, (int)SpeContext.UnitTestRunProgram(cc, 17, 7), "");
-			AreEqual(14 / 7, (int)SpeContext.UnitTestRunProgram(cc, 14, 7), "");
-			AreEqual(4 / 7, (int)SpeContext.UnitTestRunProgram(cc, 4, 7), "");
-			AreEqual(42 / 42, (int)SpeContext.UnitTestRunProgram(cc, 42, 42), "");
-			AreEqual(52907 / 432, (int)SpeContext.UnitTestRunProgram(cc, 52907, 432), "");
+			AreEqual(1 / 1, (int)SpeContext.UnitTestRunProgram(cc, 1, 1), "1 / 1");
+			AreEqual(0 / 1, (int)SpeContext.UnitTestRunProgram(cc, 0, 1), "0 / 1");
+			AreEqual(17 / 7, (int)SpeContext.UnitTestRunProgram(cc, 17, 7), "17 / 7");
+			AreEqual(14 / 7, (int)SpeContext.UnitTestRunProgram(cc, 14, 7), "14 / 7");
+			AreEqual(4 / 7, (int)SpeContext.UnitTestRunProgram(cc, 4, 7), "4 / 7");
+			AreEqual(42 / 42, (int)SpeContext.UnitTestRunProgram(cc, 42, 42), "42 / 42");
+			AreEqual(52907 / 432, (int)SpeContext.UnitTestRunProgram(cc, 52907, 432), "52907 / 432");
 		}
 
 		[Test]
