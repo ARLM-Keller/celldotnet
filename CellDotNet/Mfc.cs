@@ -31,6 +31,7 @@ namespace CellDotNet
 			WaitForDmaCompletion(uint.MaxValue);
 		}
 
+		[CLSCompliant(false)]
 		static public void Get(int[] target, MainStorageArea ea, short count, uint tag)
 		{
 			int bytecount = count*4;
@@ -46,6 +47,7 @@ namespace CellDotNet
 			}
 		}
 
+		[CLSCompliant(false)]
 		static public void Get_DEBUG(int[] target, MainStorageArea ea, short count, uint tag)
 		{
 			int bytecount = count * 4;
@@ -81,6 +83,7 @@ namespace CellDotNet
 			WaitForDmaCompletion(1);
 		}
 
+		[CLSCompliant(false)]
 		static public void Put(int[] source, MainStorageArea ea, short count, uint tag)
 		{
 			int bytecount = count * 4;
@@ -124,6 +127,7 @@ namespace CellDotNet
 			throw new InvalidOperationException();
 		}
 
+		[CLSCompliant(false)]
 		static public void WaitForDmaCompletion(uint tagMask)
 		{
 			const int SPE_TAG_ALL = 2;

@@ -31,7 +31,7 @@ namespace CellDotNet
 		}
 
 		protected static void AreSame<T1, T2>(T1 expected, T2 actual) 
-			where T1 : class where T2 : class
+			where T1 : class where T2 : T1
 		{
 			Assert.AreSame(expected, actual);
 		}

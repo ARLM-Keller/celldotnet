@@ -55,7 +55,7 @@ namespace CellDotNet
 		/// </summary>
 		public static readonly VirtualRegister EnvPtr;
 
-		public static CellRegister[] getCallerSavesCellRegisters()
+		public static CellRegister[] GetCallerSavesCellRegisters()
 		{
 			CellRegister[] r = new CellRegister[72];
 			for (int i = 3; i < numberOfCallerSaveRegister + 3; i++)
@@ -63,7 +63,7 @@ namespace CellDotNet
 			return r;
 		}
 
-		public static CellRegister[] getScratchSavesCellRegisters()
+		public static CellRegister[] GetScratchSavesCellRegisters()
 		{
 			CellRegister[] r = new CellRegister[5];
 			for (int i = 75; i <= 79; i++)
@@ -71,7 +71,7 @@ namespace CellDotNet
 			return r;
 		}
 
-		public static CellRegister[] getCalleeSavesCellRegisters()
+		public static CellRegister[] GetCalleeSavesCellRegisters()
 		{
 			CellRegister[] r = new CellRegister[48];
 			for (int i = 80; i < numberOfCalleeSaveRegister + 80; i++)
@@ -82,12 +82,9 @@ namespace CellDotNet
 		// Max numbers, caller = 72, callee = 48
 		private const int numberOfCallerSaveRegister = 72; //72
 		private const int numberOfCalleeSaveRegister = 48; //48
-//		private const int numberOfCallerSaveRegister = 6; //72
-//		private const int numberOfCalleeSaveRegister = 16; //48
 
 		static HardwareRegister()
 		{
-//			throw new Exception("NEJ!!");
 			_virtualHardwareRegisters = new VirtualRegister[128];
 
 			for (int i = 0; i <= 127; i++)

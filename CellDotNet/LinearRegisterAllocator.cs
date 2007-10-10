@@ -80,7 +80,7 @@ namespace CellDotNet
 
 				// Only use calle-saves.
 				_availableRegisters = new SortedRegisterSet();
-				foreach (CellRegister regnum in HardwareRegister.getCalleeSavesCellRegisters())
+				foreach (CellRegister regnum in HardwareRegister.GetCalleeSavesCellRegisters())
 				{
 					_availableRegisters.Add(regnum);
 				}
@@ -465,11 +465,11 @@ namespace CellDotNet
 //
 ////			Stack<CellRegister> freeRegisters = new Stack<CellRegister>();
 //
-////			foreach (CellRegister register in HardwareRegister.getCalleeSavesCellRegisters())
+////			foreach (CellRegister register in HardwareRegister.GetCalleeSavesCellRegisters())
 ////			{
 ////				freeRegisters.Push(register);
 ////			}
-////			foreach (CellRegister register in HardwareRegister.getCallerSavesCellRegisters())
+////			foreach (CellRegister register in HardwareRegister.GetCallerSavesCellRegisters())
 ////        	{
 ////        		freeRegisters.Push(register);	
 ////        	}
