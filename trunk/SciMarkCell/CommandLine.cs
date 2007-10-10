@@ -70,7 +70,7 @@ namespace SciMarkCell
 		
 			// run the benchmark
 			double[] res = new double[6];
-			SciMarkCell.Random R = new SciMarkCell.Random(Constants.RANDOM_SEED);
+			SciMarkCell.RandomSingle R = new SciMarkCell.RandomSingle(Constants.RANDOM_SEED);
 			
 			Console.WriteLine("Mininum running time = {0} seconds", min_time);
 			

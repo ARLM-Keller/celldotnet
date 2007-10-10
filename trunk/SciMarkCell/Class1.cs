@@ -28,7 +28,7 @@ namespace SciMarkCell
 
 			watch1.start();
 
-			Converter<int, float> fun = MonteCarlo.integrate;
+			Converter<int, float> fun = MonteCarloSingle.integrate;
 
 			CompileContext cc = new CompileContext(fun.Method);
 
@@ -47,11 +47,11 @@ namespace SciMarkCell
 			Console.WriteLine("SPU: MonetCarlo result n={0} pi={1}", n, spuPi);
 			Console.WriteLine("SPU: Compile time: {0} run time {1}", watch1.read(), watch2.read());
 
-			float monoPi = MonteCarlo.integrate(n);
+			float monoPi = MonteCarloSingle.integrate(n);
 
 			watch3.start();
 
-			monoPi  = MonteCarlo.integrate(n);
+			monoPi  = MonteCarloSingle.integrate(n);
 
 			watch3.stop();
 

@@ -1,54 +1,126 @@
-using System;
+/// <license>
+/// This is a port of the SciMark2a Java Benchmark to C# by
+/// Chris Re (cmr28@cornell.edu) and Werner Vogels (vogels@cs.cornell.edu)
+/// 
+/// For details on the original authors see http://math.nist.gov/scimark2
+/// 
+/// This software is likely to burn your processor, bitflip your memory chips
+/// anihilate your screen and corrupt all your disks, so you it at your
+/// own risk.
+/// </license>
 
-namespace SciMarkCell
+using System;
+using System.Runtime.CompilerServices;
+
+namespace SciMark2
 {
-	public struct Random
+	
+	/* Random.java based on Java Numerical Toolkit (JNT) Random.UniformSequence
+	class.  We do not use Java's own java.util.Random so that we can compare
+	results with equivalent C and Fortran coces.*/
+	
+	public class Random
 	{
-		internal int _seed; // readonly
+		/*------------------------------------------------------------------------------
+		CLASS VARIABLES
+		------------------------------------------------------------------------------ */
 		
-		private int[] m; // readonly
-		private int i;
-		private int j;
+		internal int seed = 0;
+		
+		private int[] m;
+		private int i = 4;
+		private int j = 16;
 		
 		private const int mdig = 32;
 		private const int one = 1;
-		private int m1; // ReadOnly
-		private int m2; // ReadOnly, only used in initialize
+		private int m1;
+		private int m2;
 		
-		private float dm1; //readonly
+		private double dm1;
 		
-		private bool haveRange; // readonly
-		private float _left; // readonly
-		private float _right;
-		private float _width; // readonly
-
-		public Random(int seed)
+		private bool haveRange = false;
+		private double left = 0.0;
+		private double right = 1.0;
+		private double width = 1.0;
+		
+		
+		/* ------------------------------------------------------------------------------
+		CONSTRUCTORS
+		------------------------------------------------------------------------------ */
+		
+		/// <summary>
+		/// Initializes a sequence of uniformly distributed quasi random numbers with a
+		/// seed based on the system clock.
+		/// </summary>
+		public Random()
 		{
-			throw new NotSupportedException();
+			initialize((int)System.DateTime.Now.Ticks);
 		}
-
-		public void initializeRandomCell(int seed)
+		
+		/// <summary>
+		/// Initializes a sequence of uniformly distributed quasi random numbers on a
+		/// given half-open interval [left,right) with a seed based on the system
+		/// clock.
+		/// </summary>
+		/// <param name="<B>left</B>">(double)<BR>
+		/// The left endpoint of the half-open interval [left,right).
+		/// </param>
+		/// <param name="<B>right</B>">(double)<BR>
+		/// The right endpoint of the half-open interval [left,right).
+		/// </param>
+		public Random(double left, double right)
 		{
-			initializeState();
-			initializeSeed(seed);
-		}
-
-		public void initializeRandomCell(int seed, float left, float right)
-		{
-			initializeState();
-			initializeSeed(seed);
-			_left = left;
-			_right = right;
-			_width = right - left;
+			initialize((int)System.DateTime.Now.Ticks);
+			this.left = left;
+			this.right = right;
+			width = right - left;
 			haveRange = true;
 		}
 		
-//		public double nextDouble()
-//		{
-//			throw new NotSupportedException();
-//		}
-
-		public float nextFloat()
+		/// <summary>
+		/// Initializes a sequence of uniformly distributed quasi random numbers with a
+		/// given seed.
+		/// </summary>
+		/// <param name="<B>seed</B>">(int)<BR>
+		/// The seed of the random number generator.  Two sequences with the same
+		/// seed will be identical.
+		/// </param>
+		public Random(int seed)
+		{
+			initialize(seed);
+		}
+		
+		/// <summary>Initializes a sequence of uniformly distributed quasi random numbers
+		/// with a given seed on a given half-open interval [left,right).
+		/// </summary>
+		/// <param name="<B>seed</B>">(int)<BR>
+		/// The seed of the random number generator.  Two sequences with the same
+		/// seed will be identical.
+		/// </param>
+		/// <param name="<B>left</B>">(double)<BR>
+		/// The left endpoint of the half-open interval [left,right).
+		/// </param>
+		/// <param name="<B>right</B>">(double)<BR>
+		/// The right endpoint of the half-open interval [left,right).
+		/// </param>
+		public Random(int seed, double left, double right)
+		{
+			initialize(seed);
+			this.left = left;
+			this.right = right;
+			width = right - left;
+			haveRange = true;
+		}
+		
+		/* ------------------------------------------------------------------------------
+		PUBLIC METHODS
+		------------------------------------------------------------------------------ */
+		
+		/// <summary>
+		/// Returns the next random number in the sequence.
+		/// </summary>
+		[MethodImpl(MethodImplOptions.Synchronized)]
+		public double nextDouble()
 		{
 			int k;
 		
@@ -68,12 +140,17 @@ namespace SciMarkCell
 				j--;
 		
 			if (haveRange)
-				return _left + dm1 * k * _width;
+				return left + dm1 * (double) k * width;
 			else
-				return dm1 * k;
+				return dm1 * (double) k;
 		}
 		
-		public void nextFloat(float[] x)
+		/// <summary>
+		/// Returns the next N random numbers in the sequence, as
+		/// a vector.
+		/// </summary>
+		[MethodImpl(MethodImplOptions.Synchronized)]
+		public void  nextDoubles(double[] x)
 		{
 			int N = x.Length;
 			int remainder = N & 3; 
@@ -98,7 +175,7 @@ namespace SciMarkCell
 					else
 						j--;
 				
-					x[count] = _left + dm1 * k * _width;
+					x[count] = left + dm1 * (double) k * width;
 				}
 			
 			}
@@ -124,7 +201,7 @@ namespace SciMarkCell
 						j--;
 				
 				
-					x[count] = dm1 * k;
+					x[count] = dm1 * (double) k;
 				}
 			
 				for (int count = remainder; count < N; count += 4)
@@ -141,7 +218,7 @@ namespace SciMarkCell
 						j = 16;
 					else
 						j--;
-					x[count] = dm1 * k;
+					x[count] = dm1 * (double) k;
 				
 				
 					k = m[i] - m[j];
@@ -156,7 +233,7 @@ namespace SciMarkCell
 						j = 16;
 					else
 						j--;
-					x[count + 1] = dm1 * k;
+					x[count + 1] = dm1 * (double) k;
 				
 				
 					k = m[i] - m[j];
@@ -171,7 +248,7 @@ namespace SciMarkCell
 						j = 16;
 					else
 						j--;
-					x[count + 2] = dm1 * k;
+					x[count + 2] = dm1 * (double) k;
 				
 				
 					k = m[i] - m[j];
@@ -186,7 +263,7 @@ namespace SciMarkCell
 						j = 16;
 					else
 						j--;
-					x[count + 3] = dm1 * k;
+					x[count + 3] = dm1 * (double) k;
 				}
 			}
 		}
@@ -195,20 +272,20 @@ namespace SciMarkCell
 		PRIVATE METHODS
 		------------------------------------------------------------------------ */
 		
-		private void initializeSeed(int seed)
+		private void initialize(int seed)
 		{
 			// First the initialization of the member variables;
 			m1 = (one << mdig - 2) + ((one << mdig - 2) - one);
 			m2 = one << mdig / 2;
-			dm1 = 1.0f / m1;
+			dm1 = 1.0 / (double) m1;
 		
 			int jseed, k0, k1, j0, j1, iloop;
 			
-			_seed = seed;
+			this.seed = seed;
 			
 			m = new int[17];
 			
-			jseed = Math.Min(Math.Abs(seed), m1);
+			jseed = System.Math.Min(System.Math.Abs(seed), m1);
 			if (jseed % 2 == 0)
 				--jseed;
 			k0 = 9069 % m2;
@@ -225,19 +302,6 @@ namespace SciMarkCell
 			i = 4;
 			j = 16;
 			
-		}
-
-		private void initializeState()
-		{
-			_seed = 0;
-
-			i = 4;
-			j = 16;
-
-			haveRange = false;
-			_left = 0.0f;
-			_right = 1.0f;
-			_width = 1.0f;
 		}
 	}
 }

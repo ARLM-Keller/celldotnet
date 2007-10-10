@@ -16,7 +16,7 @@ namespace SciMarkCell
 	public class kernel
 	{
 		// each measurement returns approx Mflops
-		public static double measureFFT(int N, double mintime, Random R)
+		public static double measureFFT(int N, double mintime, RandomSingle R)
 		{
 			// initialize FFT data as complex (N real/img pairs)
 			
@@ -48,7 +48,7 @@ namespace SciMarkCell
 		}
 		
 		
-		public static double measureSOR(int N, double min_time, Random R)
+		public static double measureSOR(int N, double min_time, RandomSingle R)
 		{
 			double[][] G = RandomMatrix(N, N, R);
 			
@@ -68,7 +68,7 @@ namespace SciMarkCell
 			return SOR.num_flops(N, N, cycles) / Q.read() * 1.0e-6;
 		}
 		
-		public static double measureMonteCarlo(double min_time, Random R)
+		public static double measureMonteCarlo(double min_time, RandomSingle R)
 		{
 			Stopwatch Q = new Stopwatch();
 			
@@ -76,7 +76,7 @@ namespace SciMarkCell
 			while (true)
 			{
 				Q.start();
-				MonteCarlo.integrate(cycles);
+				MonteCarloSingle.integrate(cycles);
 				Q.stop();
 				if (Q.read() >= min_time)
 					break;
@@ -84,11 +84,11 @@ namespace SciMarkCell
 				cycles *= 2;
 			}
 			// approx Mflops
-			return MonteCarlo.num_flops(cycles) / Q.read() * 1.0e-6;
+			return MonteCarloSingle.num_flops(cycles) / Q.read() * 1.0e-6;
 		}
 		
 		
-		public static double measureSparseMatmult(int N, int nz, double min_time, Random R)
+		public static double measureSparseMatmult(int N, int nz, double min_time, RandomSingle R)
 		{
 			// initialize vector multipliers and storage for result
 			// y = A*y;
@@ -161,7 +161,7 @@ namespace SciMarkCell
 		}
 		
 		
-		public static double measureLU(int N, double min_time, Random R)
+		public static double measureLU(int N, double min_time, RandomSingle R)
 		{
 			// compute approx Mlfops, or O if LU yields large errors
 			
@@ -263,7 +263,7 @@ namespace SciMarkCell
 			}
 		}
 		
-		private static double[][] RandomMatrix(int M, int N, Random R)
+		private static double[][] RandomMatrix(int M, int N, RandomSingle R)
 		{
 			double[][] A = new double[M][];
 			 for (int i = 0; i < M; i++)
@@ -277,7 +277,7 @@ namespace SciMarkCell
 			return A;
 		}
 		
-		private static double[] RandomVector(int N, Random R)
+		private static double[] RandomVector(int N, RandomSingle R)
 		{
 			double[] A = new double[N];
 
