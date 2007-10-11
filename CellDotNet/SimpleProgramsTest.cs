@@ -348,16 +348,7 @@ namespace CellDotNet
 												return a;
 											};
 			CompileContext cc = new CompileContext(fun.Method);
-
-			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
-
-			new TreeDrawer().DrawMethods(cc);
-
-			Disassembler.DisassembleUnconditionalToConsole(cc);
-
 			cc.PerformProcessing(CompileContextState.S8Complete);
-
-			Disassembler.DisassembleToConsole(cc);
 
 			int n = 10;
 

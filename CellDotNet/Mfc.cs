@@ -145,9 +145,6 @@ namespace CellDotNet
 
 		static private void Get(ref int lsStart, uint ea, int byteCount, uint tag, uint tid, uint rid)
 		{
-			if (!SpuRuntime.IsRunningOnSpu)
-				throw new InvalidOperationException();
-
 			// MFC_CMD_WORD(_tid, _rid, _cmd) (((_tid)<<24)|((_rid)<<16)|(_cmd))
 			uint cmd = (uint) MfcDmaCommand.Get;
 			cmd |= (tid << 24) | (rid << 16);
@@ -162,10 +159,6 @@ namespace CellDotNet
 
 		static private void Put(ref int lsStart, uint ea, int byteCount, uint tag, uint tid, uint rid)
 		{
-			// 20071010: Removed this check since the partial evaluator can have issues removing it.
-//			if (!SpuRuntime.IsRunningOnSpu)
-//				throw new InvalidOperationException();
-
 			// MFC_CMD_WORD(_tid, _rid, _cmd) (((_tid)<<24)|((_rid)<<16)|(_cmd))
 			uint cmd = (uint)MfcDmaCommand.Put;
 			cmd |= (tid << 24) | (rid << 16);
