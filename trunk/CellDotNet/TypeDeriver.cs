@@ -88,10 +88,11 @@ namespace CellDotNet
 							DeriveType(param);
 
 						MethodBase methodBase = mci.IntrinsicMethod ?? mci.OperandMethod;
+						MethodInfo mi = methodBase as MethodInfo;
 						if (mci.Opcode == IROpCodes.Newobj || mci.Opcode == IROpCodes.IntrinsicNewObj)
 							t = GetStackTypeDescription(methodBase.DeclaringType);
-						else if (methodBase is MethodInfo && ((MethodInfo)methodBase).ReturnType != typeof (void))
-							t = GetStackTypeDescription(((MethodInfo)methodBase).ReturnType);
+						else if (mi != null && mi.ReturnType != typeof (void))
+							t = GetStackTypeDescription(mi.ReturnType);
 						else
 							t = StackTypeDescription.None;
 					}
@@ -237,7 +238,7 @@ namespace CellDotNet
 							(inst.Left.StackType == StackTypeDescription.NativeInt && inst.Right.StackType == StackTypeDescription.Int32))
 							t = StackTypeDescription.NativeInt;
 						else
-							throw new Exception();
+							throw new InvalidIRTreeException();
 					}
 					break;
 				case IRCode.Shl: // shl

@@ -758,7 +758,7 @@ namespace CellDotNet
 						liveIn[i].Remove((int)regToInt[inst.Def]);
 					//						liveIn[inst].AddAll(inst.Use);
 
-					if(inst.IsCall())
+					if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MethodCall) != 0)
 						foreach (VirtualRegister register in HardwareRegister.CallerSavesRegisters)
 							liveIn[i].Remove((int) regToInt[register]);
 
@@ -817,7 +817,7 @@ namespace CellDotNet
 					moveList[regToInt[inst.Use[0]]].Add(i); // Move instruction only have one use register.
 					worklistMoves.Add(i);
 				}
-				if(inst.IsCall())
+				if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MethodCall) != 0)
 				{
 					live.AddAll(callerSavesRegister);
 

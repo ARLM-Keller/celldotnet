@@ -60,8 +60,7 @@ namespace CellDotNet
 			List<string> history = new List<string>();
 			while (r.Read())
 			{
-				if (icount > 100)
-					throw new Exception("Too many instructions.");
+				IsFalse(icount > 100, "Too many instructions.");
 
 				// For debugging.
 				history.Add(string.Format("{0:x4} {1}", r.Offset, r.OpCode.Name));
@@ -69,8 +68,7 @@ namespace CellDotNet
 				icount++;
 			}
 
-			if (icount < 5)
-				throw new Exception("too few instructions.");
+			IsFalse(icount < 5, "too few instructions.");
 		}
 
 		private delegate void BasicTestDelegate();

@@ -35,7 +35,7 @@ namespace CellDotNet
 		/// Assembler format: "rt,ra,rb,rc".
 		/// 4 bit instruction code.
 		/// </summary>
-		RRR,
+		Rrr,
 		/// <summary>   
 		/// Register ra, rt.
 		/// Assembler format: "rt,ra,value".
@@ -83,7 +83,7 @@ namespace CellDotNet
 		/// For the channel instructions.
 		/// </summary>
 		Channel,
-		WEIRD,
+		Weird,
 		/// <summary>
 		/// For pseudo-instructions.
 		/// </summary>
@@ -147,11 +147,12 @@ namespace CellDotNet
 		/// </summary>
 		Pseudo = 1 << 5,
 
-		NoRegisterWrite = 1 << 6,
-		ChannelAccess = 1 << 7,
-		MemoryRead = 1 << 8,
-		MemoryWrite = 1 << 9,
-		MethodCall = 1 << 10,
+		RegisterRtNotWritten = 1 << 6,
+		RegisterRtRead = 1 << 7,
+		ChannelAccess = 1 << 8,
+		MemoryRead = 1 << 9,
+		MemoryWrite = 1 << 10,
+		MethodCall = 1 << 11,
 	}
 
 	/// <summary>
@@ -213,7 +214,8 @@ namespace CellDotNet
 
 		private readonly SpuOpCodeSpecialFeatures _specialFeatures;
 
-		private readonly bool _noRegisterWrite;
+		private readonly bool _registerRtNotWritten;
+		private readonly bool _registerRtRead;
 
 		private readonly int _opCodeWidth;
 
@@ -221,18 +223,8 @@ namespace CellDotNet
 
 		private readonly SpuInstructionPart _parts;
 
-		private SpuPipeline? _pipeline;
-		private int? _latency;
-
-		public SpuPipeline Pipeline
-		{
-			get { return _pipeline.Value; }
-		}
-
-		public int Latency
-		{
-			get { return _latency.Value; }
-		}
+		private readonly SpuPipeline _pipeline;
+		private readonly int _latency;
 
 		static Dictionary<SpuOpCodeEnum, SpuOpCode> s_enumCodeMap;
 
@@ -249,11 +241,12 @@ namespace CellDotNet
 			_title = title;
 			_format = format;
 			_opCodeWidth = opcode.Length;
-			_opCode = Convert.ToInt32(opcode, 2) << 32 - OpCodeWidth;
+			_opCode = Convert.ToInt32(opcode, 2) << (32 - _opCodeWidth);
 			_pipeline = pipeline;
 			_latency = latency;
 
-			_noRegisterWrite = (features & SpuOpCodeSpecialFeatures.NoRegisterWrite) != 0;
+			_registerRtNotWritten = (features & SpuOpCodeSpecialFeatures.RegisterRtNotWritten) != 0;
+			_registerRtRead = (features & SpuOpCodeSpecialFeatures.RegisterRtRead) != 0;
 
 			_specialFeatures = features;
 
@@ -270,7 +263,7 @@ namespace CellDotNet
 				case SpuInstructionFormat.RR1:
 					_parts = SpuInstructionPart.Ra;
 					break;
-				case SpuInstructionFormat.RRR:
+				case SpuInstructionFormat.Rrr:
 					_parts = SpuInstructionPart.Rt | SpuInstructionPart.Ra | SpuInstructionPart.Rb | SpuInstructionPart.Rc;
 					break;
 				case SpuInstructionFormat.RI7:
@@ -305,7 +298,7 @@ namespace CellDotNet
 					_parts = SpuInstructionPart.Rt | SpuInstructionPart.Ca;
 					_immediateBits = 7;
 					break;
-				case SpuInstructionFormat.WEIRD:
+				case SpuInstructionFormat.Weird:
 				case SpuInstructionFormat.Custom:
 					break;
 				default:
@@ -334,8 +327,8 @@ namespace CellDotNet
 					if (val == SpuOpCodeEnum.None)
 						continue;
 
-					if (!opcodenames.TryGetValue(fieldInfo.Name, out oc))
-						throw new Exception("Enum names must match opcode names.");
+					bool found = opcodenames.TryGetValue(fieldInfo.Name, out oc);
+					Utilities.Assert(found, "Enum names must match opcode names.");
 
 					s_enumCodeMap.Add(val, oc);
 				}
@@ -411,9 +404,14 @@ namespace CellDotNet
 		/// Some instructions (store) have a common layout, but the rt register is not written to.
 		/// For those instructions, this property returns true.
 		/// </summary>
-		public bool NoRegisterWrite
+		public bool RegisterRtNotWritten
 		{
-			get { return _noRegisterWrite; }
+			get { return _registerRtNotWritten; }
+		}
+
+		public bool RegisterRtRead
+		{
+			get { return _registerRtRead; }
 		}
 
 		/// <summary>
@@ -430,6 +428,16 @@ namespace CellDotNet
 			get { return _specialFeatures; }
 		}
 
+		public SpuPipeline Pipeline
+		{
+			get { return _pipeline; }
+		}
+
+		public int Latency
+		{
+			get { return _latency; }
+		}
+
 		/// <summary>
 		/// TODO: Add the rest of the instructions: hint-for-branch, control instructions, channel instructions.
 		/// </summary>
@@ -444,13 +452,13 @@ namespace CellDotNet
 		public static readonly SpuOpCode lqr =
 			new SpuOpCode("lqr", "Load Quadword Instruction Relative (a-form)", SpuInstructionFormat.RI16, "001100111", SpuOpCodeSpecialFeatures.MemoryRead, SpuPipeline.Odd, 6);
 		public static readonly SpuOpCode stqd =
-			new SpuOpCode("stqd", "Store Quadword (d-form)", SpuInstructionFormat.RI10, "00100100", SpuOpCodeSpecialFeatures.MemoryWrite | SpuOpCodeSpecialFeatures.NoRegisterWrite, SpuPipeline.Odd, 6);
+			new SpuOpCode("stqd", "Store Quadword (d-form)", SpuInstructionFormat.RI10, "00100100", SpuOpCodeSpecialFeatures.MemoryWrite | SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 6);
 		public static readonly SpuOpCode stqx =
-			new SpuOpCode("stqx", "Store Quadword (x-form)", SpuInstructionFormat.RR, "00101000100", SpuOpCodeSpecialFeatures.MemoryWrite | SpuOpCodeSpecialFeatures.NoRegisterWrite, SpuPipeline.Odd, 6);
+			new SpuOpCode("stqx", "Store Quadword (x-form)", SpuInstructionFormat.RR, "00101000100", SpuOpCodeSpecialFeatures.MemoryWrite | SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 6);
 		public static readonly SpuOpCode stqa =
-			new SpuOpCode("stqa", "Store Quadword (a-form)", SpuInstructionFormat.RI16, "001000001", SpuOpCodeSpecialFeatures.MemoryWrite | SpuOpCodeSpecialFeatures.NoRegisterWrite, SpuPipeline.Odd, 6);
+			new SpuOpCode("stqa", "Store Quadword (a-form)", SpuInstructionFormat.RI16, "001000001", SpuOpCodeSpecialFeatures.MemoryWrite | SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 6);
 		public static readonly SpuOpCode stqr =
-			new SpuOpCode("stqr", "Store Quadword Instruction Relative (a-form)", SpuInstructionFormat.RI16, "001000111", SpuOpCodeSpecialFeatures.MemoryWrite | SpuOpCodeSpecialFeatures.NoRegisterWrite, SpuPipeline.Odd, 6);
+			new SpuOpCode("stqr", "Store Quadword Instruction Relative (a-form)", SpuInstructionFormat.RI16, "001000111", SpuOpCodeSpecialFeatures.MemoryWrite | SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 6);
 		public static readonly SpuOpCode cbd =
 			new SpuOpCode("cbd", "Generate Controls for Byte Insertion (d-form)", SpuInstructionFormat.RI7, "00111110100", SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode cbx =
@@ -478,7 +486,7 @@ namespace CellDotNet
 		public static readonly SpuOpCode ila =
 				new SpuOpCode("ila", "Immediate Load Address", SpuInstructionFormat.RI18, "0100001", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode iohl =
-				new SpuOpCode("iohl", "Immediate Or Halfword Lower", SpuInstructionFormat.RI16, "011000001", SpuPipeline.Even, 2);
+				new SpuOpCode("iohl", "Immediate Or Halfword Lower", SpuInstructionFormat.RI16, "011000001", SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Even, 2);
 		public static readonly SpuOpCode fsmbi =
 				new SpuOpCode("fsmbi", "Form Select Mask for Bytes Immediate", SpuInstructionFormat.RI16, "001100101", SpuPipeline.Odd, 4);
 
@@ -520,7 +528,7 @@ namespace CellDotNet
 		public static readonly SpuOpCode mpyui =
 				new SpuOpCode("mpyui", "Multiply Unsigned Immediate", SpuInstructionFormat.RI10, "01110101", SpuPipeline.Even, 7);
 		public static readonly SpuOpCode mpya =
-				new SpuOpCode("mpya", "Multiply and Add", SpuInstructionFormat.RRR, "1100", SpuPipeline.Even, 7);
+				new SpuOpCode("mpya", "Multiply and Add", SpuInstructionFormat.Rrr, "1100", SpuPipeline.Even, 7);
 		public static readonly SpuOpCode mpyh =
 				new SpuOpCode("mpyh", "Multiply High", SpuInstructionFormat.RR, "01111000101", SpuPipeline.Even, 7);
 		public static readonly SpuOpCode mpys =
@@ -600,9 +608,9 @@ namespace CellDotNet
 		public static readonly SpuOpCode eqv =
 				new SpuOpCode("eqv", "Equivalent", SpuInstructionFormat.RR, "01001001001", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode selb =
-				new SpuOpCode("selb", "Select Bits", SpuInstructionFormat.RRR, "1000", SpuPipeline.Even, 2);
+				new SpuOpCode("selb", "Select Bits", SpuInstructionFormat.Rrr, "1000", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode shufb =
-				new SpuOpCode("shufb", "Shuffle Bytes", SpuInstructionFormat.RRR, "1011", SpuPipeline.Odd, 4);
+				new SpuOpCode("shufb", "Shuffle Bytes", SpuInstructionFormat.Rrr, "1011", SpuPipeline.Odd, 4);
 
 		// 6. Shift and Rotate OpCodes
 		public static readonly SpuOpCode shlh =
@@ -735,21 +743,21 @@ namespace CellDotNet
 		public static readonly SpuOpCode bisl =
 				new SpuOpCode("bisl", "Branch Indirect and Set Link", SpuInstructionFormat.RR2, "00110101001", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.MethodCall, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode brnz =
-				new SpuOpCode("brnz", "Branch If Not Zero Word", SpuInstructionFormat.RI16, "001000010", SpuOpCodeSpecialFeatures.NoRegisterWrite, SpuPipeline.Odd, 4);
+				new SpuOpCode("brnz", "Branch If Not Zero Word", SpuInstructionFormat.RI16, "001000010", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode brz =
-				new SpuOpCode("brz", "Branch If Zero Word", SpuInstructionFormat.RI16, "001000000", SpuOpCodeSpecialFeatures.NoRegisterWrite, SpuPipeline.Odd, 4);
+				new SpuOpCode("brz", "Branch If Zero Word", SpuInstructionFormat.RI16, "001000000", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode brhnz =
-				new SpuOpCode("brhnz", "Branch If Not Zero Halfword", SpuInstructionFormat.RI16, "001000110", SpuOpCodeSpecialFeatures.NoRegisterWrite, SpuPipeline.Odd, 4);
+				new SpuOpCode("brhnz", "Branch If Not Zero Halfword", SpuInstructionFormat.RI16, "001000110", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode brhz =
-				new SpuOpCode("brhz", "Branch If Zero Halfword", SpuInstructionFormat.RI16, "001000100", SpuOpCodeSpecialFeatures.NoRegisterWrite, SpuPipeline.Odd, 4);
+				new SpuOpCode("brhz", "Branch If Zero Halfword", SpuInstructionFormat.RI16, "001000100", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode biz =
-				new SpuOpCode("biz", "Branch Indirect If Zero", SpuInstructionFormat.RR2, "00100101000", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.NoRegisterWrite, SpuPipeline.Odd, 4);
+				new SpuOpCode("biz", "Branch Indirect If Zero", SpuInstructionFormat.RR2, "00100101000", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode binz =
-				new SpuOpCode("binz", "Branch Indirect If Not Zero", SpuInstructionFormat.RR2, "00100101001", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.NoRegisterWrite, SpuPipeline.Odd, 4);
+				new SpuOpCode("binz", "Branch Indirect If Not Zero", SpuInstructionFormat.RR2, "00100101001", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode bihz =
-				new SpuOpCode("bihz", "Branch Indirect If Zero Halfword", SpuInstructionFormat.RR2, "0100101010", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.NoRegisterWrite, SpuPipeline.Odd, 4);
+				new SpuOpCode("bihz", "Branch Indirect If Zero Halfword", SpuInstructionFormat.RR2, "0100101010", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode bihnz =
-				new SpuOpCode("bihnz", "Branch Indirect If Not Zero Halfword", SpuInstructionFormat.RR2, "00100101011", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.NoRegisterWrite, SpuPipeline.Odd, 4);
+				new SpuOpCode("bihnz", "Branch Indirect If Not Zero Halfword", SpuInstructionFormat.RR2, "00100101011", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 4);
 		// 8. Hint-for-Branch OpCodes: Unusual instruction format, so currently omitted.
 
 		// 9. Floating point.
@@ -766,15 +774,15 @@ namespace CellDotNet
 		public static readonly SpuOpCode dfm =
 				new SpuOpCode("dfm", "Double Floating Multiply", SpuInstructionFormat.RR, "01011001110", SpuPipeline.Even, 13);
 		public static readonly SpuOpCode fma =
-				new SpuOpCode("fma", "Floating Multiply and Add", SpuInstructionFormat.RRR, "1110", SpuPipeline.Even, 6);
+				new SpuOpCode("fma", "Floating Multiply and Add", SpuInstructionFormat.Rrr, "1110", SpuPipeline.Even, 6);
 		public static readonly SpuOpCode dfma =
 				new SpuOpCode("dfma", "Double Floating Multiply and Add", SpuInstructionFormat.RR, "01101011100", SpuPipeline.Even, 13);
 		public static readonly SpuOpCode fnms =
-				new SpuOpCode("fnms", "Floating Negative Multiply and Subtract", SpuInstructionFormat.RRR, "1101", SpuPipeline.Even, 6);
+				new SpuOpCode("fnms", "Floating Negative Multiply and Subtract", SpuInstructionFormat.Rrr, "1101", SpuPipeline.Even, 6);
 		public static readonly SpuOpCode dfnms =
 				new SpuOpCode("dfnms", "Double Floating Negative Multiply and Subtract", SpuInstructionFormat.RR, "01101011110", SpuPipeline.Even, 13);
 		public static readonly SpuOpCode fms =
-				new SpuOpCode("fms", "Floating Multiply and Subtract", SpuInstructionFormat.RRR, "1111", SpuPipeline.Even, 6);
+				new SpuOpCode("fms", "Floating Multiply and Subtract", SpuInstructionFormat.Rrr, "1111", SpuPipeline.Even, 6);
 		public static readonly SpuOpCode dfms =
 				new SpuOpCode("dfms", "Double Floating Multiply and Subtract", SpuInstructionFormat.RR, "01101011101", SpuPipeline.Even, 6);
 		public static readonly SpuOpCode dfnma =
@@ -827,20 +835,20 @@ namespace CellDotNet
 		// p238
 		//			};
 		public static readonly SpuOpCode stop =
-				new SpuOpCode("stop", "Stop and Signal", SpuInstructionFormat.RI14, "00000000000", SpuOpCodeSpecialFeatures.NoRegisterWrite, SpuPipeline.Odd, 4);
+				new SpuOpCode("stop", "Stop and Signal", SpuInstructionFormat.RI14, "00000000000", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 4);
 
 		public static readonly SpuOpCode lnop =
-			new SpuOpCode("lnop", "No Operation (Load)", SpuInstructionFormat.WEIRD, "00000000001", SpuOpCodeSpecialFeatures.NoRegisterWrite, SpuPipeline.Odd, 0);
+			new SpuOpCode("lnop", "No Operation (Load)", SpuInstructionFormat.Weird, "00000000001", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 0);
 
 		public static readonly SpuOpCode nop =
-			new SpuOpCode("nop", "No Operation (Execute)", SpuInstructionFormat.WEIRD, "01000000001", SpuOpCodeSpecialFeatures.NoRegisterWrite, SpuPipeline.Even, 0);
+			new SpuOpCode("nop", "No Operation (Execute)", SpuInstructionFormat.Weird, "01000000001", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Even, 0);
 
 		public static readonly SpuOpCode rdch =
 			new SpuOpCode("rdch", "Read Channel", SpuInstructionFormat.Channel, "00000001101", SpuOpCodeSpecialFeatures.ChannelAccess, SpuPipeline.Odd, 6);
 		public static readonly SpuOpCode rchcnt =
 			new SpuOpCode("rchcnt", "Read Channel Count", SpuInstructionFormat.Channel, "00000001111", SpuOpCodeSpecialFeatures.ChannelAccess, SpuPipeline.Odd, 6);
 		public static readonly SpuOpCode wrch =
-			new SpuOpCode("wrch", "Write Channel", SpuInstructionFormat.Channel, "00100001101", SpuOpCodeSpecialFeatures.NoRegisterWrite | SpuOpCodeSpecialFeatures.ChannelAccess, SpuPipeline.Odd, 6);
+			new SpuOpCode("wrch", "Write Channel", SpuInstructionFormat.Channel, "00100001101", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead | SpuOpCodeSpecialFeatures.ChannelAccess, SpuPipeline.Odd, 6);
 
 
 		// *****************************************
@@ -853,5 +861,6 @@ namespace CellDotNet
 			new SpuOpCode("move", "Move (pseudo)", SpuInstructionFormat.Custom, "0", SpuOpCodeSpecialFeatures.Pseudo, SpuPipeline.None, 0);
 		public static readonly SpuOpCode ret =
 			new SpuOpCode("ret", "Function return (pseudo)", SpuInstructionFormat.Custom, "0", SpuOpCodeSpecialFeatures.Pseudo, SpuPipeline.None, 0);
+
 	}
 }

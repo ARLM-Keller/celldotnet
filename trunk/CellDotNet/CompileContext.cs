@@ -44,7 +44,7 @@ namespace CellDotNet
 		internal RegisterSizedObject DebugValueObject
 		{
 			get { return _specialSpeObjects.DebugValueObject; }
-			set { throw new Exception("");}
+			set { throw new InvalidOperationException();}
 		}
 
 		/// <summary>
@@ -177,10 +177,9 @@ namespace CellDotNet
 
 			foreach (ObjectWithAddress o in all)
 			{
-				if (o is MethodCompiler)
-				{
-					((MethodCompiler) o).PerformProcessing(MethodCompileState.S6PrologAndEpilogDone);
-				}
+				MethodCompiler mc = o as MethodCompiler;
+				if (mc != null)
+					mc.PerformProcessing(MethodCompileState.S6PrologAndEpilogDone);
 
 				o.Offset = lsOffset;
 				lsOffset = Utilities.Align16(lsOffset + o.Size);
@@ -223,8 +222,9 @@ namespace CellDotNet
 
 			foreach (ObjectWithAddress owa in GetAllObjects())
 			{
-				if (owa is MethodCompiler)
-					((MethodCompiler) owa).PerformProcessing(MethodCompileState.S8AddressPatchingDone);
+				MethodCompiler mc = owa as MethodCompiler;
+				if (mc != null)
+					mc.PerformProcessing(MethodCompileState.S8AddressPatchingDone);
 				else if (owa is SpuDynamicRoutine)
 					((SpuDynamicRoutine) owa).PerformAddressPatching();
 			}

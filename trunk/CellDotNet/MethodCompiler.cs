@@ -718,7 +718,7 @@ namespace CellDotNet
 				}
 			}
 
-//			// Instruction scheduling.
+			// Instruction scheduling.
 //			ListInstructionScheduler scheduler = new ListInstructionScheduler();
 //			foreach (SpuBasicBlock bb in _instructions.BasicBlocks)
 //				scheduler.Schedule(bb);

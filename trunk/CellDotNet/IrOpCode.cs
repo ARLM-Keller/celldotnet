@@ -108,7 +108,7 @@ namespace CellDotNet
 					pb = PopBehavior.Pop3;
 					break;
 				default:
-					throw new ArgumentOutOfRangeException("code");
+					throw new ArgumentOutOfRangeException("stackBehaviourPop");
 			}
 
 			return pb;

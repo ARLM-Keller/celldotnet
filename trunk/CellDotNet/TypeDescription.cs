@@ -76,7 +76,7 @@ namespace CellDotNet
 			if (genericType == null)
 				throw new ArgumentNullException();
 			if (genericParameters == null || genericParameters.Length == 0)
-				throw new ArgumentException("genericParameters");
+				throw new ArgumentException("genericParameters is emtpty.");
 
 			_genericType = genericType;
 			_genericParameters = genericParameters;

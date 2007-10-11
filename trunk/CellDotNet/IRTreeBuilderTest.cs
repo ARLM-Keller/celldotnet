@@ -60,8 +60,6 @@ namespace CellDotNet
 			MethodCompiler mc = new MethodCompiler(del.Method);
 			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
 
-			TreeDrawer td = new TreeDrawer();
-//			td.DrawMethod(mc);
 
 			IsTrue(mc.Blocks.Count == 1);
 			TreeInstruction popInst =
@@ -102,7 +100,6 @@ namespace CellDotNet
 			MethodBase method = del.Method;
 			MethodCompiler ci = new MethodCompiler(method);
 			ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
-//			new TreeDrawer().DrawMethod(ci);
 			AreEqual(1, ci.Blocks.Count);
 		}
 
@@ -116,7 +113,7 @@ namespace CellDotNet
 			MethodBase method = del.Method;
 			MethodCompiler ci = new MethodCompiler(method);
 			ci.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
-//			new TreeDrawer().DrawMethod(ci);
+
 			AreEqual(1, ci.Blocks.Count);
 		}
 
@@ -132,7 +129,6 @@ namespace CellDotNet
 			MethodBase method = del.Method;
 
 			List<IRBasicBlock> blocks = new IRTreeBuilder().BuildBasicBlocks(method);
-//			new TreeDrawer().DrawMethod(blocks);
 
 			// Check that stelem has been removed/decomposed.
 			IRBasicBlock.ForeachTreeInstruction(blocks, delegate(TreeInstruction obj) { AreNotEqual(IROpCodes.Stelem, obj.Opcode); });
@@ -173,9 +169,7 @@ namespace CellDotNet
 											}
 										};
 
-			List<IRBasicBlock> blocks = new IRTreeBuilder().BuildBasicBlocks(del.Method);
-
-//			new TreeDrawer().DrawMethod(blocks);
+			new IRTreeBuilder().BuildBasicBlocks(del.Method);
 		}
 
 		[Test]
@@ -188,7 +182,7 @@ namespace CellDotNet
 			                        		}
 			                        	};
 
-			List<IRBasicBlock> blocks = new IRTreeBuilder().BuildBasicBlocks(del.Method);
+			new IRTreeBuilder().BuildBasicBlocks(del.Method);
 
 			//			new TreeDrawer().DrawMethod(blocks);
 		}

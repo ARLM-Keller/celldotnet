@@ -82,5 +82,30 @@ namespace CellDotNet
 			AreSame(ilInst, ilist[1]);
 			AreSame(fiftyInst, ilist[2]);
 		}
+
+		[Test]
+		public void TestSchedulePostMethodCallMove()
+		{
+			SpuInstructionWriter w = new SpuInstructionWriter();
+			w.BeginNewBasicBlock();
+
+			// Call.
+			w.WriteBrsl(50); // inst 0
+
+			// Moves hw reg 3 to another reg and should stay after the call inst.
+			VirtualRegister destreg = w.NextRegister();
+			w.WriteMove(HardwareRegister.GetHardwareArgumentRegister(3), destreg); // inst 1
+
+			w.WriteAi(destreg, 50); // inst 2
+
+			List<InstructionScheduleInfo> list = new ListInstructionScheduler().DetermineDependencies(w.CurrentBlock);
+			// Move depends on call.
+			AreEqual(1, list[0].Dependents.Count);
+			AreEqual(list[1], Utilities.GetFirst(list[0].Dependents));
+
+			// Ai depends on move.
+			AreEqual(1, list[1].Dependents.Count);
+			AreEqual(list[2], Utilities.GetFirst(list[1].Dependents));
+		}
 	}
 }

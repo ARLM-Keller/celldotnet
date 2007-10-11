@@ -67,8 +67,8 @@ namespace CellDotNet
 					
 					// Beregner livein
 					liveIn.AddAll(oldLiveOut);
-					liveIn.Remove(flowGraph.def(node));
-					foreach (VirtualRegister vr in flowGraph.use(node))
+					liveIn.Remove(flowGraph.Def(node));
+					foreach (VirtualRegister vr in flowGraph.Use(node))
 						liveIn.Add(vr);
 					liveInDic[node] = liveIn;
 
@@ -90,10 +90,10 @@ namespace CellDotNet
 
 			foreach (GraphNode node in flowGraph.Nodes)
 			{
-				if (flowGraph.def(node) != null)
-					vrNodeDic[flowGraph.def(node)] = interferenceGraph.NewNode(flowGraph.def(node));
+				if (flowGraph.Def(node) != null)
+					vrNodeDic[flowGraph.Def(node)] = interferenceGraph.NewNode(flowGraph.Def(node));
 
-				foreach (VirtualRegister vr in flowGraph.use(node))
+				foreach (VirtualRegister vr in flowGraph.Use(node))
 					vrNodeDic[vr] = interferenceGraph.NewNode(vr);
 			}
 

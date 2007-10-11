@@ -4,8 +4,6 @@ using System.Text;
 
 namespace CellDotNet
 {
-	// p. 210 - 214 programming C#
-	// Note/TODO This class dosn't fully implements IList and super interfaces.
 	internal class SortedLinkedList<T> : IList<T>
 	{
 		private int count = 0;
@@ -90,7 +88,7 @@ namespace CellDotNet
 
 		public int IndexOf(T item)
 		{
-			throw new Exception("The method or operation is not implemented."); //TODO
+			throw new NotImplementedException();
 		}
 
 		public void Insert(int index, T item)
@@ -185,12 +183,12 @@ namespace CellDotNet
 
 		public bool Contains(T item)
 		{
-			throw new Exception("The method or operation is not implemented."); //TODO
+			throw new NotImplementedException();
 		}
 
 		public void CopyTo(T[] array, int arrayIndex)
 		{
-			throw new Exception("The method or operation is not implemented."); //TODO
+			throw new NotImplementedException();
 		}
 
 		public int Count

@@ -23,7 +23,6 @@ namespace CellDotNet
 			// NOTE instruktions nummereringen starter fra 0.
 
 			Dictionary<int, Set<int>> succ = new Dictionary<int, Set<int>>();
-//			Dictionary<int, Set<int>> pred = new Dictionary<int, Set<int>>();
 
 			Dictionary<SpuBasicBlock, SpuInstruction> blocks = new Dictionary<SpuBasicBlock, SpuInstruction>();
 			Dictionary<SpuBasicBlock, List<SpuInstruction>> jumpSources = new Dictionary<SpuBasicBlock, List<SpuInstruction>>();
@@ -49,13 +48,11 @@ namespace CellDotNet
 					instlist.Add(inst);
 
 					succ.Add(inst.Index, new Set<int>());
-//					pred.Add(inst.Index, new Set<int>());
 
 					// Predecessor is not set to null at the beginning of each block.
 					if (predecessor != null)
 					{
 						succ[instNr - 1].Add(instNr);
-//						pred[instNr].Add(instNr - 1);
 					}
 					if (inst.JumpTarget != null)
 						jumpSources[inst.JumpTarget].Add(inst);
@@ -79,7 +76,6 @@ namespace CellDotNet
 				foreach (SpuInstruction js in jumpSources[bb])
 				{
 					succ[js.Index].Add(firstinst.Index);
-//					pred[firstinst.Index].Add(js.Index);
 				}
 			}
 

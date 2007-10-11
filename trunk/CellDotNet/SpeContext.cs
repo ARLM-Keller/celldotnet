@@ -27,7 +27,7 @@ namespace CellDotNet
 						try
 						{
 							UnsafeNativeMethods.spe_fake_method();
-							throw new Exception("WTF??");
+							throw new LibSpeException("WTF??");
 						}
 						catch (DllNotFoundException)
 						{
@@ -104,7 +104,7 @@ namespace CellDotNet
 		{
 			_handle = UnsafeNativeMethods.spe_context_create(0, IntPtr.Zero);
 			if (_handle == IntPtr.Zero)
-				throw new Exception();
+				throw new LibSpeException();
 
 			_localStorageSize = UnsafeNativeMethods.spe_ls_size_get(_handle);
 			_localStorageMappedAddress = UnsafeNativeMethods.spe_ls_area_get(_handle);
@@ -627,6 +627,12 @@ namespace CellDotNet
 		}
 
 		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		private void Dispose(bool isDisposing)
 		{
 			if (_handle != IntPtr.Zero)
 			{

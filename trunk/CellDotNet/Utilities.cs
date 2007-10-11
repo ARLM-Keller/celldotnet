@@ -201,9 +201,9 @@ namespace CellDotNet
 			return (value + 127) & ~127;
 		}
 
-		public static bool IsWordAligned(int i)
+		public static bool IsWordAligned(int value)
 		{
-			return (i%4) == 0;
+			return (value%4) == 0;
 		}
 
 		public static bool IsWordAligned(IntPtr ptr)
@@ -216,9 +216,9 @@ namespace CellDotNet
 			return IsWordAligned(lsa.Value);
 		}
 
-		public static bool IsDoubleWordAligned(int i)
+		public static bool IsDoubleWordAligned(int value)
 		{
-			return (i%8) == 0;
+			return (value%8) == 0;
 		}
 
 		public static bool IsDoubleWordAligned(IntPtr ptr)
@@ -320,35 +320,35 @@ namespace CellDotNet
 
 		}
 
-		public static Set<T> RemoveDuplicates<T>(IEnumerable<T> e)
+		public static Set<T> RemoveDuplicates<T>(IEnumerable<T> enumerable)
 		{
 			Set<T> s = new Set<T>();
-			s.AddAll(e);
+			s.AddAll(enumerable);
 			return s;
 		}
 
-		static internal unsafe uint ReinterpretAsUInt(float f)
+		static internal unsafe uint ReinterpretAsUInt(float value)
 		{
-			return *((uint*) &f);
+			return *((uint*) &value);
 		}
 
-		static internal unsafe int ReinterpretAsInt(float f)
+		static internal unsafe int ReinterpretAsInt(float value)
 		{
-			return *((int*)&f);
+			return *((int*)&value);
 		}
 
-		internal static unsafe float ReinterpretAsSingle(int i)
+		internal static unsafe float ReinterpretAsSingle(int value)
 		{
-			return *(((float*)&i));
+			return *(((float*)&value));
 		}
 
-		internal static unsafe double ReinterpretAsDouble(long i)
+		internal static unsafe double ReinterpretAsDouble(long value)
 		{
-			return *(((double*)&i));
+			return *(((double*)&value));
 		}
-		static internal unsafe long ReinterpretAsLong(double f)
+		static internal unsafe long ReinterpretAsLong(double value)
 		{
-			return *((long*)&f);
+			return *((long*)&value);
 		}
 	}
 }

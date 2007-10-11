@@ -117,8 +117,8 @@ namespace CellDotNet
 					FieldInfo[] fields = typeof(OpCodes).GetFields(BindingFlags.Static | BindingFlags.Public);
 					foreach (FieldInfo field in fields)
 					{
-						if (field.FieldType != typeof(OpCode))
-							throw new Exception("Unexpected field type: " + field.FieldType.FullName);
+						Utilities.Assert(field.FieldType == typeof (OpCode), 
+							"Unexpected field type: " + field.FieldType.FullName);
 
 						OpCode oc = (OpCode)field.GetValue(null);
 						s_reflectionmap.Add(oc.Value, oc);

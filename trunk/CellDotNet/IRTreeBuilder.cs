@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -16,8 +17,8 @@ namespace CellDotNet
 		class ParseStack
 		{
 			public readonly Dictionary<int, List<MethodVariable>> BranchTargetStackVariables = new Dictionary<int, List<MethodVariable>>();
-
 			public readonly List<TreeInstruction> InstructionStack = new List<TreeInstruction>();
+
 			private List<MethodVariable> _currentVariableStack = new List<MethodVariable>();
 			private int _currentVariableStackTop = -1;
 			private int _lastStackVariableNumber = 999;
@@ -81,9 +82,11 @@ namespace CellDotNet
 					return inst;
 				}
 				else
-					throw new Exception("??");
+				{
+					Debug.Fail("??");
+					return null;
+				}
 			}
-
 
 			public StackTypeDescription PeekType()
 			{
@@ -106,9 +109,10 @@ namespace CellDotNet
 			/// <param name="branchTarget"></param>
 			/// <returns></returns>
 			/// <param name="currentBB"></param>
-			/// <param name="setOffset"></param> If true, sets the offset of the first load og store instruction 
-			/// to the branchtarget. It is used to return wether the offset is set on eany
-			/// of the load and stor instruction.
+			/// <param name="setOffset">
+			/// If true, sets the offset of the first new load or store instruction to the branch target.
+			/// It is used to indicate whether the offset is set on any of the load and store instructions.
+			/// </param>
 			/// <param name="offset"></param>
 			public void SaveInstructionStack(int branchTarget, List<TreeInstruction> currentBB, ref bool setOffset, int offset)
 			{
@@ -174,7 +178,7 @@ namespace CellDotNet
 				}
 
 				// Activate the variable stack.
-				// Pop is modifyed to remove the element from _currentVariableStack.
+				// Pop is modified to remove the element from _currentVariableStack.
 				_currentVariableStack.Clear();
 				_currentVariableStack.AddRange(stack);
 				_currentVariableStackTop = stack.Count - 1;
@@ -323,6 +327,12 @@ namespace CellDotNet
 
 			Dictionary<int, IRBasicBlock> branchTargets = CreateBasicBlocks(readerIn);
 
+//			Console.WriteLine("BBs start offsets:");
+//			foreach (KeyValuePair<int, IRBasicBlock> pair in branchTargets)
+//			{
+//				Console.WriteLine(pair.Key.ToString("x"));
+//			}
+
 			// Start over, this time actually reading the instructions.
 			readerIn.Reset();
 			IlReaderWrapper reader = new IlReaderWrapper(readerIn);
@@ -346,7 +356,7 @@ namespace CellDotNet
 				IROpCode ircode;
 				if (!_irmap.TryGetValue(reader.OpCode.Value, out ircode))
 				{
-					throw new Exception("Can't find IR opcode for reflection opcode " + reader.OpCode.Name +
+					throw new ILParseException("Can't find IR opcode for reflection opcode " + reader.OpCode.Name +
 										". The parsing or simplification probably wasn't performed correcly.");
 				}
 
@@ -640,7 +650,7 @@ namespace CellDotNet
 						goto NextBranch;
 					}
 				}
-				throw new Exception("IR tree construction error. Can't find branch target " + targetPos.ToString("x4") + " from instruction at " + branchinst.Offset.ToString("x4") + ".");
+				throw new ILParseException("IR tree construction error. Can't find branch target " + targetPos.ToString("x4") + " from instruction at " + branchinst.Offset.ToString("x4") + ".");
 
 				NextBranch:
 				branchinst.Operand = target;

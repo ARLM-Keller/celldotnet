@@ -10,15 +10,15 @@ namespace CellDotNet
 		[Test]
 		public void TestChannelOpCode()
 		{
-			IsFalse(SpuOpCode.rchcnt.NoRegisterWrite);
+			IsFalse(SpuOpCode.rchcnt.RegisterRtNotWritten);
 			IsTrue(SpuOpCode.rchcnt.HasImmediate);
 			AreEqual(SpuInstructionPart.Rt | SpuInstructionPart.Ca, SpuOpCode.rchcnt.Parts);
 
-			IsFalse(SpuOpCode.rdch.NoRegisterWrite);
+			IsFalse(SpuOpCode.rdch.RegisterRtNotWritten);
 			IsTrue(SpuOpCode.rdch.HasImmediate);
 			AreEqual(SpuInstructionPart.Rt | SpuInstructionPart.Ca, SpuOpCode.rdch.Parts);
 
-			IsTrue(SpuOpCode.wrch.NoRegisterWrite);
+			IsTrue(SpuOpCode.wrch.RegisterRtNotWritten);
 			IsTrue(SpuOpCode.wrch.HasImmediate);
 			AreEqual(SpuInstructionPart.Rt | SpuInstructionPart.Ca, SpuOpCode.wrch.Parts);
 		}
@@ -26,7 +26,7 @@ namespace CellDotNet
 		[Test]
 		public void TestLoad()
 		{
-			IsFalse(SpuOpCode.lqd.NoRegisterWrite);
+			IsFalse(SpuOpCode.lqd.RegisterRtNotWritten);
 			IsTrue(SpuOpCode.lqd.HasImmediate);
 			AreEqual(SpuInstructionPart.Rt | SpuInstructionPart.Ra | SpuInstructionPart.Immediate, SpuOpCode.lqd.Parts);
 		}
@@ -34,7 +34,7 @@ namespace CellDotNet
 		[Test]
 		public void TestStore()
 		{
-			IsTrue(SpuOpCode.stqd.NoRegisterWrite);
+			IsTrue(SpuOpCode.stqd.RegisterRtNotWritten);
 			IsTrue(SpuOpCode.stqd.HasImmediate);
 			AreEqual(SpuInstructionPart.Rt | SpuInstructionPart.Ra | SpuInstructionPart.Immediate, SpuOpCode.stqd.Parts);
 		}

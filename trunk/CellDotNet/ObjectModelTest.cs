@@ -5,6 +5,7 @@ using NUnit.Framework;
 namespace CellDotNet
 {
 	[TestFixture]
+//	[Ignore("PPE calls makes mono crash when using instruction scheduling.")]
 	public class ObjectModelTest : UnitTest
 	{
 		private delegate void SimpleDelegate();

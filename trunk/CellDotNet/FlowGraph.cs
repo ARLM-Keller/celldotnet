@@ -18,12 +18,12 @@ namespace CellDotNet
 			return graphNode;
 		}
 
-		public VirtualRegister def(GraphNode graphNode)
+		public VirtualRegister Def(GraphNode graphNode)
 		{
 			return defs[graphNode];
 		}
 
-		public List<VirtualRegister> use(GraphNode graphNode)
+		public List<VirtualRegister> Use(GraphNode graphNode)
 		{
 			return uses[graphNode];
 		}
@@ -32,7 +32,5 @@ namespace CellDotNet
 		{
 			return isMoves[graphNode];
 		}
-
-
 	}
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace CellDotNet
 {
-	public class LiveInterval
+	class LiveInterval
 	{
 		private int _start;
 		private int _end;
