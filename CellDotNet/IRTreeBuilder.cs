@@ -114,7 +114,8 @@ namespace CellDotNet
 			/// It is used to indicate whether the offset is set on any of the load and store instructions.
 			/// </param>
 			/// <param name="offset"></param>
-			public void SaveInstructionStack(int branchTarget, List<TreeInstruction> currentBB, ref bool setOffset, int offset)
+			/// <returns>true if <paramref name="offset"/> was assigned to an instruction.</returns>
+			public bool SaveInstructionStack(int branchTarget, List<TreeInstruction> currentBB, bool setOffset, int offset)
 			{
 				List<MethodVariable> stack = GetBranchVariableStack(branchTarget);
 				List<TreeInstruction> saveInstructionRoots = new List<TreeInstruction>();
@@ -183,7 +184,7 @@ namespace CellDotNet
 
 				currentBB.AddRange(saveInstructionRoots);
 
-				setOffset = offsetIsSet;
+				return offsetIsSet;
 			}
 
 			public int TotalStackSize
@@ -315,19 +316,10 @@ namespace CellDotNet
 			_parseStack = new ParseStack();
 
 			IRBasicBlock currblock;
-			List<TreeInstruction> branches = new List<TreeInstruction>();
-
 			List<IRBasicBlock> blocks = new List<IRBasicBlock>();
 			TypeDeriver typederiver = new TypeDeriver();
 
-
 			Dictionary<int, IRBasicBlock> branchTargets = CreateBasicBlocks(readerIn);
-
-//			Console.WriteLine("BBs start offsets:");
-//			foreach (KeyValuePair<int, IRBasicBlock> pair in branchTargets)
-//			{
-//				Console.WriteLine(pair.Key.ToString("x"));
-//			}
 
 			// Start over, this time actually reading the instructions.
 			readerIn.Reset();
@@ -370,11 +362,8 @@ namespace CellDotNet
 						// If it's a branch target and there's contents on the instruction stack then
 						// we need to save the instruction stack on the variable stack.
 
-						bool setOffset = false;
-
-						_parseStack.SaveInstructionStack(reader.Offset, currblock.Roots, ref setOffset, -1);
-
-						if (setOffset)
+						bool clearOffset = _parseStack.SaveInstructionStack(reader.Offset, currblock.Roots, false, -1);
+						if (clearOffset)
 							newinstoffset = -1;
 					}
 
@@ -489,16 +478,11 @@ namespace CellDotNet
 				if (reader.OpCode.FlowControl == FlowControl.Branch ||
 					reader.OpCode.FlowControl == FlowControl.Cond_Branch)
 				{
-					branches.Add(treeinst);
-
 					// Store instruction stack associated with the target.
 					int targetOffset = (int)reader.Operand;
 
-					bool setOffset = true;
-
-					_parseStack.SaveInstructionStack(targetOffset, currblock.Roots, ref setOffset, reader.Offset);
-
-					if (setOffset)
+					bool clearOffset = _parseStack.SaveInstructionStack(targetOffset, currblock.Roots, true, reader.Offset);
+					if (clearOffset)
 						treeinst.Offset = -1;
 
 					treeinst.Operand = branchTargets[targetOffset];
