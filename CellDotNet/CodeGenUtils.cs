@@ -118,7 +118,7 @@ namespace CellDotNet
 				foreach (string name in regnames)
 				{
 					declolddest.Append((declolddest.Length != 0 ? ", " : "") + "VirtualRegister " + name);
-					if (name != "rt" || opcode.NoRegisterWrite)
+					if (name != "rt" || opcode.RegisterRtNotWritten)
 						declnewdest.Append((declnewdest.Length != 0 ? ", " : "") + "VirtualRegister " + name);
 				}
 
@@ -131,7 +131,7 @@ namespace CellDotNet
 				// Body.
 				if ((opcode.Parts & SpuInstructionPart.Rt) != SpuInstructionPart.None)
 				{
-					if (opcode.NoRegisterWrite)
+					if (opcode.RegisterRtNotWritten)
 					{
 						bodynewdest.AppendLine("AssertRegisterNotNull(rt, \"rt\");");
 						bodynewdest.AppendLine("inst.Rt = rt;");
@@ -173,7 +173,7 @@ namespace CellDotNet
 				}
 				bodynewdest.AppendLine("AddInstruction(inst);");
 				bodyolddest.AppendLine("AddInstruction(inst);");
-				if (!opcode.NoRegisterWrite)
+				if (!opcode.RegisterRtNotWritten)
 					bodynewdest.AppendLine("return inst.Rt;");
 
 				// Put it together.
@@ -189,7 +189,7 @@ namespace CellDotNet
 		}}
 ";
 				// GetQualifiedOpcodeFieldName(opcode)
-				tw.Write(methodformat, opcode.Title, ocname, declnewdest, opcode.NoRegisterWrite ? "void" : "VirtualRegister", GetQualifiedOpcodeFieldName(opcode), bodynewdest);
+				tw.Write(methodformat, opcode.Title, ocname, declnewdest, opcode.RegisterRtNotWritten ? "void" : "VirtualRegister", GetQualifiedOpcodeFieldName(opcode), bodynewdest);
 				if (declolddest.Length != declnewdest.Length)
 					tw.Write(methodformat, opcode.Title, ocname, declolddest, "void", GetQualifiedOpcodeFieldName(opcode), bodyolddest);
 			}

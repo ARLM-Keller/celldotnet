@@ -58,6 +58,12 @@ namespace CellDotNet
 
 			return _satisfiedDependencyCount == _dependencyCount;
 		}
+
+		public void AddDependant(InstructionScheduleInfo dependant)
+		{
+			Dependents.Add(dependant);
+			dependant.NotifyDependency();
+		}
 	}
 
 	/// <summary>
@@ -71,10 +77,11 @@ namespace CellDotNet
 
 			InstructionScheduleInfo lastMemWrite = null;
 			InstructionScheduleInfo lastChannelAccess = null;
-			InstructionScheduleInfo lastCallOrMove = null;
+			InstructionScheduleInfo lastCall = null;
 
 			// Contains the last instruction which has defined a register.
 			Dictionary<VirtualRegister, InstructionScheduleInfo> defs = new Dictionary<VirtualRegister, InstructionScheduleInfo>();
+			Set<InstructionScheduleInfo> hwRegDefsForMethods = new Set<InstructionScheduleInfo>();
 			foreach (SpuInstruction inst in bb.Head.GetEnumerable())
 			{
 				InstructionScheduleInfo isi = new InstructionScheduleInfo(inst);
@@ -84,31 +91,40 @@ namespace CellDotNet
 				if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MemoryWrite) != 0)
 				{
 					if (lastMemWrite != null)
-						AddDependant(lastMemWrite, isi);
+						lastMemWrite.AddDependant(isi);
 					lastMemWrite = isi;
 				}
 				else if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MemoryRead) != 0 && lastMemWrite != null)
 				{
-					AddDependant(lastMemWrite, isi);
+					lastMemWrite.AddDependant(isi);
 				}
 
 				// Order channel access.
 				if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.ChannelAccess) != 0)
 				{
 					if (lastChannelAccess != null)
-						AddDependant(lastChannelAccess, isi);
+						lastChannelAccess.AddDependant(isi);
 					lastChannelAccess = isi;
 				}
 
 				// Order method calls.
 				if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MethodCall) != 0)
 				{
-					if (lastCallOrMove != null)
-						AddDependant(lastCallOrMove, isi);
-					lastCallOrMove = isi;
+					if (lastCall != null)
+						lastCall.AddDependant(isi);
+					lastCall = isi;
 
 					// Order previous instructions which moved into hw regs.
-//					HardwareRegister.GetCallerSavesCellRegisters()
+					foreach (InstructionScheduleInfo hwdef in hwRegDefsForMethods)
+						hwdef.AddDependant(isi);
+
+					hwRegDefsForMethods.Clear();
+				}
+
+				// Order moves from hw regs after last call.
+				if (inst.OpCode == SpuOpCode.move && inst.Ra.IsRegisterSet && lastCall != null)
+				{
+					lastCall.AddDependant(isi);
 				}
 
 				// Order register defines.
@@ -116,21 +132,19 @@ namespace CellDotNet
 				{
 					InstructionScheduleInfo prev;
 					if (defs.TryGetValue(usedReg, out prev))
-						AddDependant(prev, isi);
+						prev.AddDependant(isi);
 				}
-				if (inst.Def != null)
+
+				VirtualRegister def = inst.Def;
+				if (def != null)
 				{
-					defs[inst.Def] = isi;
+					defs[def] = isi;
+					if (def.IsRegisterSet)
+						hwRegDefsForMethods.Add(isi);
 				}
 			}
 
 			return instlist;
-		}
-
-		private static void AddDependant(InstructionScheduleInfo dependency, InstructionScheduleInfo dependant)
-		{
-			dependency.Dependents.Add(dependant);
-			dependant.NotifyDependency();
 		}
 
 		public void Prioritize(List<InstructionScheduleInfo> schedlist, out List<InstructionScheduleInfo> initiallyReady)

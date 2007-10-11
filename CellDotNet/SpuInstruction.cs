@@ -90,24 +90,8 @@ namespace CellDotNet
             set { _rc = value; }
         }
 
-        // Maby a little over kill, but result in more nice/better programming.
-        public ICollection<VirtualRegister> Sources
-        {
-            get
-            {
-                ICollection<VirtualRegister> s = new LinkedList<VirtualRegister>();
-                if (_ra != null) s.Add(_ra);
-                if (_rb != null) s.Add(_rb);
-                if (_rc != null) s.Add(_rc);
-				if (_rt != null && OpCode.NoRegisterWrite) s.Add(_rt);
-                return s;
-            }
-        }
-
     	public VirtualRegister Rt
         {
-			//Selvom rt ikke bruges til at returnere værdier, så bruges det stadig af f.eks. stqd
-//			get { return (OpCode.NoRegisterWrite)? null : _rt; }
 			get { return _rt; }
 			set { _rt = value; }
         }
@@ -128,30 +112,27 @@ namespace CellDotNet
     	{
     		get
 			{
-				if (!OpCode.NoRegisterWrite) return Rt;
+				if (!OpCode.RegisterRtNotWritten) return Rt;
 				return null;
 			}
     	}
-
-		public bool IsCall()
-		{
-			return _opcode == SpuOpCode.brsl;
-		}
 
     	public List<VirtualRegister> Use
     	{
     		get
     		{
-//				if (_opcode == SpuOpCode.brsl)
-//					return new List<VirtualRegister>(HardwareRegister.CallerSavesRegisters);
-
-    			List<VirtualRegister> use = new List<VirtualRegister>();
-				if (Ra != null) use.Add(_ra);
-				if (Rb != null) use.Add(_rb);
-				if (Rc != null) use.Add(_rc);
-				if (Rt != null && OpCode.NoRegisterWrite ) use.Add(_rt);
-				return use;
+    			List<VirtualRegister> uses = new List<VirtualRegister>();
+    			AddUses(uses);
+    			return uses;
     		}
+    	}
+
+    	private void AddUses(List<VirtualRegister> targetList)
+    	{
+    		if (Ra != null) targetList.Add(_ra);
+    		if (Rb != null) targetList.Add(_rb);
+    		if (Rc != null) targetList.Add(_rc);
+    		if (Rt != null && OpCode.RegisterRtRead) targetList.Add(_rt);
     	}
 
     	/// <summary>
@@ -166,7 +147,7 @@ namespace CellDotNet
 			set
 			{
 				if (_jumpTargetOrObjectWithAddress != null)
-					throw new Exception("Setting jumptarget for the second time??");
+					throw new InvalidOperationException("Setting jumptarget for the second time??");
 				_jumpTargetOrObjectWithAddress = value;
 			}
     	}
@@ -183,7 +164,7 @@ namespace CellDotNet
 			set
 			{
 				if (_jumpTargetOrObjectWithAddress != null)
-					throw new Exception("Setting ObjectWithAddress for the second time??");
+					throw new InvalidOperationException("Setting ObjectWithAddress for the second time??");
 				_jumpTargetOrObjectWithAddress = value;
 			}
 		}
@@ -193,14 +174,14 @@ namespace CellDotNet
 			switch (_opcode.Format)
 			{
 				case SpuInstructionFormat.None:
-					throw new Exception("Err.");
+					throw new InvalidOperationException("Err.");
 				case SpuInstructionFormat.RR1:
 					return _opcode.OpCode | ((int) _ra.Register << 7);
 				case SpuInstructionFormat.RR2:
 					return _opcode.OpCode | ((_constant & 0x7F) << 14) | ((int)_ra.Register << 7) | (int)_rt.Register;
 				case SpuInstructionFormat.RR:
 					return _opcode.OpCode | ((int) _rb.Register << 14) | ((int) _ra.Register << 7) | (int) _rt.Register;
-				case SpuInstructionFormat.RRR:
+				case SpuInstructionFormat.Rrr:
 					return _opcode.OpCode | ((int) _rt.Register << 21) | ((int) _rb.Register << 14) | ((int) _ra.Register << 7) | (int) _rc.Register;
 				case SpuInstructionFormat.RI7:
 					return _opcode.OpCode | ((_constant & 0x7F) << 14) | ((int)_ra.Register << 7) | (int)_rt.Register;
@@ -218,22 +199,12 @@ namespace CellDotNet
 					return _opcode.OpCode | ((_constant & 0xff) << 14) | ((int)_ra.Register << 7) | (int)_rt.Register;
 				case SpuInstructionFormat.Channel:
 					return _opcode.OpCode | ((_constant & 0x3f) << 7) | (int)_rt.Register;
-				case SpuInstructionFormat.WEIRD:
+				case SpuInstructionFormat.Weird:
 					return _opcode.OpCode | _constant;
 				default:
 					throw new BadSpuInstructionException(string.Format("Invalid SPU opcode instruction format '{0}'; instruction name '{1}'.", _opcode.Format, _opcode.Name));
 			}
         }
-
-		private BadSpuInstructionException CreateEmitException()
-		{
-			if (JumpTarget != null)
-				return new BadSpuInstructionException("JumpTarget is not null, so the instruction has not been patched.");
-			else if (ObjectWithAddress != null)
-				return new BadSpuInstructionException("ObjectWithAddress is not null, so the instruction has not been patched.");
-			else
-				return new BadSpuInstructionException(this);
-		}
 
 		public static int[] Emit(List<SpuInstruction> code)
 		{

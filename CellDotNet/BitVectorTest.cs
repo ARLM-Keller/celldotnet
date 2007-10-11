@@ -14,8 +14,7 @@ namespace CellDotNet
 			b.Add(9);
 			b.Add(333);
 
-			if (b.IsCountZero() || b.Count != 3 || !b.Contains(7) || !b.Contains(9) || !b.Contains(333))
-				throw new Exception("");
+			IsFalse(b.IsCountZero() || b.Count != 3 || !b.Contains(7) || !b.Contains(9) || !b.Contains(333));
 		}
 
 		[Test]
@@ -29,8 +28,7 @@ namespace CellDotNet
 			BitVector b2 = new BitVector();
 			b2.AddAll(b1);
 
-			if (b2.IsCountZero() || b2.Count != 3 || !b2.Contains(7) || !b2.Contains(9) || !b2.Contains(333))
-				throw new Exception("");
+			IsFalse(b2.IsCountZero() || b2.Count != 3 || !b2.Contains(7) || !b2.Contains(9) || !b2.Contains(333));
 		}
 
 		[Test]
@@ -42,8 +40,7 @@ namespace CellDotNet
 
 			b1.AddAll(array);
 
-			if (b1.IsCountZero() || b1.Count != 3 || !b1.Contains(7) || !b1.Contains(9) || !b1.Contains(333))
-				throw new Exception("");
+			IsFalse(b1.IsCountZero() || b1.Count != 3 || !b1.Contains(7) || !b1.Contains(9) || !b1.Contains(333));
 		}
 
 		[Test]
@@ -59,8 +56,7 @@ namespace CellDotNet
 			b2.Add(9);
 			b2.Add(333);
 
-			if (b2.IsCountZero() || !b2.Equals(b1))
-				throw new Exception("");
+			IsFalse(b2.IsCountZero() || !b2.Equals(b1));
 		}
 
 		[Test]
@@ -73,8 +69,7 @@ namespace CellDotNet
 
 			b1.Clear();
 
-			if (!b1.IsCountZero() || b1.Count != 0 || b1.Contains(7) || b1.Contains(9) || b1.Contains(333))
-				throw new Exception("");
+			IsFalse(!b1.IsCountZero() || b1.Count != 0 || b1.Contains(7) || b1.Contains(9) || b1.Contains(333));
 		}
 
 		[Test]
@@ -88,8 +83,7 @@ namespace CellDotNet
 			int[] array = new int[] { 7, 333 };
 			b1.RemoveAll(array);
 
-			if (b1.IsCountZero() || b1.Count != 1 || b1.Contains(7) || !b1.Contains(9) || b1.Contains(333))
-				throw new Exception("");
+			IsFalse(b1.IsCountZero() || b1.Count != 1 || b1.Contains(7) || !b1.Contains(9) || b1.Contains(333));
 		}
 
 		[Test]
@@ -103,8 +97,7 @@ namespace CellDotNet
 			uint[] array = new uint[] { 7, 333 };
 			b1.RemoveAll(array);
 
-			if (b1.IsCountZero() || b1.Count != 1 || b1.Contains(7) || !b1.Contains(9) || b1.Contains(333))
-				throw new Exception("");
+			IsFalse(b1.IsCountZero() || b1.Count != 1 || b1.Contains(7) || !b1.Contains(9) || b1.Contains(333));
 		}
 
 		[Test]
@@ -121,8 +114,7 @@ namespace CellDotNet
 
 			b1.RemoveAll(b2);
 
-			if (b1.IsCountZero() || b1.Count != 1 || b1.Contains(7) || !b1.Contains(9) || b1.Contains(333))
-				throw new Exception("");
+			IsFalse(b1.IsCountZero() || b1.Count != 1 || b1.Contains(7) || !b1.Contains(9) || b1.Contains(333));
 		}
 
 		[Test]
@@ -139,8 +131,7 @@ namespace CellDotNet
 
 			b1.And(b2);
 
-			if (b1.IsCountZero() || b1.Count != 2 || !b1.Contains(7) || b1.Contains(9) || !b1.Contains(333))
-				throw new Exception("");
+			IsFalse(b1.IsCountZero() || b1.Count != 2 || !b1.Contains(7) || b1.Contains(9) || !b1.Contains(333));
 		}
 
 		[Test]
@@ -157,8 +148,7 @@ namespace CellDotNet
 
 			BitVector b3 = b1 & b2;
 
-			if (b3.IsCountZero() || b3.Count != 2 || !b3.Contains(7) || b3.Contains(9) || !b3.Contains(333))
-				throw new Exception("");
+			IsFalse(b3.IsCountZero() || b3.Count != 2 || !b3.Contains(7) || b3.Contains(9) || !b3.Contains(333));
 		}
 
 		[Test]
@@ -174,8 +164,7 @@ namespace CellDotNet
 
 			BitVector b3 = b1 | b2;
 
-			if (b3.IsCountZero() || b3.Count != 3 || !b3.Contains(7) || !b3.Contains(9) || !b3.Contains(333))
-				throw new Exception("");
+			IsFalse(b3.IsCountZero() || b3.Count != 3 || !b3.Contains(7) || !b3.Contains(9) || !b3.Contains(333));
 		}
 
 		[Test]
@@ -195,8 +184,7 @@ namespace CellDotNet
 
 			b3.AddAllAnd(b1, b2);
 
-			if (b3.IsCountZero() || b3.Count != 3 || !b3.Contains(7) || b3.Contains(9) || !b3.Contains(333) || b3.Contains(14) || !b3.Contains(15))
-				throw new Exception("");
+			IsFalse(b3.IsCountZero() || b3.Count != 3 || !b3.Contains(7) || b3.Contains(9) || !b3.Contains(333) || b3.Contains(14) || !b3.Contains(15));
 		}
 
 		[Test]
@@ -216,8 +204,7 @@ namespace CellDotNet
 
 			b3.RemoveAllAnd(b1, b2);
 
-			if (b3.IsCountZero() || b3.Count != 1 || b3.Contains(7) || b3.Contains(9) || b3.Contains(333) || b3.Contains(14) || !b3.Contains(15))
-				throw new Exception("");
+			IsFalse(b3.IsCountZero() || b3.Count != 1 || b3.Contains(7) || b3.Contains(9) || b3.Contains(333) || b3.Contains(14) || !b3.Contains(15));
 		}
 
 		[Test]
@@ -235,8 +222,7 @@ namespace CellDotNet
 				b2.Add(i);
 			}
 
-			if (b2.IsCountZero() || b2.Count != 3 || !b1.Equals(b2))
-				throw new Exception("");
+			IsFalse(b2.IsCountZero() || b2.Count != 3 || !b1.Equals(b2));
 		}
 
 		[Test]
@@ -258,10 +244,7 @@ namespace CellDotNet
 				b2.Add(item);
 			}
 
-			if (b2.IsCountZero() || b2.Count != 3 || !init.Equals(b2))
-				throw new Exception("");
+			IsFalse(b2.IsCountZero() || b2.Count != 3 || !init.Equals(b2));
 		}
-
-		//TODO test af resize, og vectore med forskellig størrelse
 	}
 }

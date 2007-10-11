@@ -137,7 +137,6 @@
     <Compile Include="SpuInstructionWriter.cs" />
     <Compile Include="SpuInstructionWriter_autogen.cs" />
     <Compile Include="SpuRuntimeTest.cs" />
-    <Compile Include="StackLocation.cs" />
     <Compile Include="StackTypeDescription.cs" />
     <Compile Include="StaticFileLibraryResolver.cs" />
     <Compile Include="StaticFileLibraryResolverTest.cs" />

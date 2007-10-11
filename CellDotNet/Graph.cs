@@ -45,15 +45,14 @@ namespace CellDotNet
 			to.Pred.Remove(from);
 		}
 
-		public void Freez()
+		public void Freeze()
 		{
-			if (isFrozen)
-				throw new Exception("Error.");
+			Utilities.Assert(!isFrozen, "!isFrozen");
 
 			_frozenNodes.AddAll(_nodes);
 
 			foreach (GraphNode node in _nodes)
-				 node.Freez();
+				 node.Freeze();
 		}
 
 		public void RemoveNode(GraphNode graphNode)
@@ -76,7 +75,7 @@ namespace CellDotNet
 		public void AddFrozenNodeWithEdges(GraphNode graphNode)
 		{
 			if (!isFrozen)
-				throw new Exception("Graph not frozen.");
+				throw new InvalidOperationException("Graph not frozen.");
 
 			if (graphNode.Graph != this )
 				throw new ArgumentException();
@@ -139,10 +138,10 @@ namespace CellDotNet
 			_graph = graph;
 		}
 
-		public void Freez()
+		public void Freeze()
 		{
 			if (isFrozen)
-				throw new Exception("Error.");
+				throw new InvalidOperationException();
 
 			_frozenPred.AddAll(_pred);
 			_frozenSucc.AddAll(_succ);

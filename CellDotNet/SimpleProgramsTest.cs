@@ -237,7 +237,7 @@ namespace CellDotNet
 		}
 
 		[Test]
-		public void TestConditionalExpresion()
+		public void TestConditionalExpression()
 		{
 			Converter<int, int> fun =
 				delegate(int input)
@@ -246,6 +246,10 @@ namespace CellDotNet
 					};
 
 			CompileContext cc = new CompileContext(fun.Method);
+			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
+			new TreeDrawer().DrawMethods(cc);
+			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
+			Disassembler.DisassembleUnconditionalToConsole(cc);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			object result1 = SpeContext.UnitTestRunProgram(cc, 14);

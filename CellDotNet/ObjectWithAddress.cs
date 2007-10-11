@@ -43,7 +43,7 @@ namespace CellDotNet
 			set
 			{
 				if ((value & 0xf) != 0)
-					throw new ArgumentOutOfRangeException("Attempt to set non-16-bytes aligned offset. Alignment: " + (value & 0xf));
+					throw new ArgumentOutOfRangeException("value", "Attempt to set non-16-bytes aligned offset. Alignment: " + (value & 0xf));
 				_offset = value;
 			}
 		}

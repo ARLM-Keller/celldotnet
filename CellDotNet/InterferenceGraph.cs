@@ -17,7 +17,7 @@ namespace CellDotNet
 		override public GraphNode NewNode()
 		{
 			// Knuder i interferens grafer bør kun laves med NewNode(VirtualRegister).
-			throw new Exception();
+			throw new InvalidOperationException();
 		}
 
 		public VirtualRegister getVR(GraphNode graphNode)

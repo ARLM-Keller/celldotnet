@@ -14,10 +14,10 @@ namespace CellDotNet
 			for (int i = 0; i < code.Count; i++)
 			{
 				VirtualRegister def = code[i].Rt;
-				ICollection<VirtualRegister> uses = code[i].Sources;
+				ICollection<VirtualRegister> uses = code[i].Use;
 
 				LiveInterval li;
-				//li = liveIntervals[def];
+				//li = liveIntervals[Def];
 				if (def != null)
 				{
 					if (!liveIntervals.TryGetValue(def, out li))

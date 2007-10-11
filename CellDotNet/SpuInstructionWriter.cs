@@ -872,7 +872,7 @@ namespace CellDotNet
 				foreach (SpuInstruction inst in bb.Head.GetEnumerable())
 				{
 					if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.Pseudo) != SpuOpCodeSpecialFeatures.None)
-						throw new Exception("Error at basic block " + bbindex + ", instruction " + instnum + ": Pseudo instruction \"" + inst.OpCode.Name + "\" found.");
+						throw new BadSpuInstructionException("Error at basic block " + bbindex + ", instruction " + instnum + ": Pseudo instruction \"" + inst.OpCode.Name + "\" found.");
 
 					instnum++;
 				}
