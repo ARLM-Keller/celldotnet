@@ -41,18 +41,6 @@ namespace CellDotNet
 				return targetvariablestack;
 			}
 
-			public int GetNextForwardBranchAddress(int currentReaderAddress)
-			{
-				int min = int.MaxValue;
-				foreach (int target in BranchTargetStackVariables.Keys)
-				{
-					if (target > currentReaderAddress && target < min)
-						min = target;
-				}
-
-				return min;
-			}
-
 			/// <summary>
 			/// If the instruction stack is not empty, the top of that stack is popped.
 			/// Otherwise, an <see cref="IROpCodes.Ldloc"/> instruction that reads the variable 
@@ -109,13 +97,7 @@ namespace CellDotNet
 			/// <param name="branchTarget"></param>
 			/// <returns></returns>
 			/// <param name="currentBB"></param>
-			/// <param name="setOffset">
-			/// If true, sets the offset of the first new load or store instruction to the branch target.
-			/// It is used to indicate whether the offset is set on any of the load and store instructions.
-			/// </param>
-			/// <param name="offset"></param>
-			/// <returns>true if <paramref name="offset"/> was assigned to an instruction.</returns>
-			public bool SaveInstructionStack(int branchTarget, List<TreeInstruction> currentBB, bool setOffset, int offset)
+			public void SaveInstructionStack(int branchTarget, List<TreeInstruction> currentBB)
 			{
 				List<MethodVariable> stack = GetBranchVariableStack(branchTarget);
 				List<TreeInstruction> saveInstructionRoots = new List<TreeInstruction>();
@@ -136,22 +118,13 @@ namespace CellDotNet
 					}
 				}
 
-				bool offsetIsSet = false;
-
 				int j = 0;
 
 				// Insert instructions to save current variable stack.
 				for (int i = 0; i <= _currentVariableStackTop; i++, j++)
 				{
-					int loadInstOffset = -1;
-					if (!offsetIsSet && setOffset)
-					{
-						loadInstOffset = offset;
-						offsetIsSet = true;
-					}
-
 					TreeInstruction loadInst = new TreeInstruction(
-						IROpCodes.Ldloc, _currentVariableStack[i].StackType, _currentVariableStack[i], loadInstOffset);
+						IROpCodes.Ldloc, _currentVariableStack[i].StackType, _currentVariableStack[i], -1);
 
 					TreeInstruction storeInst = new TreeInstruction(
 						IROpCodes.Stloc, StackTypeDescription.None, stack[j], -1, loadInst);
@@ -162,14 +135,8 @@ namespace CellDotNet
 				// Insert instructions to save instruction stack.
 				for (int i = 0; i < InstructionStack.Count; i++, j++)
 				{
-					int newInstOffset = -1;
-					if (!offsetIsSet && setOffset)
-					{
-						newInstOffset = offset;
-						offsetIsSet = true;
-					}
 					TreeInstruction storeInst = new TreeInstruction(
-						IROpCodes.Stloc, StackTypeDescription.None, stack[j], newInstOffset, InstructionStack[i]);
+						IROpCodes.Stloc, StackTypeDescription.None, stack[j], -1, InstructionStack[i]);
 
 					saveInstructionRoots.Add(storeInst);
 				}
@@ -183,8 +150,6 @@ namespace CellDotNet
 				InstructionStack.Clear();
 
 				currentBB.AddRange(saveInstructionRoots);
-
-				return offsetIsSet;
 			}
 
 			public int TotalStackSize
@@ -315,7 +280,6 @@ namespace CellDotNet
 
 			_parseStack = new ParseStack();
 
-			IRBasicBlock currblock;
 			List<IRBasicBlock> blocks = new List<IRBasicBlock>();
 			TypeDeriver typederiver = new TypeDeriver();
 
@@ -326,7 +290,7 @@ namespace CellDotNet
 			IlReaderWrapper reader = new IlReaderWrapper(readerIn);
 
 			TreeInstruction prevInst = null;
-			currblock = branchTargets[0];
+			IRBasicBlock currblock = branchTargets[0];
 			while (reader.Read(_parseStack.PeekType()))
 			{
 				if (prevInst != null && prevInst.Opcode.FlowControl == FlowControl.Branch)
@@ -353,7 +317,7 @@ namespace CellDotNet
 				// Adjust variable stack if we've reached a new forward branch.
 				if (branchTargets.ContainsKey(reader.Offset) && reader.Offset != 0)
 				{
-					if (prevInst!= null && prevInst.Opcode.FlowControl == FlowControl.Branch)
+					if (prevInst != null && prevInst.Opcode.FlowControl == FlowControl.Branch)
 					{
 						_parseStack.LoadVariableStack(reader.Offset);
 					}
@@ -362,9 +326,7 @@ namespace CellDotNet
 						// If it's a branch target and there's contents on the instruction stack then
 						// we need to save the instruction stack on the variable stack.
 
-						bool clearOffset = _parseStack.SaveInstructionStack(reader.Offset, currblock.Roots, false, -1);
-						if (clearOffset)
-							newinstoffset = -1;
+						_parseStack.SaveInstructionStack(reader.Offset, currblock.Roots);
 					}
 
 					blocks.Add(currblock);
@@ -462,7 +424,7 @@ namespace CellDotNet
 						break;
 					default:
 						if (popbehavior != PopBehavior.Pop0)
-							throw new Exception("Invalid PopBehavior: " + popbehavior + ". Only two-argument method calls are supported.");
+							throw new ILParseException("Invalid PopBehavior: " + popbehavior + ". Only two-argument method calls are supported.");
 						break;
 				}
 
@@ -472,7 +434,7 @@ namespace CellDotNet
 				if (pushcount == 1)
 					_parseStack.InstructionStack.Add(treeinst);
 				else if (pushcount != 0)
-					throw new Exception("Only 1-push is supported.");
+					throw new ILParseException("Only 1-push is supported.");
 
 				// Handle branches.
 				if (reader.OpCode.FlowControl == FlowControl.Branch ||
@@ -481,9 +443,7 @@ namespace CellDotNet
 					// Store instruction stack associated with the target.
 					int targetOffset = (int)reader.Operand;
 
-					bool clearOffset = _parseStack.SaveInstructionStack(targetOffset, currblock.Roots, true, reader.Offset);
-					if (clearOffset)
-						treeinst.Offset = -1;
+					_parseStack.SaveInstructionStack(targetOffset, currblock.Roots);
 
 					treeinst.Operand = branchTargets[targetOffset];
 				}
@@ -495,7 +455,6 @@ namespace CellDotNet
 				}
 
 				prevInst = treeinst;
-
 			}
 
 			blocks.Add(currblock);
@@ -512,26 +471,32 @@ namespace CellDotNet
 		{
 			// Find all branch sources and targets and create basic blocks accordingly.
 			Dictionary<int, IRBasicBlock> blocks = new Dictionary<int, IRBasicBlock>();
-			blocks.Add(0, new IRBasicBlock());
+			blocks.Add(0, new IRBasicBlock(0));
 
 			bool nextInstructionStartsBlock = false;
 			while (reader.Read())
 			{
+				bool createBlock = false;
+				int blockOffset = 0;
 				if (reader.OpCode.FlowControl == FlowControl.Branch ||
 				    reader.OpCode.FlowControl == FlowControl.Cond_Branch)
 				{
-					int targetOffset = (int) reader.Operand;
-					if (!blocks.ContainsKey(targetOffset))
-						blocks.Add(targetOffset, new IRBasicBlock());
-
+					createBlock = true;
+					blockOffset = (int) reader.Operand;
 					nextInstructionStartsBlock = true;
 				}
 //				else if (nextInstructionStartsBlock)
 //				{
-//					if (!blocks.ContainsKey(reader.Offset))
-//						blocks.Add(reader.Offset, new IRBasicBlock());
+//					createBlock = true;
+//					blockOffset = reader.Offset;
 //					nextInstructionStartsBlock = false;
 //				}
+
+				if (createBlock)
+				{
+					if (!blocks.ContainsKey(blockOffset)) 
+						blocks.Add(blockOffset, new IRBasicBlock(blocks.Count));
+				}
 			}
 
 			return blocks;

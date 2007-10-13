@@ -183,8 +183,6 @@ namespace CellDotNet
 			                        	};
 
 			new IRTreeBuilder().BuildBasicBlocks(del.Method);
-
-			//			new TreeDrawer().DrawMethod(blocks);
 		}
 
 		[Test]

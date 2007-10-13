@@ -4,7 +4,7 @@ using System.IO;
 
 namespace CellDotNet
 {
-	internal class IterativLivenessAnalyser
+	static internal class IterativeLivenessAnalyser
 	{
 		/// <summary>
 		/// 
@@ -17,7 +17,7 @@ namespace CellDotNet
 		/// This is necessary for the linear register allocator, since it constructs its intervals from the live out information;
 		/// and a virtual register that doesn't have an interval will not get a register.
 		/// </param>
-		public static void Analyse(List<SpuBasicBlock> basicBlocks, out Set<VirtualRegister>[] liveIn,
+		public static void Analyze(List<SpuBasicBlock> basicBlocks, out Set<VirtualRegister>[] liveIn,
 		                           out Set<VirtualRegister>[] liveOut, bool includeUnusedDefsInLiveOut)
 		{
 			// NOTE instruktions nummereringen starter fra 0.
@@ -93,6 +93,7 @@ namespace CellDotNet
 
 			// Iterates until no changes.
 			bool reIterate;
+			List<VirtualRegister> instUse = new List<VirtualRegister>();
 			do
 			{
 				reIterate = false;
@@ -112,9 +113,12 @@ namespace CellDotNet
 
 					// New live in.
 					bool removeDef = false;
-					if (inst.Def != null && !inst.Use.Contains(inst.Def))
+					instUse.Clear();
+					inst.AppendUses(instUse);
+
+					if (inst.Def != null && !instUse.Contains(inst.Def))
 						removeDef = true;
-					newlivein.AddAll(inst.Use);
+					newlivein.AddAll(instUse);
 					newlivein.AddAll(oldLiveOut);
 					if (removeDef)
 						newlivein.Remove(inst.Def);

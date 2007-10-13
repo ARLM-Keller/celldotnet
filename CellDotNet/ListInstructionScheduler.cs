@@ -61,7 +61,7 @@ namespace CellDotNet
 
 		public void AddDependant(InstructionScheduleInfo dependant)
 		{
-			Dependents.Add(dependant);
+			_dependents.Add(dependant);
 			dependant.NotifyDependency();
 		}
 	}
@@ -78,6 +78,8 @@ namespace CellDotNet
 			InstructionScheduleInfo lastMemWrite = null;
 			InstructionScheduleInfo lastChannelAccess = null;
 			InstructionScheduleInfo lastCall = null;
+
+			List<VirtualRegister> instUse = new List<VirtualRegister>();
 
 			// Contains the last instruction which has defined a register.
 			Dictionary<VirtualRegister, InstructionScheduleInfo> defs = new Dictionary<VirtualRegister, InstructionScheduleInfo>();
@@ -128,7 +130,9 @@ namespace CellDotNet
 				}
 
 				// Order register defines.
-				foreach (VirtualRegister usedReg in inst.Use)
+				instUse.Clear();
+				inst.AppendUses(instUse);
+				foreach (VirtualRegister usedReg in instUse)
 				{
 					InstructionScheduleInfo prev;
 					if (defs.TryGetValue(usedReg, out prev))
@@ -254,7 +258,7 @@ namespace CellDotNet
 		public SpuInstruction SchedulePrioritizedInstructions(List<InstructionScheduleInfo> schedlist, List<InstructionScheduleInfo> initiallyReady)
 		{
 			// Determine initial ready set.
-			SimplePriorityQueue<int, InstructionScheduleInfo> readySet = new ListInstructionScheduler.SimplePriorityQueue<int, InstructionScheduleInfo>();
+			SimplePriorityQueue<int, InstructionScheduleInfo> readySet = new SimplePriorityQueue<int, InstructionScheduleInfo>();
 			foreach (InstructionScheduleInfo isi in initiallyReady)
 			{
 				// Use the negated priority to enumerate the biggest first.

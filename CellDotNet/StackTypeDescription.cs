@@ -77,7 +77,7 @@ namespace CellDotNet
 			_isArray = false;
 		}
 
-		public static StackTypeDescription GetStackType(CliType clitype)
+		public static StackTypeDescription FromCliType(CliType clitype)
 		{
 			switch (clitype)
 			{

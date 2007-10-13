@@ -168,20 +168,10 @@ namespace CellDotNet
 					t = StackTypeDescription.None;
 					break;
 				case IRCode.Ldind_I1: // ldind.i1
-					t = StackTypeDescription.Int32;
-					break;
 				case IRCode.Ldind_U1: // ldind.u1
-					t = StackTypeDescription.Int32;
-					break;
 				case IRCode.Ldind_I2: // ldind.i2
-					t = StackTypeDescription.Int32;
-					break;
 				case IRCode.Ldind_U2: // ldind.u2
-					t = StackTypeDescription.Int32;
-					break;
 				case IRCode.Ldind_I4: // ldind.i4
-					t = StackTypeDescription.Int32;
-					break;
 				case IRCode.Ldind_U4: // ldind.u4
 					t = StackTypeDescription.Int32;
 					break;
@@ -525,24 +515,26 @@ namespace CellDotNet
 			return std;
 		}
 
-		static private CliType[,] s_binaryNumericOps;
-		static TypeDeriver()
+		static private CliType[,] s_binaryNumericOps = GetBinaryOpsTypeTable();
+		static CliType[,] GetBinaryOpsTypeTable()
 		{
 			// The diagonal.
-			s_binaryNumericOps = new CliType[(int)CliType.ManagedPointer + 1, (int)CliType.ManagedPointer + 1];
-			s_binaryNumericOps[(int) CliType.Int32, (int) CliType.Int32] = CliType.Int32;
-			s_binaryNumericOps[(int) CliType.Int64, (int) CliType.Int64] = CliType.Int64;
-			s_binaryNumericOps[(int) CliType.NativeInt, (int) CliType.NativeInt] = CliType.NativeInt;
-			s_binaryNumericOps[(int) CliType.Float32, (int) CliType.Float32] = CliType.Float32;
-			s_binaryNumericOps[(int) CliType.Float64, (int) CliType.Float64] = CliType.Float64;
+			CliType[,] table = new CliType[(int)CliType.ManagedPointer + 1, (int)CliType.ManagedPointer + 1];
+			table[(int) CliType.Int32, (int) CliType.Int32] = CliType.Int32;
+			table[(int) CliType.Int64, (int) CliType.Int64] = CliType.Int64;
+			table[(int) CliType.NativeInt, (int) CliType.NativeInt] = CliType.NativeInt;
+			table[(int) CliType.Float32, (int) CliType.Float32] = CliType.Float32;
+			table[(int) CliType.Float64, (int) CliType.Float64] = CliType.Float64;
 
 			
-			s_binaryNumericOps[(int) CliType.Int32, (int) CliType.NativeInt] = CliType.NativeInt;
-			s_binaryNumericOps[(int) CliType.NativeInt, (int) CliType.Int32] = CliType.NativeInt;
-			s_binaryNumericOps[(int) CliType.ManagedPointer, (int) CliType.Int32] = CliType.ManagedPointer;
-			s_binaryNumericOps[(int) CliType.Int32, (int) CliType.ManagedPointer] = CliType.ManagedPointer;
-			s_binaryNumericOps[(int) CliType.NativeInt, (int) CliType.Int32] = CliType.NativeInt;
-			s_binaryNumericOps[(int) CliType.Int32, (int) CliType.NativeInt] = CliType.NativeInt;
+			table[(int) CliType.Int32, (int) CliType.NativeInt] = CliType.NativeInt;
+			table[(int) CliType.NativeInt, (int) CliType.Int32] = CliType.NativeInt;
+			table[(int) CliType.ManagedPointer, (int) CliType.Int32] = CliType.ManagedPointer;
+			table[(int) CliType.Int32, (int) CliType.ManagedPointer] = CliType.ManagedPointer;
+			table[(int) CliType.NativeInt, (int) CliType.Int32] = CliType.NativeInt;
+			table[(int) CliType.Int32, (int) CliType.NativeInt] = CliType.NativeInt;
+
+			return table;
 		}
 
 		/// <summary>
@@ -552,7 +544,7 @@ namespace CellDotNet
 		/// <returns></returns>
 		internal static StackTypeDescription GetNumericResultType(StackTypeDescription tleft, StackTypeDescription tright)
 		{
-			return StackTypeDescription.GetStackType(s_binaryNumericOps[(int) tleft.CliType, (int) tright.CliType]);
+			return StackTypeDescription.FromCliType(s_binaryNumericOps[(int) tleft.CliType, (int) tright.CliType]);
 		}
 	}
 }

@@ -140,7 +140,7 @@ namespace CellDotNet
 		}
 
 		[Test]
-		public void TestArray_Int_4()
+		public void TestArray_Int4()
 		{
 			Converter<int, int> del =
 				delegate(int index)
@@ -234,6 +234,27 @@ namespace CellDotNet
 //			double retval = del2();
 //			AreEqual(60.0, retval);
 //		}
+
+		[Test]
+		public void TestArray_Int5()
+		{
+			Func<int> del =
+				delegate
+					{
+						int[] arr1 = new int[2];
+						arr1[0] = 10;
+						arr1[1] = 20;
+
+						return arr1[0] + arr1[1];
+					};
+
+			Func<int> del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			AreEqual(del(), del2());
+		}
 
 		#region QWStruct
 

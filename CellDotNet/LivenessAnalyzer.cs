@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace CellDotNet
 {
-	class LivenessAnalyzer
+	static class LivenessAnalyzer
 	{
 		public static Graph CreatFlowGraph(List<SpuBasicBlock> basicBlocks)
 		{

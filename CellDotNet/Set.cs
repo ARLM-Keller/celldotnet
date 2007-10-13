@@ -87,14 +87,6 @@ namespace CellDotNet
 					Remove(t);
 		}
 
-		// Returns a "Random" item from the set.
-		public T getItem()
-		{
-			IEnumerator<T> e = ((IEnumerable<T>)this).GetEnumerator();
-			e.MoveNext();
-			return e.Current;
-		}
-
 		public int Count
 		{
 			get { return dict.Count; }
@@ -105,12 +97,12 @@ namespace CellDotNet
 			get { return false; }
 		}
 
-		override public bool Equals(Object o)
+		override public bool Equals(object obj)
 		{
-			if (!(o is Set<T>))
+			if (!(obj is Set<T>))
 				return false;
 
-			Set<T> set = (Set<T>) o;
+			Set<T> set = (Set<T>) obj;
 
 			if (Count != set.Count)
 				return false;

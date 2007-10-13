@@ -11,7 +11,7 @@ namespace CellDotNet
 	/// </summary>
 	class IlReaderWrapper
 	{
-		private int _variableCount = 0;
+		private int _variableCount;
 
 		private ILReader _ilreader;
 		public ILReader ILReader
@@ -23,7 +23,7 @@ namespace CellDotNet
 
 		private Queue<OpCode> _opcodeQueue = new Queue<OpCode>();
 
-		private MethodVariable _lastCreatedMethodVariable = null;
+		private MethodVariable _lastCreatedMethodVariable;
 
 		public MethodVariable LastCreatedMethodVariable
 		{

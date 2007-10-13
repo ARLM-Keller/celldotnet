@@ -297,12 +297,15 @@ namespace CellDotNet
 			return retval;
 		}
 
-		public object RunProgram(Delegate delegateToRun, params object[] arguments)
+		public static object RunProgram(Delegate delegateToRun, params object[] arguments)
 		{
 			CompileContext cc = new CompileContext(delegateToRun.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			return RunProgram(cc, arguments);
+			using (SpeContext sc = new SpeContext())
+			{
+				return sc.RunProgram(cc, arguments);
+			}
 		}
 
 		public static object UnitTestRunProgram(Delegate del, params object[] args)
@@ -639,6 +642,11 @@ namespace CellDotNet
 				UnsafeNativeMethods.spe_context_destroy(_handle);
 				_handle = IntPtr.Zero;
 			}
+		}
+
+		~SpeContext()
+		{
+			Dispose(false);
 		}
 
 		#region class UnsafeNativeMethods

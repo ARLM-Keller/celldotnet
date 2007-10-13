@@ -12,7 +12,7 @@ namespace CellDotNet
 			get { return _size; }
 		}
 
-		private int _size = 0;
+		private int _size;
 
 		private uint[] vector = new uint[0];
 

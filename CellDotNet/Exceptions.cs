@@ -16,7 +16,6 @@ namespace CellDotNet
 			: base(info, context) { }
 	}
 
-
 	[Serializable]
 	public class ILParseException : Exception
 	{
@@ -41,7 +40,6 @@ namespace CellDotNet
 			: base(info, context) { }
 	}
 
-
 	[Serializable]
 	class ILNotImplementedException : Exception
 	{
@@ -58,7 +56,6 @@ namespace CellDotNet
 		  StreamingContext context)
 			: base(info, context) { }
 	}
-
 
 	[Serializable]
 	public class BadSpuInstructionException : Exception
@@ -98,7 +95,6 @@ namespace CellDotNet
 			: base(info, context) { }
 	}
 
-
 	[Serializable]
 	public class SpeExecutionException : Exception
 	{
@@ -111,7 +107,6 @@ namespace CellDotNet
 			: base(info, context) { }
 	}
 
-
 	[Serializable]
 	public class SpeOutOfMemoryException : SpeExecutionException
 	{
@@ -123,7 +118,6 @@ namespace CellDotNet
 		  StreamingContext context)
 			: base(info, context) { }
 	}
-
 
 	[Serializable]
 	public class SpeStackOverflowException : SpeExecutionException
@@ -152,13 +146,6 @@ namespace CellDotNet
 	[Serializable]
 	public class PpeCallException : Exception
 	{
-		//
-		// For guidelines regarding the creation of new exception types, see
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
-		// and
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
-		//
-
 		public PpeCallException() { }
 		public PpeCallException(string message) : base(message) { }
 		public PpeCallException(string message, Exception inner) : base(message, inner) { }
@@ -171,13 +158,6 @@ namespace CellDotNet
 	[Serializable]
 	public class InvalidInstructionParametersException : Exception
 	{
-		//
-		// For guidelines regarding the creation of new exception types, see
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
-		// and
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
-		//
-
 		public InvalidInstructionParametersException() { }
 		public InvalidInstructionParametersException(string message) : base(message) { }
 		public InvalidInstructionParametersException(string message, Exception inner) : base(message, inner) { }
@@ -187,17 +167,9 @@ namespace CellDotNet
 			: base(info, context) { }
 	}
 
-
 	[Serializable]
 	public class DebugAssertException : Exception
 	{
-		//
-		// For guidelines regarding the creation of new exception types, see
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
-		// and
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
-		//
-
 		public DebugAssertException() { }
 		public DebugAssertException(string message) : base(message) { }
 		public DebugAssertException(string message, Exception inner) : base(message, inner) { }
@@ -207,24 +179,40 @@ namespace CellDotNet
 			: base(info, context) { }
 	}
 
-
 	/// <summary>
 	/// Used to test stuff.
 	/// </summary>
 	[Serializable]
 	internal class DummyException : Exception
 	{
-		//
-		// For guidelines regarding the creation of new exception types, see
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
-		// and
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
-		//
-
 		public DummyException() { }
 		public DummyException(string message) : base(message) { }
 		public DummyException(string message, Exception inner) : base(message, inner) { }
 		protected DummyException(
+		  SerializationInfo info,
+		  StreamingContext context)
+			: base(info, context) { }
+	}
+
+	[Serializable]
+	public class ShellExecutionException : Exception
+	{
+		public ShellExecutionException() { }
+		public ShellExecutionException(string message) : base(message) { }
+		public ShellExecutionException(string message, Exception inner) : base(message, inner) { }
+		protected ShellExecutionException(
+		  SerializationInfo info,
+		  StreamingContext context)
+			: base(info, context) { }
+	}
+
+	[Serializable]
+	public class RegisterAllocationException : Exception
+	{
+		public RegisterAllocationException() { }
+		public RegisterAllocationException(string message) : base(message) { }
+		public RegisterAllocationException(string message, Exception inner) : base(message, inner) { }
+		protected RegisterAllocationException(
 		  SerializationInfo info,
 		  StreamingContext context)
 			: base(info, context) { }

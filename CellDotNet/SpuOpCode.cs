@@ -110,6 +110,7 @@ namespace CellDotNet
 	/// <summary>
 	/// Special features that an opcode can have, like D and E bits or branch hint offset.
 	/// </summary>
+	[Flags]
 	public enum SpuOpCodeSpecialFeatures
 	{
 		None = 0,
@@ -358,9 +359,9 @@ namespace CellDotNet
 
 				SpuOpCode oc = (SpuOpCode) field.GetValue(null);
 
-				if (oc.Name != field.Name)
-					throw new Exception(string.Format("Name of opcode field {0} is not the same as the opcode name ({1}).", field.Name, oc.Name));
-
+				Utilities.Assert(oc.Name == field.Name,
+				                 string.Format("Name of opcode field {0} is not the same as the opcode name ({1}).", field.Name,
+				                               oc.Name));
 				opcodes.Add(oc);
 			}
 

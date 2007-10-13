@@ -48,7 +48,7 @@ namespace CellDotNet
 					if (p.StandardError.Peek() != -1)
 					{
 						string alloutput = p.StandardError.ReadToEnd();
-						throw new Exception(string.Format("The program wrote {0} characters to standard output:\r\n{1}",
+						throw new ShellExecutionException(string.Format("The program wrote {0} characters to standard output:\r\n{1}",
 							alloutput.Length, alloutput));
 					}
 				}

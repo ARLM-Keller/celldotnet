@@ -37,7 +37,7 @@
 		<pre class="code">#!/bin/sh
 
 # Convert the raw binary file to an ELF relocatable.
-# At the same time, we want objcopy to call the main sumbol "main"
+# At the same time, we want objcopy to call the main symbol "main"
 # so that the linker knows what to start.
 
 spu-objcopy -B spu -I binary -O elf32-spu --redefine-sym _binary_$1_bin_start=main $1.bin $1.o 

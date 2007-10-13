@@ -152,7 +152,7 @@ namespace CellDotNet
 				int newoffset = DisassembleInstructions(r.GetFinalInstructions(), r.Offset, writer);
 
 				if (newoffset != r.Offset + r.Size)
-					throw new Exception(string.Format(
+					throw new BadCodeLayoutException(string.Format(
 						"Offset after disassembly does not match with the object size. " + 
 						"Expected new offset: {0:x6}; actual new offset: {1:x6}", 
 						r.Offset + r.Size, newoffset));
@@ -173,7 +173,7 @@ namespace CellDotNet
 				switch (inst.OpCode.Format)
 				{
 					case SpuInstructionFormat.None:
-						throw new Exception();
+						throw new BadSpuInstructionException();
 					case SpuInstructionFormat.RR:
 						tw.Write("{0} {1}, {2}, {3}", inst.OpCode.Name, inst.Rt, inst.Ra, inst.Rb);
 						break;
@@ -244,7 +244,7 @@ namespace CellDotNet
 
 						break;
 					default:
-						throw new Exception();
+						throw new BadSpuInstructionException();
 				}
 				tw.WriteLine();
 
