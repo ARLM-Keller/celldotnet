@@ -12,7 +12,7 @@ namespace CellDotNet
 
 		private Set<GraphNode> _frozenNodes = new Set<GraphNode>();
 
-		private bool isFrozen = false;
+		private bool isFrozen;
 
 		virtual public GraphNode NewNode()
 		{
@@ -124,7 +124,7 @@ namespace CellDotNet
 			get { return _frozenSucc; }
 		}
 
-		private bool isFrozen = false;
+		private bool isFrozen;
 
 		private Graph _graph;
 		public Graph Graph

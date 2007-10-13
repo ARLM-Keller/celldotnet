@@ -27,10 +27,10 @@ namespace CellDotNet
 		{
 			using (AlignedMemory<int> mem = SpeContext.AllocateAlignedInt32(4))
 			{
-				// Create elements whose sum is twenty.
-				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
+				// Create elements whose sum is 26.
+				for (int i = mem.ArraySegment.Offset, j = 5; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++, j++)
 				{
-					mem.ArraySegment.Array[i] = 5;
+					mem.ArraySegment.Array[i] = j;
 				}
 
 				Converter<MainStorageArea, int> del =
@@ -54,7 +54,7 @@ namespace CellDotNet
 				cc.PerformProcessing(CompileContextState.S8Complete);
 
 				object rv = SpeContext.UnitTestRunProgram(cc, mem.GetArea());
-				AreEqual(20, (int) rv);
+				AreEqual(26, (int) rv);
 			}
 		}
 

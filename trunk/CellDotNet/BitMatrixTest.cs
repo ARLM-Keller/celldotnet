@@ -14,8 +14,7 @@ namespace CellDotNet
 			m.add(3, 77);
 			m.add(94, 77);
 
-			if(!m.contains(1,4) || !m.contains(3,77) || !m.contains(94,77))
-				throw new Exception("");
+			IsFalse(!m.contains(1,4) || !m.contains(3,77) || !m.contains(94,77));
 		}
 
 		[Test]
@@ -28,8 +27,7 @@ namespace CellDotNet
 
 			m.Clear();
 
-			if (m.contains(1, 4) || m.contains(3, 77) || m.contains(94, 77))
-				throw new Exception("");
+			IsFalse(m.contains(1, 4) || m.contains(3, 77) || m.contains(94, 77));
 		}
 
 		[Test]
@@ -42,8 +40,7 @@ namespace CellDotNet
 
 			m.remove(94,77);
 
-			if (!m.contains(1, 4) || !m.contains(3, 77) || m.contains(94, 77))
-				throw new Exception("");
+			IsFalse(!m.contains(1, 4) || !m.contains(3, 77) || m.contains(94, 77));
 		}
 
 		[Test]
@@ -60,8 +57,7 @@ namespace CellDotNet
 
 			BitVector b = m.GetRow(123);
 
-			if (b.IsCountZero() || b.Count != 3 || !b.Contains(3) || !b.Contains(44) || !b.Contains(555))
-				throw new Exception("");
+			IsFalse(b.IsCountZero() || b.Count != 3 || !b.Contains(3) || !b.Contains(44) || !b.Contains(555));
 		}
 	}
 }

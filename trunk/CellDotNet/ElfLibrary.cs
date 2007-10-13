@@ -163,7 +163,7 @@ spu-objdump -h {0} | awk '/^ +[0-9]/ {{ print $2,$3,$4,$6}}'
 					if (arr[0] == "w")
 						continue;
 					else
-						throw new Exception("Bad output line.");
+						throw new FormatException("Bad output line.");
 				}
 
 				Utilities.Assert(arr.Length == 3, "Not three elements in line. nm output:\n" + nmDumpOutput);

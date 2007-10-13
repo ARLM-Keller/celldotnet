@@ -10,7 +10,7 @@ namespace CellDotNet
 	[DebuggerDisplay("{OpCode.Name} {_spuInstructionNumber}")]
     class SpuInstruction
     {
-		private static int SpuInstructionCount = 0;
+		private static int SpuInstructionCount;
 
     	private int _constant;
 
@@ -117,17 +117,26 @@ namespace CellDotNet
 			}
     	}
 
+		/// <summary>
+		/// The set of virtual registers that this instruction uses. If you are going to use this alot,
+		/// consider using <see cref="AppendUses"/> instead to avoid repeated list allocation.
+		/// </summary>
     	public List<VirtualRegister> Use
     	{
     		get
     		{
     			List<VirtualRegister> uses = new List<VirtualRegister>();
-    			AddUses(uses);
+    			AppendUses(uses);
     			return uses;
     		}
     	}
 
-    	private void AddUses(List<VirtualRegister> targetList)
+		/// <summary>
+		/// Appends virtual registers that the instruction uses to the list. This avoids the list allocation
+		/// that <see cref="Use"/> does.
+		/// </summary>
+		/// <param name="targetList"></param>
+    	public void AppendUses(List<VirtualRegister> targetList)
     	{
     		if (Ra != null) targetList.Add(_ra);
     		if (Rb != null) targetList.Add(_rb);

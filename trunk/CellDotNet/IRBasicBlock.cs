@@ -27,6 +27,21 @@ namespace CellDotNet
 			set { _next = value; }
 		}
 
+		private int _blockNumber;
+
+		/// <summary>
+		/// A simple sequence number without meaning.
+		/// </summary>
+		public int BlockNumber
+		{
+			get { return _blockNumber; }
+		}
+
+		public IRBasicBlock(int blockNumber)
+		{
+			_blockNumber = blockNumber;
+		}
+
 		private List<TreeInstruction> _roots = new List<TreeInstruction>();
 
 		/// <summary>
@@ -57,14 +72,6 @@ namespace CellDotNet
 		public Set<IRBasicBlock> Outgoing
 		{
 			get { return _outgoing; }
-		}
-
-		public int Offset
-		{
-			get 
-			{
-				return _roots[0].GetFirstInstructionWithOffset().Offset;
-			}
 		}
 
 		public IEnumerable<TreeInstruction> EnumerateInstructions()

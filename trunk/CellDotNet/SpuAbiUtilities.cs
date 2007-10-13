@@ -7,7 +7,7 @@ namespace CellDotNet
 	/// Used to get ABI-related SPU code such as initialization code and code to 
 	/// handle caller-saves registers.
 	/// </summary>
-	class SpuAbiUtilities
+	static class SpuAbiUtilities
 	{
 		/// <summary>
 		/// Writes inner epilog.

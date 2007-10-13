@@ -277,7 +277,7 @@ namespace CellDotNet
 		{
 			Set<VirtualRegister>[] liveIn;
 			Set<VirtualRegister>[] liveOut;
-			IterativLivenessAnalyser.Analyse(spuBasicBlocks, out liveIn, out liveOut, true);
+			IterativeLivenessAnalyser.Analyze(spuBasicBlocks, out liveIn, out liveOut, true);
 
 
 //			PrintLiveOut(liveOut, spuBasicBlocks);
@@ -360,7 +360,7 @@ namespace CellDotNet
 //			Set<VirtualRegister>[] liveIn;
 //			Set<VirtualRegister>[] liveOut;
 //
-//			IterativLivenessAnalyser.Analyse(spuBasicBlocks, out liveIn, out liveOut, true);
+//			IterativeLivenessAnalyser.Analyze(spuBasicBlocks, out liveIn, out liveOut, true);
 //			Dictionary<VirtualRegister, LiveInterval> regToLiveDict = GenerateLiveIntervals(liveOut);
 ////			Dictionary<VirtualRegister, LiveInterval> regToLiveDict = GenerateLiveIntervals(liveOut, null);
 //

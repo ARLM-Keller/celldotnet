@@ -5,6 +5,10 @@ using System.Text;
 
 namespace CellDotNet
 {
+	/// <summary>
+	/// The graph coloring register allocator.
+	/// It is currently not used (20071012).
+	/// </summary>
 	class RegAllocGraphColloring
 	{
 		// TODO list 
@@ -17,9 +21,9 @@ namespace CellDotNet
 
 		private StackSpaceAllocator _StackSpaceAllocator;
 
-		private int maxInstNr = 0; // note første inst har nr = 1
+		private int maxInstNr; // note første inst har nr = 1
 
-		private int maxRegNum = 0;
+		private int maxRegNum;
 
 		private int K; // antal af tilgængelige registre.
 
@@ -106,9 +110,9 @@ namespace CellDotNet
 
 		private BitVector callerSavesRegister = new BitVector();
 
-		private static int allocCalls = 0;
-		private int allocCount = 0;
-		private int allocLoopCount = 0;
+		private static int allocCalls;
+		private int allocCount;
+		private int allocLoopCount;
 
 		// TODO evt. tage kode og en delagate, der kan allokere plads i frames, som argument.
 		public void Alloc(List<SpuBasicBlock> inputBasicBlocks, StackSpaceAllocator inputStackSpaceAllocator, Dictionary<VirtualRegister, int> inputRegisterWeight)
@@ -308,33 +312,33 @@ namespace CellDotNet
 //					}
 //					Console.WriteLine();
 //
-//					Console.WriteLine("simplifyWorklist:");
-//					foreach (uint u in simplifyWorklist)
+//					Console.WriteLine("SimplifyWorklist:");
+//					foreach (uint u in SimplifyWorklist)
 //						Console.Write(intToReg[(int)u] + " ");
 //					Console.WriteLine();
 //
-//					Console.WriteLine("freezeWorklist:");
-//					foreach (uint u in freezeWorklist)
+//					Console.WriteLine("FreezeWorklist:");
+//					foreach (uint u in FreezeWorklist)
 //						Console.Write(intToReg[(int)u] + " ");
 //					Console.WriteLine();
 //
-//					Console.WriteLine("spillWorklist:");
-//					foreach (uint u in spillWorklist)
+//					Console.WriteLine("SpillWorklist:");
+//					foreach (uint u in SpillWorklist)
 //						Console.Write(intToReg[(int)u] + " ");
 //					Console.WriteLine();
 //
-//					Console.WriteLine("spilledNodes:");
-//					foreach (uint u in spilledNodes)
+//					Console.WriteLine("SpilledNodes:");
+//					foreach (uint u in SpilledNodes)
 //						Console.Write(intToReg[(int)u] + " ");
 //					Console.WriteLine();
 //
-//					Console.WriteLine("coalescedNodes:");
-//					foreach (int u in coalescedNodes)
+//					Console.WriteLine("CoalescedNodes:");
+//					foreach (int u in CoalescedNodes)
 //						Console.Write(intToReg[(int)u] + " ");
 //					Console.WriteLine();
 //
-//					Console.WriteLine("coloredNodes:");
-//					foreach (int u in coloredNodes)
+//					Console.WriteLine("ColoredNodes:");
+//					foreach (int u in ColoredNodes)
 //						Console.Write(intToReg[(int)u] + " ");
 //					Console.WriteLine();
 //
@@ -988,8 +992,7 @@ namespace CellDotNet
 
 		private void Coalesce()
 		{
-			if (worklistMoves.IsCountZero())
-				throw new Exception(); // Burde ikke forekomme.
+			Utilities.Assert(!worklistMoves.IsCountZero(), "!worklistMoves.IsCountZero()");
 
 			int move = (int) worklistMoves.getItem();
 
@@ -1150,7 +1153,7 @@ namespace CellDotNet
 				}
 			}
 
-			throw new Exception("Not able to spill.");
+			throw new RegisterAllocationException("Unable to spill.");
 		}
 
 		private void AssignColors()
@@ -1207,8 +1210,7 @@ namespace CellDotNet
 				VirtualRegister v = intToReg[vint];
 
 				regToInt.Remove(v);
-				if (_StackSpaceAllocator == null)
-					throw new Exception("Unable to spill.");
+				Utilities.Assert(_StackSpaceAllocator != null, "Unable to spill.");
 
 				int spillOffset = _StackSpaceAllocator(1);
 
@@ -1332,8 +1334,7 @@ namespace CellDotNet
 					v.AddAll(spillWorklist);
 					v.And(adjList[pair.Value]);
 
-					if (degree[pair.Value] != v.Count)
-						throw new Exception("");
+					Utilities.Assert(degree[pair.Value] == v.Count, "degree[pair.Value] == v.Count");
 				}
 
 				// Simplify worklist invariant
@@ -1343,8 +1344,7 @@ namespace CellDotNet
 					v.AddAll(activeMoves);
 					v.AddAll(worklistMoves);
 					v.And(moveList[pair.Value]);
-					if (degree[pair.Value] >= K || !v.IsCountZero())
-						throw new Exception("");
+					Utilities.Assert(degree[pair.Value] < K && v.IsCountZero(), "degree[pair.Value] < K && v.IsCountZero()");
 				}
 
 				// Freeze worklist invariant
@@ -1354,13 +1354,11 @@ namespace CellDotNet
 					v.AddAll(activeMoves);
 					v.AddAll(worklistMoves);
 					v.And(moveList[pair.Value]);
-					if (degree[pair.Value] >= K || v.IsCountZero())
-						throw new Exception("");
+					Utilities.Assert(degree[pair.Value] < K && !v.IsCountZero(), "degree[pair.Value] < K && !v.IsCountZero()");
 				}
 
 				// Spill worklist invariant
-				if (spillWorklist.Contains(pair.Value) && degree[pair.Value] < K)
-					throw new Exception("");
+				Utilities.Assert(!spillWorklist.Contains(pair.Value) || degree[pair.Value] >= K, "!SpillWorklist.Contains(pair.Value) || degree[pair.Value] >= K");
 			}
 		}
 
@@ -1368,37 +1366,37 @@ namespace CellDotNet
 		{
 			switch (fromSet)
 			{
-				case RegWorklist.precolored:
-					throw new Exception("Not posible to remove node from precolored."); // TODO mere specifik exception
-				case RegWorklist.initial:
+				case RegWorklist.Precolored:
+					throw new RegisterAllocationException("Not possible to remove node from precolored.");
+				case RegWorklist.Initial:
 					initial.Remove((uint)reg);
 					break;
-				case RegWorklist.simplifyWorklist:
+				case RegWorklist.SimplifyWorklist:
 					simplifyWorklist.Remove((uint) reg);
 					break;
-				case RegWorklist.freezeWorklist:
+				case RegWorklist.FreezeWorklist:
 					freezeWorklist.Remove((uint) reg);
 					break;
-				case RegWorklist.spillWorklist:
+				case RegWorklist.SpillWorklist:
 					spillWorklist.Remove((uint) reg);
 					break;
-				case RegWorklist.spilledNodes:
+				case RegWorklist.SpilledNodes:
 					spilledNodes.Remove(reg);
 					break;
-				case RegWorklist.coalescedNodes:
+				case RegWorklist.CoalescedNodes:
 					coalescedNodes.Remove(reg);
 					break;
-				case RegWorklist.coloredNodes:
+				case RegWorklist.ColoredNodes:
 					coloredNodes.Remove(reg);
 					break;
-				case RegWorklist.selectStack:
+				case RegWorklist.SelectStack:
 					if (selectStack.Peek() == reg)
 					{
 						selectStack.Pop();
 						selectStackBitVector.Remove(reg);
 					}
 					else
-						throw new Exception("Not able to remove node from selectStack.");
+						throw new RegisterAllocationException("Not able to remove node from SelectStack.");
 					break;
 				default:
 					break;
@@ -1406,30 +1404,30 @@ namespace CellDotNet
 
 			switch (toSet)
 			{
-				case RegWorklist.precolored:
-					throw new Exception("Not posible to remove node from precolored."); // TODO mere specifik exception
-				case RegWorklist.initial:
+				case RegWorklist.Precolored:
+					throw new RegisterAllocationException("Not posible to remove node from precolored.");
+				case RegWorklist.Initial:
 					initial.AddLast((uint)reg);
 					break;
-				case RegWorklist.simplifyWorklist:
+				case RegWorklist.SimplifyWorklist:
 					simplifyWorklist.AddLast((uint) reg);
 					break;
-				case RegWorklist.freezeWorklist:
+				case RegWorklist.FreezeWorklist:
 					freezeWorklist.AddLast((uint) reg);
 					break;
-				case RegWorklist.spillWorklist:
+				case RegWorklist.SpillWorklist:
 					spillWorklist.AddLast((uint) reg);
 					break;
-				case RegWorklist.spilledNodes:
+				case RegWorklist.SpilledNodes:
 					spilledNodes.Add(reg);
 					break;
-				case RegWorklist.coalescedNodes:
+				case RegWorklist.CoalescedNodes:
 					coalescedMoves.Add(reg);
 					break;
-				case RegWorklist.coloredNodes:
+				case RegWorklist.ColoredNodes:
 					coloredNodes.Add(reg);
 					break;
-				case RegWorklist.selectStack:
+				case RegWorklist.SelectStack:
 					selectStack.Push((uint)reg);
 					selectStackBitVector.Add(reg);
 					break;
@@ -1448,9 +1446,7 @@ namespace CellDotNet
 			count += coloredNodes.Contains(reg) ? 1 : 0;
 			count += selectStack.Contains((uint)reg) ? 1 : 0;
 
-			if (count != 1)
-				throw new Exception("Inconsistent lists state");
-
+			Utilities.Assert(count == 1, "count == 1");
 		}
 
 		private void TestNodeSetConsistent()
@@ -1471,20 +1467,18 @@ namespace CellDotNet
 
 				if (regToInt.ContainsKey(intToReg[reg]))
 				{
-					if (count != 1)
-						throw new Exception();
+					Utilities.Assert(count == 1, "count == 1");
 				}
 				else
 				{
-					if (count != 0)
-						throw new Exception();
+					Utilities.Assert(count == 0, "count == 0");
 				}
 			}
 		}
 
 		private enum RegWorklist
 		{
-			precolored, initial, simplifyWorklist, freezeWorklist, spillWorklist, spilledNodes, coalescedNodes, coloredNodes, selectStack
+			Precolored, Initial, SimplifyWorklist, FreezeWorklist, SpillWorklist, SpilledNodes, CoalescedNodes, ColoredNodes, SelectStack
 		}
 
 		public void DumpStateToFile(String filename)
@@ -1499,69 +1493,69 @@ namespace CellDotNet
 				writer.WriteLine("precolored:");
 				writer.WriteLine(precolored);
 
-				writer.WriteLine("initial:");
+				writer.WriteLine("Initial:");
 				foreach (uint u in initial)
 					writer.Write("{0} ", u);
 				writer.WriteLine();
 
-				writer.WriteLine("simplifyWorklist:");
+				writer.WriteLine("SimplifyWorklist:");
 				foreach (uint u in simplifyWorklist)
 					writer.Write("{0} ", u);
 				writer.WriteLine();
 
-				writer.WriteLine("freezeWorklist:");
+				writer.WriteLine("FreezeWorklist:");
 				foreach (uint u in freezeWorklist)
 					writer.Write("{0} ", u);
 				writer.WriteLine();
 
-				writer.WriteLine("spillWorklist:");
+				writer.WriteLine("SpillWorklist:");
 				foreach (uint u in spillWorklist)
 					writer.Write("{0} ", u);
 				writer.WriteLine();
 
-				writer.WriteLine("spilledNodes:");
+				writer.WriteLine("SpilledNodes:");
 				writer.WriteLine(spilledNodes);
 
-				writer.WriteLine("coalescedNodes:");
+				writer.WriteLine("CoalescedNodes:");
 				writer.WriteLine(coalescedNodes);
 
-				writer.WriteLine("spilledNodes:");
+				writer.WriteLine("SpilledNodes:");
 				writer.WriteLine(coloredNodes);
 
-				writer.WriteLine("spilledNodes:");
+				writer.WriteLine("SpilledNodes:");
 				writer.WriteLine(selectStack);
 
-				writer.WriteLine("spilledNodes:");
+				writer.WriteLine("SpilledNodes:");
 				writer.WriteLine(coalescedMoves);
 
-				writer.WriteLine("spilledNodes:");
+				writer.WriteLine("SpilledNodes:");
 				writer.WriteLine(constrainedMoves);
 
-				writer.WriteLine("spilledNodes:");
+				writer.WriteLine("SpilledNodes:");
 				writer.WriteLine(frozenMoves);
 
-				writer.WriteLine("spilledNodes:");
+				writer.WriteLine("SpilledNodes:");
 				writer.WriteLine(worklistMoves);
 
-				writer.WriteLine("spilledNodes:");
+				writer.WriteLine("SpilledNodes:");
 				writer.WriteLine(activeMoves);
 
-				writer.WriteLine("spilledNodes:");
+				writer.WriteLine("SpilledNodes:");
 				writer.WriteLine(adjMatrix);
 
-				writer.WriteLine("spilledNodes:");
+				writer.WriteLine("SpilledNodes:");
 				writer.WriteLine(adjList);
 
-				writer.WriteLine("spilledNodes:");
+				writer.WriteLine("SpilledNodes:");
 				writer.WriteLine(degree);
 
-				writer.WriteLine("spilledNodes:");
+				writer.WriteLine("SpilledNodes:");
 				writer.WriteLine(moveList);
 
-				writer.WriteLine("spilledNodes:");
+				writer.WriteLine("SpilledNodes:");
 				writer.WriteLine(alias);
 
-				writer.WriteLine("spilledNodes:");
+				writer.WriteLine("SpilledNodes:");
 				writer.WriteLine(color);
 				writer.WriteLine();
 			}

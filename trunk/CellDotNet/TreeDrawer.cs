@@ -47,7 +47,7 @@ namespace CellDotNet
 			if (inst.Operand != null)
 			{
 				if (inst.Operand is IRBasicBlock)
-					Output.Write(" " + ((IRBasicBlock)inst.Operand).Offset.ToString("x4"));
+					Output.Write(" block" + ((IRBasicBlock)inst.Operand).BlockNumber);
 				else if (inst.Operand is MethodParameter)
 					Output.Write(" {0} ({1})", ((MethodParameter)inst.Operand).Name, ((MethodParameter)inst.Operand).ReflectionType.Name);
 				else if (inst.Operand is MethodVariable)
@@ -69,7 +69,7 @@ namespace CellDotNet
 				{
 					Output.Write(" " + ((int)inst.Operand).ToString("X4"));
 				}
-				else					
+				else
 					Output.Write(" " + inst.Operand);
 			}
 			if (inst.StackType != StackTypeDescription.None)
@@ -123,18 +123,19 @@ namespace CellDotNet
 
 		private void AddBranchTargets(TreeInstruction inst)
 		{
-			// Do we still use this method?
-			if (inst.Opcode.FlowControl == FlowControl.Branch || inst.Opcode.FlowControl == FlowControl.Cond_Branch)
-			{
-				if (inst.Operand is IRBasicBlock)
-					_branchTargets.Add(((IRBasicBlock)inst.Operand).Offset);
-				else
-					_branchTargets.Add((int)inst.Operand);
-			}
-			if (inst.Left != null)
-				AddBranchTargets(inst.Left);
-			if (inst.Right != null)
-				AddBranchTargets(inst.Right);
+			throw new NotImplementedException();
+//			// Do we still use this method?
+//			if (inst.Opcode.FlowControl == FlowControl.Branch || inst.Opcode.FlowControl == FlowControl.Cond_Branch)
+//			{
+//				if (inst.Operand is IRBasicBlock)
+//					_branchTargets.Add(((IRBasicBlock)inst.Operand).Offset);
+//				else
+//					_branchTargets.Add((int)inst.Operand);
+//			}
+//			if (inst.Left != null)
+//				AddBranchTargets(inst.Left);
+//			if (inst.Right != null)
+//				AddBranchTargets(inst.Right);
 		}
 
 		private void FindBranchTargets(MethodCompiler ci, MethodBase method)
@@ -213,11 +214,10 @@ namespace CellDotNet
 			Output = output;
 
 			_branchTargets = new Set<int>();
-//			FindBranchTargets(ci, method);
 
 			foreach (IRBasicBlock block in blocks)
 			{
-				Output.WriteLine(" - Basic Block:");
+				Output.WriteLine(" - Basic block no. {0}:", block.BlockNumber);
 				DrawTree(block);
 			}
 		}

@@ -1338,7 +1338,7 @@ namespace CellDotNet
 						if (var.StackType.IsStackValueType || var.Escapes.GetValueOrDefault(true))
 							return _writer.WriteAi(HardwareRegister.SP, var.StackLocation*16);
 						else
-							throw new Exception("Escaping variable with no stack location.");
+							throw new InvalidIRTreeException("Escaping variable with no stack location.");
 					}
 				case IRCode.Starg:
 				case IRCode.Stloc:

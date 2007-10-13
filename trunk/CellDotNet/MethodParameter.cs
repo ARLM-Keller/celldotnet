@@ -8,13 +8,9 @@ namespace CellDotNet
 	/// </summary>
 	class MethodParameter : MethodVariable
 	{
-		private bool _isInstanceMethod = false;
+		private bool _isInstanceMethod;
 
 		private ParameterInfo _parameterInfo;
-//		public ParameterInfo ParameterInfo
-//		{
-//			get { return _parameterInfo; }
-//		}
 
 		public override string Name
 		{

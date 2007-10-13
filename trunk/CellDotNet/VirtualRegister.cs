@@ -17,7 +17,6 @@ namespace CellDotNet
         public VirtualRegister(int _number)
         {
             this._number = _number;
-            _location = null;
         }
 
         private int _number;
@@ -26,14 +25,7 @@ namespace CellDotNet
             get { return _number; }
         }
 
-        private StoreLocation _location;
-        public StoreLocation Location
-        {
-            get { return _location; }
-            set { _location = value; }
-        }
-
-		private bool _isRegisterSet = false;
+    	private bool _isRegisterSet;
 		/// <summary>
 		/// Indicates whether a physical register has been assigned to this virtual register.
 		/// </summary>

@@ -79,8 +79,8 @@ namespace CellDotNet
 					case "binz":
 					case "bihz":
 					case "bihnz":
-						throw new Exception(
-							string.Format("Unabel to handel \"{0}\" instruction in register alloction.", code[i].OpCode.Name));
+						throw new RegisterAllocationException(
+							string.Format("Unable to handle \"{0}\" instruction in register alloction.", code[i].OpCode.Name));
 					default:
 						break;
 				}

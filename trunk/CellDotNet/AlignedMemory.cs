@@ -47,6 +47,12 @@ namespace CellDotNet
 
 		public void Dispose()
 		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		private void Dispose(bool isDisposing)
+		{
 			if (_arrayHandle.IsAllocated)
 			{
 				_arrayHandle.Free();
@@ -57,7 +63,7 @@ namespace CellDotNet
 
 		~AlignedMemory()
 		{
-			Dispose();
+			Dispose(false);
 		}
 	}
 }

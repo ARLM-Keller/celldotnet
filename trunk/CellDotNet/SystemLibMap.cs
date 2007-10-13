@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace CellDotNet
 {
-	class SystemLibMap
+	static class SystemLibMap
 	{
 		private static Dictionary<MethodBase, MethodBase> _libmap = InitializeMap();
 

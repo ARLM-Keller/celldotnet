@@ -8,7 +8,7 @@ namespace CellDotNet
 	/// Applying this attribute to a method is an indication to the runtime.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, AllowMultiple = false)]
-	class IntrinsicMethodAttribute : Attribute
+	sealed class IntrinsicMethodAttribute : Attribute
 	{
 		public readonly SpuIntrinsicMethod Intrinsic;
 

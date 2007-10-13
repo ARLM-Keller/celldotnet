@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace CellDotNet
 {
-	internal class HardwareRegister// : StoreLocation
+	internal static class HardwareRegister// : StoreLocation
 	{
 		// arrays implementere IList, og array bliver redonly når der bruges som IList.
 		private static VirtualRegister[] _virtualHardwareRegisters;
@@ -115,15 +115,6 @@ namespace CellDotNet
 			HardwareReturnValueRegister = GetHardwareRegister((CellRegister) 3);
 
 			EnvPtr = GetHardwareRegister((CellRegister) 2);
-		}
-
-		// TODO skal udfases
-		private int _register;
-
-		public int Register
-		{
-			get { return _register; }
-			set { _register = value; }
 		}
 
 		public static VirtualRegister GetHardwareRegister(int regnum)

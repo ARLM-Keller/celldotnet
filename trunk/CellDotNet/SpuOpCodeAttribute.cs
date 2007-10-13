@@ -8,7 +8,7 @@ namespace CellDotNet
 	/// specified SPU opcode.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-	class SpuOpCodeAttribute : Attribute
+	sealed class SpuOpCodeAttribute : Attribute
 	{
 		private SpuOpCodeEnum _spuOpCode;
 		public SpuOpCodeEnum SpuOpCode
@@ -26,7 +26,7 @@ namespace CellDotNet
 	/// Indicates which SPU instruction part that a parameter or return value should go into.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.ReturnValue, AllowMultiple = false, Inherited = false)]
-	class SpuInstructionPartAttribute : Attribute
+	sealed class SpuInstructionPartAttribute : Attribute
 	{
 		private SpuInstructionPart _part;
 		public SpuInstructionPart Part
