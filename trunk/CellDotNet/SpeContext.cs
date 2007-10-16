@@ -581,6 +581,8 @@ namespace CellDotNet
 		/// <param name="elementSize"></param>
 		private static AlignedMemory<T> AllocateAlignedFourByteElementArray<T>(int count, int elementSize) where T : struct
 		{
+			//DEBUG
+			Console.WriteLine("Allocating alinged memory ...");
 			// Minimal padding to ensure that a final 16-byte dma write can't damage other data.
 			int paddedByteCount = Utilities.Align16(count * elementSize);
 
@@ -605,8 +607,18 @@ namespace CellDotNet
 			else
 				alignedAddress = Utilities.Align16(arrayStartAddress);
 
+			//DEBUG
+			Console.WriteLine("paddedByteCount = {0}", paddedByteCount);
+			Console.WriteLine("bytesToAllocate = {0}", bytesToAllocate);
+			Console.WriteLine("elementSize = {0}", elementSize);
+			Console.WriteLine("arrayStartAddress = {0}", arrayStartAddress);
+			Console.WriteLine("alignedAddress = {0}", alignedAddress);
+
 			int segmentStartIndex = (int) (alignedAddress - arrayStartAddress) / elementSize;
 			ArraySegment<T> segment = new ArraySegment<T>(arr, segmentStartIndex, count);
+
+			// DEBUG
+			Console.WriteLine("Allocating alinged memory don.");
 
 			return new AlignedMemory<T>(gchandle, segment);
 		}

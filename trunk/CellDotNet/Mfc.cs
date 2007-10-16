@@ -27,7 +27,25 @@ namespace CellDotNet
 
 		static public void Get(int[] target, MainStorageArea ea)
 		{
-			Get(target, ea, (short) target.Length, 31);
+			GetBulck(SpuRuntime.UnsafeGetAddress(target), ea, target.Length*4, 31);
+			WaitForDmaCompletion(uint.MaxValue);
+		}
+
+		static public void Get(float[] target, MainStorageArea ea)
+		{
+			GetBulck(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 4, 31);
+			WaitForDmaCompletion(uint.MaxValue);
+		}
+
+		static public void Get(Int32Vector[] target, MainStorageArea ea)
+		{
+			GetBulck(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 16, 31);
+			WaitForDmaCompletion(uint.MaxValue);
+		}
+
+		static public void Get(Float32Vector[] target, MainStorageArea ea)
+		{
+			GetBulck(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 16, 31);
 			WaitForDmaCompletion(uint.MaxValue);
 		}
 
@@ -38,12 +56,101 @@ namespace CellDotNet
 
 			if (SpuRuntime.IsRunningOnSpu)
 			{
-				Get(ref target[0], ea.EffectiveAddress, bytecount, 0xfffff, 0, 0); //TODO få styr på tag
+				Get(ref target[0], ea.EffectiveAddress, bytecount, 0xfffff, 0, 0);
 			}
 			else
 			{
 				AssertValidEffectiveAddress(ea.EffectiveAddress, bytecount);
 				Marshal.Copy((IntPtr)ea.EffectiveAddress, target, 0, count);
+			}
+		}
+
+		[CLSCompliant(false)]
+		unsafe static public void Get(float[] target, MainStorageArea ea, short count, uint tag)
+		{
+			int bytecount = count * 4;
+
+			if (SpuRuntime.IsRunningOnSpu)
+			{
+				Get(SpuRuntime.UnsafeGetAddress(target), ea.EffectiveAddress, bytecount, 0xfffff, 0, 0);
+			}
+			else
+			{
+				AssertValidEffectiveAddress(ea.EffectiveAddress, bytecount);
+				Marshal.Copy((IntPtr)ea.EffectiveAddress, target, 0, count);
+			}
+		}
+
+		/// <summary>
+		/// Handels transfere of blocks larger than 16KB.
+		/// </summary>
+		/// <param name="lsaddress"></param>
+		/// <param name="ea"></param>
+		/// <param name="bytecount"></param>
+		/// <param name="tag"></param>
+		[CLSCompliant(false)]
+		unsafe static public void GetBulck(int lsaddress, MainStorageArea ea, int bytecount, uint tag)
+		{
+			uint msa = ea.EffectiveAddress;
+
+			while (bytecount > 0)
+			{
+				if (GetAvailableQueueEntries() <= 0)
+					WaitForEanyDmaCompletion(0xffffffff);
+
+				int blocksize = bytecount > 16*1024 ? 16*1024 : bytecount;
+
+				Get(lsaddress, msa, blocksize, 0xfffff, 0, 0);
+
+				msa += (uint)blocksize;
+				lsaddress += blocksize;
+				bytecount -= blocksize;
+			}
+		}
+
+//		[CLSCompliant(false)]
+//		unsafe static public void GetBulck(float[] target, MainStorageArea ea, short count, uint tag)
+//		{
+//			int bytecount = count * 4;
+//
+//			int lsaddress = SpuRuntime.UnsafeGetAddress(target);
+//
+//			if (SpuRuntime.IsRunningOnSpu)
+//			{
+//				while (bytecount > 0)
+//				{
+//					if (GetAvailableQueueEntries() <= 0)
+//						WaitForEanyDmaCompletion(0xffffffff);
+//
+//					int blocksize = bytecount > 16 * 1024 ? 16 * 1024 : bytecount;
+//
+//					Get(lsaddress, ea.EffectiveAddress, blocksize, 0xfffff, 0, 0);
+//
+//					lsaddress -= blocksize;
+//					bytecount -= blocksize;
+//				}
+//			}
+//		}
+
+		[CLSCompliant(false)]
+		static public void Get(Int32Vector[] target, MainStorageArea ea, short count, uint tag)
+		{
+			int bytecount = count * 16;
+
+			if (SpuRuntime.IsRunningOnSpu)
+			{
+				Get(SpuRuntime.UnsafeGetAddress(target), ea.EffectiveAddress, bytecount, 0xfffff, 0, 0);
+			}
+		}
+
+		[CLSCompliant(false)]
+		unsafe static public void Get(Float32Vector[] target, MainStorageArea ea, short count, uint tag)
+		{
+			int bytecount = count * 16;
+
+			if (SpuRuntime.IsRunningOnSpu)
+			{
+				Get(SpuRuntime.UnsafeGetAddress(target), ea.EffectiveAddress, bytecount, 0xfffff, 0, 0);
 			}
 		}
 
@@ -143,6 +250,21 @@ namespace CellDotNet
 			}
 		}
 
+		[CLSCompliant(false)]
+		static public void WaitForEanyDmaCompletion(uint tagMask)
+		{
+			const int SPE_TAG_ANY = 1;
+//			const int SPE_TAG_ALL = 2;
+//			const int SPE_TAG_IMMEDIATE = 3;
+
+			if (SpuRuntime.IsRunningOnSpu)
+			{
+				WriteChannel(SpuWriteChannel.MFC_WrTagMask, tagMask);
+				WriteChannel(SpuWriteChannel.MFC_WrTagUpdate, SPE_TAG_ANY);
+				int r = ReadChannel(SpuReadChannel.MFC_RdTagStat);
+			}
+		}
+
 		static private void Get(ref int lsStart, uint ea, int byteCount, uint tag, uint tid, uint rid)
 		{
 			// MFC_CMD_WORD(_tid, _rid, _cmd) (((_tid)<<24)|((_rid)<<16)|(_cmd))
@@ -155,6 +277,25 @@ namespace CellDotNet
 			WriteChannel(SpuWriteChannel.MFC_TagID, tag & 0x1f);
 			WriteChannel(SpuWriteChannel.MFC_CmdAndClassID, cmd);
 
+		}
+
+		static private void Get(int lsStart, uint ea, int byteCount, uint tag, uint tid, uint rid)
+		{
+
+			// MFC_CMD_WORD(_tid, _rid, _cmd) (((_tid)<<24)|((_rid)<<16)|(_cmd))
+			uint cmd = (uint)MfcDmaCommand.Get;
+			cmd |= (tid << 24) | (rid << 16);
+
+//			Console.WriteLine(lsStart); //DEBUG
+			WriteChannel(SpuWriteChannel.MFC_LSA, (uint)lsStart);
+//			Console.WriteLine((int)ea); //DEBUG
+			WriteChannel(SpuWriteChannel.MFC_EAL, ea);
+//			Console.WriteLine(byteCount); //DEBUG
+			WriteChannel(SpuWriteChannel.MFC_Size, (uint)byteCount);
+//			Console.WriteLine((int)(tag & 0x1f)); //DEBUG
+			WriteChannel(SpuWriteChannel.MFC_TagID, tag & 0x1f);
+//			Console.WriteLine((int)cmd); //DEBUG
+			WriteChannel(SpuWriteChannel.MFC_CmdAndClassID, cmd);
 		}
 
 		static private void Put(ref int lsStart, uint ea, int byteCount, uint tag, uint tid, uint rid)
