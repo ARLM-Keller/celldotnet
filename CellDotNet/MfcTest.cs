@@ -59,6 +59,43 @@ namespace CellDotNet
 		}
 
 		[Test]
+		public void TestDma_GetFloatArray()
+		{
+			using (AlignedMemory<float> mem = SpeContext.AllocateAlignedFloat(4))
+			{
+				// Create elements whose sum is 26.
+				for (int i = mem.ArraySegment.Offset, j = 1; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++, j++)
+				{
+					mem.ArraySegment.Array[i] = j*1.3f;
+				}
+
+				Converter<MainStorageArea, float> del =
+					delegate(MainStorageArea input)
+					{
+						float[] arr = new float[4];
+
+						uint tag = 1;
+						uint tagmask = (uint)1 << 31;
+						Mfc.Get(arr, input, 4, tag);
+						Mfc.WaitForDmaCompletion(tagmask);
+
+						float sum = 0;
+						for (int i = 0; i < 4; i++)
+							sum += arr[i];
+
+						return sum;
+					};
+
+				CompileContext cc = new CompileContext(del.Method);
+				cc.PerformProcessing(CompileContextState.S8Complete);
+
+				object rv = SpeContext.UnitTestRunProgram(cc, mem.GetArea());
+				Utilities.AssertWithinLimits((float)rv, 13f, 0.0001f, "");
+//				AreEqual(13f, (float)rv);
+			}
+		}
+
+		[Test]
 		public void TestDma_WrappedGetIntArray()
 		{
 			using (AlignedMemory<int> mem = SpeContext.AllocateAlignedInt32(4))

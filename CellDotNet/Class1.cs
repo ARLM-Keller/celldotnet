@@ -103,9 +103,24 @@ namespace CellDotNet
 
 //			new VectorTypeTest().TestVectorInt_Div();
 
-			new SimpleProgramsTest().Test_FloatCompare();
+//			new SimpleProgramsTest().Test_FloatCompare();
+
+			Test_InvaliInstruction();
 
 			Console.WriteLine("Running RunKlaus done.");
+		}
+
+		private static void Test_InvaliInstruction()
+		{
+			SpeContext ct = new SpeContext();
+
+//			1010000
+
+			unchecked
+			{
+				ct.LoadProgram(new int[] {(int) 0xa0000000, 0x0});
+				ct.Run();
+			}
 		}
 
 		private static void WriteDiff(int[] a1, int[] a2)
