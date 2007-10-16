@@ -130,6 +130,7 @@
     <Compile Include="SparseCompRow.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="SparseCompRowSingle.cs" />
     <Compile Include="Stopwatch.cs">
       <SubType>Code</SubType>
     </Compile>
