@@ -40,18 +40,14 @@ namespace SciMark2Cell
 		{
 			// 3 flops in x^2+y^2 and 1 flop in random routine
 
-			// time 4 (Vectorization)
-
-			return Num_samples*4.0f*4.0f;
+			return Num_samples*4.0f;
 		}
 
 		public static float integrate(int Num_samples)
 		{
-			int iterations = Num_samples/4;
+			int iterations = (Num_samples/4) + 1;
 
-			RandomVector R = new RandomVector();
-
-			R.initializeRandomCell(Int32Vector.Splat(SEED));
+			RandomVector R = new RandomVector(Int32Vector.Splat(SEED));
 
 			Int32Vector under_curve = Int32Vector.Splat(0);
 

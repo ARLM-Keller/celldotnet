@@ -2,89 +2,164 @@ using CellDotNet;
 
 namespace SciMark2Cell
 {
-	public struct RandomVector
+	public class RandomVector
 	{
-		internal Int32Vector _seed; // readonly
+		internal Int32Vector _seed;
 
-		private Int32Vector[] m; // vector, (readonly)
-		private int i; // scalar
-		private int j; // scalar
+		private Int32Vector m1;
+		private Int32Vector m2;
+		private Float32Vector dm1;
 
-		private Int32Vector m1; // Vector, ReadOnly
+		private Float32Vector _left;
+		private Float32Vector _width;
 
-		private Float32Vector dm1; // vector, readonly
+		private Int32Vector[] m;
+		private int i;
+		private int j;
+
+		private bool haveRange;
 		
-		private bool haveRange; // readonly
-		private Float32Vector _left; // vecotr(not nessesary), readonly
-//		private float _right;
-		private Float32Vector _width; // vecotr(not nessesary), readonly
-
-		private Int32Vector _zerro;
-
-//		public RandomVector(int seed)
-//		{
-//			throw new NotSupportedException();
-//		}
-
-		public void initializeRandomCell(Int32Vector seed)
+		public RandomVector(Int32Vector seed)
 		{
-			initializeState();
-			initializeSeed(seed);
+			i = 4;
+			j = 16;
+
+			haveRange = false;
+			_left = Float32Vector.Splat(0.0f);
+			_width = Float32Vector.Splat(1.0f);
+
+			initialize(seed);
 		}
 
-		public void initializeRandomCell(Int32Vector seed, float left, float right)
+		public RandomVector(Int32Vector seed, float left, float right)
 		{
-			initializeState();
-			initializeSeed(seed);
+			i = 4;
+			j = 16;
+
+			haveRange = false;
+			_left = Float32Vector.Splat(0.0f);
+			_width = Float32Vector.Splat(1.0f);
+
+			initialize(seed);
 			_left = new Float32Vector(left, left, left, left);
-//			_right = right;
 			float _widthscale = right - left;
 			_width = new Float32Vector(_widthscale, _widthscale, _widthscale, _widthscale);
 			haveRange = true;
 		}
 		
-//		public double nextDouble()
-//		{
-//			throw new NotSupportedException();
-//		}
-
 		public Float32Vector nextFloat()
 		{
+			Int32Vector zerro = Int32Vector.Splat(0);
+
 			Int32Vector k;
 		
 			k = m[i] - m[j];
 
-//			if (k < _zerro)
-//				k += m1;
-			k += SpuMath.CompareGreaterThanAndSelect(_zerro, k, m1, _zerro);
+			k += SpuMath.CompareGreaterThanAndSelect(zerro, k, m1, zerro);
 
 			m[j] = k;
+
+//			if (i == 0)
+//				i = 16;
+//			else
+//				i--;
+
+			i = SpuMath.CompareEqualsAndSelect(i, 0, 16, i - 1);
+
+//			if (j == 0)
+//				j = 16;
+//			else
+//				j--;
+
+			j = SpuMath.CompareEqualsAndSelect(j, 0, 16, j - 1);
 		
-			if (i == 0)
-				i = 16;
-			else
-				i--;
-		
-			if (j == 0)
-				j = 16;
-			else
-				j--;
-		
-			if (haveRange)
-				return _left + dm1 * SpuMath.ConvertToFloat(k) * _width;
-			else
-				return dm1 * SpuMath.ConvertToFloat(k);
+//			if (haveRange)
+//				return _left + dm1 * SpuMath.ConvertToFloat(k) * _width;
+//			else
+//				return dm1 * SpuMath.ConvertToFloat(k);
+
+			Float32Vector r = dm1 * SpuMath.ConvertToFloat(k);
+
+			return SpuMath.ConditionalSelect(haveRange, SpuMath.MultiplyAdd(r, _width, _left), r);
 		}
-		
+
+
+		public void nextFloats(Float32Vector[] x)
+		{
+			int N = x.Length;
+			int remainder = N & 3;
+
+			if (haveRange)
+			{
+				for (int count = 0; count < N; count++)
+				{
+					Int32Vector zerro = Int32Vector.Splat(0);
+					Int32Vector k;
+					k = m[i] - m[j];
+					k += SpuMath.CompareGreaterThanAndSelect(zerro, k, m1, zerro);
+					m[j] = k;
+					i = SpuMath.CompareEqualsAndSelect(i, 0, 16, i - 1);
+					j = SpuMath.CompareEqualsAndSelect(j, 0, 16, j - 1);
+					x[count] = SpuMath.MultiplyAdd(dm1 * SpuMath.ConvertToFloat(k), _width, _left);
+				}
+			}
+			else
+			{
+				for (int count = 0; count < remainder; count++)
+				{
+					Int32Vector zerro = Int32Vector.Splat(0);
+					Int32Vector k;
+					k = m[i] - m[j];
+					k += SpuMath.CompareGreaterThanAndSelect(zerro, k, m1, zerro);
+					m[j] = k;
+					i = SpuMath.CompareEqualsAndSelect(i, 0, 16, i - 1);
+					j = SpuMath.CompareEqualsAndSelect(j, 0, 16, j - 1);
+					x[count] = dm1 * SpuMath.ConvertToFloat(k);
+				}
+
+				for (int count = remainder; count < N; count += 4)
+				{
+					Int32Vector zerro = Int32Vector.Splat(0);
+					Int32Vector k;
+					k = m[i] - m[j];
+					k += SpuMath.CompareGreaterThanAndSelect(zerro, k, m1, zerro);
+					m[j] = k;
+					i = SpuMath.CompareEqualsAndSelect(i, 0, 16, i - 1);
+					j = SpuMath.CompareEqualsAndSelect(j, 0, 16, j - 1);
+					x[count] = dm1 * SpuMath.ConvertToFloat(k);
+
+					k = m[i] - m[j];
+					k += SpuMath.CompareGreaterThanAndSelect(zerro, k, m1, zerro);
+					m[j] = k;
+					i = SpuMath.CompareEqualsAndSelect(i, 0, 16, i - 1);
+					j = SpuMath.CompareEqualsAndSelect(j, 0, 16, j - 1);
+					x[count+1] = dm1 * SpuMath.ConvertToFloat(k);
+
+					k = m[i] - m[j];
+					k += SpuMath.CompareGreaterThanAndSelect(zerro, k, m1, zerro);
+					m[j] = k;
+					i = SpuMath.CompareEqualsAndSelect(i, 0, 16, i - 1);
+					j = SpuMath.CompareEqualsAndSelect(j, 0, 16, j - 1);
+					x[count+2] = dm1 * SpuMath.ConvertToFloat(k);
+
+					k = m[i] - m[j];
+					k += SpuMath.CompareGreaterThanAndSelect(zerro, k, m1, zerro);
+					m[j] = k;
+					i = SpuMath.CompareEqualsAndSelect(i, 0, 16, i - 1);
+					j = SpuMath.CompareEqualsAndSelect(j, 0, 16, j - 1);
+					x[count+3] = dm1 * SpuMath.ConvertToFloat(k);
+				}
+			}
+		}
+
 		/*----------------------------------------------------------------------------
 		PRIVATE METHODS
 		------------------------------------------------------------------------ */
 		
-		private void initializeSeed(Int32Vector seed)
+		private void initialize(Int32Vector seed)
 		{
-			const int mdig_s = 32; // only used in initialization
-			const int one_s = 1; // Only used in initialization
-			Int32Vector m2; // ReadOnly, only used in initialize
+			const int mdig_s = 32;
+			const int one_s = 1;
 			int m2_s;
 			int m1_s;
 
@@ -106,7 +181,6 @@ namespace SciMark2Cell
 			
 			jseed = SpuMath.Min(SpuMath.Abs(seed), m1);
 
-
 //			if (jseed % Int32Vector.Splat(0) == 0)
 //				--jseed;
 
@@ -127,21 +201,6 @@ namespace SciMark2Cell
 			}
 			i = 4;
 			j = 16;
-		}
-
-		private void initializeState()
-		{
-			_seed = Int32Vector.Splat(0);
-
-			i = 4;
-			j = 16;
-
-			_zerro = Int32Vector.Splat(0);
-
-			haveRange = false;
-			_left = Float32Vector.Splat(0.0f);
-//			_right = 1.0f;
-			_width = Float32Vector.Splat(1.0f);
 		}
 	}
 }

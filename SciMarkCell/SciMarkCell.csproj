@@ -20,7 +20,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>
     </RootNamespace>
-    <StartupObject>SciMarkCell.Class1</StartupObject>
+    <StartupObject>SciMark2Cell.Class1</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
   </PropertyGroup>
@@ -93,6 +93,7 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Benchmarks.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="CommandLine.cs">
       <SubType>Code</SubType>
@@ -101,8 +102,11 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MonteCarlo.cs" />
+    <Compile Include="MonteCarloSingle.cs" />
     <Compile Include="MonteCarloVector.cs" />
+    <Compile Include="MonteCarloVectorUnroled.cs" />
     <Compile Include="Random.cs" />
+    <Compile Include="RandomSingle.cs" />
     <Compile Include="RandomSingleCell.cs" />
     <Compile Include="FFT.cs">
       <SubType>Code</SubType>
@@ -120,6 +124,9 @@
     <Compile Include="SOR.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="SORSingle.cs" />
+    <Compile Include="SORSingleCell.cs" />
+    <Compile Include="SORVector.cs" />
     <Compile Include="SparseCompRow.cs">
       <SubType>Code</SubType>
     </Compile>
