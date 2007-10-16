@@ -1,4 +1,6 @@
 	
+using CellDotNet;
+
 /// <license>
 /// This is a port of the SciMark2a Java Benchmark to C# by
 /// Chris Re (cmr28@cornell.edu) and Werner Vogels (vogels@cs.cornell.edu)
@@ -44,9 +46,9 @@ namespace SciMark2Cell
 
 		public static float integrate(int Num_samples)
 		{
-			RandomSingleCell R = new RandomSingleCell();
+			RandomSingleCell R = new RandomSingleCell(SEED);
 
-			R.initializeRandomCell(SEED);
+//			R.initializeRandomCell(SEED);
 
 			int under_curve = 0;
 			for (int count = 0; count < Num_samples; count++)
