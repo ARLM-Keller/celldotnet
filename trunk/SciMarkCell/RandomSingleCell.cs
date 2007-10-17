@@ -1,29 +1,7 @@
-/// <license>
-/// This is a port of the SciMark2a Java Benchmark to C# by
-/// Chris Re (cmr28@cornell.edu) and Werner Vogels (vogels@cs.cornell.edu)
-/// 
-/// For details on the original authors see http://math.nist.gov/scimark2
-/// 
-/// This software is likely to burn your processor, bitflip your memory chips
-/// anihilate your screen and corrupt all your disks, so you it at your
-/// own risk.
-/// </license>
-
-using System;
-using System.Runtime.CompilerServices;
-
 namespace SciMark2Cell
 {
-	/* Random.java based on Java Numerical Toolkit (JNT) Random.UniformSequence
-	class.  We do not use Java's own java.util.Random so that we can compare
-	results with equivalent C and Fortran coces.*/
-
 	public class RandomSingleCell
 	{
-		/*------------------------------------------------------------------------------
-		CLASS VARIABLES
-		------------------------------------------------------------------------------ */
-
 		internal int seed = 0;
 
 		private int[] m;
@@ -43,65 +21,11 @@ namespace SciMark2Cell
 		private float width = 1.0f;
 
 
-		/* ------------------------------------------------------------------------------
-		CONSTRUCTORS
-		------------------------------------------------------------------------------ */
-
-		/// <summary>
-		/// Initializes a sequence of uniformly distributed quasi random numbers with a
-		/// seed based on the system clock.
-		/// </summary>
-//		public RandomSingle()
-//		{
-//			initialize((int)System.DateTime.Now.Ticks);
-//		}
-
-		/// <summary>
-		/// Initializes a sequence of uniformly distributed quasi random numbers on a
-		/// given half-open interval [left,right) with a seed based on the system
-		/// clock.
-		/// </summary>
-		/// <param name="<B>left</B>">(double)<BR>
-		/// The left endpoint of the half-open interval [left,right).
-		/// </param>
-		/// <param name="<B>right</B>">(double)<BR>
-		/// The right endpoint of the half-open interval [left,right).
-		/// </param>
-//		public RandomSingle(float left, float right)
-//		{
-//			initialize((int)System.DateTime.Now.Ticks);
-//			this.left = left;
-//			this.right = right;
-//			width = right - left;
-//			haveRange = true;
-//		}
-
-		/// <summary>
-		/// Initializes a sequence of uniformly distributed quasi random numbers with a
-		/// given seed.
-		/// </summary>
-		/// <param name="<B>seed</B>">(int)<BR>
-		/// The seed of the random number generator.  Two sequences with the same
-		/// seed will be identical.
-		/// </param>
 		public RandomSingleCell(int seed)
 		{
 			initialize(seed);
 		}
 
-		/// <summary>Initializes a sequence of uniformly distributed quasi random numbers
-		/// with a given seed on a given half-open interval [left,right).
-		/// </summary>
-		/// <param name="<B>seed</B>">(int)<BR>
-		/// The seed of the random number generator.  Two sequences with the same
-		/// seed will be identical.
-		/// </param>
-		/// <param name="<B>left</B>">(double)<BR>
-		/// The left endpoint of the half-open interval [left,right).
-		/// </param>
-		/// <param name="<B>right</B>">(double)<BR>
-		/// The right endpoint of the half-open interval [left,right).
-		/// </param>
 		public RandomSingleCell(int seed, float left, float right)
 		{
 			initialize(seed);
@@ -110,14 +34,6 @@ namespace SciMark2Cell
 			width = right - left;
 			haveRange = true;
 		}
-
-		/* ------------------------------------------------------------------------------
-		PUBLIC METHODS
-		------------------------------------------------------------------------------ */
-
-		/// <summary>
-		/// Returns the next random number in the sequence.
-		/// </summary>
 
 		public float nextFloat()
 		{
@@ -143,11 +59,6 @@ namespace SciMark2Cell
 			else
 				return dm1 * k;
 		}
-
-		/// <summary>
-		/// Returns the next N random numbers in the sequence, as
-		/// a vector.
-		/// </summary>
 
 		public void nextFloats(float[] x)
 		{
@@ -264,10 +175,6 @@ namespace SciMark2Cell
 				}
 			}
 		}
-
-		/*----------------------------------------------------------------------------
-		PRIVATE METHODS
-		------------------------------------------------------------------------ */
 
 		private void initialize(int seed)
 		{

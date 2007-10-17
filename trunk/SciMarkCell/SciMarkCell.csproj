@@ -20,7 +20,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>
     </RootNamespace>
-    <StartupObject>SciMark2Cell.Class1</StartupObject>
+    <StartupObject>SciMark2Cell.Demo</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
   </PropertyGroup>
@@ -101,6 +101,7 @@
     <Compile Include="Constants.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Demo.cs" />
     <Compile Include="MonteCarlo.cs" />
     <Compile Include="MonteCarloSingle.cs" />
     <Compile Include="MonteCarloVector.cs" />
@@ -131,13 +132,11 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="SparseCompRowSingle.cs" />
+    <Compile Include="SparseCompRowSingleCell.cs" />
     <Compile Include="Stopwatch.cs">
       <SubType>Code</SubType>
     </Compile>
     <AppDesigner Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="ClassDiagram1.cd" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CellDotNet\CellDotNet.csproj">

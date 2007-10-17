@@ -152,10 +152,6 @@ namespace SciMark2Cell
 			}
 		}
 
-		/*----------------------------------------------------------------------------
-		PRIVATE METHODS
-		------------------------------------------------------------------------ */
-		
 		private void initialize(Int32Vector seed)
 		{
 			const int mdig_s = 32;

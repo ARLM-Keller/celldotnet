@@ -17,17 +17,14 @@ namespace SciMark2
 				Benchmark_Montecarlo_Vector_SPU(n);
 				Benchmark_Montecarlo_Unrolled_SPU(n);
 			}
-			else
-			{
 				Benchmark_Montecarlo_Single(n);
-			}
 		}
 
 		public static void Benchmark_Montecarlo_Single(int n)
 		{
 			Stopwatch watch = new Stopwatch();
 
-			float monoPi = MonteCarloSingleCell.integrate(n);
+			float monoPi = MonteCarloSingle.integrate(n);
 
 			watch.start();
 
@@ -38,6 +35,8 @@ namespace SciMark2
 			Console.WriteLine("Monte Carlo, Single: run time: {2}, n={0} pi={1}", n, monoPi, watch.read());
 		}
 
+		private delegate float BenchmarkMonteCarloSPUDelegate(int seed, int iterations); 
+
 		public static void Benchmark_Montecarlo_Single_Spu(int n)
 		{
 			Stopwatch watch1 = new Stopwatch();
@@ -45,7 +44,7 @@ namespace SciMark2
 
 			watch1.start();
 
-			Converter<int, float> fun = MonteCarloSingle.integrate;
+			BenchmarkMonteCarloSPUDelegate fun = MonteCarloSingleCell.integrate;
 
 			CompileContext cc = new CompileContext(fun.Method);
 
@@ -55,7 +54,7 @@ namespace SciMark2
 
 			watch2.start();
 
-			float spuPi = (float)SpeContext.UnitTestRunProgram(cc, n);
+			float spuPi = (float)SpeContext.UnitTestRunProgram(cc, 113, n);
 
 			watch2.stop();
 
@@ -69,7 +68,7 @@ namespace SciMark2
 
 			watch1.start();
 
-			Converter<int, float> fun = MonteCarloVector.integrate;
+			BenchmarkMonteCarloSPUDelegate fun = MonteCarloVector.integrate;
 			CompileContext cc = new CompileContext(fun.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
@@ -77,7 +76,7 @@ namespace SciMark2
 
 			watch2.start();
 
-			float spuPi = (float)SpeContext.UnitTestRunProgram(cc, n);
+			float spuPi = (float)SpeContext.UnitTestRunProgram(cc, 113, n);
 
 			watch2.stop();
 
@@ -91,7 +90,7 @@ namespace SciMark2
 
 			watch1.start();
 
-			Converter<int, float> fun = MonteCarloVectorUnroled.integrate;
+			BenchmarkMonteCarloSPUDelegate fun = MonteCarloVectorUnroled.integrate;
 			CompileContext cc = new CompileContext(fun.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
@@ -99,7 +98,7 @@ namespace SciMark2
 
 			watch2.start();
 
-			float spuPi = (float)SpeContext.UnitTestRunProgram(cc, n);
+			float spuPi = (float)SpeContext.UnitTestRunProgram(cc, 113, n);
 
 			watch2.stop();
 
@@ -154,10 +153,6 @@ namespace SciMark2
 				{
 					mem.ArraySegment.Array[i] = Q[j];
 				}
-
-				// DEBUG
-//				mem.ArraySegment.Array[mem.ArraySegment.Offset] = 123.4f;
-//				mem.ArraySegment.Array[mem.ArraySegment.Offset + mem.ArraySegment.Count-1] = 123.5f;
 
 				watch1.start();
 
@@ -220,15 +215,15 @@ namespace SciMark2
 
 		#region SparseCompRow
 
-		public static void Benchmark_SparchCompRow_Single(int N, int nz, double min_time)
+		public static void Benchmark_SparchCompRow_Single(int N, int nz, int num_iterations)
 		{
 //			RandomSingle R = new RandomSingle(1); // TODO seed
 //
-//			float[] x = RandomVector(N, R);
-//			float[] y = new float[N];
-//
 //			int nr = nz / N; // average number of nonzeros per row
 //			int anz = nr * N; // _actual_ number of nonzeros
+//
+//			float[] x = RandomVector(N, R);
+//			float[] y = new float[N];
 //
 //
 //			float[] val = RandomVector(anz, R);
@@ -253,32 +248,89 @@ namespace SciMark2
 //
 //			}
 //
-//			Stopwatch Q = new Stopwatch();
-//
-//			int cycles = 1;
-//			while (true)
+//			using (AlignedMemory<float> xmem = SpeContext.AllocateAlignedFloat(N))
+//			using (AlignedMemory<float> ymem = SpeContext.AllocateAlignedFloat(N))
+//			using (AlignedMemory<float> valmem = SpeContext.AllocateAlignedFloat(anz))
+//			using (AlignedMemory<int> colmem = SpeContext.AllocateAlignedInt32(anz))
+//			using (AlignedMemory<int> rowmem = SpeContext.AllocateAlignedInt32(N + 1))
 //			{
-//				Q.start();
-//				SparseCompRowSingle.matmult(y, val, row, col, x, cycles);
-//				Q.stop();
-//				if (Q.read() >= min_time)
-//					break;
+//				float[] Q = RandomVector(M*newN*4, new RandomSingle(1)); // TODO random seed
 //
-//				cycles *= 2;
+//				for (int i = mem.ArraySegment.Offset, j = 0; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++, j++)
+//				{
+//					mem.ArraySegment.Array[i] = Q[j];
+//				}
 //			}
 //
-//			
-//			Stopwatch watch = new Stopwatch();
 //
-//			float[][] Q = RandomMatrix(M, N, new RandomSingle(1234)); // TODO random seed
+//			Stopwatch watch = new Stopwatch();
 //
 //			watch.start();
 //
-//			SORSingle.execute(1.25f, Q, n);
+//			SparseCompRowSingle.matmult(y, val, row, col, x, num_iterations);
 //
 //			watch.stop();
 //
-//			Console.WriteLine("SOR, Single: run time {1}, n={0} M={2} N={3}", n, watch.read(), M, N);
+//			Console.WriteLine("SparseCompRow, Single: run time {1}, n={0}", num_iterations, watch.read());
+		}
+
+		private delegate void SparchCompRowSPUDelegate(
+			MainStorageArea y, int ysize, MainStorageArea val, int valsize, MainStorageArea row, int rowsize, MainStorageArea col,
+			int colsize, MainStorageArea x, int xsize, int NUM_ITERATIONS);
+
+		public static void Benchmark_SparchCompRow_Single_SPU(int N, int nz, int num_iterations)
+		{
+			RandomSingle R = new RandomSingle(1); // TODO seed
+
+			float[] x = RandomVector(N, R);
+			float[] y = new float[N];
+
+			int nr = nz / N; // average number of nonzeros per row
+			int anz = nr * N; // _actual_ number of nonzeros
+
+			float[] val = RandomVector(anz, R);
+			int[] col = new int[anz];
+			int[] row = new int[N + 1];
+
+			row[0] = 0;
+			for (int r = 0; r < N; r++)
+			{
+				// initialize elements for row r
+
+				int rowr = row[r];
+				row[r + 1] = rowr + nr;
+				int step = r / nr;
+				if (step < 1)
+					step = 1;
+				// take at least unit steps
+
+				for (int i = 0; i < nr; i++)
+					col[rowr + i] = i * step;
+
+			}
+
+
+
+			Stopwatch watch1 = new Stopwatch();
+			Stopwatch watch2 = new Stopwatch();
+
+			watch1.start();
+
+			SparchCompRowSPUDelegate del = SparseCompRowSingleCell.matmult;
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			watch1.stop();
+
+			watch2.start();
+
+			SpeContext.UnitTestRunProgram(cc);
+
+//			SparseCompRowSingle.matmult(y, val, row, col, x, num_iterations);
+
+			watch2.stop();
+
+//			Console.WriteLine("SparseCompRow, Single: run time {1}, n={0}", num_iterations, watch2.read());
 		}
 
 		#endregion
