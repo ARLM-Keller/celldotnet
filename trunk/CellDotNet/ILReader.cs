@@ -1,3 +1,26 @@
+// 
+// Copyright (C) 2007 Klaus Hansen and Rasmus Halland
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+// 
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,12 +42,30 @@ namespace CellDotNet
 			get { return _ilreader; }
 		}
 
-		private Queue<object> _operandQueue = new Queue<object>();
+		struct ILRecord
+		{
+			public readonly OpCode OpCode;
+			public readonly object Operand;
+			public int InstructionSize;
 
-		private Queue<OpCode> _opcodeQueue = new Queue<OpCode>();
+			public bool IsEmpty
+			{
+				get { return OpCode == null; }
+			}
+
+			public ILRecord(OpCode opCode, object operand, int instructionSize)
+			{
+				OpCode = opCode;
+				Operand = operand;
+				InstructionSize = instructionSize;
+			}
+		}
+
+		private ILRecord _currentRecord;
+
+		private Queue<ILRecord> _instQueue = new Queue<ILRecord>();
 
 		private MethodVariable _lastCreatedMethodVariable;
-
 		public MethodVariable LastCreatedMethodVariable
 		{
 			get { return _lastCreatedMethodVariable; }
@@ -41,43 +82,43 @@ namespace CellDotNet
 			_variableCount = 0;
 		}
 
+		public int InstructionSize
+		{
+			get { return _currentRecord.InstructionSize; }
+		}
+
 		public bool Read(StackTypeDescription type)
 		{
 			_lastCreatedMethodVariable = null;
-			if (_opcodeQueue.Count > 0)
+			if (_instQueue.Count > 0)
 			{
-				_opcodeQueue.Dequeue();
-				_operandQueue.Dequeue();
+				_currentRecord = _instQueue.Dequeue();
+				return true;
 			}
 
-			if (_opcodeQueue.Count == 0)
+			if (!_ilreader.Read())
+				return false;
+
+			OpCode opcode = _ilreader.OpCode;
+			object operand = _ilreader.Operand;
+
+			if (opcode == OpCodes.Dup)
 			{
-				if (!_ilreader.Read())
-					return false;
+				if (type == StackTypeDescription.None)
+					throw new ArgumentException("Incompatible type.");
 
-				OpCode opcode = _ilreader.OpCode;
-				object operand = _ilreader.Operand;
+				MethodVariable mv = new MethodVariable(_variableCount + 2000, type);
+				_currentRecord = new ILRecord(OpCodes.Stloc, mv, 0);
+				_instQueue.Enqueue(new ILRecord(OpCodes.Ldloc, mv, 0));
+				_instQueue.Enqueue(new ILRecord(OpCodes.Ldloc, mv, _ilreader.InstructionSize));
 
-				if(opcode == OpCodes.Dup)
-				{
-					if (type == StackTypeDescription.None)
-						throw new ArgumentException("Incompatible type.");
-
-					MethodVariable mv = new MethodVariable(_variableCount + 2000, type);
-					_opcodeQueue.Enqueue(OpCodes.Stloc);
-					_operandQueue.Enqueue(mv);
-					_opcodeQueue.Enqueue(OpCodes.Ldloc);
-					_operandQueue.Enqueue(mv);
-					_opcodeQueue.Enqueue(OpCodes.Ldloc);
-					_operandQueue.Enqueue(mv);
-					_lastCreatedMethodVariable = mv;
-				}
-				else
-				{
-					_opcodeQueue.Enqueue(opcode);
-					_operandQueue.Enqueue(operand);
-				}
+				_lastCreatedMethodVariable = mv;
 			}
+			else
+			{
+				_currentRecord = new ILRecord(opcode, operand, _ilreader.InstructionSize);
+			}
+
 			return true;
 		}
 
@@ -88,12 +129,20 @@ namespace CellDotNet
 
 		public OpCode OpCode
 		{
-			get { return _opcodeQueue.Peek(); }
+			get
+			{
+				Utilities.Assert(!_currentRecord.IsEmpty, "!_currentRecord.IsEmpty");
+				return _currentRecord.OpCode;
+			}
 		}
 
 		public object Operand
 		{
-			get { return _operandQueue.Peek(); }
+			get
+			{
+				Utilities.Assert(!_currentRecord.IsEmpty, "!_currentRecord.IsEmpty");
+				return _currentRecord.Operand;
+			}
 		}
 	}
 

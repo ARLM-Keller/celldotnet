@@ -873,6 +873,7 @@ namespace CellDotNet
 			}
 			catch (ILParseException)
 			{
+				Console.WriteLine("IL causing ILParseException:");
 				DumpILToConsole(ilcode);
 				throw;
 			}
