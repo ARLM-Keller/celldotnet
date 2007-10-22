@@ -1,0 +1,177 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{DD6CC298-26E1-4A61-B64A-6A3E5D8B2444}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>CellDotNet</RootNamespace>
+    <AssemblyName>CellDotNet</AssemblyName>
+    <StartupObject>CellDotNet.Class1</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="nunit.framework, Version=2.4.0.2, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.XML" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Algorithms.cs" />
+    <Compile Include="AlignedMemory.cs" />
+    <Compile Include="BitMatrix.cs" />
+    <Compile Include="BitMatrixTest.cs" />
+    <Compile Include="BitVector.cs" />
+    <Compile Include="BitVectorTest.cs" />
+    <Compile Include="CalleeSavesStoreRoutine.cs" />
+    <Compile Include="Class1.cs" />
+    <Compile Include="CommonDelegates.cs" />
+    <Compile Include="CompileContextTest.cs" />
+    <Compile Include="DataObject.cs" />
+    <Compile Include="Disassembler.cs" />
+    <Compile Include="DisassemblerTest.cs" />
+    <Compile Include="ElfLibrary.cs" />
+    <Compile Include="ElfLibraryTest.cs" />
+    <Compile Include="FlowGraph.cs" />
+    <Compile Include="Graph.cs" />
+    <Compile Include="GraphTest.cs" />
+    <Compile Include="ILOpCodeExecutionTest.cs" />
+    <Compile Include="ILReader.cs" />
+    <Compile Include="ILReaderTest.cs" />
+    <Compile Include="ILWriter.cs" />
+    <Compile Include="ImmutableAttribute.cs" />
+    <Compile Include="InterferenceGraph.cs" />
+    <Compile Include="IntrinsicMethodAttribute.cs" />
+    <Compile Include="IntrinsicsManager.cs" />
+    <Compile Include="IRBasicBlock.cs" />
+    <Compile Include="IRCode.cs" />
+    <Compile Include="IROpCodes.cs" />
+    <Compile Include="IRTreeBuilder.cs" />
+    <Compile Include="IRTreeBuilderTest.cs" />
+    <Compile Include="IterativLivenessAnalyser.cs" />
+    <Compile Include="Library.cs" />
+    <Compile Include="LibraryMethod.cs" />
+    <Compile Include="LibraryResolver.cs" />
+    <Compile Include="LibraryTest.cs" />
+    <Compile Include="LinearRegisterAllocator.cs" />
+    <Compile Include="LinearRegisterAllocatorTest.cs" />
+    <Compile Include="ListInstructionScheduler.cs" />
+    <Compile Include="ListInstructionSchedulerTest.cs" />
+    <Compile Include="LivenessAnalyzer.cs" />
+    <Compile Include="LocalStorageAddress.cs" />
+    <Compile Include="MainStorageArea.cs" />
+    <Compile Include="ManualRoutine.cs" />
+    <Compile Include="Marshaler.cs" />
+    <Compile Include="MarshalerTest.cs" />
+    <Compile Include="MethodCompiler.cs" />
+    <Compile Include="MethodCompilerTest.cs" />
+    <Compile Include="MethodParameter.cs" />
+    <Compile Include="MethodVariable.cs" />
+    <Compile Include="CodeGenUtils.cs" />
+    <Compile Include="CompileContext.cs" />
+    <Compile Include="Exceptions.cs" />
+    <Compile Include="HardwareRegister.cs" />
+    <Compile Include="IrOpCode.cs" />
+    <Compile Include="LiveInterval.cs" />
+    <Compile Include="MethodCallInstruction.cs" />
+    <Compile Include="Mfc.cs" />
+    <Compile Include="MfcTest.cs" />
+    <Compile Include="ObjectModelTest.cs" />
+    <Compile Include="ObjectOffset.cs" />
+    <Compile Include="ObjectWithAddress.cs" />
+    <Compile Include="PartialEvaluator.cs" />
+    <Compile Include="PartialEvaluatorTest.cs" />
+    <Compile Include="PpeMethod.cs" />
+    <Compile Include="RecursiveInstructionSelector.cs" />
+    <Compile Include="RegAllocGraphColloring.cs" />
+    <Compile Include="RegAllocGraphColloringTest.cs" />
+    <Compile Include="RegisterSizedObject.cs" />
+    <Compile Include="ShellUtilities.cs" />
+    <Compile Include="ShellUtilitiesTest.cs" />
+    <Compile Include="SimpleProgramsTest.cs" />
+    <Compile Include="SpuChannel.cs" />
+    <Compile Include="SpuDynamicRoutine.cs" />
+    <Compile Include="SpuMathTest.cs" />
+    <Compile Include="SpuOpCode.cs" />
+    <Compile Include="SpuOpCodeAttribute.cs" />
+    <Compile Include="SpuOpCodeAttributeTest.cs" />
+    <Compile Include="SpuOpCodeEnum.cs" />
+    <Compile Include="SpuOpCodeTest.cs" />
+    <Compile Include="SpuRoutine.cs" />
+    <Compile Include="SpuRuntime.cs" />
+    <Compile Include="SimpleLiveAnalyzer.cs" />
+    <Compile Include="SortedLinkedList.cs" />
+    <Compile Include="SpecialSpeObjects.cs" />
+    <Compile Include="SpeContext.cs" />
+    <Compile Include="SpeContextTest.cs" />
+    <Compile Include="SpeDelegateRunner.cs" />
+    <Compile Include="SpuAbiUtilities.cs" />
+    <Compile Include="SpuAbiUtilitiesTest.cs" />
+    <Compile Include="SPUBasicBlock.cs" />
+    <Compile Include="SpuInitializer.cs" />
+    <Compile Include="SpuInitializerTest.cs" />
+    <Compile Include="SpuInstruction.cs" />
+    <Compile Include="OpCodeGroup.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SpuInstructionTest.cs" />
+    <Compile Include="SpuInstructionWriter.cs" />
+    <Compile Include="SpuInstructionWriter_autogen.cs" />
+    <Compile Include="SpuRuntimeTest.cs" />
+    <Compile Include="StackTypeDescription.cs" />
+    <Compile Include="StaticFileLibraryResolver.cs" />
+    <Compile Include="StaticFileLibraryResolverTest.cs" />
+    <Compile Include="StoreLocation.cs" />
+    <Compile Include="Math.cs" />
+    <Compile Include="SystemLibMap.cs" />
+    <Compile Include="SystemLibTest.cs" />
+    <Compile Include="TreeDrawer.cs" />
+    <Compile Include="TypeDeriver.cs" />
+    <Compile Include="TypeDeriverTest.cs" />
+    <Compile Include="TypeDescription.cs" />
+    <Compile Include="UnitTest.cs" />
+    <Compile Include="Utilities.cs" />
+    <Compile Include="VectorTypes.cs" />
+    <Compile Include="VectorTypeTest.cs" />
+    <Compile Include="VirtualRegister.cs" />
+    <Compile Include="Set.cs" />
+    <Compile Include="TreeInstruction.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SPU.cd" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Debugging.html" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>
