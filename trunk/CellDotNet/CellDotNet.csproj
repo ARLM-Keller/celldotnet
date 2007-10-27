@@ -68,7 +68,7 @@
     <Compile Include="IROpCodes.cs" />
     <Compile Include="IRTreeBuilder.cs" />
     <Compile Include="IRTreeBuilderTest.cs" />
-    <Compile Include="IterativLivenessAnalyser.cs" />
+    <Compile Include="IterativeLivenessAnalyzer.cs" />
     <Compile Include="Library.cs" />
     <Compile Include="LibraryMethod.cs" />
     <Compile Include="LibraryResolver.cs" />
@@ -109,6 +109,7 @@
     <Compile Include="SimpleProgramsTest.cs" />
     <Compile Include="SpuChannel.cs" />
     <Compile Include="SpuDynamicRoutine.cs" />
+    <Compile Include="SpuMath.cs" />
     <Compile Include="SpuMathTest.cs" />
     <Compile Include="SpuOpCode.cs" />
     <Compile Include="SpuOpCodeAttribute.cs" />
@@ -138,8 +139,6 @@
     <Compile Include="StackTypeDescription.cs" />
     <Compile Include="StaticFileLibraryResolver.cs" />
     <Compile Include="StaticFileLibraryResolverTest.cs" />
-    <Compile Include="StoreLocation.cs" />
-    <Compile Include="Math.cs" />
     <Compile Include="SystemLibMap.cs" />
     <Compile Include="SystemLibTest.cs" />
     <Compile Include="TreeDrawer.cs" />
