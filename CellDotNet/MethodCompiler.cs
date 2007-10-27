@@ -248,6 +248,11 @@ namespace CellDotNet
 			{
 				_blocks = new IRTreeBuilder().BuildBasicBlocks(MethodBase, reader, _variablesMutable, _parameters);
 			}
+			catch (NotImplementedException e)
+			{
+				throw new ILParseException(string.Format("An error occurred while parsing method '{0}.{1}'.", 
+					_methodBase.DeclaringType.Name, _methodBase.Name), e);
+			}
 			catch (ILParseException e)
 			{
 				throw new ILParseException(string.Format("An error occurred while parsing method '{0}.{1}'.", 
@@ -263,7 +268,7 @@ namespace CellDotNet
 
 			DetermineEscapesAndAllocateStackVariables();
 
-			_partialEvaluator.Evaluate(this);
+//			_partialEvaluator.Evaluate(this);
 
 			IRBasicBlock.ConvertTreeInstructions(Blocks, DivConverter);
 

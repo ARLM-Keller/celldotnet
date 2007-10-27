@@ -455,7 +455,7 @@ namespace CellDotNet
 				if (reader.LastCreatedMethodVariable != null)
 					variables.Add(reader.LastCreatedMethodVariable);
 
-				// Adjust stack state if we've reached a bb.
+				// Adjust stack state if we've reached a new bb.
 				if (isLastInstructionInNonFinalBlock)
 				{
 					endBlock = true;

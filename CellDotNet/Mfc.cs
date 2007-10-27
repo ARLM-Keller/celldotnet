@@ -77,15 +77,7 @@ namespace CellDotNet
 		{
 			int bytecount = count*4;
 
-			if (SpuRuntime.IsRunningOnSpu)
-			{
-				Get(ref target[0], ea.EffectiveAddress, bytecount, 0xfffff, 0, 0);
-			}
-			else
-			{
-				AssertValidEffectiveAddress(ea.EffectiveAddress, bytecount);
-				Marshal.Copy((IntPtr)ea.EffectiveAddress, target, 0, count);
-			}
+			Get(ref target[0], ea.EffectiveAddress, bytecount, 0xfffff, 0, 0);
 		}
 
 		[CLSCompliant(false)]
@@ -93,15 +85,7 @@ namespace CellDotNet
 		{
 			int bytecount = count * 4;
 
-			if (SpuRuntime.IsRunningOnSpu)
-			{
-				Get(SpuRuntime.UnsafeGetAddress(target), ea.EffectiveAddress, bytecount, 0xfffff, 0, 0);
-			}
-			else
-			{
-				AssertValidEffectiveAddress(ea.EffectiveAddress, bytecount);
-				Marshal.Copy((IntPtr)ea.EffectiveAddress, target, 0, count);
-			}
+			Get(SpuRuntime.UnsafeGetAddress(target), ea.EffectiveAddress, bytecount, 0xfffff, 0, 0);
 		}
 
 		/// <summary>
@@ -190,23 +174,6 @@ namespace CellDotNet
 			
 		}
 
-
-		private static void AssertValidEffectiveAddress(uint address, int bytecount)
-		{
-			if (bytecount % 16 == 0)
-				Utilities.Assert(address % 16 == 0, "address % 16 == 0");
-			else if (bytecount % 8 == 0)
-				Utilities.Assert(address % 8 == 0, "address % 8 == 0");
-			else if (bytecount % 4 == 0)
-				Utilities.Assert(address % 4 == 0, "address % 4 == 0");
-			else if (bytecount % 2 == 0)
-				Utilities.Assert(address % 2 == 0, "address % 2 == 0");
-			else if (bytecount % 1 == 0)
-				Utilities.Assert(address % 1 == 0, "address % 1 == 0");
-			else 
-				throw new ArgumentOutOfRangeException();
-		}
-
 		static public void Put(int[] target, MainStorageArea ea)
 		{
 			Put(target, ea, (short)target.Length, 31);
@@ -218,15 +185,7 @@ namespace CellDotNet
 		{
 			int bytecount = count * 4;
 
-			if (SpuRuntime.IsRunningOnSpu)
-			{
-				Put(ref source[0], ea.EffectiveAddress, bytecount, tag, 0, 0);
-			}
-			else
-			{
-				AssertValidEffectiveAddress(ea.EffectiveAddress, bytecount);
-				Marshal.Copy(source, 0, (IntPtr)ea.EffectiveAddress, count);
-			}
+			Put(ref source[0], ea.EffectiveAddress, bytecount, tag, 0, 0);
 		}
 
 		[SpuOpCode(SpuOpCodeEnum.Rdch)]
