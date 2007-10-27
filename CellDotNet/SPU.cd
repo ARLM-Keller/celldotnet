@@ -29,7 +29,7 @@
     <Position X="8.75" Y="7.25" Width="1.5" />
     <TypeIdentifier>
       <FileName>MethodCompiler.cs</FileName>
-      <HashCode>BACGABEIIEAGpAEIAKJQCBZAEgAAEAMwA8QAToCMCsA=</HashCode>
+      <HashCode>BACGABAIAEAGpAEIAKJQCBZAEgAAEAMwA8QAToSMCsA=</HashCode>
     </TypeIdentifier>
     <Compartments>
       <Compartment Name="Fields" Collapsed="true" />
@@ -72,7 +72,7 @@
       <Compartment Name="Fields" Collapsed="true" />
     </Compartments>
   </Class>
-  <Class Name="CellDotNet.ManualRoutine" Collapsed="true">
+  <Class Name="CellDotNet.ManualRoutine">
     <Position X="10.5" Y="7.25" Width="1.5" />
     <TypeIdentifier>
       <FileName>ManualRoutine.cs</FileName>

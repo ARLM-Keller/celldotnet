@@ -21,9 +21,12 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+#if UNITTEST
+
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+
 
 namespace CellDotNet
 {
@@ -142,7 +145,7 @@ namespace CellDotNet
 //			AreEqual(del(arg), (int) SpeContext.UnitTestRunProgram(cc, arg));
 //		}
 
-		#region Method call
+#region Method call
 
 		[Test]
 		public void TestMethodCall()
@@ -381,3 +384,5 @@ namespace CellDotNet
 		}
 	}
 }
+
+#endif

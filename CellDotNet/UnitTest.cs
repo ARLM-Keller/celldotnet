@@ -21,10 +21,16 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+#if UNITTEST
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Reflection;
 using System.Text;
 using NUnit.Framework;
+
+
 
 namespace CellDotNet
 {
@@ -113,5 +119,22 @@ namespace CellDotNet
 		{
 			get { return SpeContext.HasSpeHardware; }
 		}
+
+		static public string GetUnitTestName()
+		{
+			StackTrace st = new StackTrace(0);
+			StackFrame[] frames = st.GetFrames();
+
+			foreach (StackFrame f in frames)
+			{
+				MethodBase m = f.GetMethod();
+				if (m.IsDefined(typeof (TestAttribute), false))
+				{
+					return m.Name;
+				}
+			}
+			throw new InvalidOperationException("Not in nunit test.");
+		}
 	}
 }
+#endif

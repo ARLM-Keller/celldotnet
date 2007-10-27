@@ -21,9 +21,13 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+#if UNITTEST
+
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+
+
 
 namespace CellDotNet
 {
@@ -279,7 +283,7 @@ namespace CellDotNet
 			AreEqual(del(), del2());
 		}
 
-		#region QWStruct
+#region QWStruct
 
 		struct QWStruct
 		{
@@ -414,7 +418,7 @@ namespace CellDotNet
 		}
 
 
-		#region BigStruct
+#region BigStruct
 
 		struct BigStruct
 		{
@@ -490,7 +494,7 @@ namespace CellDotNet
 			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(cc));
 		}
 
-		#region BigFieldStructs
+#region BigFieldStructs
 
 		struct BigFieldStruct_1
 		{
@@ -635,7 +639,7 @@ namespace CellDotNet
 			AreEqual(del(0), (Int32Vector)SpeContext.UnitTestRunProgram(cc, 0));
 		}
 
-		#region  dsfdsf
+#region  dsfdsf
 
 		struct StructWithArray
 		{
@@ -1333,3 +1337,5 @@ namespace CellDotNet
 		// se spu runtime get address
 	}
 }
+
+#endif

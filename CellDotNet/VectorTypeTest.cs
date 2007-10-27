@@ -21,10 +21,13 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+#if UNITTEST
+
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using NUnit.Framework;
+
 
 namespace CellDotNet
 {
@@ -106,7 +109,7 @@ namespace CellDotNet
 
 		private delegate TReturn Func<T1, T2, TReturn>(T1 arg1, T2 arg2);
 
-		#region TestVectorInt_RefArgument
+#region TestVectorInt_RefArgument
 
 		static private void ReplaceArgument(ref Int32Vector v1, Int32Vector v2)
 		{
@@ -772,3 +775,4 @@ namespace CellDotNet
 		}
 	}
 }
+#endif

@@ -21,11 +21,15 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+#if UNITTEST
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using NUnit.Framework;
+
+
 
 namespace CellDotNet
 {
@@ -103,7 +107,7 @@ namespace CellDotNet
 			cc.PerformProcessing(CompileContextState.S8Complete);
 		}
 
-		#region Manual routine
+#region Manual routine
 
 		[DllImport("ManualRoutineLibrary")]
 		private static extern int HandMadeExternalMethod(int arg);
@@ -204,3 +208,5 @@ namespace CellDotNet
 		#endregion
 	}
 }
+
+#endif
