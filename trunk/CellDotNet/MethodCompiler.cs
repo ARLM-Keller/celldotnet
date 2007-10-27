@@ -146,9 +146,6 @@ namespace CellDotNet
 			_methodBase = method;
 			State = MethodCompileState.S1Initial;
 
-			Dictionary<MethodInfo, int> fixedMethods = new Dictionary<MethodInfo, int>();
-			fixedMethods.Add(typeof(SpuRuntime).GetProperty("IsRunningOnSpu").GetGetMethod(), 1);
-			_partialEvaluator = new PartialEvaluator(fixedMethods);
 
 			PerformIRTreeConstruction();
 		}
@@ -267,8 +264,6 @@ namespace CellDotNet
 			RemoveAddressOperations();
 
 			DetermineEscapesAndAllocateStackVariables();
-
-//			_partialEvaluator.Evaluate(this);
 
 			IRBasicBlock.ConvertTreeInstructions(Blocks, DivConverter);
 
@@ -1029,7 +1024,6 @@ namespace CellDotNet
 
 		private SpuInstructionWriter _instructions;
 		private StackTypeDescription _returnType;
-		private PartialEvaluator _partialEvaluator;
 
 		public override int[] Emit()
 		{

@@ -50,25 +50,25 @@ namespace CellDotNet
 
 		static public void Get(int[] target, MainStorageArea ea)
 		{
-			GetBulck(SpuRuntime.UnsafeGetAddress(target), ea, target.Length*4, 31);
+			GetLarge(SpuRuntime.UnsafeGetAddress(target), ea, target.Length*4, 31);
 			WaitForDmaCompletion(uint.MaxValue);
 		}
 
 		static public void Get(float[] target, MainStorageArea ea)
 		{
-			GetBulck(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 4, 31);
+			GetLarge(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 4, 31);
 			WaitForDmaCompletion(uint.MaxValue);
 		}
 
 		static public void Get(Int32Vector[] target, MainStorageArea ea)
 		{
-			GetBulck(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 16, 31);
+			GetLarge(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 16, 31);
 			WaitForDmaCompletion(uint.MaxValue);
 		}
 
 		static public void Get(Float32Vector[] target, MainStorageArea ea)
 		{
-			GetBulck(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 16, 31);
+			GetLarge(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 16, 31);
 			WaitForDmaCompletion(uint.MaxValue);
 		}
 
@@ -89,14 +89,14 @@ namespace CellDotNet
 		}
 
 		/// <summary>
-		/// Handels transfere of blocks larger than 16KB.
+		/// Handels transfers of blocks larger than 16KB.
 		/// </summary>
 		/// <param name="lsaddress"></param>
 		/// <param name="ea"></param>
 		/// <param name="bytecount"></param>
 		/// <param name="tag"></param>
 		[CLSCompliant(false)]
-		unsafe static public void GetBulck(int lsaddress, MainStorageArea ea, int bytecount, uint tag)
+		unsafe static public void GetLarge(int lsaddress, MainStorageArea ea, int bytecount, uint tag)
 		{
 			uint msa = ea.EffectiveAddress;
 
@@ -116,7 +116,7 @@ namespace CellDotNet
 		}
 
 //		[CLSCompliant(false)]
-//		unsafe static public void GetBulck(float[] target, MainStorageArea ea, short count, uint tag)
+//		unsafe static public void GetLarge(float[] target, MainStorageArea ea, short count, uint tag)
 //		{
 //			int bytecount = count * 4;
 //
