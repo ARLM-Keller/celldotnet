@@ -27,7 +27,7 @@ using System.IO;
 
 namespace CellDotNet
 {
-	static internal class IterativeLivenessAnalyser
+	static internal class IterativeLivenessAnalyzer
 	{
 		/// <summary>
 		/// 
