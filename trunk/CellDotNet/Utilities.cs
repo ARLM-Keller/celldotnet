@@ -21,13 +21,13 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
-using NUnit.Framework;
 
 namespace CellDotNet
 {
@@ -39,22 +39,6 @@ namespace CellDotNet
 		{
 			if (arg == null)
 				throw new ArgumentNullException(paramName);
-		}
-
-		static public string GetUnitTestName()
-		{
-			StackTrace st = new StackTrace(0);
-			StackFrame[] frames = st.GetFrames();
-
-			foreach (StackFrame f in frames)
-			{
-				MethodBase m = f.GetMethod();
-				if (m.IsDefined(typeof (TestAttribute), false))
-				{
-					return m.Name;
-				}
-			}
-			throw new InvalidOperationException("Not in nunit test.");
 		}
 
 		static public void AssertArgument(bool condition, string message)

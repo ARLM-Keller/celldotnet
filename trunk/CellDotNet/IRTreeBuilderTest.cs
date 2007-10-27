@@ -21,12 +21,16 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+#if UNITTEST
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using NUnit.Framework;
+
+
 
 namespace CellDotNet
 {
@@ -348,3 +352,4 @@ namespace CellDotNet
 //		}
 	}
 }
+#endif

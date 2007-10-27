@@ -21,12 +21,17 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+#if UNITTEST
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using NUnit.Framework;
+
+
+
 
 namespace CellDotNet
 {
@@ -140,7 +145,7 @@ namespace CellDotNet
 
 		private delegate int SimpleDelegateIntInt(int i);
 
-		#region Runtime checks tests
+#region Runtime checks tests
 
 		[Test, ExpectedException(typeof(SpeOutOfMemoryException))]
 		public void TestStopCode_OutOfMemoryException()
@@ -378,7 +383,7 @@ namespace CellDotNet
 		}
 
 
-		#region Return value tests
+#region Return value tests
 
 		private delegate int IntReturnDelegate();
 		private delegate float SingleReturnDelegate();
@@ -581,3 +586,4 @@ namespace CellDotNet
 		}
 	}
 }
+#endif

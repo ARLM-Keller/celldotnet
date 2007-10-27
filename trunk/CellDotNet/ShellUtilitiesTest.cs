@@ -21,9 +21,13 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+#if UNITTEST
+
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+
+
 
 namespace CellDotNet
 {
@@ -52,3 +56,6 @@ echo -e hey\\nhey2
 		}
 	}
 }
+
+
+#endif
