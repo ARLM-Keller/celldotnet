@@ -20,6 +20,8 @@ namespace CellDotNet
 			CompileContext cc = new CompileContext(del1.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
+			new TreeDrawer().DrawMethods(cc);
+
 			int[] code = cc.GetEmittedCode();
 
 			if (!SpeContext.HasSpeHardware)
