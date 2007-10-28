@@ -1237,6 +1237,8 @@ namespace CellDotNet
 								val = _writer.WriteCeq(vrleft, vrright);
 								return _writer.WriteAndi(val, 1);
 							case CliType.Float32:
+								val = _writer.WriteFceq(vrleft, vrright);
+								return _writer.WriteAndi(val, 1);
 							case CliType.Float64:
 							case CliType.Int64:
 								break;
