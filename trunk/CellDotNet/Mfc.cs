@@ -74,25 +74,25 @@ namespace CellDotNet
 
 		static public void Put(int[] target, MainStorageArea ea)
 		{
-			PutBulk(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 4, 31);
+			PutLarge(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 4, 31);
 			WaitForDmaCompletion(uint.MaxValue);
 		}
 
 		static public void Put(float[] target, MainStorageArea ea)
 		{
-			PutBulk(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 4, 31);
+			PutLarge(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 4, 31);
 			WaitForDmaCompletion(uint.MaxValue);
 		}
 
 		static public void Put(Int32Vector[] target, MainStorageArea ea)
 		{
-			PutBulk(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 16, 31);
+			PutLarge(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 16, 31);
 			WaitForDmaCompletion(uint.MaxValue);
 		}
 
 		static public void Put(Float32Vector[] target, MainStorageArea ea)
 		{
-			PutBulk(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 16, 31);
+			PutLarge(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 16, 31);
 			WaitForDmaCompletion(uint.MaxValue);
 		}
 
@@ -127,7 +127,7 @@ namespace CellDotNet
 			while (bytecount > 0)
 			{
 				if (GetAvailableQueueEntries() <= 0)
-					WaitForEanyDmaCompletion(0xffffffff);
+					WaitForAnyDmaCompletion(0xffffffff);
 
 				int blocksize = bytecount > 16 * 1024 ? 16 * 1024 : Utilities.Align16(bytecount);
 
@@ -147,14 +147,14 @@ namespace CellDotNet
 		/// <param name="bytecount"></param>
 		/// <param name="tag"></param>
 		[CLSCompliant(false)]
-		unsafe static public void PutBulk(int lsaddress, MainStorageArea ea, int bytecount, uint tag)
+		unsafe static public void PutLarge(int lsaddress, MainStorageArea ea, int bytecount, uint tag)
 		{
 			uint msa = ea.EffectiveAddress;
 
 			while (bytecount > 0)
 			{
 				if (GetAvailableQueueEntries() <= 0)
-					WaitForEanyDmaCompletion(0xffffffff);
+					WaitForAnyDmaCompletion(0xffffffff);
 
 				int blocksize = bytecount > 16 * 1024 ? 16 * 1024 : Utilities.Align16(bytecount);
 
@@ -178,7 +178,7 @@ namespace CellDotNet
 //				while (bytecount > 0)
 //				{
 //					if (GetAvailableQueueEntries() <= 0)
-//						WaitForEanyDmaCompletion(0xffffffff);
+//						WaitForAnyDmaCompletion(0xffffffff);
 //
 //					int blocksize = bytecount > 16 * 1024 ? 16 * 1024 : bytecount;
 //
@@ -195,10 +195,7 @@ namespace CellDotNet
 		{
 			int bytecount = count * 16;
 
-			if (SpuRuntime.IsRunningOnSpu)
-			{
-				Get(SpuRuntime.UnsafeGetAddress(target), ea.EffectiveAddress, bytecount, 0xfffff, 0, 0);
-			}
+			Get(SpuRuntime.UnsafeGetAddress(target), ea.EffectiveAddress, bytecount, 0xfffff, 0, 0);
 		}
 
 		[CLSCompliant(false)]
@@ -206,10 +203,7 @@ namespace CellDotNet
 		{
 			int bytecount = count * 16;
 
-			if (SpuRuntime.IsRunningOnSpu)
-			{
-				Get(SpuRuntime.UnsafeGetAddress(target), ea.EffectiveAddress, bytecount, 0xfffff, 0, 0);
-			}
+			Get(SpuRuntime.UnsafeGetAddress(target), ea.EffectiveAddress, bytecount, 0xfffff, 0, 0);
 		}
 
 		[CLSCompliant(false)]
@@ -237,7 +231,7 @@ namespace CellDotNet
 			int bytecount = count * 4;
 
 				Put(ref source[0], ea.EffectiveAddress, bytecount, tag, 0, 0);
-			}
+		}
 
 		[SpuOpCode(SpuOpCodeEnum.Rdch)]
 		[return: SpuInstructionPart(SpuInstructionPart.Rt)]
@@ -274,28 +268,22 @@ namespace CellDotNet
 //			const int SPE_TAG_ANY = 1;
 //			const int SPE_TAG_IMMEDIATE = 3;
 
-			if (SpuRuntime.IsRunningOnSpu)
-			{
-				WriteChannel(SpuWriteChannel.MFC_WrTagMask, tagMask);
-				//TODO skal der ventes på en eller alle DMA'er i den givende tag maske?
-				WriteChannel(SpuWriteChannel.MFC_WrTagUpdate, SPE_TAG_ALL);
-				int r = ReadChannel(SpuReadChannel.MFC_RdTagStat);
-			}
+			WriteChannel(SpuWriteChannel.MFC_WrTagMask, tagMask);
+			//TODO skal der ventes på en eller alle DMA'er i den givende tag maske?
+			WriteChannel(SpuWriteChannel.MFC_WrTagUpdate, SPE_TAG_ALL);
+			int r = ReadChannel(SpuReadChannel.MFC_RdTagStat);
 		}
 
 		[CLSCompliant(false)]
-		static public void WaitForEanyDmaCompletion(uint tagMask)
+		static public void WaitForAnyDmaCompletion(uint tagMask)
 		{
 			const int SPE_TAG_ANY = 1;
 //			const int SPE_TAG_ALL = 2;
 //			const int SPE_TAG_IMMEDIATE = 3;
 
-			if (SpuRuntime.IsRunningOnSpu)
-			{
-				WriteChannel(SpuWriteChannel.MFC_WrTagMask, tagMask);
-				WriteChannel(SpuWriteChannel.MFC_WrTagUpdate, SPE_TAG_ANY);
-				int r = ReadChannel(SpuReadChannel.MFC_RdTagStat);
-			}
+			WriteChannel(SpuWriteChannel.MFC_WrTagMask, tagMask);
+			WriteChannel(SpuWriteChannel.MFC_WrTagUpdate, SPE_TAG_ANY);
+			int r = ReadChannel(SpuReadChannel.MFC_RdTagStat);
 		}
 
 		static private void Get(ref int lsStart, uint ea, int byteCount, uint tag, uint tid, uint rid)
