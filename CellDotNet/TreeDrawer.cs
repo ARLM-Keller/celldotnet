@@ -88,6 +88,8 @@ namespace CellDotNet
 				}
 				else if (inst.Operand is FieldInfo)
 					Output.Write(" {0} ({1})", ((FieldInfo)inst.Operand).Name, ((FieldInfo)inst.Operand).FieldType.Name);
+				else if (inst.Operand is MethodCompiler)
+					Output.Write(" " + ((MethodCompiler)inst.Operand).Name);
 				else if (inst.Operand is int && inst.Opcode.FlowControl == FlowControl.Branch || inst.Opcode.FlowControl == FlowControl.Cond_Branch)
 				{
 					Output.Write(" " + ((int)inst.Operand).ToString("X4"));
@@ -250,7 +252,7 @@ namespace CellDotNet
 			foreach (MethodCompiler mc in cc.Methods)
 			{
 				Console.WriteLine();
-				Console.WriteLine(mc);
+				Console.WriteLine(mc.Name);
 
 				DrawMethod(mc);
 			}
