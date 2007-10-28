@@ -133,13 +133,8 @@ namespace CellDotNet
 			const int elementcount = 16*1024;
 			const int magicnumber = 0xfa794d;
 
-			using (AlignedMemory<int> mem = SpeContext.AllocateAlignedInt32(elementcount))
-			{
-				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
-					mem.ArraySegment.Array[i] = magicnumber;
-
-				Converter<MainStorageArea, int> del =
-					delegate(MainStorageArea input)
+			Converter<MainStorageArea, int> del =
+				delegate(MainStorageArea input)
 					{
 						int[] arr = new int[elementcount];
 						for (int i = 0; i < arr.Length; i++)
@@ -154,24 +149,27 @@ namespace CellDotNet
 						return result;
 					};
 
+			using (AlignedMemory<int> mem = SpeContext.AllocateAlignedInt32(elementcount))
+			{
+				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
+					mem.ArraySegment.Array[i] = magicnumber;
+
+				if (!SpeContext.HasSpeHardware)
+					return;
+
 				object rv = SpeContext.UnitTestRunProgram(del, mem.GetArea());
-				AreEqual(elementcount, (int)rv);
+				AreEqual(elementcount, (int) rv);
 			}
 		}
 
 		[Test]
 		public void TestDma_GetLargeIntVectorArray()
 		{
-			const int elementcount = 4 * 1024;
+			const int elementcount = 4*1024;
 			const int magicnumber = 0xfa794d;
 
-			using (AlignedMemory<int> mem = SpeContext.AllocateAlignedInt32(elementcount*4))
-			{
-				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
-					mem.ArraySegment.Array[i] = magicnumber;
-
-				Converter<MainStorageArea, int> del =
-					delegate(MainStorageArea input)
+			Converter<MainStorageArea, int> del =
+				delegate(MainStorageArea input)
 					{
 						Int32Vector zerrovector = Int32Vector.Splat(0);
 						Int32Vector unitvector = Int32Vector.Splat(1);
@@ -190,24 +188,27 @@ namespace CellDotNet
 						return result.E1 + result.E2 + result.E3 + result.E4;
 					};
 
+			using (AlignedMemory<int> mem = SpeContext.AllocateAlignedInt32(elementcount*4))
+			{
+				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
+					mem.ArraySegment.Array[i] = magicnumber;
+
+				if (!SpeContext.HasSpeHardware)
+					return;
+
 				object rv = SpeContext.UnitTestRunProgram(del, mem.GetArea());
-				AreEqual(elementcount*4, (int)rv);
+				AreEqual(elementcount*4, (int) rv);
 			}
 		}
 
 		[Test]
 		public void TestDma_GetLargeFloatVectorArray()
 		{
-			const int elementcount = 4 * 1024;
+			const int elementcount = 4*1024;
 			const float magicnumber = 1234.5f;
 
-			using (AlignedMemory<float> mem = SpeContext.AllocateAlignedFloat(elementcount * 4))
-			{
-				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
-					mem.ArraySegment.Array[i] = magicnumber;
-
-				Converter<MainStorageArea, int> del =
-					delegate(MainStorageArea input)
+			Converter<MainStorageArea, int> del =
+				delegate(MainStorageArea input)
 					{
 						Int32Vector zerrovector = Int32Vector.Splat(0);
 						Int32Vector unitvector = Int32Vector.Splat(1);
@@ -231,8 +232,16 @@ namespace CellDotNet
 						return result.E1 + result.E2 + result.E3 + result.E4;
 					};
 
+			using (AlignedMemory<float> mem = SpeContext.AllocateAlignedFloat(elementcount*4))
+			{
+				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
+					mem.ArraySegment.Array[i] = magicnumber;
+
+				if (!SpeContext.HasSpeHardware)
+					return;
+
 				object rv = SpeContext.UnitTestRunProgram(del, mem.GetArea());
-				AreEqual(elementcount * 4 * 2, (int)rv);
+				AreEqual(elementcount*4*2, (int) rv);
 			}
 		}
 
@@ -242,13 +251,8 @@ namespace CellDotNet
 			const int elementcount = 16 * 1024;
 			const float magicnumber = 1234.5f;
 
-			using (AlignedMemory<float> mem = SpeContext.AllocateAlignedFloat(elementcount))
-			{
-				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
-					mem.ArraySegment.Array[i] = magicnumber;
-
-				Converter<MainStorageArea, int> del =
-					delegate(MainStorageArea input)
+			Converter<MainStorageArea, int> del =
+				delegate(MainStorageArea input)
 					{
 						float[] arr = new float[elementcount];
 
@@ -266,8 +270,16 @@ namespace CellDotNet
 						return result;
 					};
 
+			using (AlignedMemory<float> mem = SpeContext.AllocateAlignedFloat(elementcount))
+			{
+				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
+					mem.ArraySegment.Array[i] = magicnumber;
+
+				if (!SpeContext.HasSpeHardware)
+					return;
+
 				object rv = SpeContext.UnitTestRunProgram(del, mem.GetArea());
-				AreEqual(elementcount, (int)rv);
+				AreEqual(elementcount, (int) rv);
 			}
 		}
 
@@ -400,6 +412,9 @@ namespace CellDotNet
 				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
 					mem.ArraySegment.Array[i] = 0;
 
+				if (!SpeContext.HasSpeHardware)
+					return;
+
 				SpeContext.UnitTestRunProgram(del, mem.GetArea());
 
 				int result = 0;
@@ -415,16 +430,11 @@ namespace CellDotNet
 		[Test]
 		public void TestDma_PutLargeIntVectorArray()
 		{
-			const int elementcount = 4 * 1024;
+			const int elementcount = 4*1024;
 			const int magicnumber = 0xfa794d;
 
-			using (AlignedMemory<int> mem = SpeContext.AllocateAlignedInt32(elementcount * 4))
-			{
-				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
-					mem.ArraySegment.Array[i] = magicnumber;
-
-				Converter<MainStorageArea, int> del =
-					delegate(MainStorageArea input)
+			Converter<MainStorageArea, int> del =
+				delegate(MainStorageArea input)
 					{
 						Int32Vector zerrovector = Int32Vector.Splat(0);
 						Int32Vector unitvector = Int32Vector.Splat(1);
@@ -443,24 +453,28 @@ namespace CellDotNet
 						return result.E1 + result.E2 + result.E3 + result.E4;
 					};
 
+			using (AlignedMemory<int> mem = SpeContext.AllocateAlignedInt32(elementcount*4))
+			{
+				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
+					mem.ArraySegment.Array[i] = magicnumber;
+
+				if (!SpeContext.HasSpeHardware)
+					return;
+
+
 				object rv = SpeContext.UnitTestRunProgram(del, mem.GetArea());
-				AreEqual(elementcount * 4, (int)rv);
+				AreEqual(elementcount*4, (int) rv);
 			}
 		}
 
 		[Test]
 		public void TestDma_PutLargeFloatVectorArray()
 		{
-			const int elementcount = 4 * 1024;
+			const int elementcount = 4*1024;
 			const float magicnumber = 1234.5f;
 
-			using (AlignedMemory<float> mem = SpeContext.AllocateAlignedFloat(elementcount * 4))
-			{
-				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
-					mem.ArraySegment.Array[i] = magicnumber;
-
-				Converter<MainStorageArea, int> del =
-					delegate(MainStorageArea input)
+			Converter<MainStorageArea, int> del =
+				delegate(MainStorageArea input)
 					{
 						Int32Vector zerrovector = Int32Vector.Splat(0);
 						Int32Vector unitvector = Int32Vector.Splat(1);
@@ -484,24 +498,27 @@ namespace CellDotNet
 						return result.E1 + result.E2 + result.E3 + result.E4;
 					};
 
+			using (AlignedMemory<float> mem = SpeContext.AllocateAlignedFloat(elementcount*4))
+			{
+				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
+					mem.ArraySegment.Array[i] = magicnumber;
+
+				if (!SpeContext.HasSpeHardware)
+					return;
+
 				object rv = SpeContext.UnitTestRunProgram(del, mem.GetArea());
-				AreEqual(elementcount * 4 * 2, (int)rv);
+				AreEqual(elementcount*4*2, (int) rv);
 			}
 		}
 
 		[Test]
 		public void TestDma_PutLargeFloatArray()
 		{
-			const int elementcount = 16 * 1024;
+			const int elementcount = 16*1024;
 			const float magicnumber = 1234.5f;
 
-			using (AlignedMemory<float> mem = SpeContext.AllocateAlignedFloat(elementcount))
-			{
-				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
-					mem.ArraySegment.Array[i] = magicnumber;
-
-				Converter<MainStorageArea, int> del =
-					delegate(MainStorageArea input)
+			Converter<MainStorageArea, int> del =
+				delegate(MainStorageArea input)
 					{
 						float[] arr = new float[elementcount];
 
@@ -519,8 +536,16 @@ namespace CellDotNet
 						return result;
 					};
 
+			using (AlignedMemory<float> mem = SpeContext.AllocateAlignedFloat(elementcount))
+			{
+				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
+					mem.ArraySegment.Array[i] = magicnumber;
+
+				if (!SpeContext.HasSpeHardware)
+					return;
+
 				object rv = SpeContext.UnitTestRunProgram(del, mem.GetArea());
-				AreEqual(elementcount, (int)rv);
+				AreEqual(elementcount, (int) rv);
 			}
 		}
 
