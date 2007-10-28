@@ -72,21 +72,45 @@ namespace CellDotNet
 			WaitForDmaCompletion(uint.MaxValue);
 		}
 
+		static public void Put(int[] target, MainStorageArea ea)
+		{
+			PutBulk(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 4, 31);
+			WaitForDmaCompletion(uint.MaxValue);
+		}
+
+		static public void Put(float[] target, MainStorageArea ea)
+		{
+			PutBulk(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 4, 31);
+			WaitForDmaCompletion(uint.MaxValue);
+		}
+
+		static public void Put(Int32Vector[] target, MainStorageArea ea)
+		{
+			PutBulk(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 16, 31);
+			WaitForDmaCompletion(uint.MaxValue);
+		}
+
+		static public void Put(Float32Vector[] target, MainStorageArea ea)
+		{
+			PutBulk(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 16, 31);
+			WaitForDmaCompletion(uint.MaxValue);
+		}
+
 		[CLSCompliant(false)]
 		static public void Get(int[] target, MainStorageArea ea, short count, uint tag)
 		{
 			int bytecount = count*4;
 
-			Get(ref target[0], ea.EffectiveAddress, bytecount, 0xfffff, 0, 0);
-		}
+				Get(ref target[0], ea.EffectiveAddress, bytecount, 0xfffff, 0, 0);
+			}
 
 		[CLSCompliant(false)]
 		unsafe static public void Get(float[] target, MainStorageArea ea, short count, uint tag)
 		{
 			int bytecount = count * 4;
 
-			Get(SpuRuntime.UnsafeGetAddress(target), ea.EffectiveAddress, bytecount, 0xfffff, 0, 0);
-		}
+				Get(SpuRuntime.UnsafeGetAddress(target), ea.EffectiveAddress, bytecount, 0xfffff, 0, 0);
+			}
 
 		/// <summary>
 		/// Handels transfers of blocks larger than 16KB.
@@ -105,9 +129,36 @@ namespace CellDotNet
 				if (GetAvailableQueueEntries() <= 0)
 					WaitForEanyDmaCompletion(0xffffffff);
 
-				int blocksize = bytecount > 16*1024 ? 16*1024 : bytecount;
+				int blocksize = bytecount > 16 * 1024 ? 16 * 1024 : Utilities.Align16(bytecount);
 
 				Get(lsaddress, msa, blocksize, 0xfffff, 0, 0);
+
+				msa += (uint)blocksize;
+				lsaddress += blocksize;
+				bytecount -= blocksize;
+			}
+		}
+
+		/// <summary>
+		/// Handels transfere of blocks larger than 16KB.
+		/// </summary>
+		/// <param name="lsaddress"></param>
+		/// <param name="ea"></param>
+		/// <param name="bytecount"></param>
+		/// <param name="tag"></param>
+		[CLSCompliant(false)]
+		unsafe static public void PutBulk(int lsaddress, MainStorageArea ea, int bytecount, uint tag)
+		{
+			uint msa = ea.EffectiveAddress;
+
+			while (bytecount > 0)
+			{
+				if (GetAvailableQueueEntries() <= 0)
+					WaitForEanyDmaCompletion(0xffffffff);
+
+				int blocksize = bytecount > 16 * 1024 ? 16 * 1024 : Utilities.Align16(bytecount);
+
+				Put(lsaddress, msa, blocksize, 0xfffff, 0, 0);
 
 				msa += (uint)blocksize;
 				lsaddress += blocksize;
@@ -174,19 +225,19 @@ namespace CellDotNet
 			
 		}
 
-		static public void Put(int[] target, MainStorageArea ea)
-		{
-			Put(target, ea, (short)target.Length, 31);
-			WaitForDmaCompletion(1);
-		}
+//		static public void Put(int[] target, MainStorageArea ea)
+//		{
+//			Put(target, ea, (short)target.Length, 31);
+//			WaitForDmaCompletion(1);
+//		}
 
 		[CLSCompliant(false)]
 		static public void Put(int[] source, MainStorageArea ea, short count, uint tag)
 		{
 			int bytecount = count * 4;
 
-			Put(ref source[0], ea.EffectiveAddress, bytecount, tag, 0, 0);
-		}
+				Put(ref source[0], ea.EffectiveAddress, bytecount, tag, 0, 0);
+			}
 
 		[SpuOpCode(SpuOpCodeEnum.Rdch)]
 		[return: SpuInstructionPart(SpuInstructionPart.Rt)]
@@ -264,6 +315,8 @@ namespace CellDotNet
 		static private void Get(int lsStart, uint ea, int byteCount, uint tag, uint tid, uint rid)
 		{
 
+//			Console.WriteLine(90);
+
 			// MFC_CMD_WORD(_tid, _rid, _cmd) (((_tid)<<24)|((_rid)<<16)|(_cmd))
 			uint cmd = (uint)MfcDmaCommand.Get;
 			cmd |= (tid << 24) | (rid << 16);
@@ -278,6 +331,8 @@ namespace CellDotNet
 			WriteChannel(SpuWriteChannel.MFC_TagID, tag & 0x1f);
 //			Console.WriteLine((int)cmd); //DEBUG
 			WriteChannel(SpuWriteChannel.MFC_CmdAndClassID, cmd);
+
+//			Console.WriteLine(99);
 		}
 
 		static private void Put(ref int lsStart, uint ea, int byteCount, uint tag, uint tid, uint rid)
@@ -287,6 +342,19 @@ namespace CellDotNet
 			cmd |= (tid << 24) | (rid << 16);
 
 			WriteChannel(SpuWriteChannel.MFC_LSA, ref lsStart);
+			WriteChannel(SpuWriteChannel.MFC_EAL, ea);
+			WriteChannel(SpuWriteChannel.MFC_Size, (uint)byteCount);
+			WriteChannel(SpuWriteChannel.MFC_TagID, tag & 0x1f);
+			WriteChannel(SpuWriteChannel.MFC_CmdAndClassID, cmd);
+		}
+
+		static private void Put(int lsStart, uint ea, int byteCount, uint tag, uint tid, uint rid)
+		{
+			// MFC_CMD_WORD(_tid, _rid, _cmd) (((_tid)<<24)|((_rid)<<16)|(_cmd))
+			uint cmd = (uint)MfcDmaCommand.Put;
+			cmd |= (tid << 24) | (rid << 16);
+
+			WriteChannel(SpuWriteChannel.MFC_LSA, (uint)lsStart);
 			WriteChannel(SpuWriteChannel.MFC_EAL, ea);
 			WriteChannel(SpuWriteChannel.MFC_Size, (uint)byteCount);
 			WriteChannel(SpuWriteChannel.MFC_TagID, tag & 0x1f);
