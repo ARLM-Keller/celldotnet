@@ -967,6 +967,11 @@ namespace CellDotNet
 					return c.i1 + c.i2 + c.i3 + c.i4;
 				};
 
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S3InstructionSelectionDone);
+			new TreeDrawer().DrawMethods(cc);
+			Disassembler.DisassembleUnconditionalToConsole(cc);
+
 			AreEqual(del(), (int)SpeContext.UnitTestRunProgram(del));
 		}
 

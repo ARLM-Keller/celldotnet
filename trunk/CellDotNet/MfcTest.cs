@@ -72,8 +72,6 @@ namespace CellDotNet
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			new TreeDrawer().DrawMethods(cc);
-
 			using (AlignedMemory<int> mem = SpeContext.AllocateAlignedInt32(4))
 			{
 				// Create elements whose sum is 26.

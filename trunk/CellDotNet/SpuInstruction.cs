@@ -30,7 +30,7 @@ namespace CellDotNet
     /// <summary>
     /// Represents an SPU instruction.
     /// </summary>
-	[DebuggerDisplay("{OpCode.Name} {_spuInstructionNumber}")]
+	[DebuggerDisplay("{DebuggerDisplay}")]
     class SpuInstruction
     {
 		private static int SpuInstructionCount;
@@ -54,6 +54,11 @@ namespace CellDotNet
     	private SpuOpCode _opcode;
 
     	private int _index;
+
+    	internal string DebuggerDisplay
+    	{
+    		get { return OpCode.Name + " " + _spuInstructionNumber; }
+    	}
 
 		/// <summary>
 		/// A number that can be used at will by transformations.

@@ -1567,6 +1567,8 @@ namespace CellDotNet
 				VirtualRegister isFreeSpacePositive = _writer.WriteCgti(allocatableByteCount, 0);
 				_writer.WriteConditionalBranch(SpuOpCode.brz, isFreeSpacePositive, _specialSpeObjects.OutOfMemory);
 
+				_writer.BeginNewBasicBlock();
+
 				// Store new allocatable byte count.
 				_writer.WriteStore(allocatableByteCount, _specialSpeObjects.AllocatableByteCountObject);
 			}
