@@ -23,12 +23,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace CellDotNet
 {
 	/// <summary>
 	/// Represents a <see cref="SpuInstruction"/> during instruction scheduling.
 	/// </summary>
+	[DebuggerDisplay("{DebuggerDisplay}")]
 	class InstructionScheduleInfo
 	{
 		private SpuInstruction _instruction;
@@ -39,6 +41,11 @@ namespace CellDotNet
 
 		private int _satisfiedDependencyCount;
 		private int _dependencyCount;
+
+		private string DebuggerDisplay
+		{
+			get { return _instruction.OpCode.Name + " (inst " + _instruction.SpuInstructionNumber + ", pri " + Priority + ")"; }
+		}
 
 		public SpuInstruction Instruction
 		{
@@ -98,9 +105,16 @@ namespace CellDotNet
 		{
 			List<InstructionScheduleInfo> instlist = new List<InstructionScheduleInfo>();
 
-			InstructionScheduleInfo lastMemWrite = null;
-			InstructionScheduleInfo lastChannelAccess = null;
+			// Play it safe: Memory ops, method calls and channel ops keeps their ordering.
+
+
+
+			InstructionScheduleInfo lastMemCallChan = null;
+//			InstructionScheduleInfo lastMemWrite = null;
+//			InstructionScheduleInfo lastChannelAccess = null;
 			InstructionScheduleInfo lastCall = null;
+
+			// Memory 
 
 			List<VirtualRegister> instUse = new List<VirtualRegister>();
 
@@ -113,30 +127,41 @@ namespace CellDotNet
 				instlist.Add(isi);
 
 				// Order memory accesses.
-				if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MemoryWrite) != 0)
+				if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MemoryWrite) != 0 ||
+					(inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MemoryRead) != 0 ||
+					(inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.ChannelAccess) != 0 ||
+					(inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MethodCall) != 0)
 				{
-					if (lastMemWrite != null)
-						lastMemWrite.AddDependant(isi);
-					lastMemWrite = isi;
-				}
-				else if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MemoryRead) != 0 && lastMemWrite != null)
-				{
-					lastMemWrite.AddDependant(isi);
+					if (lastMemCallChan != null)
+						lastMemCallChan.AddDependant(isi);
+
+					lastMemCallChan = isi;
 				}
 
-				// Order channel access.
-				if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.ChannelAccess) != 0)
-				{
-					if (lastChannelAccess != null)
-						lastChannelAccess.AddDependant(isi);
-					lastChannelAccess = isi;
-				}
-
+//				if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MemoryWrite) != 0)
+//				{
+//					if (lastMemWrite != null)
+//						lastMemWrite.AddDependant(isi);
+//					lastMemWrite = isi;
+//				}
+//				else if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MemoryRead) != 0 && lastMemWrite != null)
+//				{
+//					lastMemWrite.AddDependant(isi);
+//				}
+//
+//				// Order channel access.
+//				if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.ChannelAccess) != 0)
+//				{
+//					if (lastChannelAccess != null)
+//						lastChannelAccess.AddDependant(isi);
+//					lastChannelAccess = isi;
+//				}
+//
 				// Order method calls.
 				if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MethodCall) != 0)
 				{
-					if (lastCall != null)
-						lastCall.AddDependant(isi);
+//					if (lastCall != null)
+//						lastCall.AddDependant(isi);
 					lastCall = isi;
 
 					// Order previous instructions which moved into hw regs.
@@ -145,6 +170,9 @@ namespace CellDotNet
 
 					hwRegDefsForMethods.Clear();
 				}
+
+//				if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MethodCall) != 0)
+//					lastCall = isi;
 
 				// Order moves from hw regs after last call.
 				if (inst.OpCode == SpuOpCode.move && inst.Ra.IsRegisterSet && lastCall != null)

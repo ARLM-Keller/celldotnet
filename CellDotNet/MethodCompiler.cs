@@ -256,8 +256,6 @@ namespace CellDotNet
 					_methodBase.DeclaringType.Name, _methodBase.Name), e);
 			}
 
-			PatchSystemLib();
-
 //			PatchDivOperator();
 
 			// This one should be before escape determination, since some of the address ops might be removed.
@@ -373,38 +371,6 @@ namespace CellDotNet
 			}
 		}
 
-		//TODO nameing
-		private void PatchSystemLib()
-		{
-			ForeachTreeInstruction(
-				delegate(TreeInstruction obj)
-					{
-						MethodBase mb = obj.OperandAsMethod;
-						if(mb != null)
-						{
-							obj.Operand = SystemLibMap.GetUseableMethodBase(mb);
-						}
-
-					});
-		}
-
-		private void PatchDivOperator()
-		{
-			foreach (IRBasicBlock block in Blocks)
-			{
-				for(int r = 0; r < block.Roots.Count; r++)
-				{
-					TreeInstruction root = block.Roots[r];
-					TreeInstruction newRoot =  PatchDivOperator(root);
-					if(newRoot != null)
-					{
-						block.Roots[r] = newRoot;
-					}
-
-				}
-			}
-		}
-
 		private static TreeInstruction DivConverter(TreeInstruction inst)
 		{
 			MethodBase div_un_mb = new Func<uint, uint, uint>(SpuMath.Div_Un).Method;
@@ -477,160 +443,6 @@ namespace CellDotNet
 
 			return newInst;
 		}
-
-		private static TreeInstruction PatchDivOperator(TreeInstruction root)
-		{
-			if (root == null)
-				return null;
-
-			TreeInstruction newRoot = null;
-
-			Stack<TreeInstruction> parrentlist = new Stack<TreeInstruction>();
-			Stack<int> chieldIndexList = new Stack<int>();
-
-			TreeInstruction parrent = null;
-			int chieldIndex = 0;
-
-			TreeInstruction inst = root;
-
-			do
-			{
-				// DO som matching
-				if(inst.Opcode == IROpCodes.Div)
-				{
-					if ((inst.Left.StackType == StackTypeDescription.Int32 || inst.Left.StackType == StackTypeDescription.NativeInt) &&
-						(inst.Right.StackType == StackTypeDescription.Int32 || inst.Right.StackType == StackTypeDescription.NativeInt))
-					{
-						MethodBase mb = typeof(SpuMath).GetMethod("Div", new Type[] { typeof(int), typeof(int) });
-						MethodCallInstruction newInst = new MethodCallInstruction(mb, IROpCodes.Call);
-
-						newInst.Parameters.AddRange(inst.GetChildInstructions());
-
-						if (parrent != null)
-							parrent.ReplaceChild(chieldIndex, newInst);
-						else
-							newRoot = newInst;
-					}
-					else if (inst.Left.StackType == StackTypeDescription.Float32 && inst.Right.StackType == StackTypeDescription.Float32)
-					{
-						// TODO
-					}
-				}
-				else if (inst.Opcode == IROpCodes.Div_Un)
-				{
-					if ((inst.Left.StackType == StackTypeDescription.Int32 || inst.Left.StackType == StackTypeDescription.NativeInt) &&
-						(inst.Right.StackType == StackTypeDescription.Int32 || inst.Right.StackType == StackTypeDescription.NativeInt))
-					{
-						MethodBase mb = typeof(SpuMath).GetMethod("Div_Un", new Type[] { typeof(uint), typeof(uint) });
-						MethodCallInstruction newInst = new MethodCallInstruction(mb, IROpCodes.Call);
-
-						newInst.Parameters.AddRange(inst.GetChildInstructions());
-
-						if (parrent != null)
-							parrent.ReplaceChild(chieldIndex, newInst);
-						else
-							newRoot = newInst;
-					}
-					else if (inst.Left.StackType == StackTypeDescription.Float32 && inst.Right.StackType == StackTypeDescription.Float32)
-					{
-						// TODO
-					}
-				}
-
-				// Go to the nest instruction.
-				if (inst.GetChildInstructions().Length > 0)
-				{
-					parrentlist.Push(parrent);
-					chieldIndexList.Push(chieldIndex);
-
-					parrent = inst;
-					chieldIndex = 0;
-
-					inst = inst.GetChildInstructions()[0];
-				}
-				else if (parrent != null && ++chieldIndex < parrent.GetChildInstructions().Length)
-				{
-				}
-				else if (parrent != null)
-				{
-					parrent = parrentlist.Pop();
-					chieldIndex = chieldIndexList.Pop();
-//					parrent = parrentlist.Peek();
-//					chieldIndex = chieldIndexList.Peek();
-				}
-			} while (parrent != null);
-			return newRoot;
-		}
-
-//		private void ForeachTreeInstruction(Converter<TreeInstruction, TreeInstruction> converter)
-//		{
-//			foreach (IRBasicBlock block in Blocks)
-//			{
-//				for (int r = 0; r < block.Roots.Count; r++)
-//				{
-//					TreeInstruction root = block.Roots[r];
-//					TreeInstruction newRoot = ForeachTreeInstruction(root, converter);
-//					if (newRoot != null)
-//					{
-//						block.Roots[r] = newRoot;
-//					}
-//
-//				}
-//			}
-//		}
-
-//		private static TreeInstruction ForeachTreeInstruction(TreeInstruction root, Converter<TreeInstruction, TreeInstruction> converter)
-//		{
-//			if (root == null)
-//				return null;
-//
-//			TreeInstruction newRoot = null;
-//
-//			Stack<TreeInstruction> parrentlist = new Stack<TreeInstruction>();
-//			Stack<int> chieldIndexList = new Stack<int>();
-//
-//			TreeInstruction parrent = null;
-//			int chieldIndex = 0;
-//
-//			TreeInstruction inst = root;
-//
-//			do
-//			{
-//				TreeInstruction newInst = converter(inst);
-//
-//				if(newInst != null)
-//				{
-//					inst = newInst;
-//					if (parrent != null)
-//						parrent.ReplaceChild(chieldIndex, newInst);
-//					else
-//						newRoot = newInst;
-//				}
-//
-//				// Go to the nest instruction.
-//				if (inst.GetChildInstructions().Length > 0)
-//				{
-//					parrentlist.Push(parrent);
-//					chieldIndexList.Push(chieldIndex);
-//
-//					parrent = inst;
-//					chieldIndex = 0;
-//
-//					inst = inst.GetChildInstructions()[0];
-//				}
-//				else if (parrent != null && ++chieldIndex < parrent.GetChildInstructions().Length)
-//				{
-//				}
-//				else if (parrent != null)
-//				{
-//					parrent = parrentlist.Pop();
-//					chieldIndex = chieldIndexList.Pop();
-//					//					parrent = parrentlist.Peek();
-//					//					chieldIndex = chieldIndexList.Peek();
-//				}
-//			} while (parrent != null);
-//			return newRoot;
-//		}
 
 		#endregion
 
