@@ -26,7 +26,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	/// <summary>
 	/// The graph coloring register allocator.

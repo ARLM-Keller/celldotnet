@@ -24,7 +24,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	/// <summary>
 	/// The enumeration members correspond with the opcodes in <see cref="SpuOpCode"/> and is generated from them. 

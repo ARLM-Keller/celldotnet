@@ -23,7 +23,7 @@
 
 using System.Collections.Generic;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	public class FlowGraph : Graph
 	{

@@ -31,6 +31,8 @@ using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
+using CellDotNet.Intermediate;
+using CellDotNet.Spe;
 using NUnit.Framework;
 
 namespace CellDotNet

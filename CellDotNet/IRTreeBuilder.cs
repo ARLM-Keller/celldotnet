@@ -27,8 +27,9 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Emit;
+using CellDotNet.Spe;
 
-namespace CellDotNet
+namespace CellDotNet.Intermediate
 {
 	/// <summary>
 	/// Used by <see cref="MethodCompiler"/> to construct it's IR tree.

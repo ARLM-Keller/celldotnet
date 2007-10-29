@@ -23,7 +23,7 @@
 
 using System.Collections.Generic;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	static class LivenessAnalyzer
 	{

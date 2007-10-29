@@ -26,6 +26,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
+using CellDotNet.Intermediate;
+using CellDotNet.Spe;
 
 namespace CellDotNet
 {
@@ -144,34 +146,6 @@ namespace CellDotNet
 				Output = sw;
 			DrawTree(inst, 0);
 			return sw.GetStringBuilder().ToString();
-		}
-
-		private void AddBranchTargets(TreeInstruction inst)
-		{
-			throw new NotImplementedException();
-//			// Do we still use this method?
-//			if (inst.Opcode.FlowControl == FlowControl.Branch || inst.Opcode.FlowControl == FlowControl.Cond_Branch)
-//			{
-//				if (inst.Operand is IRBasicBlock)
-//					_branchTargets.Add(((IRBasicBlock)inst.Operand).Offset);
-//				else
-//					_branchTargets.Add((int)inst.Operand);
-//			}
-//			if (inst.Left != null)
-//				AddBranchTargets(inst.Left);
-//			if (inst.Right != null)
-//				AddBranchTargets(inst.Right);
-		}
-
-		private void FindBranchTargets(MethodCompiler ci, MethodBase method)
-		{
-			foreach (IRBasicBlock block in ci.Blocks)
-			{
-				foreach (TreeInstruction inst in block.Roots)
-				{
-					AddBranchTargets(inst);
-				}
-			}
 		}
 
 		public void DrawMethod(List<IRBasicBlock> blocks)

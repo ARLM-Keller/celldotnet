@@ -23,7 +23,7 @@
 
 using System;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	public class Graph
 	{

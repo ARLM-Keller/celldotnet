@@ -25,7 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	class Disassembler
 	{

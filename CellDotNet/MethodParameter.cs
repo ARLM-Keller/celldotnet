@@ -24,7 +24,7 @@
 using System;
 using System.Reflection;
 
-namespace CellDotNet
+namespace CellDotNet.Intermediate
 {
 	/// <summary>
 	/// Represents a parameter to a method in <see cref="MethodCompiler"/>.

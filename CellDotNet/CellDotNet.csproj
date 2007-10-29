@@ -25,7 +25,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;UNITTEST</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -109,6 +109,7 @@
     <Compile Include="SimpleProgramsTest.cs" />
     <Compile Include="SpuChannel.cs" />
     <Compile Include="SpuDynamicRoutine.cs" />
+    <Compile Include="SpuIntrinsicMethod.cs" />
     <Compile Include="SpuMath.cs" />
     <Compile Include="SpuMathTest.cs" />
     <Compile Include="SpuOpCode.cs" />

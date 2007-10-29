@@ -31,7 +31,7 @@ using NUnit.Framework;
 
 
 
-namespace CellDotNet
+namespace CellDotNet.Intermediate
 {
 	/// <summary>
 	/// TODO: Instruction pattern tests. Test offsets.

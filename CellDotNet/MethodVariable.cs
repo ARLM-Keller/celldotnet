@@ -23,8 +23,9 @@
 
 using System;
 using System.Reflection;
+using CellDotNet.Spe;
 
-namespace CellDotNet
+namespace CellDotNet.Intermediate
 {
 	/// <summary>
 	/// A variable in a method. Can either be a local variable or a parameter; <see cref="MethodParameter"/>

@@ -21,7 +21,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
     /// <summary>
     /// Represents a virtual register.

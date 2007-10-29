@@ -26,8 +26,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using CellDotNet.Intermediate;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	/// <summary>
 	/// This class writes IL trees as SPU instructions.

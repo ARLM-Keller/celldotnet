@@ -27,6 +27,8 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using CellDotNet.Intermediate;
+using CellDotNet.Spe;
 
 namespace CellDotNet
 {

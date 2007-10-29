@@ -24,7 +24,7 @@
 using System;
 using System.IO;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	class SpuBasicBlock
 	{

@@ -21,6 +21,8 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+using CellDotNet.Spe;
+
 namespace CellDotNet
 {
 	public struct Float32Vector

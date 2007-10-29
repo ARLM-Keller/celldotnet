@@ -25,8 +25,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection;
+using CellDotNet.Intermediate;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	abstract class SpuRoutine : ObjectWithAddress
 	{

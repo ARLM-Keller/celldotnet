@@ -27,7 +27,7 @@ using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Text;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	/// <summary>
 	/// Represents a routine which must execute on the PPE.

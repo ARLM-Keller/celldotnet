@@ -26,7 +26,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace CellDotNet
+namespace CellDotNet.Intermediate
 {
 	/// <summary>
 	/// This is our own representation of a type. It wraps a <see cref="Type"/> and also

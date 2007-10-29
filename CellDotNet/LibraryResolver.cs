@@ -23,8 +23,9 @@
 
 using System;
 using System.Collections.Generic;
+using CellDotNet.Spe;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	/// <summary>
 	/// <see cref="CompileContext"/> uses this class to find external libraries. <see cref="StaticFileLibraryResolver"/>

@@ -27,7 +27,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace CellDotNet
+namespace CellDotNet.Intermediate
 {
 	/// <summary>
 	/// Wraps an ILReader and expands some IL instructions to a sequence of instructions.

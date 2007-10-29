@@ -28,6 +28,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Reflection.Emit;
+using CellDotNet.Intermediate;
+using CellDotNet.Spe;
 using NUnit.Framework;
 
 

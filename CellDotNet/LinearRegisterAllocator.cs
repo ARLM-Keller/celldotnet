@@ -25,7 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	/// <summary>
 	/// A simple linear scan register allocator based on http://www.research.ibm.com/jalapeno/papers/toplas99.pdf.
