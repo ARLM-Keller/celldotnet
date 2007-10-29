@@ -28,7 +28,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	class ElfLibrary : Library
 	{

@@ -27,7 +27,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Xml.Serialization;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	partial class SpuInstructionWriter
 	{

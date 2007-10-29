@@ -24,7 +24,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	/// <summary>
 	/// Used to generate code to initialize an spu and call the initial method.

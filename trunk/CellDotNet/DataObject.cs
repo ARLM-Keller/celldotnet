@@ -25,7 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	/// <summary>
 	/// Represents an <see cref="ObjectWithAddress"/> used for data in local storage.

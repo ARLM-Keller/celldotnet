@@ -24,7 +24,7 @@
 using System;
 using System.Text;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	internal sealed class BitMatrix
 	{

@@ -24,8 +24,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using CellDotNet.Intermediate;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	/// <summary>
 	/// Represents anything that can be emitted as SPU code.

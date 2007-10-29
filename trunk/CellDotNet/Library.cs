@@ -26,7 +26,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	/// <summary>
 	/// Represents an external compiled library which most likely contains methods that can be called.

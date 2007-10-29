@@ -28,11 +28,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
+using CellDotNet.Spe;
 using NUnit.Framework;
 
 
 
-namespace CellDotNet
+namespace CellDotNet.Intermediate
 {
 	[TestFixture]
 	public class IRTreeBuilderTest : UnitTest

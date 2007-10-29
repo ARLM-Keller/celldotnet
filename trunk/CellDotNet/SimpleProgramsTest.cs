@@ -28,7 +28,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	/// <summary>
 	/// For simple programs. Test focused on arrays and object should go into <see cref="ObjectModelTest"/>.

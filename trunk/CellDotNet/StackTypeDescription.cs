@@ -24,7 +24,7 @@
 using System;
 using System.Diagnostics;
 
-namespace CellDotNet
+namespace CellDotNet.Intermediate
 {
 	/// <summary>
 	/// Sizes of numeric operands on the stack.

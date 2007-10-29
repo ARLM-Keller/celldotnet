@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using CellDotNet.Spe;
 
 namespace CellDotNet
 {

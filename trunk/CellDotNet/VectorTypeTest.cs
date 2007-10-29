@@ -26,10 +26,11 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
+using CellDotNet.Intermediate;
 using NUnit.Framework;
 
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	[TestFixture]
 	public class VectorTypeTest : UnitTest

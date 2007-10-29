@@ -24,6 +24,8 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using CellDotNet.Intermediate;
+using CellDotNet.Spe;
 
 namespace CellDotNet
 {

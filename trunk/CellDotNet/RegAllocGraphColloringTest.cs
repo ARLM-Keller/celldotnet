@@ -27,7 +27,7 @@ using System;
 using System.Reflection;
 using NUnit.Framework;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	[TestFixture]
 	public class RegAllocGraphColloringTest : UnitTest

@@ -24,7 +24,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	/// <summary>
 	/// This attribute indicates that the method to which it is applied should be translated directly into the

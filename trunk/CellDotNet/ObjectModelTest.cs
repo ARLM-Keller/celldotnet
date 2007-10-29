@@ -29,7 +29,7 @@ using NUnit.Framework;
 
 
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	[TestFixture]
 //	[Ignore("PPE calls makes mono crash when using instruction scheduling.")]

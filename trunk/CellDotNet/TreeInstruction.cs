@@ -25,8 +25,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using CellDotNet.Spe;
 
-namespace CellDotNet
+namespace CellDotNet.Intermediate
 {
 	/// <summary>
 	/// Represents an instruction in an instruction tree.

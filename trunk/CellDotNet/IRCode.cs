@@ -24,7 +24,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace CellDotNet
+namespace CellDotNet.Intermediate
 {
 	enum IRCode
 	{

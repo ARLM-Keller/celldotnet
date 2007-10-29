@@ -21,7 +21,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	public static class SpuMath
 	{

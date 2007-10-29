@@ -26,7 +26,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	internal class BitVector : IEnumerable<int>
 	{

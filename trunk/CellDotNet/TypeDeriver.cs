@@ -26,7 +26,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace CellDotNet
+namespace CellDotNet.Intermediate
 {
 	/// <summary>
 	/// Used to derive types in the IR tree.

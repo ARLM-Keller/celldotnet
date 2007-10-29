@@ -25,11 +25,12 @@
 
 using System;
 using System.Collections.Generic;
+using CellDotNet.Intermediate;
 using NUnit.Framework;
 
 
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	[TestFixture]
 	public class MethodCompilerTest : UnitTest

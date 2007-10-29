@@ -23,8 +23,9 @@
 
 using System.Collections.Generic;
 using System.Reflection;
+using CellDotNet.Spe;
 
-namespace CellDotNet
+namespace CellDotNet.Intermediate
 {
 	class MethodCallInstruction : TreeInstruction
 	{
@@ -124,40 +125,5 @@ namespace CellDotNet
 			Operand = routine;
 			Opcode = callOpCode;
 		}
-	}
-
-	/// <summary>
-	/// These values represents intrinsic functions.
-	/// </summary>
-	internal enum SpuIntrinsicMethod
-	{
-		None,
-		Runtime_Stop,
-
-		Mfc_GetAvailableQueueEntries,
-		Mfc_Put,
-		Mfc_Get,
-		Vector_GetWord0,
-		Vector_GetWord1,
-		Vector_GetWord2,
-		Vector_GetWord3,
-		Vector_PutWord0,
-		Vector_PutWord1,
-		Vector_PutWord2,
-		Vector_PutWord3,
-		Int_Equals,
-		Int_NotEquals,
-		Float_Equals,
-		Float_NotEquals,
-		ReturnArgument1,
-		CombineFourWords,
-		SplatWord,
-		CompareGreaterThanIntAndSelect,
-		CompareGreaterThanFloatAndSelect,
-		CompareEqualsIntAndSelect,
-		ConvertIntToFloat,
-		ConvertFloatToInteger,
-		ConditionalSelectWord,
-		ConditionalSelectVector
 	}
 }

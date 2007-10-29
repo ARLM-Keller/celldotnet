@@ -31,7 +31,7 @@ using NUnit.Framework;
 
 
 
-namespace CellDotNet
+namespace CellDotNet.Spe
 {
 	[TestFixture]
 	public class LibraryTest : UnitTest
