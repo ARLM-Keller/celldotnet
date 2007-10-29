@@ -25,7 +25,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;UNITTEST</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -56,18 +56,28 @@
     <Compile Include="Graph.cs" />
     <Compile Include="GraphTest.cs" />
     <Compile Include="ILOpCodeExecutionTest.cs" />
-    <Compile Include="ILReader.cs" />
-    <Compile Include="ILReaderTest.cs" />
-    <Compile Include="ILWriter.cs" />
     <Compile Include="ImmutableAttribute.cs" />
     <Compile Include="InterferenceGraph.cs" />
+    <Compile Include="Intermediate\ILReader.cs" />
+    <Compile Include="Intermediate\ILReaderTest.cs" />
+    <Compile Include="Intermediate\ILWriter.cs" />
+    <Compile Include="Intermediate\IRBasicBlock.cs" />
+    <Compile Include="Intermediate\IRCode.cs" />
+    <Compile Include="Intermediate\IrOpCode.cs" />
+    <Compile Include="Intermediate\IROpCodes.cs" />
+    <Compile Include="Intermediate\IRTreeBuilder.cs" />
+    <Compile Include="Intermediate\IRTreeBuilderTest.cs" />
+    <Compile Include="Intermediate\MethodCallInstruction.cs" />
+    <Compile Include="Intermediate\MethodParameter.cs" />
+    <Compile Include="Intermediate\MethodVariable.cs" />
+    <Compile Include="Intermediate\OpCodeGroup.cs" />
+    <Compile Include="Intermediate\StackTypeDescription.cs" />
+    <Compile Include="Intermediate\TreeInstruction.cs" />
+    <Compile Include="Intermediate\TypeDeriver.cs" />
+    <Compile Include="Intermediate\TypeDeriverTest.cs" />
+    <Compile Include="Intermediate\TypeDescription.cs" />
     <Compile Include="IntrinsicMethodAttribute.cs" />
     <Compile Include="IntrinsicsManager.cs" />
-    <Compile Include="IRBasicBlock.cs" />
-    <Compile Include="IRCode.cs" />
-    <Compile Include="IROpCodes.cs" />
-    <Compile Include="IRTreeBuilder.cs" />
-    <Compile Include="IRTreeBuilderTest.cs" />
     <Compile Include="IterativeLivenessAnalyzer.cs" />
     <Compile Include="Library.cs" />
     <Compile Include="LibraryMethod.cs" />
@@ -85,15 +95,11 @@
     <Compile Include="MarshalerTest.cs" />
     <Compile Include="MethodCompiler.cs" />
     <Compile Include="MethodCompilerTest.cs" />
-    <Compile Include="MethodParameter.cs" />
-    <Compile Include="MethodVariable.cs" />
     <Compile Include="CodeGenUtils.cs" />
     <Compile Include="CompileContext.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="HardwareRegister.cs" />
-    <Compile Include="IrOpCode.cs" />
     <Compile Include="LiveInterval.cs" />
-    <Compile Include="MethodCallInstruction.cs" />
     <Compile Include="Mfc.cs" />
     <Compile Include="MfcTest.cs" />
     <Compile Include="ObjectModelTest.cs" />
@@ -131,28 +137,22 @@
     <Compile Include="SpuInitializer.cs" />
     <Compile Include="SpuInitializerTest.cs" />
     <Compile Include="SpuInstruction.cs" />
-    <Compile Include="OpCodeGroup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SpuInstructionTest.cs" />
     <Compile Include="SpuInstructionWriter.cs" />
     <Compile Include="SpuInstructionWriter_autogen.cs" />
     <Compile Include="SpuRuntimeTest.cs" />
-    <Compile Include="StackTypeDescription.cs" />
     <Compile Include="StaticFileLibraryResolver.cs" />
     <Compile Include="StaticFileLibraryResolverTest.cs" />
     <Compile Include="SystemLibMap.cs" />
     <Compile Include="SystemLibTest.cs" />
     <Compile Include="TreeDrawer.cs" />
-    <Compile Include="TypeDeriver.cs" />
-    <Compile Include="TypeDeriverTest.cs" />
-    <Compile Include="TypeDescription.cs" />
     <Compile Include="UnitTest.cs" />
     <Compile Include="Utilities.cs" />
     <Compile Include="VectorTypes.cs" />
     <Compile Include="VectorTypeTest.cs" />
     <Compile Include="VirtualRegister.cs" />
     <Compile Include="Set.cs" />
-    <Compile Include="TreeInstruction.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="SPU.cd" />
