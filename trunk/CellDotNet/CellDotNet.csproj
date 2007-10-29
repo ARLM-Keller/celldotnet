@@ -42,8 +42,11 @@
     <Compile Include="Class1.cs" />
     <Compile Include="CommonDelegates.cs" />
     <Compile Include="CompileContextTest.cs" />
+    <Compile Include="Float32Vector.cs" />
     <Compile Include="ILOpCodeExecutionTest.cs" />
     <Compile Include="ImmutableAttribute.cs" />
+    <Compile Include="Int32Vector.cs" />
+    <Compile Include="Intermediate\Exceptions.cs" />
     <Compile Include="Intermediate\ILReader.cs" />
     <Compile Include="Intermediate\ILReaderTest.cs" />
     <Compile Include="Intermediate\ILWriter.cs" />
@@ -62,8 +65,6 @@
     <Compile Include="Intermediate\TypeDeriver.cs" />
     <Compile Include="Intermediate\TypeDeriverTest.cs" />
     <Compile Include="Intermediate\TypeDescription.cs" />
-    <Compile Include="ListInstructionScheduler.cs" />
-    <Compile Include="ListInstructionSchedulerTest.cs" />
     <Compile Include="MainStorageArea.cs" />
     <Compile Include="CodeGenUtils.cs" />
     <Compile Include="CompileContext.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="Spe\DisassemblerTest.cs" />
     <Compile Include="Spe\ElfLibrary.cs" />
     <Compile Include="Spe\ElfLibraryTest.cs" />
+    <Compile Include="Spe\Exceptions.cs" />
     <Compile Include="Spe\FlowGraph.cs" />
     <Compile Include="Spe\Graph.cs" />
     <Compile Include="Spe\GraphTest.cs" />
@@ -96,6 +98,8 @@
     <Compile Include="Spe\LibraryTest.cs" />
     <Compile Include="Spe\LinearRegisterAllocator.cs" />
     <Compile Include="Spe\LinearRegisterAllocatorTest.cs" />
+    <Compile Include="Spe\ListInstructionScheduler.cs" />
+    <Compile Include="Spe\ListInstructionSchedulerTest.cs" />
     <Compile Include="Spe\LiveInterval.cs" />
     <Compile Include="Spe\LivenessAnalyzer.cs" />
     <Compile Include="Spe\LocalStorageAddress.cs" />
@@ -150,7 +154,6 @@
     <Compile Include="TreeDrawer.cs" />
     <Compile Include="UnitTest.cs" />
     <Compile Include="Utilities.cs" />
-    <Compile Include="VectorTypes.cs" />
     <Compile Include="VectorTypeTest.cs" />
     <Compile Include="Set.cs" />
   </ItemGroup>
