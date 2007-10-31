@@ -1,4 +1,5 @@
 using CellDotNet;
+using CellDotNet.Spe;
 
 namespace SciMark2Cell
 {
