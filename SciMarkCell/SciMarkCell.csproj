@@ -20,7 +20,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>
     </RootNamespace>
-    <StartupObject>SciMark2Cell.Demo</StartupObject>
+    <StartupObject>SciMark2Cell.Class1</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
   </PropertyGroup>

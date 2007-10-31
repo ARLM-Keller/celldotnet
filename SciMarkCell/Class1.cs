@@ -24,7 +24,9 @@ namespace SciMark2Cell
 
 //			Benchmarks.Benchmark_SparchCompRow_Single(1000, 5000, 10000);
 
-			Benchmarks.Benchmark_Montecarlo_Combined(10000000);
+//			Benchmarks.Benchmark_Montecarlo_Combined(10000000);
+
+			Benchmarks.Benchmark_SparchCompRow_Combined();
 
 			Console.WriteLine("");
 		}

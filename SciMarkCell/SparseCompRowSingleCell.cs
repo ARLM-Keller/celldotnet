@@ -1,14 +1,3 @@
-/// <license>
-/// This is a port of the SciMark2a Java Benchmark to C# by
-/// Chris Re (cmr28@cornell.edu) and Werner Vogels (vogels@cs.cornell.edu)
-/// 
-/// For details on the original authors see http://math.nist.gov/scimark2
-/// 
-/// This software is likely to burn your processor, bitflip your memory chips
-/// anihilate your screen and corrupt all your disks, so you it at your
-/// own risk.
-/// </license>
-
 using System;
 using CellDotNet;
 using CellDotNet.Spe;
@@ -17,18 +6,6 @@ namespace SciMark2Cell
 {
 	public class SparseCompRowSingleCell
 	{
-		// multiple iterations used to make kernel 
-		// have roughly same granulairty as other 
-		// Scimark kernels	
-		public static float num_flops(int N, int nz, int num_iterations)
-		{
-			/* Note that if nz does not divide N evenly, then the
-			actual number of nonzeros used is adjusted slightly.
-			*/
-			int actual_nz = (nz / N) * N;
-			return (actual_nz) * 2.0f * (num_iterations);
-		}
-
 		public static void matmult(MainStorageArea y, int ysize, MainStorageArea val, int valsize, MainStorageArea row, int rowsize, MainStorageArea col, int colsize, MainStorageArea x, int xsize, int NUM_ITERATIONS)
 		{
 			float[] yarr = new float[ysize];
@@ -37,11 +14,19 @@ namespace SciMark2Cell
 			int[] colarr = new int[colsize];
 			float[] xarr = new float[xsize];
 
+			Console.WriteLine(11);
+
 			Mfc.Get(yarr, y);
+			Console.WriteLine(12);
 			Mfc.Get(valarr, val);
+			Console.WriteLine(13);
 			Mfc.Get(rowarr, row);
+			Console.WriteLine(14);
 			Mfc.Get(colarr, col);
+			Console.WriteLine(15);
 			Mfc.Get(xarr, x);
+
+			Console.WriteLine(19);
 
 			matmult_inner(yarr, valarr, rowarr, colarr, xarr, NUM_ITERATIONS);
 		}
