@@ -382,6 +382,24 @@ namespace CellDotNet.Spe
 
 			AreEqual(0f, result);
 		}
+
+		[Test]
+		public void TestAssignmentExpression()
+		{
+			Converter<int, int> fun =
+				delegate(int input) { return input + (++input) + input; };
+
+			CompileContext cc = new CompileContext(fun.Method);
+
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			int n = 17;
+
+			int result = (int)SpeContext.UnitTestRunProgram(cc, n);
+
+			AreEqual(fun(n), result);
+
+		}
 	}
 }
 

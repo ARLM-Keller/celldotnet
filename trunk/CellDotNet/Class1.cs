@@ -48,8 +48,14 @@ namespace CellDotNet
 			}
 		}
 
-		public static int TEST()
+		public static int TEST(Int16 a1, int a2)
 		{
+			Int16 i16 = (Int16)(a1 + (Int16)4);
+
+			bool b = false;
+
+			b = a1 == a2;
+
 			int[] arr = new int[10];
 
 			return arr.Length;
@@ -129,7 +135,9 @@ namespace CellDotNet
 
 //			new SimpleProgramsTest().Test_FloatCompare();
 
-			Test_InvaliInstruction();
+//			Test_InvaliInstruction();
+
+			new SimpleProgramsTest().TestAssignmentExpression();
 
 			Console.WriteLine("Running RunKlaus done.");
 		}

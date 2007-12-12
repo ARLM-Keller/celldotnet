@@ -339,6 +339,7 @@ namespace CellDotNet
 
 			// Initialize memory allocation.
 			{
+				// TODO Local store in current Cell have 256KB memory, but new implementations could have a different amount.
 				const int TotalSpeMem = 256 * 1024;
 				const int StackPointer = 256*1024-32;
 				const int StackSize = 8*1024;
