@@ -33,6 +33,27 @@ namespace CellDotNet.Intermediate
 {
 	/// <summary>
 	/// Used by <see cref="MethodCompiler"/> to construct it's IR tree.
+	/// 
+	/// Currently this class have a design flaw in BuildBasicBlocks(string , ILReader, List<MethodVariable>, ReadOnlyCollection<MethodParameter>, bool).
+	/// When the tree construction reach a IL instruction wich don't pus element on the stack(it is a root) and there is still elements left on the stack, those element vil be put into trees which will be exectuted after the current root.
+	/// ex:
+	/// IL: ldloc 1, ldloc 2, stloc 1, some inst.
+	/// TREES:
+	///  stloc 1  some inst.
+	///     |         |
+	///  ldloc 2    ldloc 1
+	/// 
+	/// a nother ex. C#: a + (++a)
+	/// 
+	/// IL ldloc a, ldloc a, ldc 1, add, dup, stloc a, add
+	/// 
+	/// The last add, vill have the first ldloc as child, and are not executed befor the stloc, that is not correct execution of the IL.
+	/// 
+	/// A temporary solution, to the main problem, could be to save remaning stack elements, when reaching a root, and load them on the stack after the root.
+	/// Maby we can use the existing variable stak to save instructions.
+	/// 
+	/// Other problem: Dub generaly have problems, i think it's because a instruction is only added as root when the instructionstack is empty, but eany instruction with push count 0 should be a root, regardles of stack size.
+	/// 
 	/// </summary>
 	class IRTreeBuilder
 	{
@@ -286,7 +307,7 @@ namespace CellDotNet.Intermediate
 				variables.Add(new MethodVariable(lvi, td.GetStackTypeDescription(lvi.LocalType)));
 			}
 
-			return BuildBasicBlocks(method.Name, reader, variables, new ReadOnlyCollection<MethodParameter>(parms), false); // FIXME antager at der kun kaldes statiske metoder.
+			return BuildBasicBlocks(method.Name, reader, variables, new ReadOnlyCollection<MethodParameter>(parms), false); // FIXME antager at der kun kaldes statiske metoder. // FIXMEK should realy look at this!
 		}
 
 		/// <summary>
