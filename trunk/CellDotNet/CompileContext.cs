@@ -96,6 +96,10 @@ namespace CellDotNet
 			if (!entryPoint.IsStatic)
 				throw new ArgumentException("Only static methods are supported.");
 
+			// Sets predefined PPE types.
+			// TODO This should be done in a more centralised manner.
+			AddPpeType(typeof(Console));
+
 			_entryPointMethod = entryPoint;
 		}
 
@@ -543,6 +547,17 @@ namespace CellDotNet
 			}
 		}
 
+		Set<Type> _ppeTypes = new Set<Type>();
+
+		public void AddPpeType(Type t)
+		{
+			if(State != CompileContextState.S1Initial)
+				throw new Exception("Can only add PPE type when the CompileContext is in initial state.");
+
+			_ppeTypes.Add(t);
+		}
+
+
 		/// <summary>
 		/// Finds and build MethodCompilers for the methods that are transitively referenced from the entry method.
 		/// </summary>
@@ -551,8 +566,6 @@ namespace CellDotNet
 			AssertState(CompileContextState.S2TreeConstructionDone - 1);
 
 			// The types whose methods should only be executed on the ppe.
-			Set<Type> _ppeTypes = new Set<Type>();
-			_ppeTypes.Add(typeof(Console));
 			foreach (ParameterInfo param in _entryPointMethod.GetParameters())
 			{
 				Type t = param.ParameterType;
