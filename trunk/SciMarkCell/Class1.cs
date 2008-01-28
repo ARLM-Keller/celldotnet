@@ -26,7 +26,13 @@ namespace SciMark2Cell
 
 //			Benchmarks.Benchmark_Montecarlo_Combined(10000000);
 
-			Benchmarks.Benchmark_SparchCompRow_Combined();
+//			Benchmarks.Benchmark_Montecarlo_Vector_SPU(1000000);
+
+//			Benchmarks.Benchmark_SparchCompRow_Combined();
+
+			Benchmarks.Bencmark_Combined();
+
+//			Benchmarks.Benchmark_Montecarlo_Unrolled_SPU(1234);
 
 			Console.WriteLine("");
 		}

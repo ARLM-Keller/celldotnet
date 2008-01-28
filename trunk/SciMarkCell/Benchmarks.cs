@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Threading;
 using CellDotNet;
 using SciMark2Cell;
@@ -7,6 +8,22 @@ namespace SciMark2
 {
 	class Benchmarks
 	{
+		public static void Bencmark_Combined()
+		{
+			if (SpeContext.HasSpeHardware)
+			{
+				Benchmark_Startuptime_SPU();
+				Benchmark_Startuptime_SPU();
+			}
+//			Benchmark_Montecarlo_Combined(10000000);
+//			Benchmark_Montecarlo_Single_Unrolled(10000000);
+//			Benchmark_SOR_Combined(10000, 100, 25 * 4 + 2);
+//			Benchmark_SparchCompRow_Combined(1000, 5000, 10000);
+//			Benchmark_Parallel_Combined(100000000);
+			Benchmark_Parallel_Combined(10000000);
+//			Benchmark_Parallel_Combined(1000000000);
+		}
+
 		#region MonteCarlo
 
 		public static void Benchmark_Montecarlo_Combined(int n)
@@ -15,7 +32,9 @@ namespace SciMark2
 			{
 				Benchmark_Montecarlo_Single_Spu(n);
 				Benchmark_Montecarlo_Vector_SPU(n);
+//				Benchmark_Montecarlo_Dynamic_Unrolled_SPU(n);
 				Benchmark_Montecarlo_Unrolled_SPU(n);
+//				Benchmark_Montecarlo_Vector_Simple_Unrolled_SPU(n);
 			}
 				Benchmark_Montecarlo_Single(n);
 		}
@@ -24,15 +43,30 @@ namespace SciMark2
 		{
 			Stopwatch watch = new Stopwatch();
 
-			float monoPi = MonteCarloSingle.integrate(n);
+			float monoPi1 = MonteCarloSingle.integrate(n);
 
 			watch.start();
 
-			monoPi = MonteCarloSingle.integrate(n);
+			float monoPi2 = MonteCarloSingle.integrate(n);
 
 			watch.stop();
 
-			Console.WriteLine("Monte Carlo, Single: run time: {2}, n={0} pi={1}", n, monoPi, watch.read());
+			Console.WriteLine("Monte Carlo, Single: run time: {2}, n={0} pi={1}", n, monoPi2, watch.read(), monoPi1);
+		}
+
+		public static void Benchmark_Montecarlo_Single_Unrolled(int n)
+		{
+			Stopwatch watch = new Stopwatch();
+
+			float monoPi1 = MonteCarloSingleUnrolled.integrate(n);
+
+			watch.start();
+
+			float monoPi2 = MonteCarloSingleUnrolled.integrate(n);
+
+			watch.stop();
+
+			Console.WriteLine("Monte Carlo, Single Unrolled: run time: {2}, n={0} pi={1}", n, monoPi2, watch.read(), monoPi1);
 		}
 
 		private delegate float BenchmarkMonteCarloSPUDelegate(int seed, int iterations); 
@@ -58,6 +92,8 @@ namespace SciMark2
 
 			watch2.stop();
 
+			cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_Montecarlo_Single_Spu_113_{0}.s", 10000).ToString(), 113, 10000);
+
 			Console.WriteLine("Monte Carlo, Single, SPU: run time: {3}, compile time: {2}, n={0} pi={1} ", n, spuPi, watch1.read(), watch2.read());
 		}
 
@@ -80,7 +116,33 @@ namespace SciMark2
 
 			watch2.stop();
 
+			cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_Montecarlo_Vector_Spu_113_{0}.s", 10000).ToString(), 113, 10000);
+
 			Console.WriteLine("Monte Carlo, Vector, SPU: run time: {3}, compile time: {2}, n={0} pi={1} ", n, spuPi, watch1.read(), watch2.read());
+		}
+
+		public static void Benchmark_Montecarlo_Dynamic_Unrolled_SPU(int n)
+		{
+			Stopwatch watch1 = new Stopwatch();
+			Stopwatch watch2 = new Stopwatch();
+
+			watch1.start();
+
+			BenchmarkMonteCarloSPUDelegate fun = MonteCarloVectorDynamicUnroled.integrate;
+			CompileContext cc = new CompileContext(fun.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			watch1.stop();
+
+			watch2.start();
+
+			float spuPi = (float)SpeContext.UnitTestRunProgram(cc, 113, n);
+
+			watch2.stop();
+
+			cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_Montecarlo_Dynamic_Unrolled_Spu_113_{0}.s", 10000).ToString(), 113, 10000);
+
+			Console.WriteLine("Monte Carlo, dynamic Unroled, SPU: run time: {3}, compile time: {2}, n={0} pi={1} ", n, spuPi, watch1.read(), watch2.read());
 		}
 
 		public static void Benchmark_Montecarlo_Unrolled_SPU(int n)
@@ -102,7 +164,33 @@ namespace SciMark2
 
 			watch2.stop();
 
+			cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_Montecarlo_Unrolled_Spu_113_{0}.s", 10000).ToString(), 113, 10000);
+
 			Console.WriteLine("Monte Carlo, Unroled, SPU: run time: {3}, compile time: {2}, n={0} pi={1} ", n, spuPi, watch1.read(), watch2.read());
+		}
+
+		public static void Benchmark_Montecarlo_Vector_Simple_Unrolled_SPU(int n)
+		{
+			Stopwatch watch1 = new Stopwatch();
+			Stopwatch watch2 = new Stopwatch();
+
+			watch1.start();
+
+			BenchmarkMonteCarloSPUDelegate fun = MonteCarloVectorSimpleUnroled.integrate;
+			CompileContext cc = new CompileContext(fun.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			watch1.stop();
+
+			watch2.start();
+
+			float spuPi = (float)SpeContext.UnitTestRunProgram(cc, 113, n);
+
+			watch2.stop();
+
+			cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_Montecarlo_Simple_Unrolled_Spu_113_{0}.s", 10000).ToString(), 113, 10000);
+
+			Console.WriteLine("Monte Carlo, Simple Unroled, SPU: run time: {3}, compile time: {2}, n={0} pi={1} ", n, spuPi, watch1.read(), watch2.read());
 		}
 
 		#endregion
@@ -114,11 +202,9 @@ namespace SciMark2
 			if(SpeContext.HasSpeHardware)
 			{
 				Benchmark_SOR_Single_SPU(n, N, M);
+				Benchmark_SOR_Vector_SPU(n, N, M);
 			}
-			else
-			{
 				Benchmark_SOR_Single(n, N, M);
-			}
 		}
 
 //		private delegate void SORDelegate(float a, float[][] b, int c);
@@ -130,6 +216,9 @@ namespace SciMark2
 			Stopwatch watch = new Stopwatch();
 
 			float[][] Q = RandomMatrix(M, N, new RandomSingle(1234)); // TODO random seed
+			SORSingle.execute(1.25f, Q, n);
+
+			Q = RandomMatrix(M, N, new RandomSingle(1234)); // TODO random seed
 
 			watch.start();
 
@@ -167,6 +256,8 @@ namespace SciMark2
 				SpeContext.UnitTestRunProgram(cc, 1.25f, mem.GetArea(), M, N, n);
 
 				watch2.stop();
+
+				cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_SOR_Single_SPU_1.25_{0}_{1}_{2}.s", M, N, n).ToString(), 1.25f, 0, M, N, n);
 
 				Console.WriteLine("SOR, Single, SPU: run time {1} compile time {2}, n={0} M={3} N={4}", n, watch2.read(),
 				                  watch1.read(), M, N);
@@ -206,7 +297,9 @@ namespace SciMark2
 
 				watch2.stop();
 
-				Console.WriteLine("SOR, Single, SPU: run time {1} compile time {2}, n={0} M={3} N={4}", n, watch2.read(),
+				cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_SOR_Vector_SPU_1.25_{0}_{1}_{2}.s", M, N, n).ToString(), 1.25f, 0, M, N, n);
+
+				Console.WriteLine("SOR, Vector, SPU: run time {1} compile time {2}, n={0} M={3} N={4}", n, watch2.read(),
 				                  watch1.read(), M, N);
 			}
 		}
@@ -215,14 +308,14 @@ namespace SciMark2
 
 		#region SparseCompRow
 
-		public static void Benchmark_SparchCompRow_Combined()
+		public static void Benchmark_SparchCompRow_Combined(int N, int nz, int num_iterations)
 		{
 			if(SpeContext.HasSpeHardware)
 			{
-				Benchmark_SparchCompRow_Single_SPU(1000, 5000, 10000);
+				Benchmark_SparchCompRow_Single_SPU(N, nz, num_iterations);
 			}
 
-			Benchmark_SparchCompRow_Single(1000, 5000, 10000);
+			Benchmark_SparchCompRow_Single(N, nz, num_iterations);
 		}
 
 		private delegate void SparchCompRowSPUDelegate(
@@ -312,6 +405,7 @@ namespace SciMark2
 			using (AlignedMemory<int> colmem = SpeContext.AllocateAlignedInt32(anz))
 			using (AlignedMemory<int> rowmem = SpeContext.AllocateAlignedInt32(N + 1))
 			{
+				// TODO faster copy or genarate data directly in thoes arrays.
 				for (int i = xmem.ArraySegment.Offset, j = 0; i < xmem.ArraySegment.Offset + xmem.ArraySegment.Count; i++, j++)
 					xmem.ArraySegment.Array[i] = x[j];
 				for (int i = ymem.ArraySegment.Offset, j = 0; i < ymem.ArraySegment.Offset + ymem.ArraySegment.Count; i++, j++)
@@ -341,6 +435,9 @@ namespace SciMark2
 
 				watch2.stop();
 
+				cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_SCR_Single_SPU---.s").ToString(), ymem.GetArea(), y.Length, valmem.GetArea(), val.Length, rowmem.GetArea(),
+											  row.Length, colmem.GetArea(), col.Length, xmem.GetArea(), x.Length, num_iterations);
+
 				Console.WriteLine("SparseCompRow, Single, SPU: run time {0} compile time {1}, n={2}", watch2.read(), watch1.read(), num_iterations);
 			}
 		}
@@ -349,15 +446,159 @@ namespace SciMark2
 
 		#region parallel
 
-		public static void Benchmark_Parallel()
+		public static void Benchmark_Parallel_Combined(int n)
 		{
-			new Thread(delegate(object obj) { Benchmark_Montecarlo_Vector_SPU(10000000); }).Start();
-			new Thread(delegate(object obj) { Benchmark_Montecarlo_Vector_SPU(10000000); }).Start();
-			new Thread(delegate(object obj) { Benchmark_Montecarlo_Vector_SPU(10000000); }).Start();
+			if (SpeContext.HasSpeHardware)
+			{
+				Benchmark_Montecarlo_Parallel_Cell(n);
+			}
+			else
+			{
+				Benchmark_Montecarlo_Parallel2(n);
+//				Benchmark_Montecarlo_Parallel4(n);
+			}
+		}
 
-			new Thread(delegate(object obj) { Benchmark_Montecarlo_Vector_SPU(10000000); }).Start();
-			new Thread(delegate(object obj) { Benchmark_Montecarlo_Vector_SPU(10000000); }).Start();
-			new Thread(delegate(object obj) { Benchmark_Montecarlo_Vector_SPU(10000000); }).Start();
+		public static void Benchmark_Montecarlo_Parallel_Cell(int n)
+		{
+
+			Stopwatch watch1 = new Stopwatch();
+			Stopwatch watch2 = new Stopwatch();
+
+			watch1.start();
+
+			BenchmarkMonteCarloSPUDelegate fun = MonteCarloVector.integrate;
+
+			CompileContext cc1 = new CompileContext(fun.Method);
+			CompileContext cc2 = new CompileContext(fun.Method);
+			CompileContext cc3 = new CompileContext(fun.Method);
+			CompileContext cc4 = new CompileContext(fun.Method);
+			CompileContext cc5 = new CompileContext(fun.Method);
+			CompileContext cc6 = new CompileContext(fun.Method);
+
+			cc1.PerformProcessing(CompileContextState.S8Complete);
+			cc2.PerformProcessing(CompileContextState.S8Complete);
+			cc3.PerformProcessing(CompileContextState.S8Complete);
+			cc4.PerformProcessing(CompileContextState.S8Complete);
+			cc5.PerformProcessing(CompileContextState.S8Complete);
+			cc6.PerformProcessing(CompileContextState.S8Complete);
+
+			watch1.stop();
+
+			watch2.start();
+
+			float spuPi1=0, spuPi2=0, spuPi3=0, spuPi4=0, spuPi5=0, spuPi6=0;
+
+			Thread t1 = new Thread(delegate(object obj) { spuPi1 = (float) SpeContext.UnitTestRunProgram(cc1, 110, n / 6); });
+			Thread t2 = new Thread(delegate(object obj) { spuPi2 = (float) SpeContext.UnitTestRunProgram(cc2, 111, n / 6); });
+			Thread t3 = new Thread(delegate(object obj) { spuPi3 = (float) SpeContext.UnitTestRunProgram(cc3, 112, n / 6); });
+			Thread t4 = new Thread(delegate(object obj) { spuPi4 = (float) SpeContext.UnitTestRunProgram(cc4, 113, n / 6); });
+			Thread t5 = new Thread(delegate(object obj) { spuPi5 = (float) SpeContext.UnitTestRunProgram(cc5, 114, n / 6); });
+			Thread t6 = new Thread(delegate(object obj) { spuPi6 = (float) SpeContext.UnitTestRunProgram(cc6, 115, n / 6); });
+
+			t1.Start();
+			t2.Start();
+			t3.Start();
+			t4.Start();
+			t5.Start();
+			t6.Start();
+
+			t1.Join();
+			t2.Join();
+			t3.Join();
+			t4.Join();
+			t5.Join();
+			t6.Join();
+
+			watch2.stop();
+
+			Console.WriteLine("Monte Carlo, Unrolled, Cell, Parallel: run time: {2}, compile time: {1}, n={0} pi={3} ", n, watch1.read(), watch2.read(), (spuPi1 + spuPi2 + spuPi3 + spuPi4 + spuPi5 + spuPi6)/6);
+		}
+
+		public static void Benchmark_Montecarlo_Parallel4(int n)
+		{
+
+			Stopwatch watch1 = new Stopwatch();
+
+			watch1.start();
+
+			float spuPi1 = 0, spuPi2 = 0, spuPi3 = 0, spuPi4 = 0;
+
+			Thread t1 = new Thread(delegate(object obj) { spuPi1 = MonteCarloSingle.integrate(n / 4); });
+			Thread t2 = new Thread(delegate(object obj) { spuPi2 = MonteCarloSingle.integrate(n / 4); });
+			Thread t3 = new Thread(delegate(object obj) { spuPi3 = MonteCarloSingle.integrate(n / 4); });
+			Thread t4 = new Thread(delegate(object obj) { spuPi4 = MonteCarloSingle.integrate(n / 4); });
+
+			t1.Start();
+			t2.Start();
+			t3.Start();
+			t4.Start();
+
+			t1.Join();
+			t2.Join();
+			t3.Join();
+			t4.Join();
+
+			watch1.stop();
+
+			Console.WriteLine("Monte Carlo, Parallel4: run time: {1}, n={0} pi={2} ", n, watch1.read(), (spuPi1 + spuPi2 + spuPi3 + spuPi4) / 4);
+		}
+
+		public static void Benchmark_Montecarlo_Parallel2(int n)
+		{
+
+			Stopwatch watch1 = new Stopwatch();
+
+			watch1.start();
+
+			float spuPi1=0, spuPi2=0;
+
+			Thread t1 = new Thread(delegate(object obj) { spuPi1 = MonteCarloSingle.integrate(n / 2); });
+			Thread t2 = new Thread(delegate(object obj) { spuPi2 = MonteCarloSingle.integrate(n / 2); });
+
+			t1.Start();
+			t2.Start();
+
+			t1.Join();
+			t2.Join();
+
+			watch1.stop();
+
+			Console.WriteLine("Monte Carlo, Parallel2: run time: {1}, n={0} pi={2} ", n, watch1.read(), (spuPi1 + spuPi2) / 2);
+		}
+
+		#endregion
+
+
+		#region misc
+
+		private static int SimpleMethod(int n)
+		{
+			return n;
+		}
+
+		public static void Benchmark_Startuptime_SPU()
+		{
+			Stopwatch watch1 = new Stopwatch();
+			Stopwatch watch2 = new Stopwatch();
+
+			watch1.start();
+
+			Converter<int, int> fun = SimpleMethod;
+
+			CompileContext cc = new CompileContext(fun.Method);
+
+			cc.PerformProcessing(CompileContextState.S8Complete);
+
+			watch1.stop();
+
+			watch2.start();
+
+			int n = (int)SpeContext.UnitTestRunProgram(cc, 4213);
+
+			watch2.stop();
+
+			Console.WriteLine("Startuptime, SPU: run time: {1}, compile time: {0}", watch1.read(), watch2.read());
 		}
 
 		#endregion

@@ -14,19 +14,11 @@ namespace SciMark2Cell
 			int[] colarr = new int[colsize];
 			float[] xarr = new float[xsize];
 
-			Console.WriteLine(11);
-
 			Mfc.Get(yarr, y);
-			Console.WriteLine(12);
 			Mfc.Get(valarr, val);
-			Console.WriteLine(13);
 			Mfc.Get(rowarr, row);
-			Console.WriteLine(14);
 			Mfc.Get(colarr, col);
-			Console.WriteLine(15);
 			Mfc.Get(xarr, x);
-
-			Console.WriteLine(19);
 
 			matmult_inner(yarr, valarr, rowarr, colarr, xarr, NUM_ITERATIONS);
 		}
