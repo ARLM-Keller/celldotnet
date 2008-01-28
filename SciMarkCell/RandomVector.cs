@@ -92,7 +92,7 @@ namespace SciMark2Cell
 
 			if (haveRange)
 			{
-				for (int count = 0; count < N; count++)
+				for (int count = 0; count < remainder; count++)
 				{
 					Int32Vector zerro = Int32Vector.Splat(0);
 					Int32Vector k;
@@ -102,6 +102,39 @@ namespace SciMark2Cell
 					i = SpuMath.CompareEqualsAndSelect(i, 0, 16, i - 1);
 					j = SpuMath.CompareEqualsAndSelect(j, 0, 16, j - 1);
 					x[count] = SpuMath.MultiplyAdd(dm1 * SpuMath.ConvertToFloat(k), _width, _left);
+				}
+
+				for (int count = remainder; count < N; count += 4)
+				{
+					Int32Vector zerro = Int32Vector.Splat(0);
+					Int32Vector k;
+					k = m[i] - m[j];
+					k += SpuMath.CompareGreaterThanAndSelect(zerro, k, m1, zerro);
+					m[j] = k;
+					i = SpuMath.CompareEqualsAndSelect(i, 0, 16, i - 1);
+					j = SpuMath.CompareEqualsAndSelect(j, 0, 16, j - 1);
+					x[count] = SpuMath.MultiplyAdd(dm1 * SpuMath.ConvertToFloat(k), _width, _left);
+
+					k = m[i] - m[j];
+					k += SpuMath.CompareGreaterThanAndSelect(zerro, k, m1, zerro);
+					m[j] = k;
+					i = SpuMath.CompareEqualsAndSelect(i, 0, 16, i - 1);
+					j = SpuMath.CompareEqualsAndSelect(j, 0, 16, j - 1);
+					x[count+1] = SpuMath.MultiplyAdd(dm1 * SpuMath.ConvertToFloat(k), _width, _left);
+
+					k = m[i] - m[j];
+					k += SpuMath.CompareGreaterThanAndSelect(zerro, k, m1, zerro);
+					m[j] = k;
+					i = SpuMath.CompareEqualsAndSelect(i, 0, 16, i - 1);
+					j = SpuMath.CompareEqualsAndSelect(j, 0, 16, j - 1);
+					x[count+2] = SpuMath.MultiplyAdd(dm1 * SpuMath.ConvertToFloat(k), _width, _left);
+
+					k = m[i] - m[j];
+					k += SpuMath.CompareGreaterThanAndSelect(zerro, k, m1, zerro);
+					m[j] = k;
+					i = SpuMath.CompareEqualsAndSelect(i, 0, 16, i - 1);
+					j = SpuMath.CompareEqualsAndSelect(j, 0, 16, j - 1);
+					x[count+3] = SpuMath.MultiplyAdd(dm1 * SpuMath.ConvertToFloat(k), _width, _left);
 				}
 			}
 			else

@@ -61,6 +61,7 @@
     <RemoveIntegerChecks>false</RemoveIntegerChecks>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <WarningLevel>1</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib">
@@ -104,7 +105,10 @@
     <Compile Include="Demo.cs" />
     <Compile Include="MonteCarlo.cs" />
     <Compile Include="MonteCarloSingle.cs" />
+    <Compile Include="MonteCarloSingleUnroled.cs" />
     <Compile Include="MonteCarloVector.cs" />
+    <Compile Include="MonteCarloVectorDynamicUnroled.cs.cs" />
+    <Compile Include="MonteCarloVectorSimpleUnroled.cs" />
     <Compile Include="MonteCarloVectorUnroled.cs" />
     <Compile Include="Random.cs" />
     <Compile Include="RandomSingle.cs" />

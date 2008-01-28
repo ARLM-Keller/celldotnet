@@ -67,7 +67,7 @@ namespace SciMark2Cell
 
 			if (haveRange)
 			{
-				for (int count = 0; count < N; count++)
+				for (int count = 0; count < remainder; count++)
 				{
 					int k = m[i] - m[j];
 
@@ -87,6 +87,66 @@ namespace SciMark2Cell
 
 					x[count] = left + dm1 * k * width;
 				}
+				for (int count = remainder; count < N; count += 4)
+				{
+					int k = m[i] - m[j];
+					if (i == 0)
+						i = 16;
+					else
+						i--;
+					if (k < 0)
+						k += m1;
+					m[j] = k;
+					if (j == 0)
+						j = 16;
+					else
+						j--;
+					x[count] = left + dm1 * k * width;
+
+
+					k = m[i] - m[j];
+					if (i == 0)
+						i = 16;
+					else
+						i--;
+					if (k < 0)
+						k += m1;
+					m[j] = k;
+					if (j == 0)
+						j = 16;
+					else
+						j--;
+					x[count + 1] = left + dm1 * k * width;
+
+					k = m[i] - m[j];
+					if (i == 0)
+						i = 16;
+					else
+						i--;
+					if (k < 0)
+						k += m1;
+					m[j] = k;
+					if (j == 0)
+						j = 16;
+					else
+						j--;
+					x[count + 2] = left + dm1 * k * width;
+
+					k = m[i] - m[j];
+					if (i == 0)
+						i = 16;
+					else
+						i--;
+					if (k < 0)
+						k += m1;
+					m[j] = k;
+					if (j == 0)
+						j = 16;
+					else
+						j--;
+					x[count + 3] = left + dm1 * k * width;
+				}
+
 			}
 			else
 			{

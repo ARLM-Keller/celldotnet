@@ -12,11 +12,10 @@ namespace SciMark2Cell
 				float x = R.nextFloat();
 				float y = R.nextFloat();
 
-				if (x*x + y*y <= 1.0f)
+				if (x * x + y * y <= 1.0f)
 					under_curve++;
 			}
-
-			return ((float) under_curve/Num_samples)*4.0f;
+			return ((float)under_curve / Num_samples) * 4.0f;
 		}
 	}
 }
