@@ -197,6 +197,33 @@ namespace CellDotNet.Intermediate
 				return saveInstructionRoots;
 			}
 
+			public List<TreeInstruction> PushInstructionStackToVariableStack(out List<MethodVariable> newVariableElements)
+			{
+				newVariableElements = new List<MethodVariable>();
+				List<TreeInstruction> saveInstructionRoots = new List<TreeInstruction>();
+
+				for (int i = 0; i < InstructionStack.Count; i++)
+				{
+					_lastStackVariableNumber++;
+					newVariableElements.Add(new MethodVariable(_lastStackVariableNumber, InstructionStack[i].StackType));
+				}
+
+				for (int i = 0; i < InstructionStack.Count; i++)
+				{
+					TreeInstruction storeInst = new TreeInstruction(
+						IROpCodes.Stloc, StackTypeDescription.None, newVariableElements[i], -1, InstructionStack[i]);
+
+					saveInstructionRoots.Add(storeInst);
+				}
+
+				_currentVariableStack.AddRange(newVariableElements);
+				_currentVariableStackTop += newVariableElements.Count;
+
+				InstructionStack.Clear();
+
+				return saveInstructionRoots;
+			}
+
 			public int TotalStackSize
 			{
 				get { return _currentVariableStackTop + 1 + InstructionStack.Count; }
@@ -470,6 +497,7 @@ namespace CellDotNet.Intermediate
 					treeinst.Operand = branchTargets[branchTargetOffset];
 				}
 
+				//FIXME Ved Dup bliver den til tre instruktioner, og den første har offset for Dup, så selvom offset + instSize == næste BB er der stadig to insruktioner tilbage der skal læses inden den nuværende BB er færdig.
 				int nextInstructionOffset = reader.Offset + reader.InstructionSize;
 				bool isLastInstructionInNonFinalBlock = branchTargets.ContainsKey(nextInstructionOffset);
 				bool endBlock = false;
@@ -511,10 +539,13 @@ namespace CellDotNet.Intermediate
 //				if (_parseStack.InstructionStack.Count == 0 || isLastInstructionInNonFinalBlock)
 
 				// It is a root when the instruction stack is empty and it doesn't push stuff on the stack.
-				if (_parseStack.InstructionStack.Count == 0 && pushcount == 0)
+				if (pushcount == 0)
 				{
+					List<MethodVariable> newVariabels;
+					currblock.Roots.AddRange(_parseStack.PushInstructionStackToVariableStack(out newVariabels));
+					variables.AddRange(newVariabels);
 					currblock.Roots.Add(treeinst);
-				}
+				} 
 
 				if (endBlock)
 				{
