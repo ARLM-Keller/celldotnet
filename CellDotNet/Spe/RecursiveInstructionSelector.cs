@@ -80,7 +80,7 @@ namespace CellDotNet.Spe
 			{
 				_writer.BeginNewBasicBlock();
 
-				_writer.WriteNop();
+//				_writer.WriteNop();
 
 				_spubasicblocks.Add(bb, _writer.CurrentBlock);
 				foreach (TreeInstruction root in bb.Roots)
