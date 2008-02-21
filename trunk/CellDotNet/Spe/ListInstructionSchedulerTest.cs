@@ -71,7 +71,7 @@ namespace CellDotNet.Spe
 			List<InstructionScheduleInfo> list = new ListInstructionScheduler().DetermineDependencies(w.CurrentBlock);
 
 			// "stqd"
-			AreEqual(2, list[0].Dependents.Count);
+			AreEqual(1, list[0].Dependents.Count);
 
 			// "il"
 			AreEqual(0, list[1].Dependents.Count);
@@ -133,6 +133,34 @@ namespace CellDotNet.Spe
 			// Ai depends on move.
 			AreEqual(1, list[1].Dependents.Count);
 			AreEqual(list[2], Utilities.GetFirst(list[1].Dependents));
+		}
+
+		[Test]
+		public void TestScheduleMoveRetVal()
+		{
+			SpuInstructionWriter w = new SpuInstructionWriter();
+			w.BeginNewBasicBlock();
+
+			w.WriteBrsl(HardwareRegister.LR, 0);
+			SpuInstruction brsl1 = w.LastInstruction;
+
+			VirtualRegister retval = w.NextRegister();
+			w.WriteMove(HardwareRegister.LR, retval);
+			SpuInstruction move = w.LastInstruction;
+
+			w.WriteBrsl(HardwareRegister.LR, 0);
+			SpuInstruction brsl2 = w.LastInstruction;
+
+			List<InstructionScheduleInfo> list = new ListInstructionScheduler().DetermineDependencies(w.CurrentBlock);
+			AreEqual(3, list.Count);
+
+			AreEqual(brsl1, list[0].Instruction);
+			AreEqual(2, list[0].Dependents.Count);
+			
+			AreEqual(move, list[1].Instruction);
+			AreEqual(1, list[1].Dependents.Count);
+
+			AreEqual(brsl2, list[2].Instruction);
 		}
 	}
 }
