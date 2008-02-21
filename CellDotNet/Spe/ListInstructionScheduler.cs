@@ -35,7 +35,21 @@ namespace CellDotNet.Spe
 	{
 		private SpuInstruction _instruction;
 
+//		private IsiList _dependents = new IsiList();
 		private List<InstructionScheduleInfo> _dependents = new List<InstructionScheduleInfo>(3);
+
+//		class IsiList : List<InstructionScheduleInfo>, ICollection<InstructionScheduleInfo>
+//		{
+//			void ICollection<InstructionScheduleInfo>.Add(InstructionScheduleInfo isi)
+//			{
+//				foreach (InstructionScheduleInfo isi2 in this)
+//				{
+//					if (isi2.Instruction == isi.Instruction)
+//						return;
+//				}
+//				base.Add(isi);
+//			}
+//		}
 
 		private int? _priority;
 
@@ -91,6 +105,11 @@ namespace CellDotNet.Spe
 
 		public void AddDependant(InstructionScheduleInfo dependant)
 		{
+			foreach (InstructionScheduleInfo isi in _dependents)
+			{
+				if (isi.Instruction == dependant.Instruction)
+					return;
+			}
 			_dependents.Add(dependant);
 			dependant.NotifyDependency();
 		}
@@ -105,13 +124,11 @@ namespace CellDotNet.Spe
 		{
 			List<InstructionScheduleInfo> instlist = new List<InstructionScheduleInfo>();
 
+			if (bb.Head == null)
+				return instlist;
+
 			// Play it safe: Memory ops, method calls and channel ops keeps their ordering.
-
-
-
 			InstructionScheduleInfo lastMemCallChan = null;
-//			InstructionScheduleInfo lastMemWrite = null;
-//			InstructionScheduleInfo lastChannelAccess = null;
 			InstructionScheduleInfo lastCall = null;
 
 			// Memory 
@@ -138,30 +155,8 @@ namespace CellDotNet.Spe
 					lastMemCallChan = isi;
 				}
 
-//				if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MemoryWrite) != 0)
-//				{
-//					if (lastMemWrite != null)
-//						lastMemWrite.AddDependant(isi);
-//					lastMemWrite = isi;
-//				}
-//				else if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MemoryRead) != 0 && lastMemWrite != null)
-//				{
-//					lastMemWrite.AddDependant(isi);
-//				}
-//
-//				// Order channel access.
-//				if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.ChannelAccess) != 0)
-//				{
-//					if (lastChannelAccess != null)
-//						lastChannelAccess.AddDependant(isi);
-//					lastChannelAccess = isi;
-//				}
-//
-				// Order method calls.
 				if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MethodCall) != 0)
 				{
-//					if (lastCall != null)
-//						lastCall.AddDependant(isi);
 					lastCall = isi;
 
 					// Order previous instructions which moved into hw regs.
@@ -170,9 +165,6 @@ namespace CellDotNet.Spe
 
 					hwRegDefsForMethods.Clear();
 				}
-
-//				if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MethodCall) != 0)
-//					lastCall = isi;
 
 				// Order moves from hw regs after last call.
 				if (inst.OpCode == SpuOpCode.move && inst.Ra.IsRegisterSet && lastCall != null)
@@ -238,6 +230,9 @@ namespace CellDotNet.Spe
 
 		public void Schedule(SpuBasicBlock block)
 		{
+			if (block.Head == null)
+				return;
+
 			List<InstructionScheduleInfo> schedlist = DetermineDependencies(block);
 			List<InstructionScheduleInfo> initiallyReady;
 			Prioritize(schedlist, out initiallyReady);
