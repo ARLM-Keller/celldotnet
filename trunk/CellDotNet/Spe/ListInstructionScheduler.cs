@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using CellDotNet.Intermediate;
 
 namespace CellDotNet.Spe
 {
@@ -129,15 +130,11 @@ namespace CellDotNet.Spe
 
 			// Play it safe: Memory ops, method calls and channel ops keeps their ordering.
 			InstructionScheduleInfo lastMemCallChan = null;
-			InstructionScheduleInfo lastCall = null;
-
-			// Memory 
 
 			List<VirtualRegister> instUse = new List<VirtualRegister>();
 
-			// Contains the last instruction which has defined a register.
-			Dictionary<VirtualRegister, InstructionScheduleInfo> defs = new Dictionary<VirtualRegister, InstructionScheduleInfo>();
-			Set<InstructionScheduleInfo> hwRegDefsForMethods = new Set<InstructionScheduleInfo>();
+			// Contains the last instruction which has read or written a register.
+			Dictionary<VirtualRegister, InstructionScheduleInfo> regTouch = new Dictionary<VirtualRegister, InstructionScheduleInfo>();
 			foreach (SpuInstruction inst in bb.Head.GetEnumerable())
 			{
 				InstructionScheduleInfo isi = new InstructionScheduleInfo(inst);
@@ -157,37 +154,52 @@ namespace CellDotNet.Spe
 
 				if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MethodCall) != 0)
 				{
-					lastCall = isi;
-
-					// Order previous instructions which moved into hw regs.
-					foreach (InstructionScheduleInfo hwdef in hwRegDefsForMethods)
-						hwdef.AddDependant(isi);
-
-					hwRegDefsForMethods.Clear();
-				}
-
-				// Order moves from hw regs after last call.
-				if (inst.OpCode == SpuOpCode.move && inst.Ra.IsRegisterSet && lastCall != null)
-				{
-					lastCall.AddDependant(isi);
-				}
-
-				// Order register defines.
-				instUse.Clear();
-				inst.AppendUses(instUse);
-				foreach (VirtualRegister usedReg in instUse)
-				{
+					SpuRoutine routine = inst.ObjectWithAddress as SpuRoutine;
 					InstructionScheduleInfo prev;
-					if (defs.TryGetValue(usedReg, out prev))
-						prev.AddDependant(isi);
-				}
+					bool hasHandledReg3 = false;
+					if (routine != null)
+					{
+						hasHandledReg3 = routine.Parameters.Count > 0;
+						for (int i = 0; i < routine.Parameters.Count; i++)
+						{
+							VirtualRegister usedRegister = HardwareRegister.GetHardwareArgumentRegister(i);
+							if (regTouch.TryGetValue(usedRegister, out prev))
+								prev.AddDependant(isi);
+							regTouch[usedRegister] = isi;
+						}
+					}
 
-				VirtualRegister def = inst.Def;
-				if (def != null)
+					// Assume that there is a return value.
+					if (!hasHandledReg3)
+					{
+						if (regTouch.TryGetValue(HardwareRegister.HardwareReturnValueRegister, out prev))
+							prev.AddDependant(isi);
+						regTouch[HardwareRegister.HardwareReturnValueRegister] = isi;
+					}
+				}
+				else
 				{
-					defs[def] = isi;
-					if (def.IsRegisterSet)
-						hwRegDefsForMethods.Add(isi);
+					// Order register defines.
+					instUse.Clear();
+					inst.AppendUses(instUse);
+					foreach (VirtualRegister usedRegister in instUse)
+					{
+						InstructionScheduleInfo prev;
+						if (regTouch.TryGetValue(usedRegister, out prev))
+							prev.AddDependant(isi);
+						regTouch[usedRegister] = isi;
+					}
+
+					VirtualRegister def = inst.Def;
+					if (def != null)
+					{
+						InstructionScheduleInfo prev;
+						if (regTouch.TryGetValue(def, out prev) && prev != isi)
+						{
+							prev.AddDependant(isi);
+						}
+						regTouch[def] = isi;
+					}
 				}
 			}
 
