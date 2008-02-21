@@ -77,7 +77,7 @@ namespace CellDotNet.Spe
 			AreEqual(0, list[1].Dependents.Count);
 
 			// "lqd" 1
-			AreEqual(0, list[2].Dependents.Count);
+			AreEqual(1, list[2].Dependents.Count);
 			// "lqd" 2
 			AreEqual(0, list[3].Dependents.Count);
 		}
@@ -117,11 +117,11 @@ namespace CellDotNet.Spe
 			w.BeginNewBasicBlock();
 
 			// Call.
-			w.WriteBrsl(50); // inst 0
+			w.WriteBrsl(HardwareRegister.LR, 0); // inst 0
 
 			// Moves hw reg 3 to another reg and should stay after the call inst.
 			VirtualRegister destreg = w.NextRegister();
-			w.WriteMove(HardwareRegister.GetHardwareArgumentRegister(3), destreg); // inst 1
+			w.WriteMove(HardwareRegister.HardwareReturnValueRegister, destreg); // inst 1
 
 			w.WriteAi(destreg, 50); // inst 2
 
@@ -141,26 +141,28 @@ namespace CellDotNet.Spe
 			SpuInstructionWriter w = new SpuInstructionWriter();
 			w.BeginNewBasicBlock();
 
-			w.WriteBrsl(HardwareRegister.LR, 0);
+			w.WriteBrsl(HardwareRegister.LR, 0); // inst 0
 			SpuInstruction brsl1 = w.LastInstruction;
 
 			VirtualRegister retval = w.NextRegister();
-			w.WriteMove(HardwareRegister.LR, retval);
+			w.WriteMove(HardwareRegister.HardwareReturnValueRegister, retval); // inst 1
 			SpuInstruction move = w.LastInstruction;
 
-			w.WriteBrsl(HardwareRegister.LR, 0);
+			w.WriteBrsl(HardwareRegister.LR, 0); // inst 2
 			SpuInstruction brsl2 = w.LastInstruction;
 
 			List<InstructionScheduleInfo> list = new ListInstructionScheduler().DetermineDependencies(w.CurrentBlock);
 			AreEqual(3, list.Count);
 
 			AreEqual(brsl1, list[0].Instruction);
+			// one dependent because of inst 1 (move) , and another one because of method call ordering.
 			AreEqual(2, list[0].Dependents.Count);
 			
 			AreEqual(move, list[1].Instruction);
 			AreEqual(1, list[1].Dependents.Count);
 
 			AreEqual(brsl2, list[2].Instruction);
+			AreEqual(0, list[2].Dependents.Count);
 		}
 	}
 }
