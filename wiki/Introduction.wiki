@@ -22,6 +22,6 @@ Since these vector units are not general-purpose, but well-suited for computatio
 
 These constraints can seem severily limiting, but for the kind of code that will benefit from running on an SPU they will often not be a problem.
 
-Another aspect of the hardware is that, in order to use it efficiently, the programmer must assume control of memory transfers between RAM and the SPU's local memory. Therefore, essential hardware services are made available to the programmer.
+Another aspect of the hardware is that, in order to use it efficiently, the programmer must assume control of memory transfers between main memory and the SPU's local memory. Therefore, essential hardware services are made available to the programmer.
 
 The implementation is a library which JIT-compiles IL-code to native SPU code. The library is written in C# and only depends on a .net runtime, the basic SPU management library and, of course, a Cell processor.
