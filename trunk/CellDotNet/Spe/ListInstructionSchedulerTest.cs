@@ -164,6 +164,30 @@ namespace CellDotNet.Spe
 			AreEqual(brsl2, list[2].Instruction);
 			AreEqual(0, list[2].Dependents.Count);
 		}
+
+		[Test]
+		public void TestDualIssueIncrease()
+		{
+			SpuInstructionWriter w = new SpuInstructionWriter();
+			w.BeginNewBasicBlock();
+			w.WriteShlqbi(w.NextRegister(), w.NextRegister()); // odd, 4
+			w.WriteRot(w.NextRegister(), w.NextRegister()); // even, 4
+			w.WriteShlqbi(w.NextRegister(), w.NextRegister()); // odd, 4
+			w.WriteRot(w.NextRegister(), w.NextRegister()); // even, 4
+
+			List<InstructionScheduleInfo> schedulelist = new ListInstructionScheduler().DetermineDependencies(w.CurrentBlock);
+			AreEqual(0, schedulelist[0].Dependents.Count);
+			AreEqual(0, schedulelist[1].Dependents.Count);
+			AreEqual(0, schedulelist[2].Dependents.Count);
+			AreEqual(0, schedulelist[3].Dependents.Count);
+
+			new ListInstructionScheduler().Schedule(w.CurrentBlock);
+			List<SpuInstruction> instlist = new List<SpuInstruction>(w.CurrentBlock.Head.GetEnumerable());
+			AreEqual(SpuPipeline.Even, instlist[0].OpCode.Pipeline);
+			AreEqual(SpuPipeline.Odd, instlist[1].OpCode.Pipeline);
+			AreEqual(SpuPipeline.Even, instlist[2].OpCode.Pipeline);
+			AreEqual(SpuPipeline.Odd, instlist[3].OpCode.Pipeline);
+		}
 	}
 }
 
