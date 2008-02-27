@@ -182,23 +182,15 @@ namespace CellDotNet.Spe
 					// Order register defines.
 					instUse.Clear();
 					inst.AppendUses(instUse);
+					VirtualRegister def = inst.Def;
+					if (def != null)
+						instUse.Add(def);
 					foreach (VirtualRegister usedRegister in instUse)
 					{
 						InstructionScheduleInfo prev;
-						if (regTouch.TryGetValue(usedRegister, out prev))
+						if (regTouch.TryGetValue(usedRegister, out prev) && prev != isi)
 							prev.AddDependant(isi);
 						regTouch[usedRegister] = isi;
-					}
-
-					VirtualRegister def = inst.Def;
-					if (def != null)
-					{
-						InstructionScheduleInfo prev;
-						if (regTouch.TryGetValue(def, out prev) && prev != isi)
-						{
-							prev.AddDependant(isi);
-						}
-						regTouch[def] = isi;
 					}
 				}
 			}
