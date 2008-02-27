@@ -15,13 +15,13 @@ namespace SciMark2
 				Benchmark_Startuptime_SPU();
 				Benchmark_Startuptime_SPU();
 			}
-//			Benchmark_Montecarlo_Combined(10000000);
-//			Benchmark_Montecarlo_Single_Unrolled(10000000);
-//			Benchmark_SOR_Combined(10000, 100, 25 * 4 + 2);
-//			Benchmark_SparchCompRow_Combined(1000, 5000, 10000);
-//			Benchmark_Parallel_Combined(100000000);
+			Benchmark_Montecarlo_Combined(10000000);
+			Benchmark_Montecarlo_Single_Unrolled(10000000);
+			Benchmark_SOR_Combined(10000, 100, 25 * 4 + 2);
+			Benchmark_SparchCompRow_Combined(1000, 5000, 10000);
 			Benchmark_Parallel_Combined(10000000);
-//			Benchmark_Parallel_Combined(1000000000);
+			Benchmark_Parallel_Combined(100000000);
+			Benchmark_Parallel_Combined(1000000000);
 		}
 
 		#region MonteCarlo
