@@ -2,9 +2,11 @@ namespace SciMark2
 {
 	public class MonteCarloSingle
 	{
+		internal const int SEED = 113;
+
 		public static float integrate(int Num_samples)
 		{
-			RandomSingle R = new RandomSingle(113);
+			RandomSingle R = new RandomSingle(SEED);
 
 			int under_curve = 0;
 			for (int count = 0; count < Num_samples; count++)
