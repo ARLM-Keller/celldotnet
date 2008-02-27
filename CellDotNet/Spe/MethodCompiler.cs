@@ -555,9 +555,9 @@ namespace CellDotNet.Spe
 			}
 
 			// Instruction scheduling.
-//			ListInstructionScheduler scheduler = new ListInstructionScheduler();
-//			foreach (SpuBasicBlock bb in _instructions.BasicBlocks)
-//				scheduler.Schedule(bb);
+			ListInstructionScheduler scheduler = new ListInstructionScheduler();
+			foreach (SpuBasicBlock bb in _instructions.BasicBlocks)
+				scheduler.Schedule(bb);
 
 
 			State = MethodCompileState.S4InstructionSelectionDone;
