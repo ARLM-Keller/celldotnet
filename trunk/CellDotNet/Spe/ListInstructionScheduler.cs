@@ -24,7 +24,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using CellDotNet.Intermediate;
 
 namespace CellDotNet.Spe
 {
@@ -36,21 +35,8 @@ namespace CellDotNet.Spe
 	{
 		private SpuInstruction _instruction;
 
-//		private IsiList _dependents = new IsiList();
 		private List<InstructionScheduleInfo> _dependents = new List<InstructionScheduleInfo>(3);
 
-//		class IsiList : List<InstructionScheduleInfo>, ICollection<InstructionScheduleInfo>
-//		{
-//			void ICollection<InstructionScheduleInfo>.Add(InstructionScheduleInfo isi)
-//			{
-//				foreach (InstructionScheduleInfo isi2 in this)
-//				{
-//					if (isi2.Instruction == isi.Instruction)
-//						return;
-//				}
-//				base.Add(isi);
-//			}
-//		}
 
 		private int? _priority;
 
@@ -244,60 +230,60 @@ namespace CellDotNet.Spe
 			block.Head = newhead;
 		}
 
-		class SimplePriorityQueue<TKey, TValue>
-		{
-			private SortedDictionary<TKey, List<TValue>> _dict = new SortedDictionary<TKey, List<TValue>>();
-
-			public bool IsEmpty
-			{
-				get { return _dict.Count == 0; }
-			}
-
-			public void Add(TKey key, TValue value)
-			{
-				List<TValue> l;
-				if (!_dict.TryGetValue(key, out l))
-				{
-					l = new List<TValue>();
-					_dict.Add(key, l);
-				}
-				else
-				{
-					if (l.Contains(value))
-						throw new ArgumentException("The element is already present.");
-				}
-				l.Add(value);
-			}
-
-			public void Remove(TKey key, TValue value)
-			{
-				List<TValue> l;
-				if (!_dict.TryGetValue(key, out l))
-					throw new ArgumentException();
-
-				int i = 0;
-				foreach (TValue item in l)
-				{
-					if (item.Equals(value))
-					{
-						if (l.Count == 1)
-							_dict.Remove(key);
-						else
-							l.RemoveAt(i);
-						return;
-					}
-
-					i++;
-				}
-
-				throw new ArgumentException();
-			}
-
-			public IList<TValue> GetFirstValues()
-			{
-				return Utilities.GetFirst(_dict.Values);
-			}
-		}
+		//		class SimplePriorityQueue<TKey, TValue>
+		//		{
+		//			private SortedDictionary<TKey, List<TValue>> _dict = new SortedDictionary<TKey, List<TValue>>();
+		//
+		//			public bool IsEmpty
+		//			{
+		//				get { return _dict.Count == 0; }
+		//			}
+		//
+		//			public void Add(TKey key, TValue value)
+		//			{
+		//				List<TValue> l;
+		//				if (!_dict.TryGetValue(key, out l))
+		//				{
+		//					l = new List<TValue>();
+		//					_dict.Add(key, l);
+		//				}
+		//				else
+		//				{
+		//					if (l.Contains(value))
+		//						throw new ArgumentException("The element is already present.");
+		//				}
+		//				l.Add(value);
+		//			}
+		//
+		//			public void Remove(TKey key, TValue value)
+		//			{
+		//				List<TValue> l;
+		//				if (!_dict.TryGetValue(key, out l))
+		//					throw new ArgumentException();
+		//
+		//				int i = 0;
+		//				foreach (TValue item in l)
+		//				{
+		//					if (item.Equals(value))
+		//					{
+		//						if (l.Count == 1)
+		//							_dict.Remove(key);
+		//						else
+		//							l.RemoveAt(i);
+		//						return;
+		//					}
+		//
+		//					i++;
+		//				}
+		//
+		//				throw new ArgumentException();
+		//			}
+		//
+		//			public IList<TValue> GetFirstValues()
+		//			{
+		//				return Utilities.GetFirst(_dict.Values);
+		//			}
+		//		}
 
 		/// <summary>
 		/// Schedules prioritized instructions.
@@ -307,19 +293,16 @@ namespace CellDotNet.Spe
 		/// <returns>The new head.</returns>
 		public SpuInstruction SchedulePrioritizedInstructions(List<InstructionScheduleInfo> schedlist, List<InstructionScheduleInfo> initiallyReady)
 		{
-			// Determine initial ready set.
-			SimplePriorityQueue<int, InstructionScheduleInfo> readySet = new SimplePriorityQueue<int, InstructionScheduleInfo>();
+			Set<InstructionScheduleInfo> readySet = new Set<InstructionScheduleInfo>();
 			foreach (InstructionScheduleInfo isi in initiallyReady)
-			{
-				// Use the negated priority to enumerate the biggest first.
-				readySet.Add(-isi.Priority.Value, isi);
-			}
+				readySet.Add(isi);
+
 
 			int instnum = 0;
 			SpuInstruction head = null;
 			SpuInstruction tail = null;
-			InstructionScheduleInfo lastAndMaybeBranchInstruction = schedlist[schedlist.Count-1];
-			while (!readySet.IsEmpty)
+			InstructionScheduleInfo lastAndMaybeBranchInstruction = schedlist[schedlist.Count - 1];
+			while (readySet.Count != 0)
 			{
 				InstructionScheduleInfo isi = GetNextInstruction(readySet, instnum);
 				if (isi == lastAndMaybeBranchInstruction)
@@ -329,7 +312,7 @@ namespace CellDotNet.Spe
 				{
 					bool isready = dependant.NotifyDependencySatisfied();
 					if (isready)
-						readySet.Add(-dependant.Priority.Value, dependant);
+						readySet.Add(dependant);
 				}
 
 				if (head == null)
@@ -366,31 +349,42 @@ namespace CellDotNet.Spe
 		/// it will attempt to find an instruction which is can issue on <paramref name="instnum"/> and hopefully
 		/// be dual-issued.
 		/// </summary>
-		/// <param name="set"></param>
-		/// <param name="instnum"></param>
-		/// <returns></returns>
-		private InstructionScheduleInfo GetNextInstruction(SimplePriorityQueue<int, InstructionScheduleInfo> set, int instnum)
+		private InstructionScheduleInfo GetNextInstruction(Set<InstructionScheduleInfo> readySet, int instnum)
 		{
-			InstructionScheduleInfo candidate = null;
-			SpuPipeline requestedPipeline = instnum%2 == 0 ? SpuPipeline.Even : SpuPipeline.Odd;
+			SpuPipeline requestedPipeline = instnum % 2 == 0 ? SpuPipeline.Even : SpuPipeline.Odd;
 
-			foreach (InstructionScheduleInfo isi in set.GetFirstValues())
+			// Largest priority at the end.
+			List<InstructionScheduleInfo> readylist =new List<InstructionScheduleInfo>(readySet);
+			readylist.Sort(delegate(InstructionScheduleInfo x, InstructionScheduleInfo y)
+			               	{
+								return x.Priority.Value - y.Priority.Value;
+			               	});
+
+			int highestPriority = readylist[readySet.Count - 1].Priority.Value;
+			int chosenIndex = -1;
+			for (int i = readySet.Count - 1; i >= 0; i--)
 			{
-				if (candidate == null)
-					candidate = isi;
-				else if (isi.Priority < candidate.Priority)
-					break;
-
-				if (isi.Instruction.OpCode.Pipeline == requestedPipeline)
+				if (readylist[i].Priority != highestPriority)
 				{
-					candidate = isi;
+					chosenIndex = i + 1;
+					break;
+				}
+				
+				if (readylist[i].Instruction.OpCode.Pipeline == requestedPipeline)
+				{
+					chosenIndex = i;
 					break;
 				}
 			}
+			if (chosenIndex == -1)
+				chosenIndex = readylist.Count - 1;
 
-			set.Remove(-candidate.Priority.Value, candidate);
 
-			return candidate;
+			InstructionScheduleInfo item = readylist[chosenIndex];
+//			readylist.RemoveAt(chosenIndex);
+			readySet.Remove(item);
+
+			return item;
 		}
 	}
 }
