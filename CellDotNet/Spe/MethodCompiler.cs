@@ -134,11 +134,11 @@ namespace CellDotNet.Spe
 
 		private bool _naked = true;
 
-		public bool Naked
-		{
-			get { return _naked; }
-			set { _naked = value; }
-		}
+//		public bool Naked
+//		{
+//			get { return _naked; }
+//			set { _naked = value; }
+//		}
 
 		private Dictionary<VirtualRegister, int> registerWeight = new Dictionary<VirtualRegister, int>();
 

@@ -100,6 +100,11 @@ namespace CellDotNet.Spe
 			// The scheduler wants to keep the tail.
 			w.WriteStop();
 
+			List<InstructionScheduleInfo> isilist = new ListInstructionScheduler().DetermineDependencies(w.CurrentBlock);
+			AreEqual(1, isilist[0].Dependents.Count);
+			AreEqual(0, isilist[1].Dependents.Count);
+			AreEqual(0, isilist[2].Dependents.Count);
+
 			new ListInstructionScheduler().Schedule(w.CurrentBlock);
 			List<SpuInstruction> ilist = new List<SpuInstruction>(w.CurrentBlock.Head.GetEnumerable());
 
@@ -165,6 +170,29 @@ namespace CellDotNet.Spe
 			AreEqual(0, list[2].Dependents.Count);
 		}
 
+		static int ComputePotentialDualIssueCount(IEnumerable<SpuInstruction> instructions)
+		{
+			int score = 0;
+
+			IList<SpuInstruction> list = instructions as IList<SpuInstruction>;
+			if (list == null)
+				list = new List<SpuInstruction>(instructions);
+
+			for (int i = 0; i < list.Count; i++)
+			{
+				if (i%2 == 0 && list[i].OpCode.Pipeline == SpuPipeline.Even)
+				{
+					if (list.Count > i + 1 && list[i + 1].OpCode.Pipeline == SpuPipeline.Odd)
+					{
+						i++;
+						score++;
+					}
+				}
+			}
+
+			return score;
+		}
+
 		[Test]
 		public void TestDualIssueIncrease()
 		{
@@ -180,13 +208,15 @@ namespace CellDotNet.Spe
 			AreEqual(0, schedulelist[1].Dependents.Count);
 			AreEqual(0, schedulelist[2].Dependents.Count);
 			AreEqual(0, schedulelist[3].Dependents.Count);
+			AreEqual(0, ComputePotentialDualIssueCount(w.CurrentBlock.Head.GetEnumerable()));
 
 			new ListInstructionScheduler().Schedule(w.CurrentBlock);
 			List<SpuInstruction> instlist = new List<SpuInstruction>(w.CurrentBlock.Head.GetEnumerable());
 			AreEqual(SpuPipeline.Even, instlist[0].OpCode.Pipeline);
 			AreEqual(SpuPipeline.Odd, instlist[1].OpCode.Pipeline);
 			AreEqual(SpuPipeline.Even, instlist[2].OpCode.Pipeline);
-			AreEqual(SpuPipeline.Odd, instlist[3].OpCode.Pipeline);
+//			AreEqual(SpuPipeline.Odd, instlist[3].OpCode.Pipeline);
+			AreEqual(2, ComputePotentialDualIssueCount(w.CurrentBlock.Head.GetEnumerable()));
 		}
 	}
 }
