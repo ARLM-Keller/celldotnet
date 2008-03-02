@@ -24,6 +24,19 @@ namespace SciMark2
 			Benchmark_Parallel_Combined(1000000000);
 		}
 
+		static void PrintBenchmarkResults(string benchmarkName, string settings, double executionTime, string computationResults)
+		{
+			string separator = ";";
+			Console.Write(benchmarkName);
+			Console.Write(separator);
+			Console.Write(settings);
+			Console.Write(separator);
+			Console.Write(executionTime);
+			Console.Write(separator);
+			Console.Write(computationResults);
+			Console.WriteLine();
+		}
+
 		#region MonteCarlo
 
 		public static void Benchmark_Montecarlo_Combined(int n)
@@ -51,7 +64,8 @@ namespace SciMark2
 
 			watch.stop();
 
-			Console.WriteLine("Monte Carlo, Single: run time: {2}, n={0} pi={1}", n, monoPi2, watch.read(), monoPi1);
+//			Console.WriteLine("Monte Carlo, Single: run time: {2}, n={0} pi={1}", n, monoPi2, watch.read(), monoPi1);
+			PrintBenchmarkResults("Monte Carlo, Single", "n=" + n, watch.read(), "pi=" + monoPi2);
 		}
 
 		public static void Benchmark_Montecarlo_Single_Unrolled(int n)
@@ -66,7 +80,8 @@ namespace SciMark2
 
 			watch.stop();
 
-			Console.WriteLine("Monte Carlo, Single Unrolled: run time: {2}, n={0} pi={1}", n, monoPi2, watch.read(), monoPi1);
+			//Console.WriteLine("Monte Carlo, Single Unrolled: run time: {2}, n={0} pi={1}", n, monoPi2, watch.read(), monoPi1);
+			PrintBenchmarkResults("Monte Carlo, Single Unrolled", "n=" + n, watch.read(), "pi=" + monoPi2);
 		}
 
 		private delegate float BenchmarkMonteCarloSPUDelegate(int seed, int iterations); 
@@ -94,7 +109,8 @@ namespace SciMark2
 
 			cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_Montecarlo_Single_Spu_113_{0}.s", 10000).ToString(), 113, 10000);
 
-			Console.WriteLine("Monte Carlo, Single, SPU: run time: {3}, compile time: {2}, n={0} pi={1} ", n, spuPi, watch1.read(), watch2.read());
+//			Console.WriteLine("Monte Carlo, Single, SPU: run time: {3}, compile time: {2}, n={0} pi={1} ", n, spuPi, watch1.read(), watch2.read());
+			PrintBenchmarkResults("Monte Carlo, Single", "n=" + n, watch2.read(), "pi=" + spuPi + ", compile time: " + watch1.read());
 		}
 
 		public static void Benchmark_Montecarlo_Vector_SPU(int n)
@@ -142,7 +158,8 @@ namespace SciMark2
 
 			cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_Montecarlo_Dynamic_Unrolled_Spu_113_{0}.s", 10000).ToString(), 113, 10000);
 
-			Console.WriteLine("Monte Carlo, dynamic Unroled, SPU: run time: {3}, compile time: {2}, n={0} pi={1} ", n, spuPi, watch1.read(), watch2.read());
+//			Console.WriteLine("Monte Carlo, dynamic Unroled, SPU: run time: {3}, compile time: {2}, n={0} pi={1} ", n, spuPi, watch1.read(), watch2.read());
+			PrintBenchmarkResults("Monte Carlo, dynamic Unroled, SPU", "n=" + n, watch2.read(), "pi=" + spuPi + " compile time=" + watch1.read());
 		}
 
 		public static void Benchmark_Montecarlo_Unrolled_SPU(int n)
@@ -166,7 +183,8 @@ namespace SciMark2
 
 			cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_Montecarlo_Unrolled_Spu_113_{0}.s", 10000).ToString(), 113, 10000);
 
-			Console.WriteLine("Monte Carlo, Unroled, SPU: run time: {3}, compile time: {2}, n={0} pi={1} ", n, spuPi, watch1.read(), watch2.read());
+//			Console.WriteLine("Monte Carlo, Unroled, SPU: run time: {3}, compile time: {2}, n={0} pi={1} ", n, spuPi, watch1.read(), watch2.read());
+			PrintBenchmarkResults("Monte Carlo, Unroled, SPU", "n=" + n, watch2.read(), "pi=" + spuPi + " compile time=" + watch1.read());
 		}
 
 		public static void Benchmark_Montecarlo_Vector_Simple_Unrolled_SPU(int n)
@@ -190,7 +208,8 @@ namespace SciMark2
 
 			cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_Montecarlo_Simple_Unrolled_Spu_113_{0}.s", 10000).ToString(), 113, 10000);
 
-			Console.WriteLine("Monte Carlo, Simple Unroled, SPU: run time: {3}, compile time: {2}, n={0} pi={1} ", n, spuPi, watch1.read(), watch2.read());
+//			Console.WriteLine("Monte Carlo, Simple Unroled, SPU: run time: {3}, compile time: {2}, n={0} pi={1} ", n, spuPi, watch1.read(), watch2.read());
+			PrintBenchmarkResults("Monte Carlo, Simple Unroled, SPU", "n=" + n, watch2.read(), "pi=" + spuPi + " compile time=" + watch1.read());
 		}
 
 		#endregion
@@ -226,7 +245,8 @@ namespace SciMark2
 			
 			watch.stop();
 
-			Console.WriteLine("SOR, Single: run time {1}, n={0} M={2} N={3}", n, watch.read(), M, N);
+//			Console.WriteLine("SOR, Single: run time {1}, n={0} M={2} N={3}", n, watch.read(), M, N);
+			PrintBenchmarkResults("SOR, Single", "n=" + n + " m=" + M + " N=" + N, watch.read(), null);
 		}
 
 		public static void Benchmark_SOR_Single_SPU(int n, int M, int N)
@@ -259,8 +279,9 @@ namespace SciMark2
 
 				cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_SOR_Single_SPU_1.25_{0}_{1}_{2}.s", M, N, n).ToString(), 1.25f, 0, M, N, n);
 
-				Console.WriteLine("SOR, Single, SPU: run time {1} compile time {2}, n={0} M={3} N={4}", n, watch2.read(),
-				                  watch1.read(), M, N);
+//				Console.WriteLine("SOR, Single, SPU: run time {1} compile time {2}, n={0} M={3} N={4}", n, watch2.read(),
+//				                  watch1.read(), M, N);
+				PrintBenchmarkResults("SOR, Single, SPU", "n=" + n + " M=" + M + " N=" + N, watch2.read(), "compile time=" + watch1.read());
 			}
 		}
 
@@ -299,8 +320,9 @@ namespace SciMark2
 
 				cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_SOR_Vector_SPU_1.25_{0}_{1}_{2}.s", M, N, n).ToString(), 1.25f, 0, M, N, n);
 
-				Console.WriteLine("SOR, Vector, SPU: run time {1} compile time {2}, n={0} M={3} N={4}", n, watch2.read(),
-				                  watch1.read(), M, N);
+//				Console.WriteLine("SOR, Vector, SPU: run time {1} compile time {2}, n={0} M={3} N={4}", n, watch2.read(),
+//				                  watch1.read(), M, N);
+				PrintBenchmarkResults("SOR, Vector, SPU", "n=" + n + " M=" + M + " N=" + N, watch2.read(), "compile time=" + watch1.read());
 			}
 		}
 
@@ -363,7 +385,8 @@ namespace SciMark2
 
 			watch.stop();
 
-			Console.WriteLine("SparseCompRow, Single: run time {0}, n={1}", watch.read(), num_iterations);
+//			Console.WriteLine("SparseCompRow, Single: run time {0}, n={1}", watch.read(), num_iterations);
+			PrintBenchmarkResults("SparseCompRow, Single", "n=" + num_iterations, watch.read(), null);
 		}
 
 		public static void Benchmark_SparchCompRow_Single_SPU(int N, int nz, int num_iterations)
@@ -438,7 +461,8 @@ namespace SciMark2
 				cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_SCR_Single_SPU---.s").ToString(), ymem.GetArea(), y.Length, valmem.GetArea(), val.Length, rowmem.GetArea(),
 											  row.Length, colmem.GetArea(), col.Length, xmem.GetArea(), x.Length, num_iterations);
 
-				Console.WriteLine("SparseCompRow, Single, SPU: run time {0} compile time {1}, n={2}", watch2.read(), watch1.read(), num_iterations);
+//				Console.WriteLine("SparseCompRow, Single, SPU: run time {0} compile time {1}, n={2}", watch2.read(), watch1.read(), num_iterations);
+				PrintBenchmarkResults("SparseCompRow, Single, SPU", "n=" + num_iterations, watch2.read(), "compile time=" + watch1.read());
 			}
 		}
 
@@ -512,7 +536,9 @@ namespace SciMark2
 
 			watch2.stop();
 
-			Console.WriteLine("Monte Carlo, Unrolled, Cell, Parallel: run time: {2}, compile time: {1}, n={0} pi={3} ", n, watch1.read(), watch2.read(), (spuPi1 + spuPi2 + spuPi3 + spuPi4 + spuPi5 + spuPi6)/6);
+			float pi = (spuPi1 + spuPi2 + spuPi3 + spuPi4 + spuPi5 + spuPi6)/6;
+//			Console.WriteLine("Monte Carlo, Unrolled, Cell, Parallel: run time: {2}, compile time: {1}, n={0} pi={3} ", n, watch1.read(), watch2.read(), pi);
+			PrintBenchmarkResults("Monte Carlo, Unrolled, Cell, Parallel", "n=" + n, watch2.read(), "pi=" + pi + " compile time=" + watch1.read());
 		}
 
 		public static void Benchmark_Montecarlo_Parallel4(int n)
@@ -541,7 +567,9 @@ namespace SciMark2
 
 			watch1.stop();
 
-			Console.WriteLine("Monte Carlo, Parallel4: run time: {1}, n={0} pi={2} ", n, watch1.read(), (spuPi1 + spuPi2 + spuPi3 + spuPi4) / 4);
+			float pi = (spuPi1 + spuPi2 + spuPi3 + spuPi4) / 4;
+//			Console.WriteLine("Monte Carlo, Parallel4: run time: {1}, n={0} pi={2} ", n, watch1.read(), pi);
+			PrintBenchmarkResults("Monte Carlo, Parallel4", "n=" + n, watch1.read(), "pi=" + pi);
 		}
 
 		public static void Benchmark_Montecarlo_Parallel2(int n)
@@ -564,7 +592,10 @@ namespace SciMark2
 
 			watch1.stop();
 
-			Console.WriteLine("Monte Carlo, Parallel2: run time: {1}, n={0} pi={2} ", n, watch1.read(), (spuPi1 + spuPi2) / 2);
+			float pi = (spuPi1 + spuPi2) / 2;
+//			Console.WriteLine("Monte Carlo, Parallel2: run time: {1}, n={0} pi={2} ", n, watch1.read(), pi);
+			PrintBenchmarkResults("Monte Carlo, Parallel2", "n=" + n, watch1.read(), "pi=" + pi);
+
 		}
 
 		#endregion
@@ -598,7 +629,8 @@ namespace SciMark2
 
 			watch2.stop();
 
-			Console.WriteLine("Startuptime, SPU: run time: {1}, compile time: {0}", watch1.read(), watch2.read());
+//			Console.WriteLine("Startuptime, SPU: run time: {1}, compile time: {0}", watch1.read(), watch2.read());
+			PrintBenchmarkResults("Startuptime, SPU", null, watch2.read(), "compile time=" + watch1.read());
 		}
 
 		#endregion
