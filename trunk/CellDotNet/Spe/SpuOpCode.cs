@@ -131,7 +131,7 @@ namespace CellDotNet.Spe
 	}
 
 	/// <summary>
-	/// Special features that an opcode can have, like D and E bits or branch hint offset.
+	/// Features that an opcode can have, like D and E bits or branch hint offset.
 	/// </summary>
 	[Flags]
 	public enum SpuOpCodeSpecialFeatures
@@ -177,6 +177,9 @@ namespace CellDotNet.Spe
 		MemoryRead = 1 << 9,
 		MemoryWrite = 1 << 10,
 		MethodCall = 1 << 11,
+		Control = 1 << 12,
+		Branch = 1 << 13,
+		Halt = 1 << 14,
 	}
 
 	/// <summary>
@@ -702,17 +705,17 @@ namespace CellDotNet.Spe
 
 		// 7. Compare, Branch, and Halt OpCodes
 		public static readonly SpuOpCode heq =
-				new SpuOpCode("heq", "Halt If Equal", SpuInstructionFormat.RR, "01111011000", SpuPipeline.Even, 2);
+				new SpuOpCode("heq", "Halt If Equal", SpuInstructionFormat.RR, "01111011000", SpuOpCodeSpecialFeatures.Halt, SpuPipeline.Even, 2);
 		public static readonly SpuOpCode heqi =
-				new SpuOpCode("heqi", "Halt If Equal Immediate", SpuInstructionFormat.RI10, "01111111", SpuPipeline.Even, 2);
+				new SpuOpCode("heqi", "Halt If Equal Immediate", SpuInstructionFormat.RI10, "01111111", SpuOpCodeSpecialFeatures.Halt, SpuPipeline.Even, 2);
 		public static readonly SpuOpCode hgt =
-				new SpuOpCode("hgt", "Halt If Greater Than", SpuInstructionFormat.RR, "01001011000", SpuPipeline.Even, 2);
+				new SpuOpCode("hgt", "Halt If Greater Than", SpuInstructionFormat.RR, "01001011000", SpuOpCodeSpecialFeatures.Halt, SpuPipeline.Even, 2);
 		public static readonly SpuOpCode hgti =
-				new SpuOpCode("hgti", "Halt If Greater Than Immediate", SpuInstructionFormat.RI10, "01001111", SpuPipeline.Even, 2);
+				new SpuOpCode("hgti", "Halt If Greater Than Immediate", SpuInstructionFormat.RI10, "01001111", SpuOpCodeSpecialFeatures.Halt, SpuPipeline.Even, 2);
 		public static readonly SpuOpCode hlgt =
-				new SpuOpCode("hlgt", "Halt If Logically Greater Than", SpuInstructionFormat.RR, "01011011000", SpuPipeline.Even, 2);
+				new SpuOpCode("hlgt", "Halt If Logically Greater Than", SpuInstructionFormat.RR, "01011011000", SpuOpCodeSpecialFeatures.Halt, SpuPipeline.Even, 2);
 		public static readonly SpuOpCode hlgti =
-				new SpuOpCode("hlgti", "Halt If Logically Greater Than Immediate", SpuInstructionFormat.RI10, "01011111", SpuPipeline.Even, 2);
+				new SpuOpCode("hlgti", "Halt If Logically Greater Than Immediate", SpuInstructionFormat.RI10, "01011111", SpuOpCodeSpecialFeatures.Halt, SpuPipeline.Even, 2);
 		public static readonly SpuOpCode ceqb =
 				new SpuOpCode("ceqb", "Compare Equal Byte", SpuInstructionFormat.RR, "01111010000", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode ceqbi =
@@ -750,38 +753,38 @@ namespace CellDotNet.Spe
 		public static readonly SpuOpCode clgti =
 				new SpuOpCode("clgti", "Compare Logical Greater Than Word Immediate", SpuInstructionFormat.RI10, "01011100", SpuPipeline.Even, 2);
 		public static readonly SpuOpCode br =
-				new SpuOpCode("br", "Branch Relative", SpuInstructionFormat.RI16NoRegs, "001100100", SpuPipeline.Odd, 4);
+				new SpuOpCode("br", "Branch Relative", SpuInstructionFormat.RI16NoRegs, "001100100", SpuOpCodeSpecialFeatures.Branch, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode bra =
-				new SpuOpCode("bra", "Branch Absolute", SpuInstructionFormat.RI16NoRegs, "001100000", SpuPipeline.Odd, 4);
+				new SpuOpCode("bra", "Branch Absolute", SpuInstructionFormat.RI16NoRegs, "001100000", SpuOpCodeSpecialFeatures.Branch, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode brsl =
-				new SpuOpCode("brsl", "Branch Relative and Set Link", SpuInstructionFormat.RI16, "001100110", SpuOpCodeSpecialFeatures.MethodCall, SpuPipeline.Odd, 4);
+				new SpuOpCode("brsl", "Branch Relative and Set Link", SpuInstructionFormat.RI16, "001100110", SpuOpCodeSpecialFeatures.Branch | SpuOpCodeSpecialFeatures.MethodCall, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode brasl =
-				new SpuOpCode("brasl", "Branch Absolute and Set Link", SpuInstructionFormat.RI16, "001100010", SpuOpCodeSpecialFeatures.MethodCall, SpuPipeline.Odd, 4);
+				new SpuOpCode("brasl", "Branch Absolute and Set Link", SpuInstructionFormat.RI16, "001100010", SpuOpCodeSpecialFeatures.Branch | SpuOpCodeSpecialFeatures.MethodCall, SpuPipeline.Odd, 4);
 		// p175
 		public static readonly SpuOpCode bi =
-				new SpuOpCode("bi", "Branch Indirect", SpuInstructionFormat.RR1, "00110101000", SpuOpCodeSpecialFeatures.BitDE, SpuPipeline.Odd, 4);
+				new SpuOpCode("bi", "Branch Indirect", SpuInstructionFormat.RR1, "00110101000", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.Branch, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode iret =
-				new SpuOpCode("iret", "Interrupt Return", SpuInstructionFormat.RR1, "00110101010", SpuOpCodeSpecialFeatures.BitDE, SpuPipeline.Odd, 4);
+				new SpuOpCode("iret", "Interrupt Return", SpuInstructionFormat.RR1, "00110101010", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.Branch, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode bisled =
-				new SpuOpCode("bisled", "Branch Indirect and Set Link if External Data", SpuInstructionFormat.RR2, "00110101011", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.MethodCall, SpuPipeline.Odd, 4);
+				new SpuOpCode("bisled", "Branch Indirect and Set Link if External Data", SpuInstructionFormat.RR2, "00110101011", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.Branch | SpuOpCodeSpecialFeatures.MethodCall, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode bisl =
-				new SpuOpCode("bisl", "Branch Indirect and Set Link", SpuInstructionFormat.RR2, "00110101001", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.MethodCall, SpuPipeline.Odd, 4);
+				new SpuOpCode("bisl", "Branch Indirect and Set Link", SpuInstructionFormat.RR2, "00110101001", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.Branch | SpuOpCodeSpecialFeatures.MethodCall, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode brnz =
-				new SpuOpCode("brnz", "Branch If Not Zero Word", SpuInstructionFormat.RI16, "001000010", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 4);
+				new SpuOpCode("brnz", "Branch If Not Zero Word", SpuInstructionFormat.RI16, "001000010", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead | SpuOpCodeSpecialFeatures.Branch, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode brz =
-				new SpuOpCode("brz", "Branch If Zero Word", SpuInstructionFormat.RI16, "001000000", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 4);
+				new SpuOpCode("brz", "Branch If Zero Word", SpuInstructionFormat.RI16, "001000000", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead | SpuOpCodeSpecialFeatures.Branch, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode brhnz =
-				new SpuOpCode("brhnz", "Branch If Not Zero Halfword", SpuInstructionFormat.RI16, "001000110", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 4);
+				new SpuOpCode("brhnz", "Branch If Not Zero Halfword", SpuInstructionFormat.RI16, "001000110", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead | SpuOpCodeSpecialFeatures.Branch, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode brhz =
-				new SpuOpCode("brhz", "Branch If Zero Halfword", SpuInstructionFormat.RI16, "001000100", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 4);
+				new SpuOpCode("brhz", "Branch If Zero Halfword", SpuInstructionFormat.RI16, "001000100", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead | SpuOpCodeSpecialFeatures.Branch, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode biz =
-				new SpuOpCode("biz", "Branch Indirect If Zero", SpuInstructionFormat.RR2, "00100101000", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 4);
+				new SpuOpCode("biz", "Branch Indirect If Zero", SpuInstructionFormat.RR2, "00100101000", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead | SpuOpCodeSpecialFeatures.Branch, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode binz =
-				new SpuOpCode("binz", "Branch Indirect If Not Zero", SpuInstructionFormat.RR2, "00100101001", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 4);
+				new SpuOpCode("binz", "Branch Indirect If Not Zero", SpuInstructionFormat.RR2, "00100101001", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead | SpuOpCodeSpecialFeatures.Branch, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode bihz =
-				new SpuOpCode("bihz", "Branch Indirect If Zero Halfword", SpuInstructionFormat.RR2, "0100101010", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 4);
+				new SpuOpCode("bihz", "Branch Indirect If Zero Halfword", SpuInstructionFormat.RR2, "0100101010", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead | SpuOpCodeSpecialFeatures.Branch, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode bihnz =
-				new SpuOpCode("bihnz", "Branch Indirect If Not Zero Halfword", SpuInstructionFormat.RR2, "00100101011", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 4);
+				new SpuOpCode("bihnz", "Branch Indirect If Not Zero Halfword", SpuInstructionFormat.RR2, "00100101011", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead | SpuOpCodeSpecialFeatures.Branch, SpuPipeline.Odd, 4);
 		// 8. Hint-for-Branch OpCodes: Unusual instruction format, so currently omitted.
 
 		// 9. Floating point.
@@ -859,13 +862,13 @@ namespace CellDotNet.Spe
 		// p238
 		//			};
 		public static readonly SpuOpCode stop =
-				new SpuOpCode("stop", "Stop and Signal", SpuInstructionFormat.RI14, "00000000000", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 4);
+				new SpuOpCode("stop", "Stop and Signal", SpuInstructionFormat.RI14, "00000000000", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead | SpuOpCodeSpecialFeatures.Control, SpuPipeline.Odd, 4);
 
 		public static readonly SpuOpCode lnop =
-			new SpuOpCode("lnop", "No Operation (Load)", SpuInstructionFormat.Weird, "00000000001", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Odd, 0);
+			new SpuOpCode("lnop", "No Operation (Load)", SpuInstructionFormat.Weird, "00000000001", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead | SpuOpCodeSpecialFeatures.Control, SpuPipeline.Odd, 0);
 
 		public static readonly SpuOpCode nop =
-			new SpuOpCode("nop", "No Operation (Execute)", SpuInstructionFormat.Weird, "01000000001", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead, SpuPipeline.Even, 0);
+			new SpuOpCode("nop", "No Operation (Execute)", SpuInstructionFormat.Weird, "01000000001", SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead | SpuOpCodeSpecialFeatures.Control, SpuPipeline.Even, 0);
 
 		public static readonly SpuOpCode rdch =
 			new SpuOpCode("rdch", "Read Channel", SpuInstructionFormat.Channel, "00000001101", SpuOpCodeSpecialFeatures.ChannelAccess, SpuPipeline.Odd, 6);

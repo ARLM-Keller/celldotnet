@@ -78,6 +78,23 @@ namespace CellDotNet
 				throw new DebugAssertException(message);
 		}
 
+		[Conditional("DEBUG")]
+		static public void DebugAssert(bool condition, string message)
+		{
+			Debug.Assert(condition);
+			if (!condition)
+				throw new DebugAssertException(message);
+		}
+
+		[Conditional("DEBUG")]
+		[DebuggerStepThrough]
+		static public void DebugAssert(bool condition)
+		{
+			Debug.Assert(condition);
+			if (!condition)
+				throw new DebugAssertException();
+		}
+
 		/// <summary>
 		/// Note, if <code>target &lt; error</code> then it is sufficient for <code>value</code> to be within <code>+/- error</code> from 0.
 		/// </summary>

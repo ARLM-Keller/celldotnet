@@ -24,6 +24,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using C5;
+using CellDotNet;
 
 namespace CellDotNet.Spe
 {
@@ -56,7 +58,7 @@ namespace CellDotNet.Spe
 		/// <summary>
 		/// Instructions which must be scheduled after this instruction.
 		/// </summary>
-		public ICollection<InstructionScheduleInfo> Dependents
+		public System.Collections.Generic.ICollection<InstructionScheduleInfo> Dependents
 		{
 			get { return _dependents; }
 		}
@@ -85,6 +87,7 @@ namespace CellDotNet.Spe
 		{
 			_satisfiedDependencyCount++;
 
+
 			Utilities.Assert(_dependencyCount >= _satisfiedDependencyCount, "_dependencyCount >= _satisfiedDependencyCount");
 
 			return _satisfiedDependencyCount == _dependencyCount;
@@ -99,6 +102,19 @@ namespace CellDotNet.Spe
 			}
 			_dependents.Add(dependant);
 			dependant.NotifyDependency();
+		}
+
+		public class Comparer : IComparer<InstructionScheduleInfo>
+		{
+			public int Compare(InstructionScheduleInfo x, InstructionScheduleInfo y)
+			{
+				int v = x.Priority.Value - y.Priority.Value;
+				if (v != 0)
+					return v;
+				if (ReferenceEquals(x, y))
+					return 0;
+				return x.GetHashCode() - y.GetHashCode();
+			}
 		}
 	}
 
@@ -126,11 +142,11 @@ namespace CellDotNet.Spe
 				InstructionScheduleInfo isi = new InstructionScheduleInfo(inst);
 				instlist.Add(isi);
 
-				// Order memory accesses.
+				// Keep ordering of some types of opcodes.
 				if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MemoryWrite) != 0 ||
 					(inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MemoryRead) != 0 ||
 					(inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.ChannelAccess) != 0 ||
-					(inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MethodCall) != 0)
+					(inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.Branch) != 0)
 				{
 					if (lastMemCallChan != null)
 						lastMemCallChan.AddDependant(isi);
@@ -138,6 +154,7 @@ namespace CellDotNet.Spe
 					lastMemCallChan = isi;
 				}
 
+				// Handle method calls.
 				if ((inst.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.MethodCall) != 0)
 				{
 					SpuRoutine routine = inst.ObjectWithAddress as SpuRoutine;
@@ -230,61 +247,6 @@ namespace CellDotNet.Spe
 			block.Head = newhead;
 		}
 
-		//		class SimplePriorityQueue<TKey, TValue>
-		//		{
-		//			private SortedDictionary<TKey, List<TValue>> _dict = new SortedDictionary<TKey, List<TValue>>();
-		//
-		//			public bool IsEmpty
-		//			{
-		//				get { return _dict.Count == 0; }
-		//			}
-		//
-		//			public void Add(TKey key, TValue value)
-		//			{
-		//				List<TValue> l;
-		//				if (!_dict.TryGetValue(key, out l))
-		//				{
-		//					l = new List<TValue>();
-		//					_dict.Add(key, l);
-		//				}
-		//				else
-		//				{
-		//					if (l.Contains(value))
-		//						throw new ArgumentException("The element is already present.");
-		//				}
-		//				l.Add(value);
-		//			}
-		//
-		//			public void Remove(TKey key, TValue value)
-		//			{
-		//				List<TValue> l;
-		//				if (!_dict.TryGetValue(key, out l))
-		//					throw new ArgumentException();
-		//
-		//				int i = 0;
-		//				foreach (TValue item in l)
-		//				{
-		//					if (item.Equals(value))
-		//					{
-		//						if (l.Count == 1)
-		//							_dict.Remove(key);
-		//						else
-		//							l.RemoveAt(i);
-		//						return;
-		//					}
-		//
-		//					i++;
-		//				}
-		//
-		//				throw new ArgumentException();
-		//			}
-		//
-		//			public IList<TValue> GetFirstValues()
-		//			{
-		//				return Utilities.GetFirst(_dict.Values);
-		//			}
-		//		}
-
 		/// <summary>
 		/// Schedules prioritized instructions.
 		/// </summary>
@@ -293,27 +255,34 @@ namespace CellDotNet.Spe
 		/// <returns>The new head.</returns>
 		public SpuInstruction SchedulePrioritizedInstructions(List<InstructionScheduleInfo> schedlist, List<InstructionScheduleInfo> initiallyReady)
 		{
-			Set<InstructionScheduleInfo> readySet = new Set<InstructionScheduleInfo>();
-			foreach (InstructionScheduleInfo isi in initiallyReady)
-				readySet.Add(isi);
-
+			// Ordered by priority, but we also need identity.
+			Comparison<InstructionScheduleInfo> comparison = 
+				delegate(InstructionScheduleInfo x, InstructionScheduleInfo y)
+					{
+						int v = x.Priority.Value - y.Priority.Value;
+						if (v != 0) 
+							return v;
+						if (ReferenceEquals(x, y))
+							return 0;
+						return x.GetHashCode() - y.GetHashCode();
+					};
+			TreeSet<InstructionScheduleInfo> readySet = new TreeSet<InstructionScheduleInfo>(new InstructionScheduleInfo.Comparer());
+			TreeSet<InstructionScheduleInfo> totallyReadySet = new TreeSet<InstructionScheduleInfo>(new InstructionScheduleInfo.Comparer());
+			totallyReadySet.AddAll(initiallyReady);
 
 			int instnum = 0;
 			SpuInstruction head = null;
 			SpuInstruction tail = null;
+
 			InstructionScheduleInfo lastAndMaybeBranchInstruction = schedlist[schedlist.Count - 1];
-			while (readySet.Count != 0)
+			if ((lastAndMaybeBranchInstruction.Instruction.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.Branch) == 0)
+				lastAndMaybeBranchInstruction = null;
+
+			while ((readySet.Count + totallyReadySet.Count) != 0)
 			{
-				InstructionScheduleInfo isi = GetNextInstruction(readySet, instnum);
+				InstructionScheduleInfo isi = GetNextInstruction(totallyReadySet, readySet, instnum);
 				if (isi == lastAndMaybeBranchInstruction)
 					continue;
-
-				foreach (InstructionScheduleInfo dependant in isi.Dependents)
-				{
-					bool isready = dependant.NotifyDependencySatisfied();
-					if (isready)
-						readySet.Add(dependant);
-				}
 
 				if (head == null)
 				{
@@ -335,11 +304,15 @@ namespace CellDotNet.Spe
 				instnum++;
 			}
 
-			lastAndMaybeBranchInstruction.Instruction.Next = null;
-			if (tail != null)
-				tail.Next = lastAndMaybeBranchInstruction.Instruction;
-			if (head == null)
-				head = lastAndMaybeBranchInstruction.Instruction;
+
+			if (lastAndMaybeBranchInstruction != null)
+			{
+				lastAndMaybeBranchInstruction.Instruction.Next = null;
+				if (tail != null)
+					tail.Next = lastAndMaybeBranchInstruction.Instruction;
+				if (head == null)
+					head = lastAndMaybeBranchInstruction.Instruction;
+			}
 
 			return head;
 		}
@@ -349,40 +322,91 @@ namespace CellDotNet.Spe
 		/// it will attempt to find an instruction which is can issue on <paramref name="instnum"/> and hopefully
 		/// be dual-issued.
 		/// </summary>
-		private InstructionScheduleInfo GetNextInstruction(Set<InstructionScheduleInfo> readySet, int instnum)
+		private InstructionScheduleInfo GetNextInstruction(TreeSet<InstructionScheduleInfo> totallyReadySet,
+		                                                   TreeSet<InstructionScheduleInfo> readySet, int instnum)
 		{
 			SpuPipeline requestedPipeline = instnum % 2 == 0 ? SpuPipeline.Even : SpuPipeline.Odd;
 
-			// Largest priority at the end.
-			List<InstructionScheduleInfo> readylist =new List<InstructionScheduleInfo>(readySet);
-			readylist.Sort(delegate(InstructionScheduleInfo x, InstructionScheduleInfo y)
-			               	{
-								return x.Priority.Value - y.Priority.Value;
-			               	});
+			int sum1 = readySet.Count + totallyReadySet.Count;
+			Utilities.DebugAssert(sum1 != 0, "sum1 != 0");
 
-			int highestPriority = readylist[readySet.Count - 1].Priority.Value;
-			int chosenIndex = -1;
-			for (int i = readySet.Count - 1; i >= 0; i--)
+			foreach (InstructionScheduleInfo ready in readySet)
+				ready.Priority--;
+
+			// Move from ready to totally ready.
+			InstructionScheduleInfo rItem = null;
+			while (readySet.Count != 0)
 			{
-				if (readylist[i].Priority != highestPriority)
-				{
-					chosenIndex = i + 1;
+				InstructionScheduleInfo candidate = readySet.FindMin();
+				if (candidate.Priority > 0)
 					break;
-				}
-				
-				if (readylist[i].Instruction.OpCode.Pipeline == requestedPipeline)
+
+				Utilities.DebugAssert(!totallyReadySet.Contains(candidate));
+				bool s = totallyReadySet.Add(readySet.DeleteMin());
+				Utilities.DebugAssert(s);
+
+				if (rItem == null)
+					rItem = candidate;
+				else if (candidate.Instruction.OpCode.Pipeline == requestedPipeline)
+					rItem = candidate;
+			}
+
+			// Look for item to return in TR.
+			InstructionScheduleInfo trItem = null;
+			foreach (InstructionScheduleInfo candidate in totallyReadySet.Backwards())
+			{
+				if (trItem == null)
+					trItem = candidate;
+				if (candidate.Priority.Value != trItem.Priority.Value)
+					break;
+				if (candidate.Instruction.OpCode.Pipeline == requestedPipeline)
 				{
-					chosenIndex = i;
+					trItem = candidate;
 					break;
 				}
 			}
-			if (chosenIndex == -1)
-				chosenIndex = readylist.Count - 1;
 
+			Utilities.DebugAssert(totallyReadySet.Count == 0 || trItem != null);
 
-			InstructionScheduleInfo item = readylist[chosenIndex];
-//			readylist.RemoveAt(chosenIndex);
-			readySet.Remove(item);
+			if (trItem != null)
+			{
+				bool s = totallyReadySet.Remove(trItem);
+				Utilities.DebugAssert(s);
+			}
+			else if (rItem == null)
+			{
+				Utilities.DebugAssert(readySet.Count != 0);
+
+				// Didn't find anything so far. Take one from the ready set.
+				foreach (InstructionScheduleInfo candidate in readySet)
+				{
+					if (rItem == null)
+						rItem = candidate;
+					if (rItem.Priority != candidate.Priority)
+						break;
+					if (candidate.Instruction.OpCode.Pipeline == requestedPipeline)
+					{
+						rItem = candidate;
+						break;
+					}
+				}
+				readySet.Remove(rItem);
+			}
+
+			int sum2 = readySet.Count + totallyReadySet.Count;
+			Utilities.DebugAssert(sum2 == sum1 - 1, "1: " + sum1 + " " + sum2);
+
+			InstructionScheduleInfo item = trItem ?? rItem;
+
+			foreach (InstructionScheduleInfo dependant in item.Dependents)
+			{
+				bool becameReady = dependant.NotifyDependencySatisfied();
+				if (becameReady)
+				{
+					dependant.Priority = item.Instruction.OpCode.Latency;
+					readySet.Add(dependant);
+				}
+			}
 
 			return item;
 		}

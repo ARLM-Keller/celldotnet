@@ -31,7 +31,7 @@ namespace CellDotNet.Spe
 		private int _start;
 		private int _end;
 
-		private VirtualRegister _virtualRegister;
+		private readonly VirtualRegister _virtualRegister;
 
 		/// <summary>
 		/// The virtual register which is live in the interval.
@@ -41,13 +41,6 @@ namespace CellDotNet.Spe
 		public VirtualRegister VirtualRegister
 		{
 			get { return _virtualRegister; }
-		}
-
-
-//		[Obsolete()]
-#warning make this obsolete
-		public LiveInterval()
-		{
 		}
 
 		public LiveInterval(VirtualRegister register)
@@ -67,20 +60,14 @@ namespace CellDotNet.Spe
 			set { _end = value; }
 		}
 
-		/// <summary>
-		/// This is only to be used by the graph coloring allocator since it's read-write,
-		/// and the linear allocator works by changing the <see cref="VirtualRegister"/>'s <see cref="CellRegister"/> property.
-		/// </summary>
-		public VirtualRegister r;
-
-		public static List<LiveInterval> sortByStart(List<LiveInterval> liveIntervals)
+		public static List<LiveInterval> SortByStart(List<LiveInterval> liveIntervals)
 		{
 			liveIntervals.Sort(new CompareByStart());
 
 			return liveIntervals;
 		}
 
-		public static List<LiveInterval> sortByEnd(List<LiveInterval> liveIntervals)
+		public static List<LiveInterval> SortByEnd(List<LiveInterval> liveIntervals)
 		{
 			liveIntervals.Sort(new CompareByEnd());
 
@@ -109,7 +96,7 @@ namespace CellDotNet.Spe
 
 		public override string ToString()
 		{
-			return r + " from " + _start + " to " + _end;
+			return VirtualRegister + " from " + _start + " to " + _end;
 		}
 	}
 }
