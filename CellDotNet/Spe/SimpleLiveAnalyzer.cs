@@ -45,10 +45,9 @@ namespace CellDotNet.Spe
 				{
 					if (!liveIntervals.TryGetValue(def, out li))
 					{
-						li = new LiveInterval();
+						li = new LiveInterval(def);
 						li.Start = i;
 						li.End = i;
-						li.r = def;
 						liveIntervals.Add(def, li);
 						intervallist.Add(li);
 					}
@@ -60,10 +59,9 @@ namespace CellDotNet.Spe
 					//li = liveIntervals[r];
 					if (!liveIntervals.TryGetValue(r, out li))
 					{
-						li = new LiveInterval();
+						li = new LiveInterval(r);
 						li.Start = i;
 						li.End = i;
-						li.r = r;
 						liveIntervals.Add(r, li);
 						intervallist.Add(li);
 					}

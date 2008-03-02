@@ -551,8 +551,8 @@ namespace CellDotNet
 
 		public void AddPpeType(Type t)
 		{
-			if(State != CompileContextState.S1Initial)
-				throw new Exception("Can only add PPE type when the CompileContext is in initial state.");
+			Utilities.Assert(State == CompileContextState.S1Initial, 
+				"Can only add PPE type when the CompileContext is in initial state.");
 
 			_ppeTypes.Add(t);
 		}
