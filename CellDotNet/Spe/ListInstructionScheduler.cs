@@ -40,14 +40,14 @@ namespace CellDotNet.Spe
 		private List<InstructionScheduleInfo> _dependents = new List<InstructionScheduleInfo>(3);
 
 
-		private int? _priority;
+		private int? _criticalPathLength;
 
 		private int _satisfiedDependencyCount;
 		private int _dependencyCount;
 
 		private string DebuggerDisplay
 		{
-			get { return _instruction.OpCode.Name + " (inst " + _instruction.SpuInstructionNumber + ", pri " + Priority + ")"; }
+			get { return _instruction.OpCode.Name + " (inst " + _instruction.SpuInstructionNumber + ", pri " + CriticalPathLength + ")"; }
 		}
 
 		public SpuInstruction Instruction
@@ -63,11 +63,19 @@ namespace CellDotNet.Spe
 			get { return _dependents; }
 		}
 
-		public int? Priority
+		public int? CriticalPathLength
 		{
-			get { return _priority; }
-			set { _priority = value; }
+			get { return _criticalPathLength; }
+			set { _criticalPathLength = value; }
 		}
+
+		public int RemainingStalls
+		{
+			get { return _remainingStalls; }
+			set { _remainingStalls = value; }
+		}
+
+		private int _remainingStalls;
 
 		public InstructionScheduleInfo(SpuInstruction instruction)
 		{
@@ -104,16 +112,25 @@ namespace CellDotNet.Spe
 			dependant.NotifyDependency();
 		}
 
-		public class Comparer : IComparer<InstructionScheduleInfo>
+		public class CriticalPathComparer : IComparer<InstructionScheduleInfo>
 		{
 			public int Compare(InstructionScheduleInfo x, InstructionScheduleInfo y)
 			{
-				int v = x.Priority.Value - y.Priority.Value;
+				int v = x.CriticalPathLength.Value - y.CriticalPathLength.Value;
 				if (v != 0)
 					return v;
-				if (ReferenceEquals(x, y))
-					return 0;
-				return x.GetHashCode() - y.GetHashCode();
+				return x.Instruction.SpuInstructionNumber - y.Instruction.SpuInstructionNumber;
+			}
+		}
+
+		public class RemainingStallsComparer : IComparer<InstructionScheduleInfo>
+		{
+			public int Compare(InstructionScheduleInfo x, InstructionScheduleInfo y)
+			{
+				int v = x.RemainingStalls - y.RemainingStalls;
+				if (v != 0)
+					return v;
+				return x.Instruction.SpuInstructionNumber - y.Instruction.SpuInstructionNumber;
 			}
 		}
 	}
@@ -207,12 +224,12 @@ namespace CellDotNet.Spe
 
 			foreach (InstructionScheduleInfo isi in schedlist)
 			{
-				if (isi.Priority == null)
+				if (isi.CriticalPathLength == null)
 				{
 					// Since we haven't calculated a priority yet, this instructions has no dependencies (in this block).
 					initiallyReady.Add(isi);
 					CalculatePriority(isi);
-					Utilities.AssertNotNull(isi.Priority, "isi.Priority");
+					Utilities.AssertNotNull(isi.CriticalPathLength, "isi.CriticalPathLength");
 				}
 			}
 		}
@@ -227,12 +244,12 @@ namespace CellDotNet.Spe
 			int maxprio = 0;
 			foreach (InstructionScheduleInfo dep in isi.Dependents)
 			{
-				if (dep.Priority == null)
+				if (dep.CriticalPathLength == null)
 					CalculatePriority(dep);
-				maxprio = Math.Max(maxprio, dep.Priority.Value);
+				maxprio = Math.Max(maxprio, dep.CriticalPathLength.Value);
 			}
 
-			isi.Priority = maxprio + isi.Instruction.OpCode.Latency;
+			isi.CriticalPathLength = maxprio + isi.Instruction.OpCode.Latency;
 		}
 
 		public void Schedule(SpuBasicBlock block)
@@ -255,19 +272,8 @@ namespace CellDotNet.Spe
 		/// <returns>The new head.</returns>
 		public SpuInstruction SchedulePrioritizedInstructions(List<InstructionScheduleInfo> schedlist, List<InstructionScheduleInfo> initiallyReady)
 		{
-			// Ordered by priority, but we also need identity.
-			Comparison<InstructionScheduleInfo> comparison = 
-				delegate(InstructionScheduleInfo x, InstructionScheduleInfo y)
-					{
-						int v = x.Priority.Value - y.Priority.Value;
-						if (v != 0) 
-							return v;
-						if (ReferenceEquals(x, y))
-							return 0;
-						return x.GetHashCode() - y.GetHashCode();
-					};
-			TreeSet<InstructionScheduleInfo> readySet = new TreeSet<InstructionScheduleInfo>(new InstructionScheduleInfo.Comparer());
-			TreeSet<InstructionScheduleInfo> totallyReadySet = new TreeSet<InstructionScheduleInfo>(new InstructionScheduleInfo.Comparer());
+			TreeSet<InstructionScheduleInfo> readySet = new TreeSet<InstructionScheduleInfo>(new InstructionScheduleInfo.RemainingStallsComparer());
+			TreeSet<InstructionScheduleInfo> totallyReadySet = new TreeSet<InstructionScheduleInfo>(new InstructionScheduleInfo.CriticalPathComparer());
 			totallyReadySet.AddAll(initiallyReady);
 
 			int instnum = 0;
@@ -319,7 +325,7 @@ namespace CellDotNet.Spe
 
 		/// <summary>
 		/// Returns the instruction with the highest priority. If multiple instructions have maximum priority,
-		/// it will attempt to find an instruction which is can issue on <paramref name="instnum"/> and hopefully
+		/// it will attempt to find an instruction which it can issue on <paramref name="instnum"/> and hopefully
 		/// be dual-issued.
 		/// </summary>
 		private InstructionScheduleInfo GetNextInstruction(TreeSet<InstructionScheduleInfo> totallyReadySet,
@@ -331,14 +337,14 @@ namespace CellDotNet.Spe
 			Utilities.DebugAssert(sum1 != 0, "sum1 != 0");
 
 			foreach (InstructionScheduleInfo ready in readySet)
-				ready.Priority--;
+				ready.RemainingStalls--;
 
 			// Move from ready to totally ready.
 			InstructionScheduleInfo rItem = null;
 			while (readySet.Count != 0)
 			{
 				InstructionScheduleInfo candidate = readySet.FindMin();
-				if (candidate.Priority > 0)
+				if (candidate.RemainingStalls > 0)
 					break;
 
 				Utilities.DebugAssert(!totallyReadySet.Contains(candidate));
@@ -357,7 +363,7 @@ namespace CellDotNet.Spe
 			{
 				if (trItem == null)
 					trItem = candidate;
-				if (candidate.Priority.Value != trItem.Priority.Value)
+				if (candidate.CriticalPathLength.Value != trItem.CriticalPathLength.Value)
 					break;
 				if (candidate.Instruction.OpCode.Pipeline == requestedPipeline)
 				{
@@ -382,7 +388,7 @@ namespace CellDotNet.Spe
 				{
 					if (rItem == null)
 						rItem = candidate;
-					if (rItem.Priority != candidate.Priority)
+					if (rItem.RemainingStalls != candidate.RemainingStalls)
 						break;
 					if (candidate.Instruction.OpCode.Pipeline == requestedPipeline)
 					{
@@ -403,7 +409,7 @@ namespace CellDotNet.Spe
 				bool becameReady = dependant.NotifyDependencySatisfied();
 				if (becameReady)
 				{
-					dependant.Priority = item.Instruction.OpCode.Latency;
+					dependant.RemainingStalls = item.Instruction.OpCode.Latency;
 					readySet.Add(dependant);
 				}
 			}
