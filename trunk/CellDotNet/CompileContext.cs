@@ -1004,6 +1004,11 @@ main:
 			Disassembler.DisassembleToConsole(this);
 		}
 
+		public void DisassembleToFile(string filename)
+		{
+			Disassembler.DisassembleToFile(filename, this);
+		}
+
 		public int[] GetEmittedCode()
 		{
 			if (State < CompileContextState.S7CodeEmitted)
