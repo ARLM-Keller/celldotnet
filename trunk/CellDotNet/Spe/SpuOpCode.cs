@@ -887,7 +887,7 @@ namespace CellDotNet.Spe
 		public static readonly SpuOpCode move = 
 			new SpuOpCode("move", "Move (pseudo)", SpuInstructionFormat.Custom, "0", SpuOpCodeSpecialFeatures.Pseudo, SpuPipeline.None, 0);
 		public static readonly SpuOpCode ret =
-			new SpuOpCode("ret", "Function return (pseudo)", SpuInstructionFormat.Custom, "0", SpuOpCodeSpecialFeatures.Pseudo, SpuPipeline.None, 0);
+			new SpuOpCode("ret", "Function return (pseudo)", SpuInstructionFormat.Custom, "0", SpuOpCodeSpecialFeatures.Pseudo | SpuOpCodeSpecialFeatures.Branch, SpuPipeline.None, 0);
 
 	}
 }
