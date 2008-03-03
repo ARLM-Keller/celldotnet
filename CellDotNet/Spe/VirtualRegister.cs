@@ -87,7 +87,7 @@ namespace CellDotNet.Spe
 				else if (Register == CellRegister.REG_0)
 					return "$LR";
 				else
-					return "$" + Register;
+					return "$" + (int)Register;
 			}
 			else if (Number != 0)
 				return "$$" + Number;

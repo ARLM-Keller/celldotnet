@@ -24,10 +24,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace CellDotNet.Spe
 {
-	class Disassembler
+	public class Disassembler
 	{
 		public static void DisassembleToConsole(CompileContext compileContext)
 		{
@@ -37,7 +38,15 @@ namespace CellDotNet.Spe
 			DisassembleToConsole(compileContext.GetAllObjectsForDisassembly());
 		}
 
-		public static void DisassembleToConsole(IEnumerable<ObjectWithAddress> objects)
+		public static void DisassembleToFile(string filename, CompileContext compileContext)
+		{
+			if (compileContext.State < CompileContextState.S6AddressPatchingDone)
+				throw new InvalidOperationException("Address patching has not yet been performed.");
+
+			DisassembleToFile(filename, compileContext.GetAllObjectsForDisassembly());
+		}
+
+		static void DisassembleToConsole(IEnumerable<ObjectWithAddress> objects)
 		{
 			StringWriter sw = new StringWriter();
 
@@ -51,6 +60,14 @@ namespace CellDotNet.Spe
 			}
 		}
 
+		static void DisassembleToFile(string filename, IEnumerable<ObjectWithAddress> objects)
+		{
+			using (StreamWriter writer = new StreamWriter(filename, false, Encoding.ASCII))
+			{
+				new Disassembler().Disassemble(objects, writer);
+			}
+		}
+
 		public void Disassemble(CompileContext compileContext, TextWriter writer)
 		{
 			if (compileContext.State < CompileContextState.S6AddressPatchingDone)
@@ -60,7 +77,7 @@ namespace CellDotNet.Spe
 			Disassemble(objects, writer);
 		}
 
-		public static void DisassembleUnconditionalToConsole(SpuDynamicRoutine routine)
+		static void DisassembleUnconditionalToConsole(SpuDynamicRoutine routine)
 		{
 			StringWriter sw = new StringWriter();
 			DisassembleUnconditional(routine, sw);
@@ -80,7 +97,7 @@ namespace CellDotNet.Spe
 			DisassembleUnconditional(objects, writer);
 		}
 
-		public static void DisassembleUnconditional(SpuDynamicRoutine routine, TextWriter writer)
+		static void DisassembleUnconditional(SpuDynamicRoutine routine, TextWriter writer)
 		{
 			DisassembleUnconditional(new SpuDynamicRoutine[] { routine }, writer);
 		}
@@ -90,7 +107,7 @@ namespace CellDotNet.Spe
 		/// </summary>
 		/// <param name="objects"></param>
 		/// <param name="writer"></param>
-		public static void DisassembleUnconditional(IEnumerable<ObjectWithAddress> objects, TextWriter writer)
+		static void DisassembleUnconditional(IEnumerable<ObjectWithAddress> objects, TextWriter writer)
 		{
 			foreach (ObjectWithAddress o in objects)
 			{
@@ -109,7 +126,7 @@ namespace CellDotNet.Spe
 			writer.WriteLine();
 		}
 
-		public void Disassemble(IEnumerable<ObjectWithAddress> objects, TextWriter writer)
+		void Disassemble(IEnumerable<ObjectWithAddress> objects, TextWriter writer)
 		{
 			List<ObjectWithAddress> olist = new List<ObjectWithAddress>(objects);
 			List<string> layoutErrorMsg = new List<string>();
@@ -169,7 +186,7 @@ namespace CellDotNet.Spe
 				if (r == null)
 					continue;
 
-				writer.WriteLine();
+					writer.WriteLine();
 				writer.WriteLine("# Name: {3}\r\n# Offset: {0:x6}, size: {1:x6}, type: {2}.",
 					r.Offset, r.Size, r.GetType().Name, !string.IsNullOrEmpty(o.Name) ? o.Name : "(none)");
 				int newoffset = DisassembleInstructions(r.GetFinalInstructions(), r.Offset, writer);
@@ -192,39 +209,61 @@ namespace CellDotNet.Spe
 
 			foreach (SpuInstruction inst in instructions)
 			{
-				tw.Write("{0:x4}: ", offset);
+//				tw.Write("{0:x4}: ", offset);
+				string rt = "$" + (inst.Rt != null ? "" + (int)inst.Rt.Register : "");
+				string ra = "$" + (inst.Ra != null ? "" + (int)inst.Ra.Register : "");
+				string rb = "$" + (inst.Rb != null ? "" + (int)inst.Rb.Register : "");
+				string rc = "$" + (inst.Rc != null ? "" + (int)inst.Rc.Register : "");
 				switch (inst.OpCode.Format)
 				{
 					case SpuInstructionFormat.None:
 						throw new BadSpuInstructionException();
 					case SpuInstructionFormat.RR:
-						tw.Write("{0} {1}, {2}, {3}", inst.OpCode.Name, inst.Rt, inst.Ra, inst.Rb);
+						tw.Write("{0} {1}, {2}, {3}", inst.OpCode.Name, rt, ra, rb);
 						break;
 					case SpuInstructionFormat.RR2:
-						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Ra);
+						tw.Write("{0} {1}, {2}", inst.OpCode.Name, rt, ra);
 						break;
 					case SpuInstructionFormat.RR1:
-						tw.Write("{0} {1}", inst.OpCode.Name, inst.Ra);
+						tw.Write("{0} {1}", inst.OpCode.Name, ra);
 						break;
 					case SpuInstructionFormat.Rrr:
-						tw.Write("{0} {1}, {2}, {3}, {4}", inst.OpCode.Name, inst.Rt, inst.Ra, inst.Rb, inst.Rc);
+						tw.Write("{0} {1}, {2}, {3}, {4}", inst.OpCode.Name, rt, ra, rb, rc);
 						break;
 					case SpuInstructionFormat.RI7:
 					case SpuInstructionFormat.RI8:
-						tw.Write("{0} {1}, {2}, {3}", inst.OpCode.Name, inst.Rt, inst.Ra, inst.Constant);
+						tw.Write("{0} {1}, {2}, {3}", inst.OpCode.Name, rt, ra, inst.Constant);
 						break;
 					case SpuInstructionFormat.RI10:
-						tw.Write("{0} {1}, {3}({2})", inst.OpCode.Name, inst.Rt, inst.Ra, inst.Constant);
-						break;
+						{
+							switch(inst.OpCode.Name)
+							{
+								case ("stqd"):
+								case ("lqd"):
+								case ("cwd"):
+								case ("chd"):
+								case ("cdd"):
+								case ("cbd"):
+									tw.Write("{0} {1}, {3}({2})", inst.OpCode.Name, rt, ra, inst.Constant);
+									break;
+								default:
+									tw.Write("{0} {1}, {2}, 0x{3:x}", inst.OpCode.Name, rt, ra, inst.Constant);
+									break;
+							}
+							break;
+						}
 					case SpuInstructionFormat.RI16:
-						tw.Write("{0} {1}, 0x{2:x}", inst.OpCode.Name, inst.Rt, inst.Constant);
+						tw.Write("{0} {1}, 0x{2:x}", inst.OpCode.Name, rt, inst.Constant);
 						break;
 					case SpuInstructionFormat.RI14:
 					case SpuInstructionFormat.RI16NoRegs:
 						tw.Write("{0} 0x{1:x}", inst.OpCode.Name, inst.Constant);
 						break;
 					case SpuInstructionFormat.RI18:
-						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Constant);
+						tw.Write("{0} {1}, {2}", inst.OpCode.Name, rt, inst.Constant);
+						break;
+					case SpuInstructionFormat.Hint:
+						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.BranchHintOffset, inst.Constant);
 						break;
 					case SpuInstructionFormat.Weird:
 						if (inst.OpCode == SpuOpCode.stop)
@@ -243,11 +282,11 @@ namespace CellDotNet.Spe
 						// Currently this only need to handle move.
 						if (inst.OpCode == SpuOpCode.move)
 						{
-							tw.Write("{0} {1}, {2}   # no. {3}", inst.OpCode.Name, inst.Rt, inst.Ra, inst.SpuInstructionNumber);
+							tw.Write("{0} {1}, {2}   # no. {3}", inst.OpCode.Name, rt, ra, inst.SpuInstructionNumber);
 						}
 						else
 						{
-							tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.Rt, inst.Ra);
+							tw.Write("{0} {1}, {2}", inst.OpCode.Name, rt, ra);
 						}
 						break;
 					case SpuInstructionFormat.Channel:
@@ -263,7 +302,7 @@ namespace CellDotNet.Spe
 							tw.Write("{0} {1}", inst.OpCode.Name, chan);
 						}
 						else
-							tw.Write("{0} ${1}, {2}", inst.OpCode.Name, chan, inst.Rt);
+							tw.Write("{0} ${1}, {2}", inst.OpCode.Name, chan, rt);
 
 						break;
 					default:
