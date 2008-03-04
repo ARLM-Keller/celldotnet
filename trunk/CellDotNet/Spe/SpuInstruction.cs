@@ -37,9 +37,6 @@ namespace CellDotNet.Spe
 
     	private int _constant;
 
-		// Used in hint for branch insructions.
-    	private int _RO;
-
     	private VirtualRegister _ra;
 
     	private VirtualRegister _rb;
@@ -209,28 +206,6 @@ namespace CellDotNet.Spe
 			}
 		}
 
-		/// <summary>
-		/// Only used with hint for branch insructions.
-		/// The relativ address of the branch instruction which this hint instruction is hinting.
-		/// </summary>
-		public int BranchHintOffset
-		{
-			get
-			{
-				if (_opcode.SpecialFeatures != SpuOpCodeSpecialFeatures.BranchHintOffset)
-					throw new InvalidOperationException("The instruction " + _opcode + ", do not support branch hint offset.");
-
-				return _RO;
-			}
-			set
-			{
-				if (_opcode.SpecialFeatures != SpuOpCodeSpecialFeatures.BranchHintOffset)
-					throw new InvalidOperationException("The instruction " + _opcode + ", do not support branch hint offset.");
-
-				_RO = value; //TODO check value is within range.
-			}
-		}
-
         public int Emit()
         {
 			switch (_opcode.Format)
@@ -263,8 +238,6 @@ namespace CellDotNet.Spe
 					return _opcode.OpCode | ((_constant & 0x3f) << 7) | (int)_rt.Register;
 				case SpuInstructionFormat.Weird:
 					return _opcode.OpCode | _constant;
-				case SpuInstructionFormat.Hint:
-					return _opcode.OpCode | ((_RO & (0x3 << 7)) >> 7) << 23 | (_constant & 0xffff) << 7 | _RO & 0x7f;
 				default:
 					throw new BadSpuInstructionException(string.Format("Invalid SPU opcode instruction format '{0}'; instruction name '{1}'.", _opcode.Format, _opcode.Name));
 			}
