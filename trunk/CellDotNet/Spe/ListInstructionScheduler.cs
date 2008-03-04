@@ -281,7 +281,8 @@ namespace CellDotNet.Spe
 			SpuInstruction tail = null;
 
 			InstructionScheduleInfo lastAndMaybeBranchInstruction = schedlist[schedlist.Count - 1];
-			if ((lastAndMaybeBranchInstruction.Instruction.OpCode.SpecialFeatures & SpuOpCodeSpecialFeatures.Branch) == 0)
+			if ((lastAndMaybeBranchInstruction.Instruction.OpCode.SpecialFeatures & 
+				(SpuOpCodeSpecialFeatures.Branch | SpuOpCodeSpecialFeatures.Control)) == 0)
 				lastAndMaybeBranchInstruction = null;
 
 			while ((readySet.Count + totallyReadySet.Count) != 0)

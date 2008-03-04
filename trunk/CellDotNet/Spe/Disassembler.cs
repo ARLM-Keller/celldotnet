@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -203,6 +204,15 @@ namespace CellDotNet.Spe
 				throw new BadCodeLayoutException("One or more layout errors were detected:\r\n" + string.Join("\r\n", layoutErrorMsg.ToArray()));
 		}
 
+		static string GetRegisterName(VirtualRegister reg)
+		{
+			if (reg == null)
+				return "$";
+			if (reg.IsRegisterSet)
+				return "$" + (int) reg.Register;
+			return "$$" + reg.Number;
+		}
+
 		internal static int DisassembleInstructions(IEnumerable<SpuInstruction> instructions, int startOffset, TextWriter tw)
 		{
 			int offset = startOffset;
@@ -210,10 +220,10 @@ namespace CellDotNet.Spe
 			foreach (SpuInstruction inst in instructions)
 			{
 //				tw.Write("{0:x4}: ", offset);
-				string rt = "$" + (inst.Rt != null ? "" + (int)inst.Rt.Register : "");
-				string ra = "$" + (inst.Ra != null ? "" + (int)inst.Ra.Register : "");
-				string rb = "$" + (inst.Rb != null ? "" + (int)inst.Rb.Register : "");
-				string rc = "$" + (inst.Rc != null ? "" + (int)inst.Rc.Register : "");
+				string rt = GetRegisterName(inst.Rt);
+				string ra = GetRegisterName(inst.Ra);
+				string rb = GetRegisterName(inst.Rb);
+				string rc = GetRegisterName(inst.Rc);
 				switch (inst.OpCode.Format)
 				{
 					case SpuInstructionFormat.None:
@@ -279,7 +289,7 @@ namespace CellDotNet.Spe
 						// Currently this only need to handle move.
 						if (inst.OpCode == SpuOpCode.move)
 						{
-							tw.Write("{0} {1}, {2}   # no. {3}", inst.OpCode.Name, rt, ra, inst.SpuInstructionNumber);
+							tw.Write("{0} {1}, {2}", inst.OpCode.Name, rt, ra, inst.SpuInstructionNumber);
 						}
 						else
 						{
