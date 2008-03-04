@@ -103,13 +103,6 @@ namespace CellDotNet.Spe
 		/// </summary>
 		RI18,
 		/// <summary>
-		/// No registers.
-		/// Assembler format: "symbol, symbol".
-		/// 7 bit instruction code.
-		/// 11 bit, 16 bit immediate.
-		/// </summary>
-		Hint,
-		/// <summary>
 		/// For the channel instructions.
 		/// </summary>
 		Channel,
@@ -792,13 +785,7 @@ namespace CellDotNet.Spe
 				new SpuOpCode("bihz", "Branch Indirect If Zero Halfword", SpuInstructionFormat.RR2, "0100101010", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead | SpuOpCodeSpecialFeatures.Branch, SpuPipeline.Odd, 4);
 		public static readonly SpuOpCode bihnz =
 				new SpuOpCode("bihnz", "Branch Indirect If Not Zero Halfword", SpuInstructionFormat.RR2, "00100101011", SpuOpCodeSpecialFeatures.BitDE | SpuOpCodeSpecialFeatures.RegisterRtNotWritten | SpuOpCodeSpecialFeatures.RegisterRtRead | SpuOpCodeSpecialFeatures.Branch, SpuPipeline.Odd, 4);
-
 		// 8. Hint-for-Branch OpCodes: Unusual instruction format, so currently omitted.
-		// TODO: hbr(Hint for Branch (r-form))
-		public static readonly SpuOpCode hbra =
-				new SpuOpCode("hbra", "Hint for Branch (a-form)", SpuInstructionFormat.Hint, "0001000", SpuOpCodeSpecialFeatures.BranchHintOffset, SpuPipeline.Odd, 15);
-		public static readonly SpuOpCode hbrr =
-				new SpuOpCode("hbrr", "Hint for Branch Relative", SpuInstructionFormat.Hint, "0001001", SpuOpCodeSpecialFeatures.BranchHintOffset, SpuPipeline.Odd, 15);
 
 		// 9. Floating point.
 		public static readonly SpuOpCode fa =

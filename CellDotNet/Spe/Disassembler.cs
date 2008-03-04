@@ -262,9 +262,6 @@ namespace CellDotNet.Spe
 					case SpuInstructionFormat.RI18:
 						tw.Write("{0} {1}, {2}", inst.OpCode.Name, rt, inst.Constant);
 						break;
-					case SpuInstructionFormat.Hint:
-						tw.Write("{0} {1}, {2}", inst.OpCode.Name, inst.BranchHintOffset, inst.Constant);
-						break;
 					case SpuInstructionFormat.Weird:
 						if (inst.OpCode == SpuOpCode.stop)
 						{
