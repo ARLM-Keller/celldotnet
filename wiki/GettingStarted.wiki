@@ -18,14 +18,14 @@ To get up and running you need a couple of things:
 
 The procedure goes something like this:
 
-  # Install a PowerPC Linux. We have used Yellow Dog and Fedora Core 7, but other distributions will probably work. There is no need to configure the kernel for huge pages.
-  # Install Mono, version >= 1.2.5.
+  * Install a PowerPC Linux. We have used Yellow Dog and Fedora Core 7, but other distributions will probably work. There is no need to configure the kernel for huge pages.
+  * Install Mono, version >= 1.2.5.
     http://www.mono-project.com/
-  # Get a copy of the SPE management library, libspe, version >= 2. The Cell SDK available from IBM provides this, along with development tools which can become handy. SDK v3 is the current version, but SDK version 2.x will also do, if you happen to have that installed.
+  * Get a copy of the SPE management library, libspe, version >= 2. The Cell SDK available from IBM provides this, along with development tools which can become handy. SDK v3 is the current version, but SDK version 2.x will also do, if you happen to have that installed.
     http://www-128.ibm.com/developerworks/power/cell/
-  # Get the C5 library. Mono ships with this, so depending on how you want to compile CellDotNet, you might not need this.
+  * Get the C5 library. Mono ships with this, so depending on how you want to compile CellDotNet, you might not need this.
     http://www.itu.dk/research/c5/
-  # Get the CellDotNet sources from subversion or the download section.
+  * Get the CellDotNet sources from subversion or the download section.
      Subversion location: http://celldotnet.googlecode.com/svn/trunk/ or http://celldotnet.googlecode.com/svn/tags/v0.11
      Download: http://code.google.com/p/celldotnet/downloads/list
 
