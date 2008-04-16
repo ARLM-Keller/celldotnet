@@ -206,8 +206,9 @@ namespace CellDotNet.Spe
 					}
 				case IRCode.Ldc_R8:
 //					{
-//						long val = Utilities.ReinterpretAsLong((double) inst.Operand);
-//						return _writer.WriteLoadR8(val);
+//						return _writer.WriteLoadR8((double)inst.Operand);
+						long val2 = Utilities.ReinterpretAsLong((double) inst.Operand);
+						return _writer.WriteLoadR8(val2);
 //					}
 					break;
 				case IRCode.Dup:

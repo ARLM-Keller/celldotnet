@@ -39,12 +39,10 @@ namespace CellDotNet
 	[TestFixture]
 	public class ILOpCodeExecutionTest : UnitTest
 	{
-		private delegate int SimpleDelegateReturn();
-
 		[Test]
 		public void Test_Call()
 		{
-			SimpleDelegateReturn del1 = delegate() { return SpuMath.Max(4, 99); };
+			Func<int> del1 = () => SpuMath.Max(4, 99);
 
 			CompileContext cc = new CompileContext(del1.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -528,12 +526,12 @@ namespace CellDotNet
 			ExecuteAndVerifyComparator(OpCodes.Cgt, 5f, 7f, 0);
 		}
 
-		[Test, Ignore]
+		[Test]
 		public void Test_Cgt_R8()
 		{
-			ExecuteAndVerifyComparator(OpCodes.Cgt, 5, 3, 1);
-			ExecuteAndVerifyComparator(OpCodes.Cgt, 5, 5, 0);
-			ExecuteAndVerifyComparator(OpCodes.Cgt, 5, 7, 0);
+			ExecuteAndVerifyComparator(OpCodes.Cgt, 5.0, 3.0, 1);
+			ExecuteAndVerifyComparator(OpCodes.Cgt, 5.0, 5.0, 0);
+			ExecuteAndVerifyComparator(OpCodes.Cgt, 5.0, 7.0, 0);
 		}
 
 		[Test]
@@ -552,7 +550,7 @@ namespace CellDotNet
 			ExecuteAndVerifyComparator(OpCodes.Clt, 5f, 7f, 1);
 		}
 
-		[Test, Ignore]
+		[Test]
 		public void Test_Clt_R8()
 		{
 			ExecuteAndVerifyComparator(OpCodes.Clt, 5, 3, 0);
@@ -619,7 +617,6 @@ namespace CellDotNet
 		[Test]
 		public void Test_Div_Un()
 		{
-//			Func<uint, uint, uint> fun = SpuMath.Div_Un;
 			Func<uint, uint, uint> fun = (u1, u2) => u1/u2;
 
 			CompileContext cc = new CompileContext(fun.Method);
@@ -768,22 +765,14 @@ namespace CellDotNet
 			TestExecution(w, -3.14f);
 		}
 
-		private delegate double DoubleDelegate();
-
-		[Test, Ignore]
+		[Test]
 		public void Test_Ldc_R8()
 		{
 			const double magicnumber = -4203.57;
-			DoubleDelegate del = delegate {return magicnumber;};
+			Func<double> del = () => magicnumber;
 
-			CompileContext cc = new CompileContext(del.Method);
-			cc.PerformProcessing(CompileContextState.S8Complete);
-
-			if(!SpeContext.HasSpeHardware)
-				return;
-
-			double resutl = (double)new SpeContext().RunProgram(cc);
-			AreEqual(magicnumber, resutl);
+			double result = (double)SpeContext.UnitTestRunProgram(del);
+			AreEqual(magicnumber, result);
 		}
 
 
@@ -802,7 +791,7 @@ namespace CellDotNet
 		[Test]
 		public void TestRefArgumentTest()
 		{
-			SimpleDelegateReturn del1 = f1;
+			Func<int> del1 = f1;
 
 
 			CompileContext cc = new CompileContext(del1.Method);
@@ -846,6 +835,20 @@ namespace CellDotNet
 			w.WriteFloat(i1);
 			w.WriteOpcode(OpCodes.Ldc_R4);
 			w.WriteFloat(i2);
+			w.WriteOpcode(opcode);
+			w.WriteOpcode(OpCodes.Ret);
+
+			TestExecution(w, expectedValue);
+		}
+
+		public void ExecuteAndVerifyComparator(OpCode opcode, double d1, double d2, int expectedValue)
+		{
+			ILWriter w = new ILWriter();
+
+			w.WriteOpcode(OpCodes.Ldc_R8);
+			w.WriteDouble(d1);
+			w.WriteOpcode(OpCodes.Ldc_R8);
+			w.WriteDouble(d2);
 			w.WriteOpcode(opcode);
 			w.WriteOpcode(OpCodes.Ret);
 
