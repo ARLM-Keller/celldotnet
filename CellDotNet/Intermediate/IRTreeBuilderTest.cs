@@ -298,7 +298,6 @@ namespace CellDotNet.Intermediate
 					}
 				});
 
-			new TreeDrawer().DrawMethod(blocks);
 
 			AreEqual(2, branchcount, "Invalid branch count.");
 			AreEqual(1, loadcount, "Invalid load count.");

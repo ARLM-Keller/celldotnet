@@ -49,8 +49,6 @@ namespace CellDotNet
 			CompileContext cc = new CompileContext(del1.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			new TreeDrawer().DrawMethods(cc);
-
 			int[] code = cc.GetEmittedCode();
 
 			if (!SpeContext.HasSpeHardware)
@@ -439,6 +437,12 @@ namespace CellDotNet
 		}
 
 		[Test]
+		public void Test_Div_I4()
+		{
+			ExecuteAndVerifyBinaryOperator(OpCodes.Div, 5, 3, 15);
+		}
+
+		[Test]
 		public void Test_Ldc_R4()
 		{
 			ILWriter w = new ILWriter();
@@ -623,8 +627,7 @@ namespace CellDotNet
 		[Test]
 		public void Test_Div_Un()
 		{
-			DivDelegate fun =
-				delegate(int d1, int d2) { return (int)SpuMath.Div_Un((uint)d1, (uint)d2); };
+			DivDelegate fun = (d1, d2) => (int) SpuMath.Div_Un((uint) d1, (uint) d2);
 
 			CompileContext cc = new CompileContext(fun.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -641,8 +644,7 @@ namespace CellDotNet
 		[Test]
 		public void Test_Div()
 		{
-			DivDelegate fun =
-				delegate(int d1, int d2) { return SpuMath.Div(d1, d2); };
+			DivDelegate fun = SpuMath.Div;
 
 			CompileContext cc = new CompileContext(fun.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -677,8 +679,7 @@ namespace CellDotNet
 		[Test]
 		public void Test_Rem()
 		{
-			DivDelegate fun =
-				delegate(int d1, int d2) { return SpuMath.Rem(d1, d2); };
+			DivDelegate fun = SpuMath.Rem;
 
 			CompileContext cc = new CompileContext(fun.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
