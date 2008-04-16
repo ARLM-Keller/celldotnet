@@ -357,6 +357,11 @@ namespace CellDotNet
 			return *((uint*) &value);
 		}
 
+		static internal unsafe ulong ReinterpretAsULong(double value)
+		{
+			return *((ulong*) &value);
+		}
+
 		static internal unsafe int ReinterpretAsInt(float value)
 		{
 			return *((int*)&value);

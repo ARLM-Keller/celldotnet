@@ -70,15 +70,29 @@ namespace CellDotNet.Intermediate
 			_writer.Write(EncodeLittleEndian((f1)));
 		}
 
+		public void WriteDouble(double d1)
+		{
+			_writer.Write(EncodeLittleEndian(d1));
+		}
+
 		private static byte[] EncodeLittleEndian(float f)
 		{
 			uint u = Utilities.ReinterpretAsUInt(f);
-			return new byte[] { (byte)(u & 0xff), (byte)((u >> 8) & 0xff), (byte)((u >> 16) & 0xff), (byte)((u >> 24) & 0xff) };
+			return EncodeLittleEndian((int) u);
 		}
 
 		private static byte[] EncodeLittleEndian(int u)
 		{
 			return new byte[] { (byte)(u & 0xff), (byte)((u >> 8) & 0xff), (byte)((u >> 16) & 0xff), (byte)((u >> 24) & 0xff) };
+		}
+
+		private static byte[] EncodeLittleEndian(double d)
+		{
+			ulong u = Utilities.ReinterpretAsULong(d);
+			return new byte[] { 
+				(byte)(u & 0xff), (byte)((u >> 8) & 0xff), (byte)((u >> 16) & 0xff), (byte)((u >> 24) & 0xff),
+				(byte)((u >> 32) & 0xff), (byte)((u >> 40) & 0xff), (byte)((u >> 48) & 0xff), (byte)((u >> 56) & 0xff)
+			};
 		}
 
 		public byte[] ToByteArray()

@@ -34,7 +34,7 @@ namespace CellDotNet
 	[TestFixture]
 	public class ShellUtilitiesTest : UnitTest
 	{
-		[Test]
+		[Test, Ignore("Isn't reliable...")]
 		public void TestExecuteCommand()
 		{
 			string output = ShellUtilities.ExecuteCommandAndGetOutput("hostname", null);
@@ -42,7 +42,7 @@ namespace CellDotNet
 			AreNotEqual("", output);
 		}
 
-		[Test]
+		[Test, Ignore("Isn't reliable...")]
 		public void TestExecuteShellScript()
 		{
 			if (!HasUnixShell)
