@@ -188,7 +188,7 @@ namespace CellDotNet.Spe
 
 		private delegate int AdderDelegate(int arg1, int arg2);
 
-		[Test]
+		[Test, Ignore]
 		public void TestElfStaticLibrary()
 		{
 			if (!HasUnixShell)
