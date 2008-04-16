@@ -140,7 +140,7 @@ namespace CellDotNet.Spe
 //			set { _naked = value; }
 //		}
 
-		private Dictionary<VirtualRegister, int> registerWeight = new Dictionary<VirtualRegister, int>();
+		private readonly Dictionary<VirtualRegister, int> registerWeight = new Dictionary<VirtualRegister, int>();
 
 		public MethodCompiler(MethodBase method)
 		{

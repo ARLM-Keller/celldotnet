@@ -37,5 +37,6 @@ using System.Security.Permissions;
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
 [assembly: CLSCompliant(true)]
+[assembly: InternalsVisibleTo("SciMarkCell")]
 //[assembly: InternalsVisibleTo("DebuggerVisualizers")]
 //[assembly: SecurityPermission(SecurityAction.RequestMinimum, Flags = SecurityPermissionFlag.UnmanagedCode | SecurityPermissionFlag.SkipVerification)]

@@ -41,8 +41,9 @@ namespace CellDotNet
 
 		private static void RunRasmus()
 		{
-			Func<double, double, double> f = (d1, d2) => d1 % d2;
-			Console.WriteLine(f(3,5));
+			new ILOpCodeExecutionTest().Test_Rem_Un_I4();
+//			Func<double, double, double> f = (d1, d2) => d1 % d2;
+//			Console.WriteLine(f(3,5));
 		}
 	}
 }

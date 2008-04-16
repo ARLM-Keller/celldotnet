@@ -62,7 +62,7 @@ namespace CellDotNet
 
 		private CompileContextState _state;
 
-		private MethodBase _entryPointMethod;
+		private readonly MethodInfo _entryPointMethod;
 
 		LibraryManager _librarymanager;
 
@@ -90,7 +90,7 @@ namespace CellDotNet
 			get { return _methods.GetMethodCompilers(); }
 		}
 
-		public CompileContext(MethodBase entryPoint)
+		public CompileContext(MethodInfo entryPoint)
 		{
 			State = CompileContextState.S1Initial;
 			if (!entryPoint.IsStatic)
@@ -431,12 +431,17 @@ namespace CellDotNet
 			}
 		}
 
+		public MethodInfo EntryPointMethod
+		{
+			get { return _entryPointMethod; }
+		}
+
 		class LibraryManager
 		{
 			internal class LibraryUsage
 			{
-				private Library _library;
-				private Dictionary<string, LibraryMethod> _usedMethods = new Dictionary<string, LibraryMethod>(StringComparer.Ordinal);
+				private readonly Library _library;
+				private readonly Dictionary<string, LibraryMethod> _usedMethods = new Dictionary<string, LibraryMethod>(StringComparer.Ordinal);
 
 				public LibraryUsage(Library library)
 				{
@@ -464,8 +469,8 @@ namespace CellDotNet
 				}
 			}
 
-			Dictionary<string, LibraryUsage> _libraries = new Dictionary<string, LibraryUsage>(StringComparer.OrdinalIgnoreCase);
-			private LibraryResolver _resolver;
+			readonly Dictionary<string, LibraryUsage> _libraries = new Dictionary<string, LibraryUsage>(StringComparer.OrdinalIgnoreCase);
+			private readonly LibraryResolver _resolver;
 
 			public LibraryManager(LibraryResolver libraryResolver)
 			{
@@ -516,7 +521,7 @@ namespace CellDotNet
 		/// </summary>
 		class MethodSet
 		{
-			private Dictionary<string, MethodCompiler> _methodcompilers;
+			private readonly Dictionary<string, MethodCompiler> _methodcompilers;
 
 
 			public MethodSet()
@@ -547,7 +552,7 @@ namespace CellDotNet
 			}
 		}
 
-		Set<Type> _ppeTypes = new Set<Type>();
+		readonly Set<Type> _ppeTypes = new Set<Type>();
 
 		public void AddPpeType(Type t)
 		{
@@ -566,7 +571,7 @@ namespace CellDotNet
 			AssertState(CompileContextState.S2TreeConstructionDone - 1);
 
 			// The types whose methods should only be executed on the ppe.
-			foreach (ParameterInfo param in _entryPointMethod.GetParameters())
+			foreach (ParameterInfo param in EntryPointMethod.GetParameters())
 			{
 				Type t = param.ParameterType;
 				if (t.IsPrimitive || t.IsValueType)
@@ -578,7 +583,7 @@ namespace CellDotNet
 			// Compile entry point and any called methods, except PPE class methods.
 			Dictionary<string, MethodBase> methodsToCompile = new Dictionary<string, MethodBase>();
 			Dictionary<string, List<TreeInstruction>> instructionsToPatch = new Dictionary<string, List<TreeInstruction>>();
-			methodsToCompile.Add(CreateMethodRefKey(_entryPointMethod), _entryPointMethod);
+			methodsToCompile.Add(CreateMethodRefKey(EntryPointMethod), EntryPointMethod);
 
 			bool isfirst = true;
 
@@ -679,7 +684,7 @@ namespace CellDotNet
 			return false;
 		}
 
-		MethodSet _methods = new MethodSet();
+		readonly MethodSet _methods = new MethodSet();
 
 		/// <summary>
 		/// Creates a <see cref="MethodCompiler"/> from <paramref name="method"/> while 
