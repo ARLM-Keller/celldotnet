@@ -25,7 +25,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using CellDotNet.Spe;
 
 namespace CellDotNet
 {
@@ -35,10 +34,10 @@ namespace CellDotNet
 	/// </summary>
 	internal class SpeDelegateRunner
 	{
-		private CompileContext _compileContext;
+		private readonly CompileContext _compileContext;
 		private int[] _spuCode;
-		private Delegate _typedWrapperDelegate;
-		private Delegate _typedOriginalDelegate;
+		private readonly Delegate _typedWrapperDelegate;
+		private readonly Delegate _typedOriginalDelegate;
 
 
 		public CompileContext CompileContext
@@ -58,7 +57,11 @@ namespace CellDotNet
 
 		public static T CreateSpeDelegate<T>(T delegateToWrap) where T : class
 		{
+			Utilities.AssertArgumentNotNull(delegateToWrap, "delegateToWrap");
 			Delegate del = delegateToWrap as Delegate;
+			if (delegateToWrap == null)
+				throw new ArgumentException("Argument must be of delegate type.");
+
 			SpeDelegateRunner runner = new SpeDelegateRunner(del);
 			return runner.WrapperDelegate as T;
 		}
@@ -74,32 +77,25 @@ namespace CellDotNet
 			Utilities.AssertArgumentNotNull(delegateToWrap, "delegateToWrap");
 
 			MethodInfo method = delegateToWrap.Method;
-			Compile(method);
-
-			CreateWrapperDelegate(delegateToWrap, method);
-			_typedOriginalDelegate = delegateToWrap;
-		}
-
-		private void Compile(MethodInfo method)
-		{
 			_compileContext = new CompileContext(method);
 			_compileContext.PerformProcessing(CompileContextState.S8Complete);
 			_spuCode = _compileContext.GetEmittedCode();
 
-//			_compileContext.WriteAssemblyToFile((Utilities.GetUnitTestName() ?? "dump") + ".s");
+			_typedWrapperDelegate = CreateWrapperDelegate(delegateToWrap, method);
+			_typedOriginalDelegate = delegateToWrap;
 		}
 
-		private void CreateWrapperDelegate(Delegate del, MethodInfo method)
+		private Delegate CreateWrapperDelegate(Delegate del, MethodInfo method)
 		{
 			// The parameters are the same as those of the original delegate,
 			// but the "this" parameters is also mentioned explicitly here.
-			List<Type> paramtypes = new List<Type>();
-			paramtypes.Add(typeof(SpeDelegateRunner));
+			var paramtypes = new List<Type> {typeof (SpeDelegateRunner)};
 			foreach (ParameterInfo parameter in method.GetParameters())
 				paramtypes.Add(parameter.ParameterType);
 
-			DynamicMethod dm = new DynamicMethod(method.Name + "-sperunner",
-												 method.ReturnType, paramtypes.ToArray(), GetType(), true);
+			var dm = new DynamicMethod(method.Name + "-sperunner",
+			                           method.ReturnType, paramtypes.ToArray(), GetType(), true);
+
 			/// body:
 			/// 1: create object[] til args.
 			/// 2: save array in local.
@@ -111,8 +107,8 @@ namespace CellDotNet
 			/// 4: Load this-arg onto stack.
 			/// 5: Load array onto stack.
 			/// 6: Call work method.
-			/// 7a: Hvis delegate har ikke-void-returtype: ret.
-			/// 7b: Hvis delegate har void-returtype: pop, ret.
+			/// 7a: If delegate has non-void return type: ret.
+			/// 7b: If delegate has void return type: pop, ret.
 
 			ILGenerator ilgen = dm.GetILGenerator();
 
@@ -124,7 +120,7 @@ namespace CellDotNet
 			ilgen.Emit(OpCodes.Stloc, arr);
 
 			// Save delegate args in array.
-			for (int i = 1; i < paramtypes.Count; i++)
+			for (int i = 0; i < paramtypes.Count - 1; i++)
 			{
 				ilgen.Emit(OpCodes.Ldloc, arr);
 
@@ -132,7 +128,7 @@ namespace CellDotNet
 				ilgen.Emit(OpCodes.Conv_I);
 
 				ilgen.Emit(OpCodes.Ldarg, i); // arg 0 is instance.
-				ilgen.Emit(OpCodes.Box, paramtypes[i]);
+				ilgen.Emit(OpCodes.Box, paramtypes[i+1]);
 
 				ilgen.Emit(OpCodes.Stelem, typeof(object));
 			}
@@ -140,7 +136,7 @@ namespace CellDotNet
 			// Call work method.
 			ilgen.Emit(OpCodes.Ldarg_0);
 			ilgen.Emit(OpCodes.Ldloc, arr);
-			ilgen.EmitCall(OpCodes.Callvirt, new Converter<object[], object>(SpeDelegateWrapperExecute).Method, null);
+			ilgen.EmitCall(OpCodes.Callvirt, new Func<object[], object>(SpeDelegateWrapperExecute).Method, null);
 
 			// Handle return value.
 			if (method.ReturnType != typeof(void))
@@ -149,8 +145,7 @@ namespace CellDotNet
 			}
 			ilgen.Emit(OpCodes.Ret);
 
-			Delegate wrapperDel = dm.CreateDelegate(del.GetType(), this);
-			_typedWrapperDelegate = wrapperDel;
+			return dm.CreateDelegate(del.GetType(), this);
 		}
 
 		/// <summary>

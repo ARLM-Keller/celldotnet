@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -54,11 +55,17 @@ namespace CellDotNet.Spe
 					case TypeCode.Double:
 						buf = BitConverter.GetBytes((double)val);
 						break;
+					case TypeCode.UInt16:
+						buf = BitConverter.GetBytes((ushort)val);
+						break;
 					case TypeCode.Int16:
 						buf = BitConverter.GetBytes((short)val);
 						break;
 					case TypeCode.Int32:
 						buf = BitConverter.GetBytes((int)val);
+						break;
+					case TypeCode.UInt32:
+						buf = BitConverter.GetBytes((uint)val);
 						break;
 					case TypeCode.Int64:
 						buf = BitConverter.GetBytes((long)val);
@@ -154,6 +161,8 @@ namespace CellDotNet.Spe
 				Type type = types[i];
 				object val = null;
 
+//				Console.WriteLine("getvalues: " + Type.GetTypeCode(type));
+//				Console.WriteLine(new StackTrace());
 				switch (Type.GetTypeCode(type))
 				{
 					case TypeCode.Single:
@@ -162,14 +171,29 @@ namespace CellDotNet.Spe
 					case TypeCode.Double:
 						val = BitConverter.ToDouble(buf, currentBufOffset);
 						break;
+					case TypeCode.SByte:
+						val = (sbyte)buf[currentBufOffset];
+						break;
+					case TypeCode.Byte:
+						val = buf[currentBufOffset];
+						break;
 					case TypeCode.Int16:
 						val = BitConverter.ToInt16(buf, currentBufOffset);
+						break;
+					case TypeCode.UInt16:
+						val = BitConverter.ToUInt16(buf, currentBufOffset);
 						break;
 					case TypeCode.Int32:
 						val = BitConverter.ToInt32(buf, currentBufOffset);
 						break;
+					case TypeCode.UInt32:
+						val = BitConverter.ToUInt32(buf, currentBufOffset);
+						break;
 					case TypeCode.Int64:
 						val = BitConverter.ToInt64(buf, currentBufOffset);
+						break;
+					case TypeCode.UInt64:
+						val = BitConverter.ToUInt64(buf, currentBufOffset);
 						break;
 					case TypeCode.Object:
 					case TypeCode.String:

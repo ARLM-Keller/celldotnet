@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using CellDotNet.Intermediate;
@@ -45,8 +46,8 @@ namespace CellDotNet.Spe
 
 		private List<IROpCode> _unimplementedOpCodes;
 
-		private SpecialSpeObjects _specialSpeObjects;
-		private StackSpaceAllocator _stackAllocate;
+		private readonly SpecialSpeObjects _specialSpeObjects;
+		private readonly StackSpaceAllocator _stackAllocate;
 
 
 		public RecursiveInstructionSelector()
@@ -96,8 +97,7 @@ namespace CellDotNet.Spe
 					"which are not currently supported, or their operand types are not supported.\r\n" + 
 					"The instructions opcodes are:\r\n", _unimplementedOpCodes.Count);
 
-				List<string> ocnames = new List<IROpCode>(Utilities.RemoveDuplicates(_unimplementedOpCodes)).ConvertAll<string>(
-					delegate(IROpCode input) { return input.Name; });
+				var ocnames = Utilities.RemoveDuplicates(_unimplementedOpCodes).Select(input => input.Name).ToArray();
 				msg += string.Join(", ", ocnames.ToArray()) + ".";
 
 				throw new NotImplementedException(msg);
@@ -106,9 +106,7 @@ namespace CellDotNet.Spe
 			// Patch generated branch instructions with their target spu basic blocks.
 			foreach (KeyValuePair<SpuInstruction, IRBasicBlock> pair in _branchInstructions)
 			{
-				SpuBasicBlock target;
-
-				target = _spubasicblocks[pair.Value];
+				SpuBasicBlock target = _spubasicblocks[pair.Value];
 				pair.Key.JumpTarget = target;
 			}
 		}
@@ -641,6 +639,8 @@ namespace CellDotNet.Spe
 					// Integer division is handled during IL reading, by replacing with a call to SpuMath.Div and SpuMath.Div_Un.
 					switch (lefttype.CliType)
 					{
+//						case CliType.Int32: // Should have been replaced by a method call at this point.
+
 						case CliType.Float32:
 							{
 								VirtualRegister r2 = vrright;

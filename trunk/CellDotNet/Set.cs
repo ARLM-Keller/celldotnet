@@ -29,9 +29,9 @@ using System.Diagnostics;
 namespace CellDotNet
 {
 	[DebuggerDisplay("Count = {Count}")]
-	public class Set<T> : IEnumerable<T>, ICollection<T>
+	public class Set<T> : ICollection<T>
 	{
-		Dictionary<T, bool> dict = new Dictionary<T, bool>();
+		readonly Dictionary<T, bool> dict = new Dictionary<T, bool>();
 
 		public Set()
 		{

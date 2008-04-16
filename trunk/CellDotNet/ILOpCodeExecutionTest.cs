@@ -437,12 +437,6 @@ namespace CellDotNet
 		}
 
 		[Test]
-		public void Test_Div_I4()
-		{
-			ExecuteAndVerifyBinaryOperator(OpCodes.Div, 5, 3, 15);
-		}
-
-		[Test]
 		public void Test_Ldc_R4()
 		{
 			ILWriter w = new ILWriter();
@@ -622,29 +616,28 @@ namespace CellDotNet
 			ExecuteAndVerifyComparator(OpCodes.Clt_Un, 5f, 7f, 1);
 		}
 
-		private delegate int DivDelegate(int d1, int d2);
-
 		[Test]
 		public void Test_Div_Un()
 		{
-			DivDelegate fun = (d1, d2) => (int) SpuMath.Div_Un((uint) d1, (uint) d2);
+//			Func<uint, uint, uint> fun = SpuMath.Div_Un;
+			Func<uint, uint, uint> fun = (u1, u2) => u1/u2;
 
 			CompileContext cc = new CompileContext(fun.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(1 / 1, (int)SpeContext.UnitTestRunProgram(cc, 1, 1), "1 / 1");
-			AreEqual(0 / 1, (int)SpeContext.UnitTestRunProgram(cc, 0, 1), "0 / 1");
-			AreEqual(17 / 7, (int)SpeContext.UnitTestRunProgram(cc, 17, 7), "17 / 7");
-			AreEqual(14 / 7, (int)SpeContext.UnitTestRunProgram(cc, 14, 7), "14 / 7");
-			AreEqual(4 / 7, (int)SpeContext.UnitTestRunProgram(cc, 4, 7), "4 / 7");
-			AreEqual(42 / 42, (int)SpeContext.UnitTestRunProgram(cc, 42, 42), "42 / 42");
-			AreEqual(52907 / 432, (int)SpeContext.UnitTestRunProgram(cc, 52907, 432), "52907 / 432");
+			AreEqual((uint)1 / 1, (uint)SpeContext.UnitTestRunProgram(cc, (uint)1, (uint)1), "1 / 1");
+			AreEqual((uint)0 / 1, (uint)SpeContext.UnitTestRunProgram(cc, (uint)0, (uint)1), "0 / 1");
+			AreEqual((uint)17 / 7, (uint)SpeContext.UnitTestRunProgram(cc, (uint)17, (uint)7), "17 / 7");
+			AreEqual((uint)14 / 7, (uint)SpeContext.UnitTestRunProgram(cc, (uint)14, (uint)7), "14 / 7");
+			AreEqual((uint)4 / 7, (uint)SpeContext.UnitTestRunProgram(cc, (uint)4, (uint)7), "4 / 7");
+			AreEqual((uint)42 / 42, (uint)SpeContext.UnitTestRunProgram(cc, (uint)42, (uint)42), "42 / 42");
+			AreEqual((uint)52907 / 432, (uint)SpeContext.UnitTestRunProgram(cc, (uint)52907, (uint)432), "52907 / 432");
 		}
 
 		[Test]
-		public void Test_Div()
+		public void Test_Div_I4()
 		{
-			DivDelegate fun = SpuMath.Div;
+			Func<int, int, int> fun = (x, y) => x / y;
 
 			CompileContext cc = new CompileContext(fun.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -659,27 +652,26 @@ namespace CellDotNet
 		}
 
 		[Test]
-		public void Test_Rem_Un()
+		public void Test_Rem_Un_I4()
 		{
-			DivDelegate fun =
-				delegate(int d1, int d2) { return (int)SpuMath.Rem_Un((uint)d1, (uint)d2); };
+			Func<uint, uint, uint> fun = SpuMath.Rem_Un;
 
 			CompileContext cc = new CompileContext(fun.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(1 % 1, (int)SpeContext.UnitTestRunProgram(cc, 1, 1), "");
-			AreEqual(0 % 1, (int)SpeContext.UnitTestRunProgram(cc, 0, 1), "");
-			AreEqual(17 % 7, (int)SpeContext.UnitTestRunProgram(cc, 17, 7), "");
-			AreEqual(14 % 7, (int)SpeContext.UnitTestRunProgram(cc, 14, 7), "");
-			AreEqual(4 % 7, (int)SpeContext.UnitTestRunProgram(cc, 4, 7), "");
-			AreEqual(42 % 42, (int)SpeContext.UnitTestRunProgram(cc, 42, 42), "");
-			AreEqual(52907 % 432, (int)SpeContext.UnitTestRunProgram(cc, 52907, 432), "");
+			AreEqual((uint)1 % 1, (uint)SpeContext.UnitTestRunProgram(cc, (uint)1, (uint)1), "");
+			AreEqual((uint)0 % 1, (uint)SpeContext.UnitTestRunProgram(cc, (uint)0, (uint)1), "");
+			AreEqual((uint)17 % 7, (uint)SpeContext.UnitTestRunProgram(cc, (uint)17, (uint)7), "");
+			AreEqual((uint)14 % 7, (uint)SpeContext.UnitTestRunProgram(cc, (uint)14, (uint)7), "");
+			AreEqual((uint)4 % 7, (uint)SpeContext.UnitTestRunProgram(cc, (uint)4, (uint)7), "");
+			AreEqual((uint)42 % 42, (uint)SpeContext.UnitTestRunProgram(cc, (uint)42, (uint)42), "");
+			AreEqual((uint)52907 % 432, (uint)SpeContext.UnitTestRunProgram(cc, (uint)52907, (uint)432), "");
 		}
 
 		[Test]
-		public void Test_Rem()
+		public void Test_Rem_I4()
 		{
-			DivDelegate fun = SpuMath.Rem;
+			Func<int, int, int> fun = (x, y) => x % y;
 
 			CompileContext cc = new CompileContext(fun.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -692,8 +684,6 @@ namespace CellDotNet
 			AreEqual(42 % -42, (int)SpeContext.UnitTestRunProgram(cc, 42, -42), "");
 			AreEqual(-52907 % -432, (int)SpeContext.UnitTestRunProgram(cc, -52907, -432), "");
 		}
-
-		private delegate float DivFloatDelegate(float d1, float d2);
 
 		private static void Test_Div_Float_Helper(CompileContext cc, float dividend, float divisor, float error)
 		{
@@ -717,8 +707,7 @@ namespace CellDotNet
 		[Test]
 		public void Test_Div_Float()
 		{
-			DivFloatDelegate fun =
-				delegate(float d1, float d2) { return d1/d2; };
+			Func<float, float, float> fun = (d1, d2) => d1/d2;
 
 			CompileContext cc = new CompileContext(fun.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -914,8 +903,6 @@ namespace CellDotNet
 			{
 				var.VirtualRegister = new VirtualRegister();
 			}
-
-//			new TreeDrawer().DrawMethod(basicBlocks);
 
 			RecursiveInstructionSelector sel = new RecursiveInstructionSelector();
 

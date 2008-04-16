@@ -38,7 +38,7 @@ namespace CellDotNet
 		private const uint SPE_TAG_ANY = 2;
 //		private const uint SPE_TAG_IMMEDIATE = 3;
 
-		static object s_lock = new object();
+		static readonly object s_lock = new object();
 
 		private static bool? s_hasSpeHardware;
 		public static bool HasSpeHardware
@@ -71,8 +71,8 @@ namespace CellDotNet
 
 		private IntPtr _handle;
 
-		private int _localStorageSize = -1;
-		private IntPtr _localStorageMappedAddress;
+		private readonly int _localStorageSize;
+		private readonly IntPtr _localStorageMappedAddress;
 		private RegisterSizedObject _debugValueObject;
 
 		public int LocalStorageSize
@@ -303,23 +303,31 @@ namespace CellDotNet
 			Run(cc.PpeCallDataArea, marshaler);
 
 			// Get return value.
-			object retval = null;
+			object retval;
 			if (cc.EntryPoint.ReturnType != StackTypeDescription.None)
 			{
-				if (cc.EntryPoint.ReturnType.CliType == CliType.ObjectType || 
-					cc.EntryPoint.ReturnType.CliType == CliType.ValueType)
+				if (cc.EntryPoint.ReturnType.CliType == CliType.ObjectType ||
+				    cc.EntryPoint.ReturnType.CliType == CliType.ValueType)
 				{
 					// Hopefully suitable size...
 					int retvalsize = 8*16;
 
 					byte[] retmem = GetLocalStorageMax16K(cc.ReturnValueAddress, retvalsize);
-					retval = marshaler.GetValue(retmem, cc.EntryPoint.ReturnType.ComplexType.ReflectionType);
+					retval = marshaler.GetValue(retmem, cc.EntryPointMethod.ReturnType);
 				}
 				else
-					retval = DmaGetValue(cc.EntryPoint.ReturnType, cc.ReturnValueAddress);
+					retval = DmaGetValue(cc.ReturnValueAddress, cc.EntryPointMethod.ReturnType);
 			}
+			else
+				retval = null;
 
 			return retval;
+		}
+
+		internal object DmaGetValue(LocalStorageAddress lsAddress, Type type)
+		{
+			byte[] buff = GetLocalStorageMax16K(lsAddress, 16);
+			return new Marshaler().GetValue(buff, type);
 		}
 
 		public static object RunProgram(Delegate delegateToRun, params object[] arguments)
@@ -333,7 +341,7 @@ namespace CellDotNet
 			}
 		}
 
-		public static object UnitTestRunProgram(Delegate del, params object[] args)
+		internal static object UnitTestRunProgram(Delegate del, params object[] args)
 		{
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -348,7 +356,7 @@ namespace CellDotNet
 		/// <param name="cc"></param>
 		/// <param name="args"></param>
 		/// <returns></returns>
-		public static object UnitTestRunProgram(CompileContext cc, params object[] args)
+		internal static object UnitTestRunProgram(CompileContext cc, params object[] args)
 		{
 			// Just to make sure...
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -392,12 +400,6 @@ namespace CellDotNet
 				if (dataBufMain != IntPtr.Zero)
 					Marshal.FreeHGlobal(dataBufMain);
 			}
-		}
-
-		internal object DmaGetValue(StackTypeDescription datatype, LocalStorageAddress lsAddress)
-		{
-			byte[] buff = GetLocalStorageMax16K(lsAddress, 16);
-			return new Marshaler().GetValue(buff, StackTypeDescription.GetReflectionType(datatype.CliType));
 		}
 
 		/// <summary>

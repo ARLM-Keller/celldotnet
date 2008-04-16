@@ -33,7 +33,7 @@ namespace CellDotNet.Intermediate
 	/// </summary>
 	class TypeDeriver
 	{
-		private TypeCache _typecache = new TypeCache();
+		private readonly TypeCache _typecache = new TypeCache();
 
 		/// <summary>
 		/// Translates the type reference to a <see cref="TypeDescription"/>.
@@ -458,31 +458,26 @@ namespace CellDotNet.Intermediate
 			return t;
 		}
 
-		private static Dictionary<Type, StackTypeDescription> s_metadataCilTypes = BuildBasicMetadataCilDictionary();
+		private static readonly Dictionary<Type, StackTypeDescription> s_metadataCilTypes = new Dictionary<Type, StackTypeDescription>
+			           	{
+			           		{typeof (bool), StackTypeDescription.Int32},
+			           		{typeof (sbyte), StackTypeDescription.Int32},
+			           		{typeof (byte), StackTypeDescription.Int32},
+			           		{typeof (short), StackTypeDescription.Int32},
+			           		{typeof (ushort), StackTypeDescription.Int32},
+			           		{typeof (char), StackTypeDescription.Int32},
+			           		{typeof (int), StackTypeDescription.Int32},
+			           		{typeof (uint), StackTypeDescription.Int32},
+			           		{typeof (long), StackTypeDescription.Int64},
+			           		{typeof (ulong), StackTypeDescription.Int64},
+			           		{typeof (IntPtr), StackTypeDescription.NativeInt},
+			           		{typeof (UIntPtr), StackTypeDescription.NativeInt},
+			           		{typeof (float), StackTypeDescription.Float32},
+			           		{typeof (double), StackTypeDescription.Float64},
+			           		{typeof (Int32Vector), StackTypeDescription.Int32Vector},
+			           		{typeof (Float32Vector), StackTypeDescription.Float32Vector}
+			           	};
 
-		private static Dictionary<Type, StackTypeDescription> BuildBasicMetadataCilDictionary()
-		{
-			Dictionary<Type, StackTypeDescription> dict = new Dictionary<Type, StackTypeDescription>();
-
-			dict.Add(typeof(bool), StackTypeDescription.Int32); // Correct?
-			dict.Add(typeof(sbyte), StackTypeDescription.Int32);
-			dict.Add(typeof(byte), StackTypeDescription.Int32);
-			dict.Add(typeof(short), StackTypeDescription.Int32);
-			dict.Add(typeof(ushort), StackTypeDescription.Int32);
-			dict.Add(typeof(char), StackTypeDescription.Int32); // Correct?
-			dict.Add(typeof(int), StackTypeDescription.Int32);
-			dict.Add(typeof(uint), StackTypeDescription.Int32);
-			dict.Add(typeof(long), StackTypeDescription.Int64);
-			dict.Add(typeof(ulong), StackTypeDescription.Int64);
-			dict.Add(typeof(IntPtr), StackTypeDescription.NativeInt);
-			dict.Add(typeof(UIntPtr), StackTypeDescription.NativeInt);
-			dict.Add(typeof(float), StackTypeDescription.Float32);
-			dict.Add(typeof(double), StackTypeDescription.Float64);
-			dict.Add(typeof(Int32Vector), StackTypeDescription.Int32Vector);
-			dict.Add(typeof(Float32Vector), StackTypeDescription.Float32Vector);
-
-			return dict;
-		}
 
 
 		/// <summary>
@@ -538,7 +533,7 @@ namespace CellDotNet.Intermediate
 			return std;
 		}
 
-		static private CliType[,] s_binaryNumericOps = GetBinaryOpsTypeTable();
+		static private readonly CliType[,] s_binaryNumericOps = GetBinaryOpsTypeTable();
 		static CliType[,] GetBinaryOpsTypeTable()
 		{
 			// The diagonal.
