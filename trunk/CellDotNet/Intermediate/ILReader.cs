@@ -450,8 +450,8 @@ namespace CellDotNet.Intermediate
 
 		private double ReadDouble()
 		{
-			long i = ReadInt64();
-			return Utilities.ReinterpretAsDouble(i);
+			long l = ReadInt64();
+			return Utilities.ReinterpretAsDouble(l);
 		}
 
 		/// <summary>
@@ -714,8 +714,8 @@ namespace CellDotNet.Intermediate
 
 		private long ReadInt64()
 		{
-			long num3 = (((_il[_readoffset + 0]) | (_il[_readoffset + 1] << 8)) | (_il[_readoffset + 2] << 0x10)) | (_il[_readoffset + 3] << 0x18);
-			long num4 = (((_il[_readoffset + 4]) | (_il[_readoffset + 5] << 8)) | (_il[_readoffset + 6] << 0x10)) | (_il[_readoffset + 7] << 0x18);
+			long num3 = (((_il[_readoffset + 0]) | (_il[_readoffset + 1] << 8)) | (_il[_readoffset + 2] << 0x10)) | (uint)(_il[_readoffset + 3] << 0x18);
+			long num4 = (uint)(((_il[_readoffset + 4]) | (_il[_readoffset + 5] << 8)) | (_il[_readoffset + 6] << 0x10)) | (uint)(_il[_readoffset + 7] << 0x18);
 			_readoffset += 8;
 			return num3 | (num4 << 0x20);
 		}

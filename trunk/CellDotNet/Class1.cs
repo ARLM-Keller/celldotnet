@@ -28,6 +28,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using CellDotNet.Intermediate;
 using CellDotNet.Spe;
 
 namespace CellDotNet
@@ -39,9 +40,28 @@ namespace CellDotNet
 			RunRasmus();
 		}
 
-		private static void RunRasmus()
+		public static string hexencode(byte[] arr)
 		{
-			new ILOpCodeExecutionTest().Test_Rem_Un_I4();
+			char[] hexchars = new[] {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+			StringBuilder sb = new StringBuilder(arr.Length*2);
+			foreach (var b in arr)
+			{
+				sb.Append(hexchars[(b & 0xf) >> 4]);
+				sb.Append(hexchars[b >> 4]);
+			}
+			return sb.ToString();
+		}
+
+		private static unsafe void RunRasmus()
+		{
+			new ILOpCodeExecutionTest().Test_Ldc_R8();
+
+//			double d = 4324534.523226;
+//			long l = (long) *((double*) &d);
+//			Console.WriteLine("double hex: " +  hexencode(BitConverter.GetBytes(d)));
+//			Console.WriteLine("long reinterpreted hex: " +  hexencode(BitConverter.GetBytes(l)));
+
+//			new ILOpCodeExecutionTest().Test_Rem_Un_I4();
 //			Func<double, double, double> f = (d1, d2) => d1 % d2;
 //			Console.WriteLine(f(3,5));
 		}

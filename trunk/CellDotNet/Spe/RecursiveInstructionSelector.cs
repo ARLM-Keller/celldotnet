@@ -205,12 +205,7 @@ namespace CellDotNet.Spe
 //						return reg;
 					}
 				case IRCode.Ldc_R8:
-//					{
-//						return _writer.WriteLoadR8((double)inst.Operand);
-						long val2 = Utilities.ReinterpretAsLong((double) inst.Operand);
-						return _writer.WriteLoadR8(val2);
-//					}
-					break;
+					return _writer.WriteLoadR8((double)inst.Operand);
 				case IRCode.Dup:
 					// This is rewritten to stloc, ldloc, ldloc.
 					break;

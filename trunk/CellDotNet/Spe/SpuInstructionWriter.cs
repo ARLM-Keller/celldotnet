@@ -31,7 +31,7 @@ namespace CellDotNet.Spe
 {
 	partial class SpuInstructionWriter
 	{
-		private List<SpuBasicBlock> _basicBlocks = new List<SpuBasicBlock>();
+		private readonly List<SpuBasicBlock> _basicBlocks = new List<SpuBasicBlock>();
 		/// <summary>
 		/// The instructions that have been written.
 		/// </summary>
@@ -539,15 +539,14 @@ namespace CellDotNet.Spe
 		{
 			long il = Utilities.ReinterpretAsLong(i);
 
-			int high = (int) (il >> 32);
+			int high = (int) (((ulong) il) >> 32);
+			int low = (int) il;
 
-			WriteIlhu(rt, high >> 16);
-			WriteIohl(rt, high);
+			VirtualRegister reglow = WriteLoadI4(low);
+			VirtualRegister reghigh = WriteLoadI4(high);
 
-			WriteShlqbyi(rt, 4);
-
-			WriteIlhu(rt, (int)il >> 16);
-			WriteIohl(rt, (int)il);
+			VirtualRegister selbMask = WriteFsmbi(0xf000);
+			WriteSelb(rt, reglow, reghigh, selbMask);
 		}
 
 		public VirtualRegister WriteLoadR8(double i)
