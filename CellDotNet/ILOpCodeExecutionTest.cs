@@ -113,10 +113,6 @@ namespace CellDotNet
 		/// <summary>
 		/// NOTE: this function requires short form branch instruction as argument.
 		/// </summary>
-		/// <param name="opcode"></param>
-		/// <param name="i1"></param>
-		/// <param name="i2"></param>
-		/// <param name="branch"></param>
 		public void ConditionalBranchTest(OpCode opcode, float i1, float i2, bool branch)
 		{
 			ILWriter w = new ILWriter();
@@ -126,6 +122,38 @@ namespace CellDotNet
 			w.WriteFloat(i1);
 			w.WriteOpcode(OpCodes.Ldc_R4);
 			w.WriteFloat(i2);
+
+			// Conditionally branch 3 bytes.
+			w.WriteOpcode(opcode);
+			w.WriteByte(3);
+
+			w.WriteOpcode(OpCodes.Ldc_I4_1);
+
+			w.WriteOpcode(OpCodes.Br_S);
+			w.WriteByte(1);
+
+			w.WriteOpcode(OpCodes.Ldc_I4_2);
+
+			w.WriteOpcode(OpCodes.Ret);
+
+			if (branch)
+				TestExecution(w, 2);
+			else
+				TestExecution(w, 1);
+		}
+
+		/// <summary>
+		/// NOTE: this function requires short form branch instruction as argument.
+		/// </summary>
+		public void ConditionalBranchTest(OpCode opcode, double i1, double i2, bool branch)
+		{
+			ILWriter w = new ILWriter();
+
+			// Load constants.
+			w.WriteOpcode(OpCodes.Ldc_R8);
+			w.WriteDouble(i1);
+			w.WriteOpcode(OpCodes.Ldc_R8);
+			w.WriteDouble(i2);
 
 			// Conditionally branch 3 bytes.
 			w.WriteOpcode(opcode);
@@ -286,106 +314,156 @@ namespace CellDotNet
 		}
 
 		[Test]
-		public void Test_Beq()
+		public void Test_Beq_I4()
 		{
 			ConditionalBranchTest(OpCodes.Beq_S, 2, 2, true);
 			ConditionalBranchTest(OpCodes.Beq_S, 5, 2, false);
+		}
+
+		[Test]
+		public void Test_Beq_R4()
+		{
 			ConditionalBranchTest(OpCodes.Beq_S, 2f, 2f, true);
 			ConditionalBranchTest(OpCodes.Beq_S, 5f, 2f, false);
 		}
 
 		[Test]
-		public void Test_Bne_Un()
+		public void Test_Bne_Un_I4()
 		{
 			ConditionalBranchTest(OpCodes.Bne_Un_S, 2, 2, false);
 			ConditionalBranchTest(OpCodes.Bne_Un_S, 5, 2, true);
+		}
+
+		[Test]
+		public void Test_Bne_Un_R4()
+		{
 			ConditionalBranchTest(OpCodes.Bne_Un_S, 2f, 2f, false);
 			ConditionalBranchTest(OpCodes.Bne_Un_S, 5f, 2f, true);
 		}
 
 		[Test]
-		public void Test_Bge()
+		public void Test_Bge_I4()
 		{
 			ConditionalBranchTest(OpCodes.Bge_S, 5, 2, true);
 			ConditionalBranchTest(OpCodes.Bge_S, 5, 5, true);
 			ConditionalBranchTest(OpCodes.Bge_S, 2, 5, false);
+		}
+
+		[Test]
+		public void Test_Bge_R4()
+		{
 			ConditionalBranchTest(OpCodes.Bge_S, 5f, 2f, true);
 			ConditionalBranchTest(OpCodes.Bge_S, 5f, 5f, true);
 			ConditionalBranchTest(OpCodes.Bge_S, 2f, 5f, false);
 		}
 
 		[Test]
-		public void Test_Bgt()
+		public void Test_Bgt_I4()
 		{
 			ConditionalBranchTest(OpCodes.Bgt_S, 5, 2, true);
 			ConditionalBranchTest(OpCodes.Bgt_S, 5, 5, false);
 			ConditionalBranchTest(OpCodes.Bgt_S, 2, 5, false);
+		}
+
+		[Test]
+		public void Test_Bgt_R4()
+		{
 			ConditionalBranchTest(OpCodes.Bgt_S, 5f, 2f, true);
 			ConditionalBranchTest(OpCodes.Bgt_S, 5f, 5f, false);
 			ConditionalBranchTest(OpCodes.Bgt_S, 2f, 5f, false);
 		}
 
 		[Test]
-		public void Test_Ble()
+		public void Test_Ble_I4()
 		{
 			ConditionalBranchTest(OpCodes.Ble_S, 5, 2, false);
 			ConditionalBranchTest(OpCodes.Ble_S, 5, 5, true);
 			ConditionalBranchTest(OpCodes.Ble_S, 2, 5, true);
+		}
+
+		[Test]
+		public void Test_Ble_R4()
+		{
 			ConditionalBranchTest(OpCodes.Ble_S, 5f, 2f, false);
 			ConditionalBranchTest(OpCodes.Ble_S, 5f, 5f, true);
 			ConditionalBranchTest(OpCodes.Ble_S, 2f, 5f, true);
 		}
 
 		[Test]
-		public void Test_Blt()
+		public void Test_Blt_I4()
 		{
 			ConditionalBranchTest(OpCodes.Blt_S, 5, 2, false);
 			ConditionalBranchTest(OpCodes.Blt_S, 5, 5, false);
 			ConditionalBranchTest(OpCodes.Blt_S, 2, 5, true);
+		}
+
+		[Test]
+		public void Test_Blt_R4()
+		{
 			ConditionalBranchTest(OpCodes.Blt_S, 5f, 2f, false);
 			ConditionalBranchTest(OpCodes.Blt_S, 5f, 5f, false);
 			ConditionalBranchTest(OpCodes.Blt_S, 2f, 5f, true);
 		}
 
 		[Test]
-		public void Test_Bge_Un()
+		public void Test_Bge_Un_I4()
 		{
 			ConditionalBranchTest(OpCodes.Bge_Un_S, 5, 2, true);
 			ConditionalBranchTest(OpCodes.Bge_Un_S, 5, 5, true);
 			ConditionalBranchTest(OpCodes.Bge_Un_S, 2, 5, false);
+		}
+
+		[Test]
+		public void Test_Bge_Un_R4()
+		{
 			ConditionalBranchTest(OpCodes.Bge_Un_S, 5f, 2f, true);
 			ConditionalBranchTest(OpCodes.Bge_Un_S, 5f, 5f, true);
 			ConditionalBranchTest(OpCodes.Bge_Un_S, 2f, 5f, false);
 		}
 
 		[Test]
-		public void Test_Bgt_Un()
+		public void Test_Bgt_Un_I4()
 		{
 			ConditionalBranchTest(OpCodes.Bgt_Un_S, 5, 2, true);
 			ConditionalBranchTest(OpCodes.Bgt_Un_S, 5, 5, false);
 			ConditionalBranchTest(OpCodes.Bgt_Un_S, 2, 5, false);
+		}
+
+		[Test]
+		public void Test_Bgt_Un_R4()
+		{
 			ConditionalBranchTest(OpCodes.Bgt_Un_S, 5f, 2f, true);
 			ConditionalBranchTest(OpCodes.Bgt_Un_S, 5f, 5f, false);
 			ConditionalBranchTest(OpCodes.Bgt_Un_S, 2f, 5f, false);
 		}
 
 		[Test]
-		public void Test_Ble_Un()
+		public void Test_Ble_Un_I4()
 		{
 			ConditionalBranchTest(OpCodes.Ble_Un_S, 5, 2, false);
 			ConditionalBranchTest(OpCodes.Ble_Un_S, 5, 5, true);
 			ConditionalBranchTest(OpCodes.Ble_Un_S, 2, 5, true);
+		}
+
+		[Test]
+		public void Test_Ble_Un_R4()
+		{
 			ConditionalBranchTest(OpCodes.Ble_Un_S, 5f, 2f, false);
 			ConditionalBranchTest(OpCodes.Ble_Un_S, 5f, 5f, true);
 			ConditionalBranchTest(OpCodes.Ble_Un_S, 2f, 5f, true);
 		}
 
 		[Test]
-		public void Test_Blt_Un()
+		public void Test_Blt_Un_I4()
 		{
 			ConditionalBranchTest(OpCodes.Blt_Un_S, 5, 2, false);
 			ConditionalBranchTest(OpCodes.Blt_Un_S, 5, 5, false);
 			ConditionalBranchTest(OpCodes.Blt_Un_S, 2, 5, true);
+		}
+
+		[Test]
+		public void Test_Blt_Un_R4()
+		{
 			ConditionalBranchTest(OpCodes.Blt_Un_S, 5f, 2f, false);
 			ConditionalBranchTest(OpCodes.Blt_Un_S, 5f, 5f, false);
 			ConditionalBranchTest(OpCodes.Blt_Un_S, 2f, 5f, true);
@@ -768,28 +846,108 @@ namespace CellDotNet
 		[Test]
 		public void Test_Ldc_R8()
 		{
-//			ILWriter w = new ILWriter();
-//			w.WriteOpcode(OpCodes.Ldc_R8);
-//			w.WriteDouble(4324534.523226);
-//			w.WriteOpcode(OpCodes.Ret);
-
-//			TestExecution(w, 4324534.523226);
-
-
 			const double magicnumber = -4324534.523226;
 			Func<double> del = () => magicnumber;
 
-			CompileContext cc = new CompileContext(del.Method);
-			cc.PerformProcessing(CompileContextState.S8Complete);
-			cc.WriteAssemblyToFile("ldc_r8.s");
-
-
 			double result = (double)SpeContext.UnitTestRunProgram(del);
-			long resultAsLong = Utilities.ReinterpretAsLong(result);
-			Console.WriteLine("res: {0} {1}", Class1.hexencode(BitConverter.GetBytes(result)), Class1.hexencode(BitConverter.GetBytes(resultAsLong)));
 			AreEqual(magicnumber, result);
 		}
 
+		[Test]
+		public void Test_Sub_R8()
+		{
+			ExecuteAndVerifyBinaryOperator(OpCodes.Sub, 5.5, 4, 1.5);
+		}
+
+		[Test]
+		public void Test_Mul_R8()
+		{
+			ExecuteAndVerifyBinaryOperator(OpCodes.Mul, 3.5, 4, 3.5 * 4);
+		}
+
+		[Test]
+		public void Test_Add_R8()
+		{
+			ExecuteAndVerifyBinaryOperator(OpCodes.Add, 3.5, 4, 3.5 * 4);
+		}
+
+		[Test]
+		public void Test_Beq_R8()
+		{
+			ConditionalBranchTest(OpCodes.Beq_S, 2d, 2d, true);
+			ConditionalBranchTest(OpCodes.Beq_S, 5d, 2d, false);
+		}
+
+		[Test]
+		public void Test_Bne_Un_R8()
+		{
+			ConditionalBranchTest(OpCodes.Bne_Un_S, 2d, 2d, false);
+			ConditionalBranchTest(OpCodes.Bne_Un_S, 5d, 2d, true);
+		}
+
+		[Test]
+		public void Test_Bge_R8()
+		{
+			ConditionalBranchTest(OpCodes.Bge_S, 5d, 2d, true);
+			ConditionalBranchTest(OpCodes.Bge_S, 5d, 5d, true);
+			ConditionalBranchTest(OpCodes.Bge_S, 2d, 5d, false);
+		}
+
+		[Test]
+		public void Test_Bgt_R8()
+		{
+			ConditionalBranchTest(OpCodes.Bgt_S, 5d, 2d, true);
+			ConditionalBranchTest(OpCodes.Bgt_S, 5d, 5d, false);
+			ConditionalBranchTest(OpCodes.Bgt_S, 2d, 5d, false);
+		}
+
+		[Test]
+		public void Test_Ble_R8()
+		{
+			ConditionalBranchTest(OpCodes.Ble_S, 5d, 2d, false);
+			ConditionalBranchTest(OpCodes.Ble_S, 5d, 5d, true);
+			ConditionalBranchTest(OpCodes.Ble_S, 2d, 5d, true);
+		}
+
+		[Test]
+		public void Test_Blt_R8()
+		{
+			ConditionalBranchTest(OpCodes.Blt_S, 5d, 2d, false);
+			ConditionalBranchTest(OpCodes.Blt_S, 5d, 5d, false);
+			ConditionalBranchTest(OpCodes.Blt_S, 2d, 5d, true);
+		}
+
+		[Test]
+		public void Test_Bge_Un_R8()
+		{
+			ConditionalBranchTest(OpCodes.Bge_Un_S, 5d, 2d, true);
+			ConditionalBranchTest(OpCodes.Bge_Un_S, 5d, 5d, true);
+			ConditionalBranchTest(OpCodes.Bge_Un_S, 2d, 5d, false);
+		}
+
+		[Test]
+		public void Test_Bgt_Un_R8()
+		{
+			ConditionalBranchTest(OpCodes.Bgt_Un_S, 5d, 2d, true);
+			ConditionalBranchTest(OpCodes.Bgt_Un_S, 5d, 5d, false);
+			ConditionalBranchTest(OpCodes.Bgt_Un_S, 2d, 5d, false);
+		}
+
+		[Test]
+		public void Test_Ble_Un_R8()
+		{
+			ConditionalBranchTest(OpCodes.Ble_Un_S, 5d, 2d, false);
+			ConditionalBranchTest(OpCodes.Ble_Un_S, 5d, 5d, true);
+			ConditionalBranchTest(OpCodes.Ble_Un_S, 2d, 5d, true);
+		}
+
+		[Test]
+		public void Test_Blt_Un_R8()
+		{
+			ConditionalBranchTest(OpCodes.Blt_Un_S, 5d, 2d, false);
+			ConditionalBranchTest(OpCodes.Blt_Un_S, 5d, 5d, false);
+			ConditionalBranchTest(OpCodes.Blt_Un_S, 2d, 5d, true);
+		}
 
 		private static int f1()
 		{
@@ -892,6 +1050,20 @@ namespace CellDotNet
 			w.WriteFloat(f1);
 			w.WriteOpcode(OpCodes.Ldc_R4);
 			w.WriteFloat(f2);
+			w.WriteOpcode(opcode);
+			w.WriteOpcode(OpCodes.Ret);
+
+			TestExecution(w, expectedValue);
+		}
+
+		public void ExecuteAndVerifyBinaryOperator(OpCode opcode, double d1, double d2, double expectedValue)
+		{
+			ILWriter w = new ILWriter();
+
+			w.WriteOpcode(OpCodes.Ldc_R8);
+			w.WriteDouble(d1);
+			w.WriteOpcode(OpCodes.Ldc_R8);
+			w.WriteDouble(d2);
 			w.WriteOpcode(opcode);
 			w.WriteOpcode(OpCodes.Ret);
 
