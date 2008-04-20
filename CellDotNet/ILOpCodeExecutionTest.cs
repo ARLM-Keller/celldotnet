@@ -439,10 +439,10 @@ namespace CellDotNet
 		{
 			ILWriter w = new ILWriter();
 			w.WriteOpcode(OpCodes.Ldc_R4);
-			w.WriteFloat(4.5f);
+			w.WriteFloat(-4324534.523226f);
 			w.WriteOpcode(OpCodes.Ret);
 
-			TestExecution(w, 4.5f);
+			TestExecution(w, -4324534.523226f);
 		}
 
 		[Test]
@@ -768,10 +768,25 @@ namespace CellDotNet
 		[Test]
 		public void Test_Ldc_R8()
 		{
-			const double magicnumber = -4203.57;
+//			ILWriter w = new ILWriter();
+//			w.WriteOpcode(OpCodes.Ldc_R8);
+//			w.WriteDouble(4324534.523226);
+//			w.WriteOpcode(OpCodes.Ret);
+
+//			TestExecution(w, 4324534.523226);
+
+
+			const double magicnumber = -4324534.523226;
 			Func<double> del = () => magicnumber;
 
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+			cc.WriteAssemblyToFile("ldc_r8.s");
+
+
 			double result = (double)SpeContext.UnitTestRunProgram(del);
+			long resultAsLong = Utilities.ReinterpretAsLong(result);
+			Console.WriteLine("res: {0} {1}", Class1.hexencode(BitConverter.GetBytes(result)), Class1.hexencode(BitConverter.GetBytes(resultAsLong)));
 			AreEqual(magicnumber, result);
 		}
 

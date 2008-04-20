@@ -59,6 +59,11 @@ namespace CellDotNet.Spe
 			return baseAddr._value % divisor;
 		}
 
+		public override string ToString()
+		{
+			return "0x" + Value.ToString("x");
+		}
+
 		#region IFormattable Members
 
 		public string ToString(string format, IFormatProvider formatProvider)

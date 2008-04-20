@@ -69,18 +69,18 @@ namespace CellDotNet.Intermediate
 		public void BasicParseTest()
 		{
 			int sharedvar = 100;
-			Converter<int, int> del = delegate // (int obj)
-								{
-									int i = 500;
-									i = i + sharedvar;
-									List<int> list = new List<int>(234);
-									list.Add(888);
-									int j = Math.Max(3, 5);
+			Func<int> del = () =>
+			                	{
+			                		int i = 500;
+			                		i = i + sharedvar;
+			                		List<int> list = new List<int>(234);
+			                		list.Add(888);
+			                		int j = Math.Max(3, 5);
 
-									for (int n = 0; n < j; n++)
-										list.Add(n);
-									return i;
-								};
+			                		for (int n = 0; n < j; n++)
+			                			list.Add(n);
+			                		return i;
+			                	};
 
 			ILReader r = new ILReader(del.Method);
 			int icount = 0;
@@ -98,16 +98,14 @@ namespace CellDotNet.Intermediate
 			IsFalse(icount < 5, "too few instructions.");
 		}
 
-		private delegate void BasicTestDelegate();
-
 		[Test]
 		public void TestLoadInt32()
 		{
-			BasicTestDelegate del = delegate
-			                        	{
-			                        		int i = 0x0a0b0c0d;
-			                        		Math.Abs(i);
-			                        	};
+			Action del = () =>
+			             	{
+			             		int i = 0x0a0b0c0d;
+			             		Math.Abs(i);
+			             	};
 			ILReader r = new ILReader(del.Method);
 
 			while (r.Read())
@@ -125,11 +123,11 @@ namespace CellDotNet.Intermediate
 		[Test]
 		public void TestLoadInt32_Short()
 		{
-			BasicTestDelegate del = delegate
-										{
-											int i = 4; // Will generate ldc.i.4
-											Math.Abs(i);
-										};
+			Action del = () =>
+			             	{
+			             		int i = 4; // Will generate ldc.i.4
+			             		Math.Abs(i);
+			             	};
 			ILReader r = new ILReader(del.Method);
 
 			while (r.Read())
@@ -147,89 +145,49 @@ namespace CellDotNet.Intermediate
 		[Test]
 		public void TestLoadInt64()
 		{
-			BasicTestDelegate del = delegate
-										{
-											long i = 0x0102030405060708L;
-											Math.Abs(i);
-										};
+			Func<long> del = () => 0x0102030405060708L;
 			ILReader r = new ILReader(del.Method);
 
-			while (r.Read())
-			{
-				if (r.OpCode != OpCodes.Ldc_I8)
-					continue;
-				long val = (long)r.Operand;
-				AreEqual(0x0102030405060708L, val);
-				return;
-			}
+			Utilities.Assert(r.Read(), "r.Read()");
+			Utilities.Assert(r.OpCode == OpCodes.Ldc_I8, "r.OpCode == OpCodes.Ldc_I8");
 
-			Fail();
+			AreEqual(0x0102030405060708L, (long)r.Operand);
 		}
 
 		[Test]
 		public void TestLoadString()
 		{
-			BasicTestDelegate del = delegate
-										{
-											string s = "hey";
-											s.ToString();
-										};
+			Func<string> del = () => "hey";
 			ILReader r = new ILReader(del.Method);
 
-			while (r.Read())
-			{
-				if (r.OpCode != OpCodes.Ldstr)
-					continue;
-				string s = (string) r.Operand;
-				AreEqual("hey", s);
-				return;
-			}
+			Utilities.Assert(r.Read(), "r.Read()");
+			Utilities.Assert(r.OpCode == OpCodes.Ldstr, "r.OpCode == OpCodes.Ldstr");
 
-			Fail();
+			AreEqual("hey", (string)r.Operand);
 		}
 
 		[Test]
 		public void TestLoadFloat()
 		{
-			BasicTestDelegate del = delegate
-										{
-											float s = 4.5f;
-											s.ToString();
-										};
+			Func<float> del = () => 4324534.523226f;
 			ILReader r = new ILReader(del.Method);
 
-			while (r.Read())
-			{
-				if (r.OpCode != OpCodes.Ldc_R4)
-					continue;
-				float f = (float) r.Operand;
-				AreEqual(4.5f, f);
-				return;
-			}
+			Utilities.Assert(r.Read(), "r.Read()");
+			Utilities.Assert(r.OpCode == OpCodes.Ldc_R4, "r.OpCode == OpCodes.Ldc_R4");
 
-			Fail();
+			AreEqual(4324534.523226f, (float)r.Operand);
 		}
 
 		[Test]
 		public void TestLoadDouble()
 		{
-			BasicTestDelegate del = delegate
-										{
-											double s = 4.5d;
-											s.ToString();
-										};
+			Func<double> del = () => -4324534.523226;
 			ILReader r = new ILReader(del.Method);
 
-			while (r.Read())
-			{
-				if (r.OpCode != OpCodes.Ldc_R8)
-					continue;
-				double d = (double)r.Operand;
-				AreEqual(4.5d, d);
-				return;
-			}
+			Utilities.Assert(r.Read(), "r.Read()");
+			Utilities.Assert(r.OpCode == OpCodes.Ldc_R8, "r.OpCode == OpCodes.Ldc_R8");
 
-			Fail();
+			AreEqual(-4324534.523226, (double)r.Operand);
 		}
 	}
 }
