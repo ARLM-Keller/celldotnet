@@ -53,12 +53,10 @@ namespace CellDotNet.Spe
 			}
 		}
 
-		private delegate void BasicTestDelegate();
-
 		[Test, Ignore("Pointers are no longer supported.")]
 		unsafe public void TestFirstCellProgram()
 		{
-			BasicTestDelegate del = delegate
+			Action del = delegate
 										{
 											int* i;
 											i = (int*)0x40;
@@ -143,8 +141,6 @@ namespace CellDotNet.Spe
 				IsTrue(SpeContext.HasSpeHardware);
 		}
 
-		private delegate int SimpleDelegateIntInt(int i);
-
 #region Runtime checks tests
 
 		[Test, ExpectedException(typeof(SpeOutOfMemoryException))]
@@ -162,7 +158,7 @@ namespace CellDotNet.Spe
 		[Test, ExpectedException(typeof(PpeCallException))]
 		public void TestPpeCallFailureTest()
 		{
-			BasicTestDelegate del = delegate { SpuRuntime.Stop(SpuStopCode.PpeCallFailureTest); };
+			Action del = delegate { SpuRuntime.Stop(SpuStopCode.PpeCallFailureTest); };
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
@@ -218,7 +214,7 @@ namespace CellDotNet.Spe
 		[Test, ExpectedException(typeof(SpeStackOverflowException))]
 		public void TestRecursion_StackOverflow()
 		{
-			SimpleDelegateIntInt del = Recursion;
+			Func<int, int> del = Recursion;
 
 			CompileContext cc = new CompileContext(del.Method);
 
@@ -236,7 +232,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestRecursion_WithoutStackOverflow()
 		{
-			SimpleDelegateIntInt del = Recursion;
+			Func<int, int> del = Recursion;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -268,7 +264,7 @@ namespace CellDotNet.Spe
 		[Test, ExpectedException(typeof(SpeOutOfMemoryException))]
 		public void TestOutOfMemory()
 		{
-			BasicTestDelegate del = OutOfMemory;
+			Action del = OutOfMemory;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -293,7 +289,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestNotOutOfMemory()
 		{
-			BasicTestDelegate del = NotOutOfMemory;
+			Action del = NotOutOfMemory;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -385,14 +381,11 @@ namespace CellDotNet.Spe
 
 #region Return value tests
 
-		private delegate int IntReturnDelegate();
-		private delegate float SingleReturnDelegate();
-
 		[Test]
 		public void TestRunProgram_ReturnInt32_Manual()
 		{
 			const int magicNumber = 40;
-			IntReturnDelegate del = delegate { return magicNumber; };
+			Func<int> del = () => magicNumber;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -419,7 +412,7 @@ namespace CellDotNet.Spe
 		public void TestRunProgram_ReturnInt32()
 		{
 			const int magicNumber = 40;
-			IntReturnDelegate del = delegate { return magicNumber; };
+			Func<int> del = () => magicNumber;
 
 			object retval = SpeContext.UnitTestRunProgram(del);
 			AreEqual(typeof(int), retval.GetType());
@@ -430,7 +423,7 @@ namespace CellDotNet.Spe
 		public void TestRunProgram_ReturnSingle()
 		{
 			const float magicNumber = float.NaN;
-			SingleReturnDelegate del = delegate { return magicNumber; };
+			Func<float> del = () => magicNumber;
 
 			if (!SpeContext.HasSpeHardware)
 				return;
@@ -443,21 +436,50 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestDelegateRun_ReturnInt()
 		{
-			IntReturnDelegate del = delegate { return 40; };
-			IntReturnDelegate del2 = CreateSpeDelegate(del);
+			Func<int> del = () => 40;
+			Func<int> del2 = CreateSpeDelegate(del);
 
 			int retval = del2();
 			AreEqual(40, retval);
 		}
 
 		[Test]
+		public void TestDelegateRun_ReturnBool()
+		{
+			{
+				Func<bool> del = () => true;
+				Func<bool> del2 = CreateSpeDelegate(del);
+
+				bool retval = del2();
+				IsTrue(retval);
+			}
+			{
+				Func<bool> del = () => false;
+				Func<bool> del2 = CreateSpeDelegate(del);
+
+				bool retval = del2();
+				IsFalse(retval);
+			}
+		}
+
+		[Test]
 		public void TestDelegateRun_ReturnSingle()
 		{
-			SingleReturnDelegate del = delegate { return 40; };
-			SingleReturnDelegate del2 = CreateSpeDelegate(del);
+			Func<float> del = () => 40;
+			Func<float> del2 = CreateSpeDelegate(del);
 
 			float retval = del2();
 			AreEqual(40f, retval);
+		}
+
+		[Test]
+		public void TestDelegateRun_ReturnDouble()
+		{
+			Func<double> del = () => 40;
+			Func<double> del2 = CreateSpeDelegate(del);
+
+			double retval = del2();
+			AreEqual(40d, retval);
 		}
 
 		[Test, Ignore("Make this work.")]
@@ -465,9 +487,9 @@ namespace CellDotNet.Spe
 		{
 			bool hasRun = false;
 
-			IntReturnDelegate del = delegate { hasRun = true;
+			Func<int> del = delegate { hasRun = true;
 			                                 	return 34; };
-			IntReturnDelegate del2 = CreateSpeDelegate(del);
+			Func<int> del2 = CreateSpeDelegate(del);
 
 			if (SpeContext.HasSpeHardware)
 			{

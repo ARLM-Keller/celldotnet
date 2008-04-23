@@ -171,7 +171,7 @@ namespace CellDotNet.Intermediate
 					t = StackTypeDescription.None;
 					break;
 				case IRCode.Ldnull: // ldnull
-					t = StackTypeDescription.NativeInt;
+					t = StackTypeDescription.ObjectType;
 					break;
 				case IRCode.Ldc_I4: // ldc.i4
 					t = StackTypeDescription.Int32;

@@ -59,7 +59,7 @@ namespace CellDotNet.Spe
 		[IntrinsicMethod(SpuIntrinsicMethod.ReturnArgument1)]
 		internal static int UnsafeGetAddress<T>(T obj) where T : class
 		{
-			throw new InvalidOperationException();
+				throw new InvalidOperationException();
 		}
 	}
 }

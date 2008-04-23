@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Text;
 using CellDotNet.Intermediate;
@@ -60,8 +61,6 @@ namespace CellDotNet
 		private int[] _emittedCode;
 		private DataObject _argumentArea;
 
-		private CompileContextState _state;
-
 		private readonly MethodInfo _entryPointMethod;
 
 		LibraryManager _librarymanager;
@@ -93,8 +92,9 @@ namespace CellDotNet
 		public CompileContext(MethodInfo entryPoint)
 		{
 			State = CompileContextState.S1Initial;
-			if (!entryPoint.IsStatic)
-				throw new ArgumentException("Only static methods are supported.");
+			Utilities.AssertArgument(!entryPoint.IsGenericMethod, "Generic methods are not supported.");
+			Utilities.AssertArgument(entryPoint.IsStatic, "Only static methods are supported.");
+			Utilities.AssertArgument(!(entryPoint is DynamicMethod) || entryPoint.GetType() == typeof (DynamicMethod), "DynamicMethod must be passed uncompiled.");
 
 			// Sets predefined PPE types.
 			// TODO This should be done in a more centralised manner.
@@ -106,11 +106,7 @@ namespace CellDotNet
 		/// <summary>
 		/// The least common state for all referenced methods.
 		/// </summary>
-		internal CompileContextState State
-		{
-			get { return _state; }
-			private set { _state = value; }
-		}
+		internal CompileContextState State { get; private set; }
 
 		/// <summary>
 		/// The LS address where the return value from <see cref="EntryPoint"/> (if any)
@@ -401,8 +397,13 @@ namespace CellDotNet
 		/// <returns></returns>
 		private string CreateMethodRefKey(MethodBase methodRef)
 		{
-			string key = CreateTypeRefKey(methodRef.DeclaringType) + "::";
-			key += methodRef.Name;
+			string key;
+			if (methodRef.DeclaringType != null)
+				key = CreateTypeRefKey(methodRef.DeclaringType);
+			else
+				key = "DynamicMethod";
+
+			key += "::" + methodRef.Name;
 			foreach (ParameterInfo param in methodRef.GetParameters())
 			{
 				key += "," + CreateTypeRefKey(param.ParameterType);
@@ -595,7 +596,7 @@ namespace CellDotNet
 				methodsToCompile.Remove(methodkey);
 
 				SpuRoutine routine;
-				if (DetectPpeType(_ppeTypes, method.DeclaringType))
+				if (method.DeclaringType != null && DetectPpeType(_ppeTypes, method.DeclaringType))
 				{
 					routine = new PpeMethod((MethodInfo) method);
 				}

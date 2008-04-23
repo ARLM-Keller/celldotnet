@@ -1233,7 +1233,7 @@ namespace CellDotNet.Spe
 			try
 			{
 				SpeContext.UnitTestRunProgram(cc, inst);
-				Fail();
+					Fail();
 			}
 			catch (ArgumentException)
 			{

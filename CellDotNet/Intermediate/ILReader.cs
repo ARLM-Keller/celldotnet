@@ -26,18 +26,23 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Threading;
 using JetBrains.Annotations;
 
 namespace CellDotNet.Intermediate
 {
+
+	#region IlReaderWrapper
+
 	/// <summary>
 	/// Wraps an ILReader and expands some IL instructions to a sequence of instructions.
 	/// </summary>
 	class IlReaderWrapper
 	{
+
 		private int _variableCount;
 
-		private ILReader _ilreader;
+		private readonly ILReader _ilreader;
 		public ILReader ILReader
 		{
 			get { return _ilreader; }
@@ -64,7 +69,7 @@ namespace CellDotNet.Intermediate
 
 		private ILRecord _currentRecord;
 
-		private Queue<ILRecord> _instQueue = new Queue<ILRecord>();
+		private readonly Queue<ILRecord> _instQueue = new Queue<ILRecord>();
 
 		private MethodVariable _lastCreatedMethodVariable;
 		public MethodVariable LastCreatedMethodVariable
@@ -147,6 +152,8 @@ namespace CellDotNet.Intermediate
 		}
 	}
 
+	#endregion
+
 	[DebuggerDisplay("{DebuggerDisplay}")]
 	class ILReader
 	{
@@ -155,7 +162,7 @@ namespace CellDotNet.Intermediate
 			get { return string.Format("{0} {1} ({2})", OpCode.Name, Operand, Offset); }
 		}
 
-		static object s_lock = new object();
+		static readonly object s_lock = new object();
 		static Dictionary<short, OpCode> s_reflectionmap;
 		static Dictionary<short, OpCode> GetReflectionOpCodeMap()
 		{
@@ -187,61 +194,37 @@ namespace CellDotNet.Intermediate
 			EOF
 		}
 
-		/// <summary>
-		/// This class is used instead of using <see cref="MethodBody"/> directly. This allows us to (partially) support the use of <see cref="DynamicMethod"/>.
-		/// </summary>
-		internal class MethodBodyWrapper
+		private static readonly FieldInfo s_Ilstream;
+		private static readonly FieldInfo s_Lenghtfield;
+
+		static ILReader()
 		{
-			private static readonly FieldInfo s_Ilstream;
-			private static readonly FieldInfo s_Lenghtfield;
-
-			private MethodBase _method;
-
-
-			static MethodBodyWrapper()
+			if (Environment.OSVersion.Platform == PlatformID.Unix) // mono
 			{
-				if (Environment.OSVersion.Platform == PlatformID.Unix) // mono
-				{
-					s_Ilstream = typeof(ILGenerator).GetField("m_ILStream", BindingFlags.NonPublic | BindingFlags.Instance);
-					s_Lenghtfield = typeof(ILGenerator).GetField("m_length", BindingFlags.NonPublic | BindingFlags.Instance);
-				}
-				else
-				{
-					s_Ilstream = typeof(ILGenerator).GetField("code", BindingFlags.NonPublic | BindingFlags.Instance);
-					s_Lenghtfield = typeof(ILGenerator).GetField("code_len", BindingFlags.NonPublic | BindingFlags.Instance);
-				}
+				s_Ilstream = typeof(ILGenerator).GetField("code", BindingFlags.NonPublic | BindingFlags.Instance);
+				s_Lenghtfield = typeof(ILGenerator).GetField("code_len", BindingFlags.NonPublic | BindingFlags.Instance);
 			}
-
-			public MethodBodyWrapper([NotNull]MethodBase method)
+			else
 			{
-				Utilities.AssertArgumentNotNull(method, "method");
-				_method = method;
+				s_Ilstream = typeof(ILGenerator).GetField("m_ILStream", BindingFlags.NonPublic | BindingFlags.Instance);
+				s_Lenghtfield = typeof(ILGenerator).GetField("m_length", BindingFlags.NonPublic | BindingFlags.Instance);
 			}
+			Debug.Assert(s_Ilstream != null && s_Lenghtfield != null);
+		}
 
-			public void GetILBuffer(out byte[] il, out int ilLength)
+		public void GetILBuffer(MethodBase method, out byte[] il, out int ilLength)
+		{
+			if (_method is DynamicMethod)
 			{
-				if (_method is DynamicMethod)
-				{
-					ILGenerator gen = ((DynamicMethod) _method).GetILGenerator();
-					il = (byte[])s_Ilstream.GetValue(gen);
-					ilLength = (int)s_Lenghtfield.GetValue(gen);
-				}
-				else
-				{
-					MethodBody body = _method.GetMethodBody();
-					il = body.GetILAsByteArray();
-					ilLength = il.Length;
-				}
+				ILGenerator gen = ((DynamicMethod)_method).GetILGenerator();
+				il = (byte[])s_Ilstream.GetValue(gen);
+				ilLength = (int)s_Lenghtfield.GetValue(gen);
 			}
-
-			public IList<LocalVariableInfo> LocalVariables
+			else
 			{
-				get
-				{
-//					if (_method is DynamicMethod)
-//						throw new NotSupportedException("Cannot get local variables for a dynamic method.");
-					return _method.GetMethodBody().LocalVariables;
-				}
+				MethodBody body = _method.GetMethodBody();
+				il = body.GetILAsByteArray();
+				ilLength = il.Length;
 			}
 		}
 
@@ -251,8 +234,7 @@ namespace CellDotNet.Intermediate
 		private int _readoffset;
 		private readonly Dictionary<short, OpCode> _ocmap = GetReflectionOpCodeMap();
 		private readonly MethodBase _method;
-		private readonly MethodBodyWrapper _body;
-//		private MethodBody _body;
+		private readonly MethodBody _body;
 
 		public ReadState State
 		{
@@ -265,6 +247,17 @@ namespace CellDotNet.Intermediate
 			get { return _instructionsRead; }
 		}
 
+		private LocalVariableInfo GetLocalVariable(int index)
+		{
+			if (_body == null)
+			{
+				if (_method is DynamicMethod)
+					throw new NotSupportedException("Use of local variables in DynamicMethod is not supported.");
+				Debug.Fail("DynamicMethod");
+			}
+			return _body.LocalVariables[index];
+		}
+
 		public ILReader(MethodBase method)
 		{
 			if (method == null)
@@ -273,18 +266,19 @@ namespace CellDotNet.Intermediate
 			Utilities.PretendVariableIsUsed(DebuggerDisplay);
 
 			_method = method;
-			_body = new MethodBodyWrapper(method);
+			if (!(method is DynamicMethod))
+				_body = method.GetMethodBody();
 
-			byte[] il;
 			int illength;
-			_body.GetILBuffer(out il, out illength);
-			if (illength != il.Length)
+			byte[] il;
+			GetILBuffer(method, out il, out illength);
+			if (il.Length != illength)
 			{
 				byte[] orig = il;
 				il = new byte[illength];
 				Buffer.BlockCopy(orig, 0, il, 0, illength);
 			}
-			
+
 			Initialize(il);
 		}
 
@@ -478,7 +472,7 @@ namespace CellDotNet.Intermediate
 					{
 						Utilities.Assert(srOpcode == OpCodes.Ldloc_S || srOpcode == OpCodes.Ldloca_S || srOpcode == OpCodes.Stloc_S,
 										 "Not loc?!");
-						_operand = _body.LocalVariables[(int)xindex];
+						_operand = GetLocalVariable((int)xindex);
 					}
 					break;
 				case OperandType.InlineVar:
@@ -495,7 +489,7 @@ namespace CellDotNet.Intermediate
 					else
 					{
 						Utilities.Assert(srOpcode == OpCodes.Ldloc || srOpcode == OpCodes.Ldloca || srOpcode == OpCodes.Stloc, "Not loc??");
-						_operand = _body.LocalVariables[(int) xindex];
+						_operand = GetLocalVariable((int) xindex);
 					}
 					break;
 				case OperandType.ShortInlineBrTarget:
@@ -542,7 +536,7 @@ namespace CellDotNet.Intermediate
 				else if (srOpcode.Value >= OpCodes.Stloc_0.Value && srOpcode.Value <= OpCodes.Stloc_3.Value)
 				{
 					int varindex = srOpcode.Value - OpCodes.Stloc_0.Value;
-					_operand = _body.LocalVariables[varindex];
+					_operand = GetLocalVariable(varindex);
 					srOpcode = OpCodes.Stloc;
 				}
 			}
@@ -557,7 +551,7 @@ namespace CellDotNet.Intermediate
 				else if (srOpcode.Value >= OpCodes.Ldloc_0.Value && srOpcode.Value <= OpCodes.Ldloc_3.Value)
 				{
 					int varindex = srOpcode.Value - OpCodes.Ldloc_0.Value;
-					_operand = _body.LocalVariables[varindex];
+					_operand = GetLocalVariable(varindex);
 					srOpcode = OpCodes.Ldloc;
 					return;
 				}

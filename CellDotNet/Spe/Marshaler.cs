@@ -70,6 +70,9 @@ namespace CellDotNet.Spe
 					case TypeCode.Int64:
 						buf = BitConverter.GetBytes((long)val);
 						break;
+					case TypeCode.Boolean:
+						buf = new byte[] {0, 0, 0, (byte) ((bool)val ? 1 : 0)};
+						break;
 					case TypeCode.Object:
 					case TypeCode.String:
 						// Handled below.
@@ -173,6 +176,9 @@ namespace CellDotNet.Spe
 						break;
 					case TypeCode.SByte:
 						val = (sbyte)buf[currentBufOffset];
+						break;
+					case TypeCode.Boolean:
+						val = BitConverter.ToInt32(buf, currentBufOffset) != 0;
 						break;
 					case TypeCode.Byte:
 						val = buf[currentBufOffset];

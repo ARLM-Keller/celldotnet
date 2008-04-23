@@ -56,7 +56,9 @@
     <Compile Include="CommonDelegates.cs" />
     <Compile Include="CompileContextTest.cs" />
     <Compile Include="Float32Vector.cs" />
-    <Compile Include="ILOpCodeExecutionTest.cs" />
+    <Compile Include="ILOpCodeExecutionTest.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="ImmutableAttribute.cs" />
     <Compile Include="Int32Vector.cs" />
     <Compile Include="Intermediate\Exceptions.cs" />

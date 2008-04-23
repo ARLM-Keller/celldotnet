@@ -100,7 +100,7 @@ namespace CellDotNet.Spe
 				var ocnames = Utilities.RemoveDuplicates(_unimplementedOpCodes).Select(input => input.Name).ToArray();
 				msg += string.Join(", ", ocnames.ToArray()) + ".";
 
-				throw new NotImplementedException(msg);
+					throw new NotImplementedException(msg);
 			}
 
 			// Patch generated branch instructions with their target spu basic blocks.
@@ -231,7 +231,13 @@ namespace CellDotNet.Spe
 					{
 						Type cls = inst.OperandAsMethodCompiler.MethodBase.DeclaringType;
 						StackTypeDescription std = new TypeDeriver().GetStackTypeDescription(cls);
-						VirtualRegister sizereg = _writer.WriteLoadI4(std.ComplexType.QuadWordCount*16);
+						int byteSize = std.ComplexType.QuadWordCount*16;
+						if (byteSize == 0)
+						{
+							// even though there are no fields, the object should take up just a little space.
+							byteSize = 16;
+						}
+						VirtualRegister sizereg = _writer.WriteLoadI4(byteSize);
 						VirtualRegister mem = WriteAllocateMemory(sizereg);
 						WriteZeroMemory(mem, std.ComplexType.QuadWordCount);
 
@@ -803,11 +809,13 @@ namespace CellDotNet.Spe
 							case CliType.NativeInt:
 								return vrleft;
 							case CliType.Float32:
-								return _writer.WriteCflts(vrleft, 173);
+								return WriteCflts(_writer, vrleft);
+							case CliType.Float64:
+								{
+									VirtualRegister r = _writer.WriteFrds(vrleft);
+									return WriteCflts(_writer, r);
+								}
 						}
-//						StackTypeDescription srctype = lefttype;
-//						if (srctype.CliType == CliType.NativeInt)
-//							return vrleft;
 					}
 					break;
 				case IRCode.Conv_I8:
@@ -816,22 +824,22 @@ namespace CellDotNet.Spe
 					switch (lefttype.CliType)
 					{
 						case CliType.Int32:
-						case CliType.NativeInt:
-							return _writer.WriteCsflt(vrleft, 155);
+							return WriteCsflt(_writer, vrleft);
+						case CliType.Float64:
+							return _writer.WriteFrds(vrleft);
 						case CliType.Int64:
 							break;
 					}
 					break;
 				case IRCode.Conv_R8:
-//					switch (lefttype.CliType)
-//					{
-//						case CliType.Int32:
-//						case CliType.NativeInt:
-//							VirtualRegister r = _writer.WriteCsflt(vrleft, 155);
-//							return _writer.WriteFesd(r);
-//						case CliType.Int64:
-//							break;
-//					}
+					switch (lefttype.CliType)
+					{
+						case CliType.Int32:
+							VirtualRegister r = WriteCsflt(_writer, vrleft);
+							return _writer.WriteFesd(r);
+						case CliType.Float32:
+							return _writer.WriteFesd(vrleft);
+					}
 					break;
 				case IRCode.Conv_U4:
 					break;
@@ -1234,6 +1242,7 @@ namespace CellDotNet.Spe
 //								return _writer.WriteAndi(val, 1);
 //								val = _writer.WriteCeqh(vrleft, vrright);
 //								return _writer.WriteAndi(val, 1);
+							case CliType.ObjectType:
 							case CliType.Int32:
 								val = _writer.WriteCeq(vrleft, vrright);
 								return _writer.WriteAndi(val, 1);
@@ -1407,6 +1416,16 @@ namespace CellDotNet.Spe
 
 			_unimplementedOpCodes.Add(inst.Opcode);
 			return new VirtualRegister(-1);
+		}
+
+		private static VirtualRegister WriteCsflt(SpuInstructionWriter writer, VirtualRegister vrleft)
+		{
+			return writer.WriteCsflt(vrleft, 155);
+		}
+
+		private static VirtualRegister WriteCflts(SpuInstructionWriter writer, VirtualRegister vrleft)
+		{
+			return writer.WriteCflts(vrleft, 173);
 		}
 
 		/// <summary>
