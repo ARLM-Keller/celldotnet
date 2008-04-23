@@ -78,6 +78,7 @@
     <Compile Include="Intermediate\TypeDeriver.cs" />
     <Compile Include="Intermediate\TypeDeriverTest.cs" />
     <Compile Include="Intermediate\TypeDescription.cs" />
+    <Compile Include="JetBrains.Annotations.cs" />
     <Compile Include="MainStorageArea.cs" />
     <Compile Include="CodeGenUtils.cs" />
     <Compile Include="CompileContext.cs" />

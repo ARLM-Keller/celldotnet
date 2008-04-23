@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -54,7 +55,28 @@ namespace CellDotNet
 
 		private static unsafe void RunRasmus()
 		{
-			new ILOpCodeExecutionTest().Test_Ldc_R8();
+			DynamicMethod dm = new DynamicMethod("mymethod", typeof(int), new[] { typeof(int)});
+			ILGenerator generator = dm.GetILGenerator();
+			generator.Emit(OpCodes.Ldarg_0);
+			generator.Emit(OpCodes.Ldc_I4_1);
+			generator.Emit(OpCodes.Add);
+			generator.Emit(OpCodes.Ret);
+
+			int ilLength;
+			byte[] il;
+//			FieldInfo ilstream = typeof (ILGenerator).GetField("m_ILStream", BindingFlags.NonPublic | BindingFlags.Instance);
+//			byte[] il = (byte[]) ilstream.GetValue(generator);
+//
+//			FieldInfo lenghtfield = typeof (ILGenerator).GetField("m_length", BindingFlags.NonPublic | BindingFlags.Instance);
+//			int ilLength = (int)lenghtfield.GetValue(generator);
+
+//			il.GetHashCode();
+//			ilLength.GetHashCode();
+
+//			Func<int, int> del = (Func<int, int>) dm.CreateDelegate(typeof (Func<int, int>));
+//			int del1 = del(234);
+
+//			new ILOpCodeExecutionTest().Test_Ldc_R8();
 
 //			double d = 4324534.523226;
 //			long l = (long) *((double*) &d);
