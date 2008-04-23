@@ -96,13 +96,19 @@ namespace CellDotNet
 		}
 
 		/// <summary>
-		/// Note, if <code>target &lt; error</code> then it is sufficient for <code>value</code> to be within <code>+/- error</code> from 0.
+		/// Note, if <paramref name="target" /> &lt; <paramref name="error"/> then it is sufficient for <paramref name="value"/> to be within +/- <paramref name="error"/> from 0.
 		/// </summary>
-		/// <param name="value"></param>
-		/// <param name="target"></param>
-		/// <param name="error"></param>
-		/// <param name="message"></param>
 		static public void AssertWithinLimits(float value, float target, float error, string message)
+		{
+			if(!(Math.Abs(target) < error && Math.Abs(value) < error))
+				if(Math.Abs(value) > Math.Abs(target) * (1 + error) || Math.Abs(value) < Math.Abs(target) * (1 - error) || Math.Sign(value) != Math.Sign(target))
+					throw new DebugAssertException(message);
+		}
+
+		/// <summary>
+		/// Note, if <paramref name="target" /> &lt; <paramref name="error"/> then it is sufficient for <paramref name="value"/> to be within +/- <paramref name="error"/> from 0.
+		/// </summary>
+		static public void AssertWithinLimits(double value, double target, double error, string message)
 		{
 			if(!(Math.Abs(target) < error && Math.Abs(value) < error))
 				if(Math.Abs(value) > Math.Abs(target) * (1 + error) || Math.Abs(value) < Math.Abs(target) * (1 - error) || Math.Sign(value) != Math.Sign(target))

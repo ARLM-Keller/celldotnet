@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Emit;
+using JetBrains.Annotations;
 
 namespace CellDotNet.Intermediate
 {
@@ -186,12 +187,72 @@ namespace CellDotNet.Intermediate
 			EOF
 		}
 
+		/// <summary>
+		/// This class is used instead of using <see cref="MethodBody"/> directly. This allows us to (partially) support the use of <see cref="DynamicMethod"/>.
+		/// </summary>
+		internal class MethodBodyWrapper
+		{
+			private static readonly FieldInfo s_Ilstream;
+			private static readonly FieldInfo s_Lenghtfield;
+
+			private MethodBase _method;
+
+
+			static MethodBodyWrapper()
+			{
+				if (Environment.OSVersion.Platform == PlatformID.Unix) // mono
+				{
+					s_Ilstream = typeof(ILGenerator).GetField("m_ILStream", BindingFlags.NonPublic | BindingFlags.Instance);
+					s_Lenghtfield = typeof(ILGenerator).GetField("m_length", BindingFlags.NonPublic | BindingFlags.Instance);
+				}
+				else
+				{
+					s_Ilstream = typeof(ILGenerator).GetField("code", BindingFlags.NonPublic | BindingFlags.Instance);
+					s_Lenghtfield = typeof(ILGenerator).GetField("code_len", BindingFlags.NonPublic | BindingFlags.Instance);
+				}
+			}
+
+			public MethodBodyWrapper([NotNull]MethodBase method)
+			{
+				Utilities.AssertArgumentNotNull(method, "method");
+				_method = method;
+			}
+
+			public void GetILBuffer(out byte[] il, out int ilLength)
+			{
+				if (_method is DynamicMethod)
+				{
+					ILGenerator gen = ((DynamicMethod) _method).GetILGenerator();
+					il = (byte[])s_Ilstream.GetValue(gen);
+					ilLength = (int)s_Lenghtfield.GetValue(gen);
+				}
+				else
+				{
+					MethodBody body = _method.GetMethodBody();
+					il = body.GetILAsByteArray();
+					ilLength = il.Length;
+				}
+			}
+
+			public IList<LocalVariableInfo> LocalVariables
+			{
+				get
+				{
+//					if (_method is DynamicMethod)
+//						throw new NotSupportedException("Cannot get local variables for a dynamic method.");
+					return _method.GetMethodBody().LocalVariables;
+				}
+			}
+		}
+
+
 		private ReadState _state;
 		private byte[] _il;
 		private int _readoffset;
-		private Dictionary<short, OpCode> _ocmap = GetReflectionOpCodeMap();
-		private MethodBase _method;
-		private MethodBody _body;
+		private readonly Dictionary<short, OpCode> _ocmap = GetReflectionOpCodeMap();
+		private readonly MethodBase _method;
+		private readonly MethodBodyWrapper _body;
+//		private MethodBody _body;
 
 		public ReadState State
 		{
@@ -212,8 +273,19 @@ namespace CellDotNet.Intermediate
 			Utilities.PretendVariableIsUsed(DebuggerDisplay);
 
 			_method = method;
-			_body = method.GetMethodBody();
-			Initialize(method.GetMethodBody().GetILAsByteArray());
+			_body = new MethodBodyWrapper(method);
+
+			byte[] il;
+			int illength;
+			_body.GetILBuffer(out il, out illength);
+			if (illength != il.Length)
+			{
+				byte[] orig = il;
+				il = new byte[illength];
+				Buffer.BlockCopy(orig, 0, il, 0, illength);
+			}
+			
+			Initialize(il);
 		}
 
 		/// <summary>

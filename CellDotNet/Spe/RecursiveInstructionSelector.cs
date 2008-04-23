@@ -353,7 +353,9 @@ namespace CellDotNet.Spe
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
 							case CliType.Int64:
+								break;
 							case CliType.Float64:
+//								throw new Exception();
 							case CliType.ObjectType:
 							case CliType.ManagedPointer:
 								break;
@@ -592,8 +594,8 @@ namespace CellDotNet.Spe
 							return _writer.WriteA(vrleft, vrright);
 						case CliType.Float32:
 							return _writer.WriteFa(vrleft, vrright);
-//						case CliType.Float64:
-//							return _writer.WriteDfa(vrleft, vrright);
+						case CliType.Float64:
+							return _writer.WriteDfa(vrleft, vrright);
 					}
 					break;
 				case IRCode.Sub:
@@ -604,6 +606,8 @@ namespace CellDotNet.Spe
 							return _writer.WriteSf(vrright, vrleft);
 						case CliType.Float32:
 							return _writer.WriteFs(vrleft, vrright);
+						case CliType.Float64:
+							return _writer.WriteDfs(vrleft, vrright);
 					}
 					break;
 				case IRCode.Mul:
@@ -626,8 +630,8 @@ namespace CellDotNet.Spe
 							return rt;
 						case CliType.Float32:
 							return _writer.WriteFm(vrleft, vrright);
-//						case CliType.Float64:
-//							return _writer.WriteDfm(vrleft, vrright);
+						case CliType.Float64:
+							return _writer.WriteDfm(vrleft, vrright);
 					}
 					break;
 				case IRCode.Div:
