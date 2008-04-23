@@ -37,11 +37,11 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSimpleTypes()
 		{
-			object[] arr = new object[] { 1, 3f, 4d, (short)5 };
+			object[] arr = new object[] { 1, 3f, 4d, (short)5, false, true };
 			byte[] buf = new Marshaler().GetImage(arr);
-
+				
 			AreEqual(arr.Length * 16, buf.Length);
-			object[] arr2 = new Marshaler().GetValues(buf, new Type[] { typeof(int), typeof(float), typeof(double), typeof(short) });
+			object[] arr2 = new Marshaler().GetValues(buf, new Type[] { typeof(int), typeof(float), typeof(double), typeof(short), typeof(bool), typeof(bool) });
 			AreEqual(arr, arr2);
 		}
 

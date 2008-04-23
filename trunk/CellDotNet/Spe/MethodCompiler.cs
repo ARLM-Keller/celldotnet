@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection;
+using System.Reflection.Emit;
 using CellDotNet.Intermediate;
 
 namespace CellDotNet.Spe
@@ -96,11 +97,12 @@ namespace CellDotNet.Spe
 			get { return _methodBase.Name; }
 		}
 
-		private MethodBase _methodBase;
+		private readonly MethodBase _methodBase;
 		public MethodBase MethodBase
 		{
 			get { return _methodBase; }
 		}
+
 
 		private ReadOnlyCollection<MethodParameter> _parameters;
 		public override ReadOnlyCollection<MethodParameter> Parameters
@@ -223,12 +225,15 @@ namespace CellDotNet.Spe
 			// Build Variables.
 			List<MethodVariable> varlist = new List<MethodVariable>();
 			i = 0;
-			foreach (LocalVariableInfo lv in _methodBase.GetMethodBody().LocalVariables)
+			if (!(_methodBase is DynamicMethod))
 			{
-				Utilities.Assert(lv.LocalIndex == i, "lv.LocalIndex == i");
-				i++;
+				foreach (LocalVariableInfo lv in _methodBase.GetMethodBody().LocalVariables)
+				{
+					Utilities.Assert(lv.LocalIndex == i, "lv.LocalIndex == i");
+					i++;
 
-				varlist.Add(new MethodVariable(lv, typederiver.GetStackTypeDescription(lv.LocalType)));
+					varlist.Add(new MethodVariable(lv, typederiver.GetStackTypeDescription(lv.LocalType)));
+				}
 			}
 			_variables = new ReadOnlyCollection<MethodVariable>(varlist);
 			_variablesMutable = varlist;
@@ -238,7 +243,6 @@ namespace CellDotNet.Spe
 				MethodInfo mi = (MethodInfo) _methodBase;
 				_returnType = typederiver.GetStackTypeDescription(mi.ReturnType);
 			}
-
 
 
 			ILReader reader = new ILReader(_methodBase);

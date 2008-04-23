@@ -66,11 +66,8 @@ namespace CellDotNet.Intermediate
 		public static readonly StackTypeDescription Float32Vector =
 			new StackTypeDescription(CliType.Float32Vector, CliNumericSize.SixteenBytes, true);
 
-//		/// <summary>
-//		/// TODO: Remove this; use CliType instead.
-//		/// </summary>
-//		public static readonly StackTypeDescription ObjectType =
-//			new StackTypeDescription(CliType.ObjectType, CliNumericSize.None, false);
+		public static readonly StackTypeDescription ObjectType =
+			new StackTypeDescription(CliType.ObjectType, CliNumericSize.None, false);
 
 		public static readonly StackTypeDescription NativeInt =
 			new StackTypeDescription(CliType.NativeInt, CliNumericSize.None, true);
