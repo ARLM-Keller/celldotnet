@@ -34,12 +34,10 @@ namespace CellDotNet.Spe
 	{
 		//TODO work out more test cases.
 
-		private delegate void BasicTestDelegate();
-
 		[Test, Ignore("Pointers are no longer supported.")]
 		public unsafe void SimpleTest()
 		{
-			BasicTestDelegate del = delegate
+			Action del = delegate
 							{
 								int* i;
 								i = (int*)0x40;
@@ -60,7 +58,7 @@ namespace CellDotNet.Spe
 		[Test, Ignore("Pointers are no longer supported.")]
 		public unsafe void LargeTest()
 		{
-			BasicTestDelegate del = delegate
+			Action del = delegate
 							{
 								int* i;
 								int* j;

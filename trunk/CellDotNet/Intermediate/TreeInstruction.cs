@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using CellDotNet.Spe;
+using System.Linq;
 
 namespace CellDotNet.Intermediate
 {
@@ -340,7 +341,7 @@ namespace CellDotNet.Intermediate
 				if (child != null)
 					parent = child;
 
-				Utilities.TryGetFirst(parent.GetChildInstructions(), out child);
+				child = parent.GetChildInstructions().FirstOrDefault();
 			} while (child != null);
 
 			return parent;
@@ -362,7 +363,7 @@ namespace CellDotNet.Intermediate
 				if (child != null)
 					parent = child;
 
-				Utilities.TryGetFirst(parent.GetChildInstructions(), out child);
+				child = parent.GetChildInstructions().FirstOrDefault();
 			} while (child != null && child.Offset >= 0);
 
 //			if (parent.Offset < 0)

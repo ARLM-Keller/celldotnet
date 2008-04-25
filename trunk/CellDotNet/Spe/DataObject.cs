@@ -22,8 +22,11 @@
 //
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
+using JetBrains.Annotations;
 
 namespace CellDotNet.Spe
 {
@@ -32,10 +35,17 @@ namespace CellDotNet.Spe
 	/// </summary>
 	class DataObject : ObjectWithAddress
 	{
-		private DataObject(int size, string name) : base(name)
+		private readonly int _size;
+
+		protected DataObject(int size, string name) : base(name)
 		{
 			Utilities.AssertArgument(size >= 0, "size >= 0");
 
+			_size = size;
+		}
+
+		protected DataObject(int size)
+		{
 			_size = size;
 		}
 
@@ -50,10 +60,40 @@ namespace CellDotNet.Spe
 			return new DataObject(count * 16, name);
 		}
 
-		private int _size;
-		public override int Size
+		public sealed override int Size
 		{
 			get { return _size; }
+		}
+
+		/// <summary>
+		/// The value of the object. A value type array.
+		/// </summary>
+		[CanBeNull]
+		public IList Value { get; private set; }
+
+		public virtual void SetValue(int[] value)
+		{
+			Utilities.AssertArgument(value == null || value.Length <= (Size / 4), "value == null || value.Length <= (Size / 4)");
+			if (Value != null)
+				throw new InvalidOperationException("Re-assigning value - a bug?");
+
+			Value = value;
+		}
+
+		public virtual void SetValue(long[] value)
+		{
+			Utilities.AssertArgument(value == null || value.Length <= (Size / 8), "value == null || value.Length <= (Size / 8)");
+			if (Value != null)
+				throw new InvalidOperationException("Re-assigning value - a bug?");
+
+			Value = value;
+		}
+
+		public static DataObject FromQuadWords(int count, string name, int[] data)
+		{
+			var o = FromQuadWords(count, name);
+			o.SetValue(data);
+			return o;
 		}
 	}
 }

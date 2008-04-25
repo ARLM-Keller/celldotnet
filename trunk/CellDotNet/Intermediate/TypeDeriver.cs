@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Linq;
 
 namespace CellDotNet.Intermediate
 {
@@ -138,7 +139,7 @@ namespace CellDotNet.Intermediate
 					break;
 				case FlowControl.Return:
 					TreeInstruction firstchild;
-					Utilities.TryGetFirst(inst.GetChildInstructions(), out firstchild);
+					firstchild = inst.GetChildInstructions().FirstOrDefault();
 					if (firstchild != null)
 						t = inst.Left.StackType;
 					else

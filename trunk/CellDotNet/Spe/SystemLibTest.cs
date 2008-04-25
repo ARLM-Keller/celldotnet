@@ -33,16 +33,10 @@ namespace CellDotNet.Spe
 	[TestFixture]
 	public class SystemLibTest : UnitTest
 	{
-		private delegate int IntDelegate();
-
-
 		[Test]
 		public void TestSystemLib_Math_Abs()
 		{
-			Converter<int, int> del = delegate(int input)
-			                          	{
-			                          		 return System.Math.Abs(input);
-			                          	};
+			Converter<int, int> del = input => Math.Abs(input);
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);

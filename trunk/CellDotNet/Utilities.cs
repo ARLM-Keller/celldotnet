@@ -29,6 +29,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using CellDotNet.Spe;
+using JetBrains.Annotations;
 
 namespace CellDotNet
 {
@@ -42,7 +43,8 @@ namespace CellDotNet
 				throw new ArgumentNullException(paramName);
 		}
 
-		static public void AssertArgument(bool condition, string message)
+		[AssertionMethod]
+		static public void AssertArgument([AssertionCondition(AssertionConditionType.IS_TRUE)] bool condition, string message)
 		{
 			if (!condition)
 				throw new ArgumentException(message);
@@ -60,28 +62,32 @@ namespace CellDotNet
 				throw new ArgumentOutOfRangeException(paramName, actualValue, "The value is out of range.");
 		}
 
-		static public void AssertNotNull(object arg, string expressionOrMessage)
+		[AssertionMethod]
+		static public void AssertNotNull([AssertionCondition(AssertionConditionType.IS_NOT_NULL)] object arg, string expressionOrMessage)
 		{
 			if (arg == null)
 				throw new DebugAssertException("An expression is null: " + expressionOrMessage);
 		}
 
-		static public void AssertNull(object arg, string expressionOrMessage)
+		[AssertionMethod]
+		static public void AssertNull([AssertionCondition(AssertionConditionType.IS_NULL)] object arg, string expressionOrMessage)
 		{
 			if (arg != null)
 				throw new DebugAssertException("An expression is not null: " + expressionOrMessage);
 		}
 
-		static public void Assert(bool condition, string message)
+		[AssertionMethod]
+		static public void Assert([AssertionCondition(AssertionConditionType.IS_TRUE)]bool condition, string message)
 		{
 			if (!condition)
 				throw new DebugAssertException(message);
 		}
 
 		[Conditional("DEBUG")]
-		static public void DebugAssert(bool condition, string message)
+		[AssertionMethod]
+		static public void DebugAssert([AssertionCondition(AssertionConditionType.IS_TRUE)]bool condition, string message)
 		{
-			Debug.Assert(condition);
+//			Debug.Assert(condition);
 			if (!condition)
 				throw new DebugAssertException(message);
 		}
@@ -141,53 +147,6 @@ namespace CellDotNet
 		}
 
 		#endregion
-
-		static public bool TryGetFirst<T>(IEnumerable<T> enumerable, out T first)
-		{
-			first = default(T);
-
-			using (IEnumerator<T> e = enumerable.GetEnumerator())
-			{
-				if (!e.MoveNext())
-					return false;
-
-				first = e.Current;
-				return true;
-			}
-		}
-
-		public static T GetFirst<T>(IEnumerable<T> set)
-		{
-			T first;
-
-			if (!TryGetFirst(set, out first))
-				throw new ArgumentException("Empty set.");
-
-			return first;
-		}
-
-		public static List<T> FindAll<T>(IEnumerable<T> set, Predicate<T> pred)
-		{
-			List<T> l = new List<T>();
-			foreach (T t in set)
-			{
-				if (pred(t))
-					l.Add(t);
-			}
-
-			return l;
-		}
-
-		public static List<TReturn> ConvertAll<T, TReturn>(IEnumerable<T> set, Converter<T, TReturn> conv)
-		{
-			List<TReturn> l = new List<TReturn>();
-			foreach (T t in set)
-			{
-				l.Add(conv(t));
-			}
-
-			return l;
-		}
 
 		/// <summary>
 		/// You can use this one to make resharper think that a variable is used so that it won't

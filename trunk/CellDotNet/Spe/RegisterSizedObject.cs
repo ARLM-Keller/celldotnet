@@ -30,20 +30,15 @@ namespace CellDotNet.Spe
 	/// A 16-bytes <see cref="ObjectWithAddress"/> for storing a register. 
 	/// Used for storing return value from entry point method.
 	/// </summary>
-	class RegisterSizedObject : ObjectWithAddress
+	class RegisterSizedObject : DataObject
 	{
 		public RegisterSizedObject(string name)
-			: base(name)
+			: base(16, name)
 		{
 		}
 
-		public RegisterSizedObject()
+		public RegisterSizedObject() : base(16)
 		{
-		}
-
-		public override int Size
-		{
-			get { return 16; }
 		}
 	}
 }

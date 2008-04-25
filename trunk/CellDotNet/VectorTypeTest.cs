@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using CellDotNet.Intermediate;
 using NUnit.Framework;
+using System.Linq;
 
 
 namespace CellDotNet.Spe
@@ -35,22 +36,10 @@ namespace CellDotNet.Spe
 	[TestFixture]
 	public class VectorTypeTest : UnitTest
 	{
-		private delegate Int32Vector Int32VDelegateInt32V(Int32Vector v1);
-
-		private delegate T Creator<T>();
-
-		private delegate Int32Vector Int32VDelegateInt32VInt32V(Int32Vector v1, Int32Vector v2);
-		private delegate Float32Vector Float32VDelegateFloat32VFloat32V(Float32Vector v1, Float32Vector v2);
-
-		private delegate bool BoolDelegateInt32VInt32V(Int32Vector v1, Int32Vector v2);
-		private delegate bool BoolDelegateFloat32VFloat32V(Float32Vector v1, Float32Vector v2);
-
-		private delegate int IntDelegateInt32VInt(Int32Vector v1, int i);
-
 		[Test]
 		public void TestVectorInt_GetElement()
 		{
-			Converter<Int32Vector, int> del = delegate(Int32Vector input) { return input.E3; };
+			Func<Int32Vector, int> del = input => input.E3;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -66,7 +55,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestVectorInt_GetElement2()
 		{
-			IntDelegateInt32VInt del =
+			Func<Int32Vector, int, int> del =
 				delegate(Int32Vector v, int i)
 				{
 					if (i == 1)
@@ -108,8 +97,6 @@ namespace CellDotNet.Spe
 			}
 		}
 
-		private delegate TReturn Func<T1, T2, TReturn>(T1 arg1, T2 arg2);
-
 #region TestVectorInt_RefArgument
 
 		static private void ReplaceArgument(ref Int32Vector v1, Int32Vector v2)
@@ -147,7 +134,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestVectorInt_Copy()
 		{
-			Converter<Int32Vector, Int32Vector> del = 
+			Func<Int32Vector, Int32Vector> del = 
 				delegate(Int32Vector input)
 					{
 						Int32Vector v2 = input;
@@ -164,7 +151,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestVectorInt_Add()
 		{
-			Int32VDelegateInt32VInt32V del = delegate(Int32Vector arg1, Int32Vector arg2) { return arg1 + arg2; };
+			Func<Int32Vector, Int32Vector, Int32Vector> del = (arg1, arg2) => arg1 + arg2;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -192,7 +179,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestVectorInt_Sub()
 		{
-			Int32VDelegateInt32VInt32V del = delegate(Int32Vector arg1, Int32Vector arg2) { return arg1 - arg2; };
+			Func<Int32Vector, Int32Vector, Int32Vector> del = (arg1, arg2) => arg1 - arg2;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -220,7 +207,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestVectorInt_Mul()
 		{
-			Int32VDelegateInt32VInt32V del = delegate(Int32Vector arg1, Int32Vector arg2) { return arg1 * arg2; };
+			Func<Int32Vector, Int32Vector, Int32Vector> del = (arg1, arg2) => arg1*arg2;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -248,7 +235,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestVectorInt_Div()
 		{
-			Int32VDelegateInt32VInt32V del = delegate(Int32Vector arg1, Int32Vector arg2) { return arg1 / arg2; };
+			Func<Int32Vector, Int32Vector, Int32Vector> del = (arg1, arg2) => arg1/arg2;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -276,7 +263,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestVectorInt_Rem()
 		{
-			Int32VDelegateInt32VInt32V del = delegate(Int32Vector arg1, Int32Vector arg2) { return arg1 % arg2; };
+			Func<Int32Vector, Int32Vector, Int32Vector> del = (arg1, arg2) => arg1%arg2;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -305,13 +292,15 @@ namespace CellDotNet.Spe
 		public void TestVectorInt_Constructor()
 		{
 			// This will use newobj.
-			Creator<Int32Vector> del = delegate { return new Int32Vector(1, 2, 3, 4); };
+			Func<Int32Vector> del = () => new Int32Vector(1, 2, 3, 4);
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			List<MethodVariable> vlist = Utilities.FindAll(cc.EntryPointAsMetodCompiler.Variables,
-				delegate(MethodVariable var) { return var.StackType == StackTypeDescription.Int32Vector; });
+			List<MethodVariable> vlist = cc.EntryPointAsMetodCompiler.Variables
+				.Where(var => var.StackType == StackTypeDescription.Int32Vector)
+				.ToList();
+
 			if (vlist.Count == 1)
 				IsFalse(vlist[0].Escapes.Value);
 			else
@@ -324,17 +313,18 @@ namespace CellDotNet.Spe
 		public void TestVectorInt_ConstructorLocalVariable()
 		{
 			// This will use call.
-			Creator<Int32Vector> del = delegate
-			                           	{
-			                           		Int32Vector v = new Int32Vector(1, 2, 3, 4);
-			                           		return v;
-			                           	};
+			Func<Int32Vector> del = () =>
+			{
+				Int32Vector v = new Int32Vector(1, 2, 3, 4);
+				return v;
+			};
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			List<MethodVariable> vlist = Utilities.FindAll(cc.EntryPointAsMetodCompiler.Variables,
-				delegate(MethodVariable var) { return var.StackType == StackTypeDescription.Int32Vector; });
+			List<MethodVariable> vlist = cc.EntryPointAsMetodCompiler.Variables
+				.Where(var => var.StackType == StackTypeDescription.Int32Vector)
+				.ToList();
 
 			// allow 2 since debug mode branch might have induced an extra variable.
 			IsTrue(vlist.Count == 1 || vlist.Count == 2); 
@@ -349,7 +339,7 @@ namespace CellDotNet.Spe
 		public void TestVectorInt_Splat()
 		{
 			// This will use newobj.
-			Converter<int, Int32Vector> del = delegate(int input) { return Int32Vector.Splat(input); };
+			Func<int, Int32Vector> del = Int32Vector.Splat;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -360,10 +350,10 @@ namespace CellDotNet.Spe
 			AreEqual(Int32Vector.Splat(arg), (Int32Vector)SpeContext.UnitTestRunProgram(cc, arg));
 		}
 
-		[Test, Ignore("Currently we can't handle bools.")]
+		[Test]
 		public void TestVectorInt_Equal()
 		{
-			BoolDelegateInt32VInt32V del = delegate(Int32Vector arg1, Int32Vector arg2) { return arg1 == arg2; };
+			Func<Int32Vector, Int32Vector, bool> del = (arg1, arg2) => arg1 == arg2;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -391,7 +381,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestVectorFloat_Add()
 		{
-			Float32VDelegateFloat32VFloat32V del = delegate(Float32Vector arg1, Float32Vector arg2) { return arg2 + arg1; };
+			Func<Float32Vector, Float32Vector, Float32Vector> del = (arg1, arg2) => arg2 + arg1;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -420,7 +410,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestVectorFloat_Sub()
 		{
-			Float32VDelegateFloat32VFloat32V del = delegate(Float32Vector arg1, Float32Vector arg2) { return arg1 - arg2; };
+			Func<Float32Vector, Float32Vector, Float32Vector> del = (arg1, arg2) => arg1 - arg2;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -448,7 +438,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestVectorFloat_Mul()
 		{
-			Float32VDelegateFloat32VFloat32V del = delegate(Float32Vector arg1, Float32Vector arg2) { return arg1 * arg2; };
+			Func<Float32Vector, Float32Vector, Float32Vector> del = (arg1, arg2) => arg1*arg2;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -479,7 +469,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestVectorFloat_Div()
 		{
-			Float32VDelegateFloat32VFloat32V del = delegate(Float32Vector arg1, Float32Vector arg2) { return arg1 / arg2; };
+			Func<Float32Vector, Float32Vector, Float32Vector> del = (arg1, arg2) => arg1/arg2;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -501,16 +491,13 @@ namespace CellDotNet.Spe
 
 				Utilities.AssertWithinLimits((Float32Vector)vSPU1, vPPU1, 0.00001f, "First test failed.");
 				Utilities.AssertWithinLimits((Float32Vector)vSPU2, vPPU2, 0.00001f, "Second test failed.");
-
-//				IsTrue((Float32Vector)vSPU1 == vPPU1, "First test failed.");
-//				IsTrue((Float32Vector)vSPU2 == vPPU2, "Second test failed.");
 			}
 		}
 
 		[Test]
 		public void TestVectorFloat_Constructor()
 		{
-			Creator<Float32Vector> del = delegate { return new Float32Vector(1, 2, 3, 4); };
+			Func<Float32Vector> del = () => new Float32Vector(1, 2, 3, 4);
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -521,12 +508,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestVectorFloat_ConstructorLocalVariable()
 		{
-			Creator<Float32Vector> del =
-				delegate
-					{
-						Float32Vector v = new Float32Vector(1, 2, 3, 4);
-						return v;
-					};
+			Func<Float32Vector> del = () => new Float32Vector(1, 2, 3, 4);
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -542,7 +524,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestVectorFloat_ConstructorRefArg()
 		{
-			Creator<Float32Vector> del = 
+			Func<Float32Vector> del = 
 				delegate
 					{
 						Float32Vector v;
@@ -560,7 +542,7 @@ namespace CellDotNet.Spe
 		public void TestVectorFloat_Splat()
 		{
 			// This will use newobj.
-			Converter<float, Float32Vector> del = delegate(float input) { return Float32Vector.Splat(input); };
+			Func<float, Float32Vector> del = Float32Vector.Splat;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -571,12 +553,10 @@ namespace CellDotNet.Spe
 			AreEqual(Float32Vector.Splat(arg), (Float32Vector)SpeContext.UnitTestRunProgram(cc, arg));
 		}
 
-		private delegate float FloatElementDelegate(Float32Vector v, int elementno);
-
 		[Test]
 		public void TestVectorFloat_GetElement()
 		{
-			FloatElementDelegate del =
+			Func<Float32Vector, int, float> del =
 				delegate(Float32Vector v, int i)
 				{
 					if (i == 1)
@@ -618,14 +598,10 @@ namespace CellDotNet.Spe
 			}
 		}
 
-		[Test, Ignore("Currently we can't handle bools.")]
+		[Test]
 		public void TestVectorFloat_Equal()
 		{
-			BoolDelegateFloat32VFloat32V del =
-				delegate(Float32Vector arg1, Float32Vector arg2)
-				{
-					return arg1 == arg2;
-				};
+			Func<Float32Vector, Float32Vector, bool> del = (arg1, arg2) => arg1 == arg2;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -665,7 +641,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestVectorIntArray_Simple()
 		{
-			Int32VDelegateInt32V del1 = delegate(Int32Vector vec)
+			Func<Int32Vector, Int32Vector> del1 = delegate(Int32Vector vec)
 			{
 				Int32Vector[] varr = new Int32Vector[1];
 
@@ -699,8 +675,8 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestVectorIntArray()
 		{
-			Int32VDelegateInt32VInt32V del =
-				delegate(Int32Vector arg1, Int32Vector arg2)
+			Func<Int32Vector, Int32Vector, Int32Vector> del =
+				(arg1, arg2) =>
 					{
 						Int32Vector[] varr = new Int32Vector[3];
 
@@ -738,7 +714,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestVectorIntArray_OverWrite()
 		{
-			Int32VDelegateInt32VInt32V del =
+			Func<Int32Vector, Int32Vector, Int32Vector> del =
 				delegate(Int32Vector arg1, Int32Vector arg2)
 					{
 						Int32Vector[] varr = new Int32Vector[100];

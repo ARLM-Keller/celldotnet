@@ -33,12 +33,10 @@ namespace CellDotNet.Spe
 	[TestFixture]
 	public class DisassemblerTest
 	{
-		private delegate int SimpleDelegate();
-
 		[Test]
 		public void TestSimpleDisassembly()
 		{
-			SimpleDelegate del = delegate
+			Func<int> del = delegate
 			                     	{
 			                     		int i = 34;
 			                     		return i;

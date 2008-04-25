@@ -53,12 +53,10 @@ namespace CellDotNet.Spe
 			MethodRecursiveCaller();
 		}
 
-		delegate void SimpleDelegate();
-
 		[Test]
 		public void TestAcquireTwoMethodsInternal()
 		{
-			SimpleDelegate del = MethodCallerInternal;
+			Action del = MethodCallerInternal;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
@@ -68,7 +66,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestAcquireThreeMethodsExternal()
 		{
-			SimpleDelegate del = MethodCallerExternal;
+			Action del = MethodCallerExternal;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
@@ -78,7 +76,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestAcquireRecursiveMethod()
 		{
-			SimpleDelegate del = MethodRecursiveCaller;
+			Action del = MethodRecursiveCaller;
 			
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S2TreeConstructionDone);
@@ -90,7 +88,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestEmptyMethod()
 		{
-			SimpleDelegate del = delegate { };
+			Action del = delegate { };
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);

@@ -35,11 +35,9 @@ namespace CellDotNet.Spe
 	[TestFixture]
 	public class MethodCompilerTest : UnitTest
 	{
-		private delegate void BasicTestDelegate();
-
 		public void TestBranchCodeGenerationBasic()
 		{
-			BasicTestDelegate del = delegate
+			Action del = delegate
 				{
 					int i = 0;
 

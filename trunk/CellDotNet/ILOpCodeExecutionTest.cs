@@ -730,7 +730,7 @@ namespace CellDotNet
 			ExecuteAndVerifyBinaryOperator(OpCodes.Ceq, 5d, 5.1d, 0);
 			ExecuteAndVerifyBinaryOperator(OpCodes.Ceq, 5d, -5d, 0);
 			ExecuteAndVerifyBinaryOperator(OpCodes.Ceq, 5d, 4d, 0);
-			ExecuteAndVerifyBinaryOperator(OpCodes.Ceq, 0d, 0d, 0);
+			ExecuteAndVerifyBinaryOperator(OpCodes.Ceq, 0d, 0d, 1);
 		}
 
 		[Test]
@@ -776,9 +776,9 @@ namespace CellDotNet
 		[Test]
 		public void Test_Clt_R8()
 		{
-			ExecuteAndVerifyBinaryOperator(OpCodes.Clt, 5, 3, 0);
-			ExecuteAndVerifyBinaryOperator(OpCodes.Clt, 5, 5, 0);
-			ExecuteAndVerifyBinaryOperator(OpCodes.Clt, 5, 7, 1);
+			ExecuteAndVerifyBinaryOperator(OpCodes.Clt, 5d, 3d, 0);
+			ExecuteAndVerifyBinaryOperator(OpCodes.Clt, 5d, 5d, 0);
+			ExecuteAndVerifyBinaryOperator(OpCodes.Clt, 5d, 7d, 1);
 		}
 
 		[Test]
@@ -1048,87 +1048,27 @@ namespace CellDotNet
 		[Test]
 		public void Test_Neg_I4()
 		{
-			{
-				ILWriter w = new ILWriter();
-				w.WriteOpcode(OpCodes.Ldc_I4_7);
-				w.WriteOpcode(OpCodes.Neg);
-				w.WriteOpcode(OpCodes.Ret);
-
-				TestExecution(w, -7);
-			}
-			{
-				ILWriter w = new ILWriter();
-				w.WriteOpcode(OpCodes.Ldc_I4);
-				w.WriteInt32(-100);
-				w.WriteOpcode(OpCodes.Neg);
-				w.WriteOpcode(OpCodes.Ret);
-
-				TestExecution(w, 100);
-			}
-			{
-				ILWriter w = new ILWriter();
-				w.WriteOpcode(OpCodes.Ldc_I4);
-				w.WriteInt32(int.MinValue);
-				w.WriteOpcode(OpCodes.Neg);
-				w.WriteOpcode(OpCodes.Ret);
-
-				TestExecution(w, int.MinValue);
-			}
+			ExecuteAndVerifyUnary(OpCodes.Neg, 7, -7);
+			ExecuteAndVerifyUnary(OpCodes.Neg, -100, 100);
+			ExecuteAndVerifyUnary(OpCodes.Neg, int.MinValue, int.MinValue);
 		}
 
 		[Test]
 		public void Test_Neg_R4()
 		{
-			Action<float, float> test = (x, y) =>
-			{
-				ILWriter w = new ILWriter();
-				w.WriteOpcode(OpCodes.Ldc_R4);
-				w.WriteFloat(3.14f);
-				w.WriteOpcode(OpCodes.Neg);
-				w.WriteOpcode(OpCodes.Ret);
+			ExecuteAndVerifyUnary(OpCodes.Neg, 3.14f, -3.14f);
+			ExecuteAndVerifyUnary(OpCodes.Neg, -3.14f, 3.14f);
+			ExecuteAndVerifyUnary(OpCodes.Neg, float.MinValue, float.MaxValue);
+			ExecuteAndVerifyUnary(OpCodes.Neg, float.MaxValue, float.MinValue);
+		}
 
-				TestExecution(w, -3.14f);
-			};
-
-			{
-				ILWriter w = new ILWriter();
-				w.WriteOpcode(OpCodes.Ldc_R4);
-				w.WriteFloat(3.14f);
-				w.WriteOpcode(OpCodes.Neg);
-				w.WriteOpcode(OpCodes.Ret);
-
-				TestExecution(w, -3.14f);
-			}
-			test(3.14f, -3.14f);
-
-			// TODO Simplify the following if the delegate approach works.
-			{
-				ILWriter w = new ILWriter();
-				w.WriteOpcode(OpCodes.Ldc_R4);
-				w.WriteFloat(-3.14f);
-				w.WriteOpcode(OpCodes.Neg);
-				w.WriteOpcode(OpCodes.Ret);
-
-				TestExecution(w, 3.14f);
-			}
-			{
-				ILWriter w = new ILWriter();
-				w.WriteOpcode(OpCodes.Ldc_R4);
-				w.WriteFloat(float.MinValue);
-				w.WriteOpcode(OpCodes.Neg);
-				w.WriteOpcode(OpCodes.Ret);
-
-				TestExecution(w, float.MaxValue);
-			}
-			{
-				ILWriter w = new ILWriter();
-				w.WriteOpcode(OpCodes.Ldc_R4);
-				w.WriteFloat(float.MaxValue);
-				w.WriteOpcode(OpCodes.Neg);
-				w.WriteOpcode(OpCodes.Ret);
-
-				TestExecution(w, float.MinValue);
-			}
+		[Test]
+		public void Test_Neg_R8()
+		{
+			ExecuteAndVerifyUnary(OpCodes.Neg, 3.14d, -3.14d);
+			ExecuteAndVerifyUnary(OpCodes.Neg, -3.14d, 3.14d);
+			ExecuteAndVerifyUnary(OpCodes.Neg, double.MinValue, double.MaxValue);
+			ExecuteAndVerifyUnary(OpCodes.Neg, double.MaxValue, double.MinValue);
 		}
 
 		[Test]
@@ -1418,8 +1358,6 @@ namespace CellDotNet
 				var.VirtualRegister = new VirtualRegister();
 			}
 
-			RecursiveInstructionSelector sel = new RecursiveInstructionSelector();
-
 			ReadOnlyCollection<MethodParameter> par = new ReadOnlyCollection<MethodParameter>(new List<MethodParameter>());
 
 			ManualRoutine spum = new ManualRoutine(false, "opcodetester");
@@ -1431,6 +1369,7 @@ namespace CellDotNet
 			// it will always spill some.
 			spum.WriteProlog(10, specialSpeObjects.StackOverflow);
 
+			RecursiveInstructionSelector sel = new RecursiveInstructionSelector(specialSpeObjects, null);
 			sel.GenerateCode(basicBlocks, par, spum.Writer);
 
 			spum.WriteEpilog();
@@ -1451,7 +1390,7 @@ namespace CellDotNet
 
 			objectsWithAddresss.Add(spuinit);
 			objectsWithAddresss.Add(spum);
-			objectsWithAddresss.AddRange(specialSpeObjects.GetAll());
+			objectsWithAddresss.AddRange(specialSpeObjects.GetAllObjectsWithStorage());
 			objectsWithAddresss.Add(returnAddressObject);
 
 			int codeByteSize = CompileContext.LayoutObjects(objectsWithAddresss);

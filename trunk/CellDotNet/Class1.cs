@@ -53,39 +53,9 @@ namespace CellDotNet
 			return sb.ToString();
 		}
 
-		private static unsafe void RunRasmus()
+		private static void RunRasmus()
 		{
-			DynamicMethod dm = new DynamicMethod("mymethod", typeof(int), new[] { typeof(int)});
-			ILGenerator generator = dm.GetILGenerator();
-			generator.Emit(OpCodes.Ldarg_0);
-			generator.Emit(OpCodes.Ldc_I4_1);
-			generator.Emit(OpCodes.Add);
-			generator.Emit(OpCodes.Ret);
-
-			int ilLength;
-			byte[] il;
-//			FieldInfo ilstream = typeof (ILGenerator).GetField("m_ILStream", BindingFlags.NonPublic | BindingFlags.Instance);
-//			byte[] il = (byte[]) ilstream.GetValue(generator);
-//
-//			FieldInfo lenghtfield = typeof (ILGenerator).GetField("m_length", BindingFlags.NonPublic | BindingFlags.Instance);
-//			int ilLength = (int)lenghtfield.GetValue(generator);
-
-//			il.GetHashCode();
-//			ilLength.GetHashCode();
-
-//			Func<int, int> del = (Func<int, int>) dm.CreateDelegate(typeof (Func<int, int>));
-//			int del1 = del(234);
-
-//			new ILOpCodeExecutionTest().Test_Ldc_R8();
-
-//			double d = 4324534.523226;
-//			long l = (long) *((double*) &d);
-//			Console.WriteLine("double hex: " +  hexencode(BitConverter.GetBytes(d)));
-//			Console.WriteLine("long reinterpreted hex: " +  hexencode(BitConverter.GetBytes(l)));
-
-//			new ILOpCodeExecutionTest().Test_Rem_Un_I4();
-//			Func<double, double, double> f = (d1, d2) => d1 % d2;
-//			Console.WriteLine(f(3,5));
+			new ILOpCodeExecutionTest().Test_Ceq_R8();
 		}
 	}
 }

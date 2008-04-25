@@ -34,16 +34,15 @@ namespace CellDotNet.Spe
 	{
 		#region Objects
 
-		private RegisterSizedObject _nextAllocationStartObject = new RegisterSizedObject("NextAllocationStart");
-		private RegisterSizedObject _allocatableByteCountObject = new RegisterSizedObject("AllocatableByteCount");
-		private RegisterSizedObject _stackPointerObject = new RegisterSizedObject("InitialStackPointer");
-		private RegisterSizedObject _debugValueObject = new RegisterSizedObject("DebugValue");
-		private DataObject _ppeCallDataArea = DataObject.FromQuadWords(15, "PpeCallDataArea");
+		private readonly RegisterSizedObject _nextAllocationStartObject = new RegisterSizedObject("NextAllocationStart");
+		private readonly RegisterSizedObject _allocatableByteCountObject = new RegisterSizedObject("AllocatableByteCount");
+		private readonly RegisterSizedObject _stackPointerObject = new RegisterSizedObject("InitialStackPointer");
+		private readonly RegisterSizedObject _debugValueObject = new RegisterSizedObject("DebugValue");
+		private readonly DataObject _ppeCallDataArea = DataObject.FromQuadWords(15, "PpeCallDataArea");
 		//		private RegisterSizedObject _stackSizeObject = new RegisterSizedObject("StackSize");
-		private ManualRoutine _stackOverflow;
-		private ManualRoutine _outOfMemory;
+		private readonly ManualRoutine _stackOverflow;
+		private readonly ManualRoutine _outOfMemory;
 
-		private DataObject _doubleCompareDataArea = DataObject.FromQuadWords(4, "DoubleCompareDataArea");
 
 		public SpecialSpeObjects()
 		{
@@ -97,29 +96,25 @@ namespace CellDotNet.Spe
 		}
 
 		/// <summary>
-		/// Static data used for some DP ops.
-		/// </summary>
-		public DataObject DoubleCompareDataArea
-		{
-			get { return _doubleCompareDataArea; }
-		}
-
-		/// <summary>
 		/// Returns all the objects that require storage.
 		/// </summary>
 		/// <returns></returns>
-		public ObjectWithAddress[] GetAll()
+		public ObjectWithAddress[] GetAllObjectsWithStorage()
 		{
-			return new ObjectWithAddress[] {
-				NextAllocationStartObject, AllocatableByteCountObject, 
-				StackPointerObject,
-//				StackSizeObject,
-				DebugValueObject,
-				StackOverflow, 
-				OutOfMemory, 
-				PpeCallDataArea,
-				DoubleCompareDataArea
-			};
+			var objects = new List<ObjectWithAddress>
+			                	{
+			                		NextAllocationStartObject,
+			                		AllocatableByteCountObject,
+			                		StackPointerObject,
+			                		DebugValueObject,
+			                		StackOverflow,
+			                		OutOfMemory,
+			                		PpeCallDataArea,
+			                	};
+			if (_mathobjects != null)
+				objects.AddRange(_mathobjects.GetAllObjectsWithStorage());
+
+			return objects.ToArray();
 		}
 
 		#endregion
@@ -170,16 +165,17 @@ namespace CellDotNet.Spe
 			}
 		}
 
-		private int[] _doubleCompareData = unchecked(new int[] {
-			0x7fffffff, (int)0xffffffff, 0x7fffffff, (int)0xffffffff,
-			0x7ff00000,      0x00000000, 0x7ff00000,      0x00000000,
-			0x04050607, (int)0xc0c0c0c0, 0x0c0d0e0f, (int)0xc0c0c0c0,
-			0x00010203,      0x00010203, 0x08090a0b,      0x08090a0b});
-
-		public int[] DoubleCompareData()
+		private MathObjects _mathobjects;
+		public MathObjects MathObjects
 		{
-			return _doubleCompareData;
-		} 
+			get 
+			{ 
+				if (_mathobjects == null)
+					_mathobjects = new MathObjects();
+				return _mathobjects;
+			}
+		}
+
 
 		public void SetMemorySettings(int initialStackPointer, int stackSize, int nextAllocationStart, int allocatableByteCount)
 		{
@@ -201,5 +197,44 @@ namespace CellDotNet.Spe
 		}
 
 		#endregion
+	}
+
+	/// <summary>
+	/// Data used for math implementation.
+	/// </summary>
+	class MathObjects
+	{
+		/// <summary>
+		/// Static data used for some DP ops.
+		/// </summary>
+		public DataObject DoubleCompareDataArea { get; private set; }
+		public ObjectOffset DoubleSignFilter { get; private set; }
+		public ObjectOffset DoubleExponentFilter { get; private set; }
+		public ObjectOffset DoubleCeqMagic1 { get; private set; }
+
+		private static readonly int[] s_doubleCompareData = unchecked(new int[] {
+			0x7fffffff, (int)0xffffffff, 0x7fffffff, (int)0xffffffff, // sign filter
+			0x7ff00000,      0x00000000, 0x7ff00000,      0x00000000, // exponent filter
+			0x04050607, (int)0xc0c0c0c0, 0x0c0d0e0f, (int)0xc0c0c0c0, //
+			0x00010203,      0x00010203, 0x08090a0b,      0x08090a0b, //
+			0x00010203,      0x10111213, 0x08090a0b,      0x18191a1b, // ceq magic 1
+		});
+
+		public MathObjects()
+		{
+			DoubleCompareDataArea = DataObject.FromQuadWords(s_doubleCompareData.Length / 4, "DoubleCompareDataArea", s_doubleCompareData);
+			DoubleSignFilter = new ObjectOffset(DoubleCompareDataArea, 0);
+			DoubleExponentFilter = new ObjectOffset(DoubleCompareDataArea, 16);
+			DoubleCeqMagic1 = new ObjectOffset(DoubleCompareDataArea, 64);
+		}
+
+		public ObjectWithAddress[] GetAllObjectsWithStorage()
+		{
+			return new ObjectWithAddress[]
+			       	{
+			       		DoubleCompareDataArea
+			       	};
+		}
+
 	}
 }

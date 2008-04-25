@@ -26,7 +26,7 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-
+using System.Linq;
 
 
 namespace CellDotNet.Spe
@@ -48,7 +48,7 @@ namespace CellDotNet.Spe
 			List<InstructionScheduleInfo> list = new ListInstructionScheduler().DetermineDependencies(w.CurrentBlock);
 			// "il"
 			AreEqual(1, list[0].Dependents.Count);
-			AreSame(ai_inst, Utilities.GetFirst(list[0].Dependents).Instruction);
+			AreSame(ai_inst, list[0].Dependents.First().Instruction);
 
 			// "ilh"
 			AreEqual(0, list[1].Dependents.Count);
@@ -133,11 +133,11 @@ namespace CellDotNet.Spe
 			List<InstructionScheduleInfo> list = new ListInstructionScheduler().DetermineDependencies(w.CurrentBlock);
 			// Move depends on call.
 			AreEqual(1, list[0].Dependents.Count);
-			AreEqual(list[1], Utilities.GetFirst(list[0].Dependents));
+			AreEqual(list[1], list[0].Dependents.First());
 
 			// Ai depends on move.
 			AreEqual(1, list[1].Dependents.Count);
-			AreEqual(list[2], Utilities.GetFirst(list[1].Dependents));
+			AreEqual(list[2], list[1].Dependents.First());
 		}
 
 		[Test]

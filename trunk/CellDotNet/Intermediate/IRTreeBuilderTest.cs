@@ -38,8 +38,6 @@ namespace CellDotNet.Intermediate
 	[TestFixture]
 	public class IRTreeBuilderTest : UnitTest
 	{
-		private delegate void BasicTestDelegate();
-
 		[Test]
 		public void TestBuildTree()
 		{
@@ -78,12 +76,8 @@ namespace CellDotNet.Intermediate
 		[Test]
 		public void TestParsePopOperandIsNull()
 		{
-			BasicTestDelegate del =
-				delegate
-				{
-					// will have a pop instruktion before the ret.
-					Math.Max(1, 2);
-				};
+			// will have a pop instruktion before the ret.
+			Action del = () => Math.Max(1, 2);
 
 			MethodCompiler mc = new MethodCompiler(del.Method);
 			mc.PerformProcessing(MethodCompileState.S2TreeConstructionDone);
@@ -105,7 +99,7 @@ namespace CellDotNet.Intermediate
 		[Test]
 		public void TestParseFunctionCall()
 		{
-			BasicTestDelegate del = delegate
+			Action del = delegate
 										{
 											int rem;
 											Math.DivRem(9, 13, out rem);
@@ -120,7 +114,7 @@ namespace CellDotNet.Intermediate
 		[Test]
 		public void TestParseObjectInstantiationAndInstanceMethodCall()
 		{
-			BasicTestDelegate del = delegate
+			Action del = delegate
 										{
 											ArrayList list = new ArrayList(34);
 											list.Clear();
@@ -134,7 +128,7 @@ namespace CellDotNet.Intermediate
 		[Test]
 		public void TestParseArrayInstantiation()
 		{
-			BasicTestDelegate del = delegate
+			Action del = delegate
 			                        	{
 			                        		int[] arr = new int[5];
 			                        	};
@@ -148,7 +142,7 @@ namespace CellDotNet.Intermediate
 		[Test]
 		public void TestParseArrayLoadStore()
 		{
-			BasicTestDelegate del = delegate
+			Action del = delegate
 										{
 											int[] arr = new int[10];
 											int j = arr[1];
@@ -173,7 +167,7 @@ namespace CellDotNet.Intermediate
 		[Test]
 		public void TestParseBranches1()
 		{
-			BasicTestDelegate del = delegate
+			Action del = delegate
 										{
 											int i = 34;
 
@@ -203,7 +197,7 @@ namespace CellDotNet.Intermediate
 		[Test]
 		public void TestParseBranchesDEBUG()
 		{
-			BasicTestDelegate del = delegate
+			Action del = delegate
 			                        	{
 			                        		{
 			                        			throw new Exception();
@@ -216,7 +210,7 @@ namespace CellDotNet.Intermediate
 		[Test]
 		public void TestParseBranchBasic()
 		{
-			BasicTestDelegate del = delegate
+			Action del = delegate
 				{
 					int i = Math.Max(4, 0);
 
