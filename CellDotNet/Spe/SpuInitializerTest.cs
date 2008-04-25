@@ -95,12 +95,10 @@ namespace CellDotNet.Spe
 			}
 		}
 
-		private delegate int IntDelegateTripleArg(int a, int b, int c);
-
 		[Test]
 		public void TestArguments_RunProgram()
 		{
-			IntDelegateTripleArg del = delegate(int a, int b, int c) { return a + b + c; };
+			Func<int, int, int, int> del = (a, b, c) => a + b + c;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);

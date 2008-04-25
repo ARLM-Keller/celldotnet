@@ -36,7 +36,7 @@ namespace CellDotNet.Spe
 	abstract class ObjectWithAddress
 	{
 		private int _offset = -1;
-		private string _name;
+		private readonly string _name;
 
 
 		public virtual string Name

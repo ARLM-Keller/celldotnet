@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -30,6 +31,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using CellDotNet.Intermediate;
 using CellDotNet.Spe;
+using System.Linq;
 
 namespace CellDotNet
 {
@@ -185,7 +187,7 @@ namespace CellDotNet
 
 			// Start from the beginning and lay them out sequentially.
 			int lsOffset = 0;
-			List<ObjectWithAddress> all = GetAllObjects();
+			List<ObjectWithAddress> all = GetAllObjectsWithStorage();
 
 			// This sort is only to make windows and mono assign the same addresses.
 			all.Sort(delegate(ObjectWithAddress x, ObjectWithAddress y)
@@ -245,7 +247,7 @@ namespace CellDotNet
 		{
 			AssertState(CompileContextState.S6AddressPatchingDone - 1);
 
-			foreach (ObjectWithAddress owa in GetAllObjects())
+			foreach (ObjectWithAddress owa in GetAllObjectsWithStorage())
 			{
 				MethodCompiler mc = owa as MethodCompiler;
 				if (mc != null)
@@ -295,19 +297,17 @@ namespace CellDotNet
 		}
 
 		/// <summary>
-		/// Enumerates all <see cref="ObjectWithAddress"/> objects that require storage and 
+		/// Enumerates all <see cref="ObjectWithAddress"/> objects which require storage and 
 		/// optionally patching, including initialization and <see cref="RegisterSizedObject"/> objects.
 		/// </summary>
 		/// <returns></returns>
-		private List<ObjectWithAddress> GetAllObjects()
+		private List<ObjectWithAddress> GetAllObjectsWithStorage()
 		{
-			List<ObjectWithAddress> all = new List<ObjectWithAddress>();
 			// SPU routines go first, since we start execution at address 0.
-			foreach (SpuDynamicRoutine routine in GetSpuRoutines())
-				all.Add(routine);
-			all.AddRange(_specialSpeObjects.GetAll());
-			foreach (MethodCompiler mc in Methods)
-				all.Add(mc);
+			var all = new List<ObjectWithAddress>();
+			all.AddRange(GetSpuRoutines().Cast<ObjectWithAddress>());
+			all.AddRange(_specialSpeObjects.GetAllObjectsWithStorage());
+			all.AddRange(Methods.Cast<ObjectWithAddress>());
 
 			// Data at the end.
 			if (_returnValueLocation != null)
@@ -319,23 +319,16 @@ namespace CellDotNet
 
 		internal ICollection<ObjectWithAddress> GetAllObjectsForDisassembly()
 		{
-			return GetAllObjects();
+			return GetAllObjectsWithStorage();
 		}
 
 		private void PerformCodeEmission()
 		{
 			AssertState(CompileContextState.S7CodeEmitted - 1);
 
-			List<ObjectWithAddress> objects = GetAllObjects();
-			List<SpuDynamicRoutine> routines = new List<SpuDynamicRoutine>();
-			foreach (ObjectWithAddress o in objects)
-			{
-				SpuDynamicRoutine dynamicRoutine = o as SpuDynamicRoutine;
-				if (dynamicRoutine != null)
-					routines.Add(dynamicRoutine);
-			}
+			List<ObjectWithAddress> allObjectsWithStorage = GetAllObjectsWithStorage();
 			_emittedCode = new int[Utilities.Align16(_totalCodeSize) / 4];
-			CopyCode(_emittedCode, routines);
+			CopyCode(_emittedCode, allObjectsWithStorage.OfType<SpuDynamicRoutine>().ToList());
 
 			// Initialize memory allocation.
 			{
@@ -347,16 +340,46 @@ namespace CellDotNet
 				_specialSpeObjects.SetMemorySettings(StackPointer, StackSize, codeByteSize, TotalSpeMem - codeByteSize - StackSize);
 
 				// We only need to write to the preferred slot.
-				_emittedCode[_specialSpeObjects.AllocatableByteCountObject.Offset/4] = _specialSpeObjects.AllocatableByteCount;
-				_emittedCode[_specialSpeObjects.NextAllocationStartObject.Offset/4] = _specialSpeObjects.NextAllocationStart;
-				_emittedCode[_specialSpeObjects.StackPointerObject.Offset/4] = _specialSpeObjects.InitialStackPointer;
-				_emittedCode[_specialSpeObjects.StackPointerObject.Offset / 4 + 1] = _specialSpeObjects.StackSize;
-				// NOTE: SpuAbiUtilities.WriteProlog() is dependending on that the two larst words is >= stackSize.
-				_emittedCode[_specialSpeObjects.StackPointerObject.Offset / 4 + 2] = _specialSpeObjects.StackSize;
-				_emittedCode[_specialSpeObjects.StackPointerObject.Offset / 4 + 3] = _specialSpeObjects.StackSize;
+				_specialSpeObjects.AllocatableByteCountObject.SetValue(new int[] { _specialSpeObjects.AllocatableByteCount });
+				_specialSpeObjects.NextAllocationStartObject.SetValue(new int[] { _specialSpeObjects.NextAllocationStart });
+
+				// SpuAbiUtilities.WriteProlog() depends on the two last words being >= stackSize.
+				_specialSpeObjects.StackPointerObject.SetValue(
+					new int[]
+						{
+							_specialSpeObjects.InitialStackPointer, _specialSpeObjects.StackSize, 
+							_specialSpeObjects.StackSize, _specialSpeObjects.StackSize
+						});
+
+//				_emittedCode[_specialSpeObjects.AllocatableByteCountObject.Offset/4] = _specialSpeObjects.AllocatableByteCount;
+//				_emittedCode[_specialSpeObjects.NextAllocationStartObject.Offset/4] = _specialSpeObjects.NextAllocationStart;
+//				_emittedCode[_specialSpeObjects.StackPointerObject.Offset/4] = _specialSpeObjects.InitialStackPointer;
+//				_emittedCode[_specialSpeObjects.StackPointerObject.Offset / 4 + 1] = _specialSpeObjects.StackSize;
+//				// NOTE: SpuAbiUtilities.WriteProlog() is dependending on that the two larst words is >= stackSize.
+//				_emittedCode[_specialSpeObjects.StackPointerObject.Offset / 4 + 2] = _specialSpeObjects.StackSize;
+//				_emittedCode[_specialSpeObjects.StackPointerObject.Offset / 4 + 3] = _specialSpeObjects.StackSize;
 			}
 
-			Buffer.BlockCopy(_specialSpeObjects.DoubleCompareData(), 0, _emittedCode, _specialSpeObjects.DoubleCompareDataArea.Offset, _specialSpeObjects.DoubleCompareData().Length*4);
+			// Copy data to output.
+			foreach (DataObject o in allObjectsWithStorage.OfType<DataObject>())
+			{
+//				Utilities.DebugAssert(o.Value != null, "o != null. Object: " + o.Name);
+
+				if (o.Value == null || o.Value.Count == 0)
+					continue;
+
+				int valuesize;
+				if ((o.Value[0] is byte))
+					valuesize = o.Value.Count;
+				else if ((o.Value[0] is int) || o.Value[0] is float)
+					valuesize = o.Value.Count*4;
+				else if ((o.Value[0] is long) || o.Value[0] is double)
+					valuesize = o.Value.Count*8;
+				else
+					throw new Exception("wtf");
+
+				Buffer.BlockCopy((Array) o.Value, 0, _emittedCode, o.Offset, valuesize);
+			}
 
 			// Get external libraries.
 			foreach (Library lib in LibMan.Libraries)
@@ -591,7 +614,7 @@ namespace CellDotNet
 			while (methodsToCompile.Count > 0)
 			{
 				// Find next method.
-				string methodkey = Utilities.GetFirst(methodsToCompile.Keys);
+				string methodkey = methodsToCompile.Keys.First();
 				MethodBase method = methodsToCompile[methodkey];
 				methodsToCompile.Remove(methodkey);
 

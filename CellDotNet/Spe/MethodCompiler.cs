@@ -27,6 +27,7 @@ using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Reflection.Emit;
 using CellDotNet.Intermediate;
+using System.Linq;
 
 namespace CellDotNet.Spe
 {
@@ -616,11 +617,11 @@ namespace CellDotNet.Spe
 
 			while (branchSourcesForConditionalBranch.Count != 0)
 			{
-				SpuBasicBlock targetBlock = Utilities.GetFirst(branchSourcesForConditionalBranch.Keys);
+				SpuBasicBlock targetBlock = branchSourcesForConditionalBranch.Keys.First();
 
 				while(branchSourcesForConditionalBranch[targetBlock].Count != 0)
 				{
-					SpuInstruction srcInst = Utilities.GetFirst(branchSourcesForConditionalBranch[targetBlock]);
+					SpuInstruction srcInst = branchSourcesForConditionalBranch[targetBlock].First();
 
 					SpuBasicBlock newTarget = targetBlock.Head.JumpTarget;
 

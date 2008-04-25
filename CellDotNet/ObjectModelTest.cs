@@ -35,12 +35,10 @@ namespace CellDotNet.Spe
 //	[Ignore("PPE calls makes mono crash when using instruction scheduling.")]
 	public class ObjectModelTest : UnitTest
 	{
-		private delegate void SimpleDelegate();
-
 		[Test]
 		public void TestArray_Create()
 		{
-			SimpleDelegate del =
+			Action del =
 				delegate
 				{
 					int[] arr = new int[5];

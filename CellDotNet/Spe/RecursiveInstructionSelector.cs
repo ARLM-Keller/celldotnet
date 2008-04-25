@@ -28,6 +28,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using CellDotNet.Intermediate;
+using JetBrains.Annotations;
 
 namespace CellDotNet.Spe
 {
@@ -54,7 +55,7 @@ namespace CellDotNet.Spe
 		{
 		}
 
-		public RecursiveInstructionSelector(SpecialSpeObjects specialSpeObjects, StackSpaceAllocator spaceAllocator)
+		public RecursiveInstructionSelector([NotNull]SpecialSpeObjects specialSpeObjects, StackSpaceAllocator spaceAllocator)
 		{
 			Utilities.AssertArgumentNotNull(specialSpeObjects, "specialSpeObjects");
 			_specialSpeObjects = specialSpeObjects;
@@ -1250,6 +1251,32 @@ namespace CellDotNet.Spe
 								val = _writer.WriteFceq(vrleft, vrright);
 								return _writer.WriteAndi(val, 1);
 							case CliType.Float64:
+								{
+									var r3 = vrleft;
+									var r4 = vrright;
+									var r20 = _writer.WriteCeq(r3, r4);
+									var r19 = _writer.WriteLoad(_specialSpeObjects.MathObjects.DoubleSignFilter);
+									var r18 = _writer.WriteLoad(_specialSpeObjects.MathObjects.DoubleExponentFilter);
+									var r21 = _writer.WriteRotqbyi(r20, 4);
+									var r13 = _writer.WriteAnd(vrleft, r19);
+									var r12 = _writer.WriteAnd(vrright, r19);
+									r4 = _writer.WriteLoad(_specialSpeObjects.MathObjects.DoubleCeqMagic1);
+									var r14 = _writer.WriteClgt(r13, r18);
+									var r11 = _writer.WriteOr(r13, r12);
+									var r16 = _writer.WriteCeq(r13, r18);
+									var r17 = _writer.WriteRotqbyi(r14, 4);
+									var r9 = _writer.WriteCeqi(r11, 0);
+									var r6 = _writer.WriteAnd(r20, r21);
+									var r10 = _writer.WriteRotqbyi(r9, 4);
+									var r15 = _writer.WriteAnd(r16, r17);
+									var r5 = _writer.WriteOr(r14, r15);
+									var r8 = _writer.WriteAnd(r9, r10);
+									var r7 = _writer.WriteOr(r6, r8);
+									var r2 = _writer.WriteAndc(r7, r5);
+									r3 = _writer.WriteShufb(r2, r2, r4);
+									r3 = _writer.WriteSfi(r3, 0); // ??
+									return r3;
+								}
 							case CliType.Int64:
 								break;
 						}
@@ -1986,14 +2013,14 @@ namespace CellDotNet.Spe
 			VirtualRegister r3 = ra;
 
 			VirtualRegister r34 = _writer.WriteIl(0);
-			VirtualRegister r40 = _writer.WriteLoad(_specialSpeObjects.DoubleCompareDataArea, 0);
+			VirtualRegister r40 = _writer.WriteLoad(_specialSpeObjects.MathObjects.DoubleSignFilter);
 			VirtualRegister r36 = _writer.WriteRotmai(r4, -31);
 			_writer.WriteNop();
 			_writer.WriteNop();
-			VirtualRegister r38 = _writer.WriteLoad(_specialSpeObjects.DoubleCompareDataArea, 2);
+			VirtualRegister r38 = _writer.WriteLoad(_specialSpeObjects.MathObjects.DoubleCompareDataArea, 2);
 			VirtualRegister r35 = _writer.WriteRotmai(r3, -31);
-			VirtualRegister r13 = _writer.WriteLoad(_specialSpeObjects.DoubleCompareDataArea, 3);
-			VirtualRegister r25 = _writer.WriteLoad(_specialSpeObjects.DoubleCompareDataArea, 1);
+			VirtualRegister r13 = _writer.WriteLoad(_specialSpeObjects.MathObjects.DoubleCompareDataArea, 3);
+			VirtualRegister r25 = _writer.WriteLoad(_specialSpeObjects.MathObjects.DoubleExponentFilter);
 			_writer.WriteNop();
 			VirtualRegister r26 = _writer.WriteAnd(r3, r40);
 			VirtualRegister r33 = _writer.WriteAnd(r4, r40);

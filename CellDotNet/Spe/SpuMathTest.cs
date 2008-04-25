@@ -33,15 +33,14 @@ namespace CellDotNet.Spe
 	[TestFixture]
 	public class SpuMathTest : UnitTest
 	{
-		private delegate T ComparAndSelector<S, T>(S c1, S c2, T e1, T e2);
+		private delegate T CompareAndSelector<S, T>(S c1, S c2, T e1, T e2);
 
 		private delegate T Operator<T>(T e1, T e2);
 
 		[Test]
 		public void TestSpuMath_ConvertToInteger()
 		{
-			Converter<Float32Vector, Int32Vector> del =
-				delegate(Float32Vector v) { return SpuMath.ConvertToInteger(v); };
+			Func<Float32Vector, Int32Vector> del = SpuMath.ConvertToInteger;
 
 			CompileContext cc = new CompileContext(del.Method);
 
@@ -65,8 +64,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_ConvertToFloat()
 		{
-			Converter<Int32Vector, Float32Vector> del =
-				delegate(Int32Vector v) { return SpuMath.ConvertToFloat(v); };
+			Func<Int32Vector, Float32Vector> del = SpuMath.ConvertToFloat;
 
 			CompileContext cc = new CompileContext(del.Method);
 
@@ -90,8 +88,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_CompareGreaterThanAndSelectIntInt()
 		{
-			ComparAndSelector<Int32Vector, Int32Vector> del =
-				delegate(Int32Vector c1, Int32Vector c2, Int32Vector e1, Int32Vector e2) { return SpuMath.CompareGreaterThanAndSelect(c1, c2, e1, e2); };
+			CompareAndSelector<Int32Vector, Int32Vector> del = SpuMath.CompareGreaterThanAndSelect;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -117,8 +114,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_CompareGreaterThanAndSelectIntFloat()
 		{
-			ComparAndSelector<Int32Vector, Float32Vector> del =
-				delegate(Int32Vector c1, Int32Vector c2, Float32Vector e1, Float32Vector e2) { return SpuMath.CompareGreaterThanAndSelect(c1, c2, e1, e2); };
+			CompareAndSelector<Int32Vector, Float32Vector> del = SpuMath.CompareGreaterThanAndSelect;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -144,8 +140,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_CompareGreaterThanAndSelectFloatInt()
 		{
-			ComparAndSelector<Float32Vector, Int32Vector> del =
-				delegate(Float32Vector c1, Float32Vector c2, Int32Vector e1, Int32Vector e2) { return SpuMath.CompareGreaterThanAndSelect(c1, c2, e1, e2); };
+			CompareAndSelector<Float32Vector, Int32Vector> del = SpuMath.CompareGreaterThanAndSelect;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -171,8 +166,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_CompareGreaterThanAndSelectFloatFloat()
 		{
-			ComparAndSelector<Float32Vector, Float32Vector> del =
-				delegate(Float32Vector c1, Float32Vector c2, Float32Vector e1, Float32Vector e2) { return SpuMath.CompareGreaterThanAndSelect(c1, c2, e1, e2); };
+			CompareAndSelector<Float32Vector, Float32Vector> del = SpuMath.CompareGreaterThanAndSelect;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -198,8 +192,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_CompareEqualAndSelectInt()
 		{
-			ComparAndSelector<Int32Vector, Int32Vector> del =
-				delegate(Int32Vector c1, Int32Vector c2, Int32Vector e1, Int32Vector e2) { return SpuMath.CompareEqualsAndSelect(c1, c2, e1, e2); };
+			CompareAndSelector<Int32Vector, Int32Vector> del = SpuMath.CompareEqualsAndSelect;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -225,8 +218,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_VectorInt_Abs()
 		{
-			Converter<Int32Vector, Int32Vector> del =
-				delegate(Int32Vector v) { return SpuMath.Abs(v); };
+			Func<Int32Vector, Int32Vector> del = SpuMath.Abs;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -246,8 +238,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_VectorInt_Min()
 		{
-			Operator<Int32Vector> del =
-				delegate(Int32Vector v1, Int32Vector v2) { return SpuMath.Min(v1, v2); };
+			Operator<Int32Vector> del = SpuMath.Min;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -268,8 +259,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_VectorInt_Max()
 		{
-			Operator<Int32Vector> del =
-				delegate(Int32Vector v1, Int32Vector v2) { return SpuMath.Max(v1, v2); };
+			Operator<Int32Vector> del = SpuMath.Max;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -290,8 +280,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_VectorFloat_Abs()
 		{
-			Converter<Float32Vector, Float32Vector> del =
-				delegate(Float32Vector v) { return SpuMath.Abs(v); };
+			Func<Float32Vector, Float32Vector> del = SpuMath.Abs;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -311,8 +300,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_VectorFloat_Min()
 		{
-			Operator<Float32Vector> del =
-				delegate(Float32Vector v1, Float32Vector v2) { return SpuMath.Min(v1, v2); };
+			Operator<Float32Vector> del = SpuMath.Min;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -333,8 +321,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_VectorFloat_Max()
 		{
-			Operator<Float32Vector> del =
-				delegate(Float32Vector v1, Float32Vector v2) { return SpuMath.Max(v1, v2); };
+			Operator<Float32Vector> del = SpuMath.Max;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);

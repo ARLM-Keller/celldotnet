@@ -36,14 +36,10 @@ namespace CellDotNet.Spe
 	[TestFixture]
 	public class SimpleProgramsTest : UnitTest
 	{
-		private delegate int IntReturnDelegate();
-
-		private delegate float FloatReturnDelegate();
-
 		[Test]
 		public void TestDump()
 		{
-			Converter<int, int> del = delegate(int input) { return input + 0xf0f0; };
+			Func<int, int> del = input => input + 0xf0f0;
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
@@ -53,7 +49,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestLoop_SumInt()
 		{
-			IntReturnDelegate del =
+			Func<int> del =
 				delegate
 					{
 						const int count = 5;
@@ -81,7 +77,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestLoop_SumFloat()
 		{
-			FloatReturnDelegate del =
+			Func<float> del =
 				delegate
 					{
 						const int count = 5;
@@ -93,7 +89,7 @@ namespace CellDotNet.Spe
 
 			float correctVal = del();
 
-			FloatReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+			Func<float> del2 = SpeDelegateRunner.CreateSpeDelegate(del);
 
 			if (!SpeContext.HasSpeHardware)
 				return;
@@ -104,7 +100,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestLoop_SumFloat2()
 		{
-			FloatReturnDelegate del =
+			Func<float> del =
 				delegate
 					{
 						const int count = 5;
@@ -120,7 +116,7 @@ namespace CellDotNet.Spe
 					};
 
 			float correctVal = del();
-			FloatReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+			Func<float> del2 = SpeDelegateRunner.CreateSpeDelegate(del);
 			if (!SpeContext.HasSpeHardware)
 				return;
 
@@ -130,7 +126,7 @@ namespace CellDotNet.Spe
 //		[Test]
 //		public void TestReturnConditional()
 //		{
-//			Converter<int, int> del = 
+//			Func<int, int> del = 
 //				delegate(int input)
 //					{
 //						// Tests that 
@@ -150,7 +146,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestMethodCall()
 		{
-			Converter<int, int> del = MethodCallMethod;
+			Func<int, int> del = MethodCallMethod;
 
 			const int arg = 15;
 			int correctval = del(arg);
@@ -187,7 +183,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestRecursiveSummation_Int()
 		{
-			Converter<int, int> del = RecursiveSummation_Int;
+			Func<int, int> del = RecursiveSummation_Int;
 
 			const int arg = 15;
 			int correctval = del(arg);
@@ -228,7 +224,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestRecursiveSummation_Float()
 		{
-			Converter<int, float> del = RecursiveSummation_Float;
+			Func<int, float> del = RecursiveSummation_Float;
 
 			const int arg = 15;
 			float correctval = del(arg);
@@ -265,7 +261,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestConditionalExpression()
 		{
-			Converter<int, int> fun =
+			Func<int, int> fun =
 				delegate(int input)
 					{
 						return input + (input == 17 ? 0 : input);
@@ -284,7 +280,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestDivisionSigned()
 		{
-			Converter<int, int> fun =
+			Func<int, int> fun =
 				delegate(int input)
 				{
 					return input / 7;
@@ -306,7 +302,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestDivisionFloat()
 		{
-			Converter<float, float> fun =
+			Func<float, float> fun =
 				delegate(float input)
 				{
 					return input / 3.14f;
@@ -360,7 +356,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void Test_FloatCompare()
 		{
-			Converter<int, float> fun = delegate(int input)
+			Func<int, float> fun = delegate(int input)
 											{
 												float a = 0;
 
@@ -382,7 +378,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestAssignmentExpression()
 		{
-			Converter<int, int> fun =
+			Func<int, int> fun =
 				delegate(int input) { return input + (++input) + input; };
 
 			CompileContext cc = new CompileContext(fun.Method);

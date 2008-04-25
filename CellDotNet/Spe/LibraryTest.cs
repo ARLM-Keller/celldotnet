@@ -186,15 +186,13 @@ namespace CellDotNet.Spe
 		[DllImport("libtest")]
 		private extern static int TestElfStaticLibrary(int arg1, int arg2);
 
-		private delegate int AdderDelegate(int arg1, int arg2);
-
 		[Test, Ignore]
 		public void TestElfStaticLibrary()
 		{
 			if (!HasUnixShell)
 				return;
 
-			AdderDelegate del = TestElfStaticLibrary;
+			Func<int, int, int> del = TestElfStaticLibrary;
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
