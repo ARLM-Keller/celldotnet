@@ -826,7 +826,7 @@ namespace CellDotNet.Spe
 			Utilities.Assert(_prolog.BasicBlocks.Count > 0, "_prolog.BasicBlocks.Count == 0");
 			Utilities.Assert(_epilog.BasicBlocks.Count > 0, "_epilog.BasicBlocks.Count == 0");
 
-			List<SpuBasicBlock> bblist = new List<SpuBasicBlock>();
+			var bblist = new List<SpuBasicBlock>();
 			bblist.Add(_prolog.BasicBlocks[0]);
 			bblist.AddRange(_instructions.BasicBlocks);
 			bblist.Add(_epilog.BasicBlocks[0]);
@@ -874,7 +874,7 @@ namespace CellDotNet.Spe
 			if (State < MethodCompileState.S8AddressPatchingDone)
 				throw new InvalidOperationException();
 
-			List<SpuInstruction> list = new List<SpuInstruction>();
+			var list = new List<SpuInstruction>();
 			list.AddRange(GetPrologWriter().GetAsList());
 			list.AddRange(GetBodyWriter().GetAsList());
 			list.AddRange(GetEpilogWriter().GetAsList());
@@ -884,7 +884,7 @@ namespace CellDotNet.Spe
 
 		public override IEnumerable<SpuInstruction> GetInstructions()
 		{
-			List<SpuInstruction> list = new List<SpuInstruction>();
+			var list = new List<SpuInstruction>();
 
 //			list.AddRange(GetPrologWriter().GetAsList());
 			list.AddRange(GetBodyWriter().GetAsList());

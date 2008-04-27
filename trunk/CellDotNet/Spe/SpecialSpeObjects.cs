@@ -99,7 +99,7 @@ namespace CellDotNet.Spe
 		/// Returns all the objects that require storage.
 		/// </summary>
 		/// <returns></returns>
-		public ObjectWithAddress[] GetAllObjectsWithStorage()
+		public List<ObjectWithAddress> GetAllObjectsWithStorage()
 		{
 			var objects = new List<ObjectWithAddress>
 			                	{
@@ -114,7 +114,7 @@ namespace CellDotNet.Spe
 			if (_mathobjects != null)
 				objects.AddRange(_mathobjects.GetAllObjectsWithStorage());
 
-			return objects.ToArray();
+			return objects;
 		}
 
 		#endregion
@@ -218,6 +218,7 @@ namespace CellDotNet.Spe
 			0x04050607, (int)0xc0c0c0c0, 0x0c0d0e0f, (int)0xc0c0c0c0, //
 			0x00010203,      0x00010203, 0x08090a0b,      0x08090a0b, //
 			0x00010203,      0x10111213, 0x08090a0b,      0x18191a1b, // ceq magic 1
+			0x04050607, (int)0x80808080, 0x0c0d0e0f, (int)0x80808080, // dp __divdf3 magic
 		});
 
 		public MathObjects()

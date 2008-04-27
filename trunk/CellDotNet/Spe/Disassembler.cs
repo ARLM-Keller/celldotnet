@@ -61,7 +61,7 @@ namespace CellDotNet.Spe
 			}
 		}
 
-		static void DisassembleToFile(string filename, IEnumerable<ObjectWithAddress> objects)
+		internal static void DisassembleToFile(string filename, IEnumerable<ObjectWithAddress> objects)
 		{
 			using (StreamWriter writer = new StreamWriter(filename, false, Encoding.ASCII))
 			{

@@ -32,7 +32,7 @@ using CellDotNet.Intermediate;
 using CellDotNet.Spe;
 using JetBrains.Annotations;
 using NUnit.Framework;
-
+using System.Linq;
 
 
 namespace CellDotNet
@@ -1421,6 +1421,9 @@ namespace CellDotNet
 			// NOTE: SpuAbiUtilities.WriteProlog() is dependending on that the two last words being >= stackSize.
 			code[specialSpeObjects.StackPointerObject.Offset/4 + 2] = specialSpeObjects.StackSize;
 			code[specialSpeObjects.StackPointerObject.Offset/4 + 3] = specialSpeObjects.StackSize;
+
+			CompileContext.CopyInitializedData(code, specialSpeObjects.GetAllObjectsWithStorage());
+			CompileContext.WriteAssemblyToFile("r8_ceq.s", code, objectsWithAddresss);
 
 
 			if (!SpeContext.HasSpeHardware)

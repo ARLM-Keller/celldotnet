@@ -465,9 +465,11 @@ namespace CellDotNet.Spe
 		/// </summary>
 		public void WriteStqr(VirtualRegister rt, ObjectWithAddress address)
 		{
-			SpuInstruction inst = new SpuInstruction(SpuOpCode.stqr);
-			inst.ObjectWithAddress = address;
-			inst.Rt = rt;
+			var inst = new SpuInstruction(SpuOpCode.stqr)
+			           	{
+			           		ObjectWithAddress = address,
+			           		Rt = rt
+			           	};
 			AddInstruction(inst);
 		}
 
@@ -480,10 +482,12 @@ namespace CellDotNet.Spe
 		{
 			AssertRegisterNotNull(rt, "rt");
 
-			SpuInstruction inst = new SpuInstruction(SpuOpCode.lqr);
-			inst.ObjectWithAddress = owa;
-			inst.Constant = quadWordOffset*4;
-			inst.Rt = rt;
+			var inst = new SpuInstruction(SpuOpCode.lqr)
+			           	{
+			           		ObjectWithAddress = owa,
+			           		Constant = (quadWordOffset*4),
+			           		Rt = rt
+			           	};
 			AddInstruction(inst);
 		}
 
@@ -500,6 +504,28 @@ namespace CellDotNet.Spe
 			WriteLoad(rt, objectToLoad, 0);
 
 			return rt;
+		}
+
+		/// <summary>
+		/// An instruction which needs a relative address.
+		/// </summary>
+		public void WriteRelativeAddressInstruction(SpuOpCode opcode, ObjectWithAddress owa)
+		{
+			var inst = new SpuInstruction(opcode)
+			{
+				ObjectWithAddress = owa,
+			};
+			AddInstruction(inst);
+		}
+
+		public void WriteRelativeAddressInstruction(SpuOpCode opcode, ObjectWithAddress owa, VirtualRegister rt)
+		{
+			var inst = new SpuInstruction(opcode)
+			{
+				ObjectWithAddress = owa,
+				Rt = rt
+			};
+			AddInstruction(inst);
 		}
 
 		/// <summary>
@@ -567,36 +593,6 @@ namespace CellDotNet.Spe
 			return WriteLoadI4(i.ToInt32());
 		}
 
-//		/// <summary>
-//		/// Pseudo instruction to load the address of an object into a rgister.
-//		/// No other registers are used.
-//		/// </summary>
-//		/// <param name="rt"></param>
-//		/// <param name="owa"></param>
-//		/// <returns></returns>
-//		public void WriteLoadAddress(VirtualRegister rt, ObjectWithAddress owa)
-//		{
-//			SpuInstruction inst = new SpuInstruction(SpuOpCode.ila);
-//			inst.Constant = 0;
-//			inst.Rt = rt;
-//			inst.ObjectWithAddress = owa;
-//			AddInstruction(inst);
-//		}
-
-		/// <summary>
-		/// Pseudo instruction to load the address of an object into a rgister.
-		/// </summary>
-		/// <param name="owa"></param>
-		/// <returns></returns>
-		[Obsolete("This one probably shouldn't be used. Try to use Load with an offset instead.")]
-		public VirtualRegister WriteLoadAddress(ObjectWithAddress owa)
-		{
-			throw new InvalidOperationException();
-//			VirtualRegister rt = NextRegister();
-//			WriteLoadAddress(rt, owa);
-//
-//			return rt;
-		}
 
 		#endregion
 
