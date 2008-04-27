@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using JetBrains.Annotations;
 
 namespace CellDotNet.Spe
 {
@@ -35,46 +36,26 @@ namespace CellDotNet.Spe
     {
 		private static int SpuInstructionCount;
 
-    	private int _constant;
-
-    	private VirtualRegister _ra;
-
-    	private VirtualRegister _rb;
-
-    	private VirtualRegister _rc;
-
-    	private VirtualRegister _rt;
-
-    	private SpuInstruction _next;
-
-    	private SpuInstruction _prev;
-
     	private object _jumpTargetOrObjectWithAddress;
 
     	private SpuOpCode _opcode;
-
-    	private int _index;
 
     	internal string DebuggerDisplay
     	{
     		get { return OpCode.Name + " " + _spuInstructionNumber; }
     	}
 
-		/// <summary>
-		/// A number that can be used at will by transformations.
-		/// </summary>
-    	public int Index
-    	{
-    		get { return _index; }
-    		set { _index = value; }
-    	}
+    	/// <summary>
+    	/// A number that can be used at will by transformations.
+    	/// </summary>
+    	public int Index { get; set; }
 
     	public int SpuInstructionNumber
     	{
     		get { return _spuInstructionNumber; }
     	}
 
-    	private int _spuInstructionNumber;
+    	private readonly int _spuInstructionNumber;
 
         public SpuInstruction(SpuOpCode opcode)
         {
@@ -88,53 +69,36 @@ namespace CellDotNet.Spe
 			return "#" + _spuInstructionNumber;
 		}
 
+		[NotNull]
     	public SpuOpCode OpCode
         {
             get { return _opcode; }
-            set { _opcode = value; }
+            set
+            {
+				Utilities.AssertArgumentNotNull(value, "value");
+            	_opcode = value;
+            }
         }
 
-    	public int Constant
-        {
-            get { return _constant; }
-            set { _constant = value; }
-        }
+    	public int Constant { get; set;}
 
-    	public VirtualRegister Ra
-        {
-            get { return _ra; }
-            set { _ra = value; }
-        }
+		[CanBeNull]
+		public VirtualRegister Ra { get; set; }
 
-    	public VirtualRegister Rb
-        {
-            get { return _rb; }
-            set { _rb = value; }
-        }
+		[CanBeNull]
+		public VirtualRegister Rb { get; set; }
 
-    	public VirtualRegister Rc
-        {
-            get { return _rc; }
-            set { _rc = value; }
-        }
+		[CanBeNull]
+		public VirtualRegister Rc { get; set; }
 
-    	public VirtualRegister Rt
-        {
-			get { return _rt; }
-			set { _rt = value; }
-        }
+		[CanBeNull]
+		public VirtualRegister Rt { get; set; }
 
-    	public SpuInstruction Next
-    	{
-			get { return _next; }
-			set { _next = value; }
-    	}
+    	[CanBeNull]
+    	public SpuInstruction Next { get; set; }
 
-    	public SpuInstruction Prev
-		{
-			get { return _prev; }
-			set { _prev = value;}
-		}
+    	[CanBeNull]
+    	public SpuInstruction Prev { get; set; }
 
     	public VirtualRegister Def
     	{
@@ -166,15 +130,16 @@ namespace CellDotNet.Spe
 		/// <param name="targetList"></param>
     	public void AppendUses(List<VirtualRegister> targetList)
     	{
-    		if (Ra != null) targetList.Add(_ra);
-    		if (Rb != null) targetList.Add(_rb);
-    		if (Rc != null) targetList.Add(_rc);
-    		if (Rt != null && OpCode.RegisterRtRead) targetList.Add(_rt);
+    		if (Ra != null) targetList.Add(Ra);
+    		if (Rb != null) targetList.Add(Rb);
+    		if (Rc != null) targetList.Add(Rc);
+    		if (Rt != null && OpCode.RegisterRtRead) targetList.Add(Rt);
     	}
 
     	/// <summary>
 		/// A local branch target. This cannot be set while <see cref="ObjectWithAddress"/> is set.
 		/// </summary>
+		[CanBeNull]
 		public SpuBasicBlock JumpTarget
     	{
 			get
@@ -192,6 +157,7 @@ namespace CellDotNet.Spe
 		/// <summary>
 		/// A non-local object/method. This cannot be set while <see cref="JumpTarget"/> is set.
 		/// </summary>
+		[CanBeNull]
 		public ObjectWithAddress ObjectWithAddress
 		{
 			get
@@ -213,31 +179,31 @@ namespace CellDotNet.Spe
 				case SpuInstructionFormat.None:
 					throw new InvalidOperationException("Err.");
 				case SpuInstructionFormat.RR1:
-					return _opcode.OpCode | ((int) _ra.Register << 7);
+					return _opcode.OpCode | ((int) Ra.Register << 7);
 				case SpuInstructionFormat.RR2:
-					return _opcode.OpCode | ((_constant & 0x7F) << 14) | ((int)_ra.Register << 7) | (int)_rt.Register;
+					return _opcode.OpCode | ((Constant & 0x7F) << 14) | ((int)Ra.Register << 7) | (int)Rt.Register;
 				case SpuInstructionFormat.RR:
-					return _opcode.OpCode | ((int) _rb.Register << 14) | ((int) _ra.Register << 7) | (int) _rt.Register;
+					return _opcode.OpCode | ((int) Rb.Register << 14) | ((int) Ra.Register << 7) | (int) Rt.Register;
 				case SpuInstructionFormat.Rrr:
-					return _opcode.OpCode | ((int) _rt.Register << 21) | ((int) _rb.Register << 14) | ((int) _ra.Register << 7) | (int) _rc.Register;
+					return _opcode.OpCode | ((int) Rt.Register << 21) | ((int) Rb.Register << 14) | ((int) Ra.Register << 7) | (int) Rc.Register;
 				case SpuInstructionFormat.RI7:
-					return _opcode.OpCode | ((_constant & 0x7F) << 14) | ((int)_ra.Register << 7) | (int)_rt.Register;
+					return _opcode.OpCode | ((Constant & 0x7F) << 14) | ((int)Ra.Register << 7) | (int)Rt.Register;
 				case SpuInstructionFormat.RI10:
-					return _opcode.OpCode | ((_constant & 0x3ff) << 14) | ((int)_ra.Register << 7) | (int)_rt.Register;
+						return _opcode.OpCode | ((Constant & 0x3ff) << 14) | ((int)Ra.Register << 7) | (int)Rt.Register;
 				case SpuInstructionFormat.RI16:
-					return _opcode.OpCode | ((_constant & 0xffff) << 7) | (int)_rt.Register;
+					return _opcode.OpCode | ((Constant & 0xffff) << 7) | (int)Rt.Register;
 				case SpuInstructionFormat.RI16NoRegs:
-					return _opcode.OpCode | ((_constant & 0xffff) << 7) | 0;
+					return _opcode.OpCode | ((Constant & 0xffff) << 7) | 0;
 				case SpuInstructionFormat.RI14:
-					return _opcode.OpCode | (_constant & 0x3fff);
+					return _opcode.OpCode | (Constant & 0x3fff);
 				case SpuInstructionFormat.RI18:
-					return _opcode.OpCode | ((_constant & 0x3ffff) << 7) | (int)_rt.Register;
+					return _opcode.OpCode | ((Constant & 0x3ffff) << 7) | (int)Rt.Register;
 				case SpuInstructionFormat.RI8:
-					return _opcode.OpCode | ((_constant & 0xff) << 14) | ((int)_ra.Register << 7) | (int)_rt.Register;
+					return _opcode.OpCode | ((Constant & 0xff) << 14) | ((int)Ra.Register << 7) | (int)Rt.Register;
 				case SpuInstructionFormat.Channel:
-					return _opcode.OpCode | ((_constant & 0x3f) << 7) | (int)_rt.Register;
+					return _opcode.OpCode | ((Constant & 0x3f) << 7) | (int)Rt.Register;
 				case SpuInstructionFormat.Weird:
-					return _opcode.OpCode | _constant;
+					return _opcode.OpCode | Constant;
 				default:
 					throw new BadSpuInstructionException(string.Format("Invalid SPU opcode instruction format '{0}'; instruction name '{1}'.", _opcode.Format, _opcode.Name));
 			}

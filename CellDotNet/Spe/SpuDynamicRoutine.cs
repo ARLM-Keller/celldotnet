@@ -106,10 +106,8 @@ namespace CellDotNet.Spe
 
 			List<KeyValuePair<int, SpuInstruction>> branchlist = new List<KeyValuePair<int, SpuInstruction>>();
 			int curroffset = 0;
-			int bbindex = -1;
 			foreach (SpuBasicBlock bb in bblist)
 			{
-				bbindex++;
 				bb.Offset = curroffset;
 				if (bb.Head == null)
 					continue;

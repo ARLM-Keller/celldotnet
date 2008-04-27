@@ -47,6 +47,7 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Data" />
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
@@ -60,6 +61,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ImmutableAttribute.cs" />
+    <Compile Include="InstructionWritingHelper.cs" />
     <Compile Include="Int32Vector.cs" />
     <Compile Include="Intermediate\Exceptions.cs" />
     <Compile Include="Intermediate\ILReader.cs" />
@@ -128,6 +130,8 @@
     <Compile Include="Spe\MfcTest.cs" />
     <Compile Include="Spe\ObjectOffset.cs" />
     <Compile Include="Spe\ObjectWithAddress.cs" />
+    <Compile Include="Spe\PatchRoutine.cs" />
+    <Compile Include="Spe\PatchRoutineTest.cs" />
     <Compile Include="Spe\PpeMethod.cs" />
     <Compile Include="Spe\RecursiveInstructionSelector.cs" />
     <Compile Include="Spe\RegAllocGraphColloring.cs" />

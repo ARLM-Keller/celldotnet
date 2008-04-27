@@ -37,14 +37,14 @@ namespace CellDotNet.Spe
 	{
 		private readonly int _size;
 
-		protected DataObject(int size, string name) : base(name)
+		public DataObject(int size, string name) : base(name)
 		{
 			Utilities.AssertArgument(size >= 0, "size >= 0");
 
 			_size = size;
 		}
 
-		protected DataObject(int size)
+		public DataObject(int size)
 		{
 			_size = size;
 		}

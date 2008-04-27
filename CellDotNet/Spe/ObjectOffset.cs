@@ -22,15 +22,13 @@
 //
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CellDotNet.Spe
 {
-	class ObjectOffset : ObjectWithAddress
+	sealed class ObjectOffset : ObjectWithAddress
 	{
-		private ObjectWithAddress _parent;
-		private int _offset;
+		private readonly ObjectWithAddress _parent;
+		private readonly int _offset;
 
 		public ObjectOffset(ObjectWithAddress parent, int offset)
 		{

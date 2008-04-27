@@ -360,11 +360,26 @@ namespace CellDotNet
 //				_emittedCode[_specialSpeObjects.StackPointerObject.Offset / 4 + 3] = _specialSpeObjects.StackSize;
 			}
 
-			// Copy data to output.
+			CopyInitializedData(_emittedCode, allObjectsWithStorage);
+
+			// Get external libraries.
+			foreach (Library lib in LibMan.Libraries)
+			{
+				Utilities.Assert(lib.Offset > 0, "lib.Offset > 0");
+				Utilities.Assert(lib.Offset + lib.Size <= _totalCodeSize, "lib.Offset + lib.Size <= _totalCodeSize");
+
+				byte[] contents = lib.GetContents();
+				Buffer.BlockCopy(contents, 0, _emittedCode, lib.Offset, contents.Length);
+			}
+
+			State = CompileContextState.S7CodeEmitted;
+		}
+
+		internal static void CopyInitializedData(int[] code, List<ObjectWithAddress> allObjectsWithStorage)
+		{
+// Copy data to output.
 			foreach (DataObject o in allObjectsWithStorage.OfType<DataObject>())
 			{
-//				Utilities.DebugAssert(o.Value != null, "o != null. Object: " + o.Name);
-
 				if (o.Value == null || o.Value.Count == 0)
 					continue;
 
@@ -378,20 +393,8 @@ namespace CellDotNet
 				else
 					throw new Exception("wtf");
 
-				Buffer.BlockCopy((Array) o.Value, 0, _emittedCode, o.Offset, valuesize);
+				Buffer.BlockCopy((Array) o.Value, 0, code, o.Offset, valuesize);
 			}
-
-			// Get external libraries.
-			foreach (Library lib in LibMan.Libraries)
-			{
-				Utilities.Assert(lib.Offset > 0, "lib.Offset > 0");
-				Utilities.Assert(lib.Offset + lib.Size <= _totalCodeSize, "lib.Offset + lib.Size <= _totalCodeSize");
-
-				byte[] contents = lib.GetContents();
-				Buffer.BlockCopy(contents, 0, _emittedCode, lib.Offset, contents.Length);
-			}
-
-			State = CompileContextState.S7CodeEmitted;
 		}
 
 		private void AssertState(CompileContextState requiredState)

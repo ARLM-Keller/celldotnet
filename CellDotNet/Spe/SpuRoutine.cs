@@ -31,20 +31,20 @@ namespace CellDotNet.Spe
 {
 	abstract class SpuRoutine : ObjectWithAddress
 	{
-		private bool hasSignature;
-		private StackTypeDescription _returnType;
-		private ReadOnlyCollection<MethodParameter> _parameters;
+		private readonly bool hasSignature;
+		private readonly StackTypeDescription _returnType;
+		private readonly ReadOnlyCollection<MethodParameter> _parameters;
 
 		protected SpuRoutine()
 		{
 		}
 
-		public SpuRoutine(string name) : this(name, null)
+		protected SpuRoutine(string name) : this(name, null)
 		{
 			
 		}
 
-		public SpuRoutine(string name, MethodInfo signature) : base(name)
+		protected SpuRoutine(string name, MethodInfo signature) : base(name)
 		{
 			if (signature != null)
 			{

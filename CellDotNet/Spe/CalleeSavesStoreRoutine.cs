@@ -29,7 +29,7 @@ namespace CellDotNet.Spe
 	/// <summary>
 	/// A support routine used to save caller-saves registers. 
 	/// It behaves as described in SPU Application Binary Interface Specification, Version 1.7, 
-	/// so it can be used to save registers n - 127 on the stack, for some n >= 80, n &lt= 127 .
+	/// so it can be used to save registers n - 127 on the stack, for some n >= 80, n &lt;= 127 .
 	/// <para>
 	/// Use <see cref="GetSaveAddress"/> to get a reference to a place you can branch to, or use
 	/// the object directly to save all.
@@ -42,7 +42,7 @@ namespace CellDotNet.Spe
 	/// </summary>
 	class CalleeSavesStoreRoutine : SpuDynamicRoutine
 	{
-		private SpuInstructionWriter _writer;
+		private readonly SpuInstructionWriter _writer;
 
 		public CalleeSavesStoreRoutine()
 		{
@@ -72,44 +72,13 @@ namespace CellDotNet.Spe
 			if (startregnum < 80 || startregnum > 127)
 				throw new ArgumentOutOfRangeException("startregnum", startregnum, "Between 80 and 127");
 
-			return new RoutineOffset(this, startregnum - 80);
+			return new ObjectOffset(this, (startregnum - 80)*4);
 		}
 
 		public override int Size
 		{
 			get { throw new NotSupportedException("This is not an independant object, so it should never be necessary to examine it's size."); }
 		}
-
-		#region class RoutineOffset
-
-		class RoutineOffset : ObjectWithAddress
-		{
-			private CalleeSavesStoreRoutine _parent;
-			private int _startInstruction;
-
-			public RoutineOffset(CalleeSavesStoreRoutine parent, int startInstruction)
-			{
-				_parent = parent;
-				_startInstruction = startInstruction;
-			}
-
-			public override int Offset
-			{
-				get
-				{
-					// This assumes that the routine starts processing registers right away.
-					return _parent.Offset + (_startInstruction - 80)*4;
-				}
-				set { throw new InvalidOperationException("This is not an independant object."); }
-			}
-
-			public override int Size
-			{
-				get { throw new InvalidOperationException(); }
-			}
-		}
-
-		#endregion
 
 		public override void PerformAddressPatching()
 		{
