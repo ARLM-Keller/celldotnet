@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -655,6 +655,39 @@ namespace CellDotNet
 			var r2 = _writer.WriteAndc(r7, r5);
 			r3 = _writer.WriteShufb(r2, r2, r4);
 			r3 = _writer.WriteSfi(r3, 0); // ??
+			return r3;
+		}
+
+		public VirtualRegister WriteCgtFloat64(VirtualRegister vrleft, VirtualRegister vrright)
+		{
+			var r3 = vrleft;
+			var r4 = vrright;
+			var r18 = _writer.WriteIl(0);
+			var r24 = _writer.WriteLoad(_specialSpeObjects.MathObjects.DoubleSignFilter);
+			var r20 = _writer.WriteRotmai(r3, -31);
+			var r22 = _writer.WriteLoad(_specialSpeObjects.MathObjects.Double04050607_c);
+			var r19 = _writer.WriteRotmai(r4, -31);
+			var r10 = _writer.WriteLoad(_specialSpeObjects.MathObjects.DoubleCeqShuffleMask2);
+			var r9 = _writer.WriteAnd(r4, r24);
+			var r17 = _writer.WriteAnd(r3, r24);
+			var r21 = _writer.WriteBg(r9, r18);
+			var r16 = _writer.WriteShufb(r20, r20, r10);
+			var r23 = _writer.WriteBg(r17, r18);
+			var r14 = _writer.WriteShufb(r19, r19, r10);
+			var r13 = _writer.WriteShufb(r21, r21, r22);
+			var r15 = _writer.WriteShufb(r23, r23, r22);
+			r13 = _writer.WriteSfx(r9, r18);
+			r15 = _writer.WriteSfx(r17, r18);
+			var r12 = _writer.WriteSelb(r9, r13, r14);
+			var r11 = _writer.WriteSelb(r17, r15, r16);
+			var r8 = _writer.WriteClgt(r11, r12);
+			var r7 = _writer.WriteCeq(r11, r12);
+			var r5 = _writer.WriteCgt(r11, r12);
+			r4 = _writer.WriteRotqbyi(r8, 2);
+			var r6 = _writer.WriteAnd(r7, r4);
+			var r2 = _writer.WriteOr(r5, r6);
+			r3 = _writer.WriteShufb(r2, r2, r10);
+			r3 = _writer.WriteSfi(r3, 0);
 			return r3;
 		}
 	}

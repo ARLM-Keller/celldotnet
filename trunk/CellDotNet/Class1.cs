@@ -55,7 +55,7 @@ namespace CellDotNet
 
 		private static void RunRasmus()
 		{
-			new ILOpCodeExecutionTest().Test_Ceq_R8();
+			new ILOpCodeExecutionTest().Test_Div_R8();
 		}
 	}
 }

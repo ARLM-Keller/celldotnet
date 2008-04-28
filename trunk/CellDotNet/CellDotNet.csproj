@@ -124,6 +124,7 @@
     <Compile Include="Spe\ManualRoutine.cs" />
     <Compile Include="Spe\Marshaler.cs" />
     <Compile Include="Spe\MarshalerTest.cs" />
+    <Compile Include="Spe\MathObjects.cs" />
     <Compile Include="Spe\MethodCompiler.cs" />
     <Compile Include="Spe\MethodCompilerTest.cs" />
     <Compile Include="Spe\Mfc.cs" />

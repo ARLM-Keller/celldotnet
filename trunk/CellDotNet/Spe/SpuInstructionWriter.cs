@@ -518,7 +518,7 @@ namespace CellDotNet.Spe
 			AddInstruction(inst);
 		}
 
-		public void WriteRelativeAddressInstruction(SpuOpCode opcode, ObjectWithAddress owa, VirtualRegister rt)
+		public void WriteRelativeAddressInstruction(SpuOpCode opcode, VirtualRegister rt, ObjectWithAddress owa)
 		{
 			var inst = new SpuInstruction(opcode)
 			{

@@ -24,6 +24,7 @@
 #if UNITTEST
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,7 +36,7 @@ namespace CellDotNet.Spe
 	public class PatchRoutineTest : UnitTest
 	{
 		[Test]
-		public void Test()
+		public void Test1()
 		{
 			// Generate random code.
 			var rawcode = new int[20];
@@ -47,14 +48,14 @@ namespace CellDotNet.Spe
 			PatchRoutine r = new PatchRoutine(rawcode);
 			ObjectWithAddress obj = new DataObject(16);
 			r.Seek(0x10);
-			r.Writer.WriteRelativeAddressInstruction(SpuOpCode.brsl, obj, HardwareRegister.LR);
+			r.Writer.WriteRelativeAddressInstruction(SpuOpCode.brsl, HardwareRegister.LR, obj);
 			r.Writer.WriteAi(HardwareRegister.LR, HardwareRegister.LR, 33);
 			r.Writer.WriteAi(HardwareRegister.LR, HardwareRegister.LR, 33);
 			r.Writer.WriteAi(HardwareRegister.LR, HardwareRegister.LR, 33);
-			r.Writer.WriteRelativeAddressInstruction(SpuOpCode.brsl, obj, HardwareRegister.LR);
+			r.Writer.WriteRelativeAddressInstruction(SpuOpCode.brsl, HardwareRegister.LR, obj);
 
 			r.Seek(0x30);
-			r.Writer.WriteRelativeAddressInstruction(SpuOpCode.brsl, obj, HardwareRegister.LR);
+			r.Writer.WriteRelativeAddressInstruction(SpuOpCode.brsl, HardwareRegister.LR, obj);
 
 			r.Offset = 0x100;
 			obj.Offset = 0x200;
@@ -69,11 +70,11 @@ namespace CellDotNet.Spe
 			{
 				ManualRoutine res = new ManualRoutine(true) { Offset = 0x110 };
 				res.Writer.BeginNewBasicBlock();
-				res.Writer.WriteRelativeAddressInstruction(SpuOpCode.brsl, obj, HardwareRegister.LR);
+				res.Writer.WriteRelativeAddressInstruction(SpuOpCode.brsl, HardwareRegister.LR, obj);
 				res.Writer.WriteAi(HardwareRegister.LR, HardwareRegister.LR, 33);
 				res.Writer.WriteAi(HardwareRegister.LR, HardwareRegister.LR, 33);
 				res.Writer.WriteAi(HardwareRegister.LR, HardwareRegister.LR, 33);
-				res.Writer.WriteRelativeAddressInstruction(SpuOpCode.brsl, obj, HardwareRegister.LR);
+				res.Writer.WriteRelativeAddressInstruction(SpuOpCode.brsl, HardwareRegister.LR, obj);
 				res.PerformAddressPatching();
 
 				AreEqual(res.Emit(), SubArray(code, 4, 5));
@@ -92,12 +93,56 @@ namespace CellDotNet.Spe
 		{
 			ManualRoutine res = new ManualRoutine(true) { Offset = instructionOffset };
 			res.Writer.BeginNewBasicBlock();
-			res.Writer.WriteRelativeAddressInstruction(opcode, target, HardwareRegister.LR);
+			res.Writer.WriteRelativeAddressInstruction(opcode, HardwareRegister.LR, target);
 			res.PerformAddressPatching();
 			int[] code = res.Emit();
 			AreEqual(1, code.Length);
 
 			return code[0];
+		}
+
+		[Test]
+		public void Test2()
+		{
+			// Generate random code.
+			var rawcode = new int[20];
+			var rand = new Random(33333);
+			for (int i = 0; i < rawcode.Length; i++)
+				rawcode[i] = rand.Next();
+
+			// Make some changes.
+			PatchRoutine r = new PatchRoutine(rawcode);
+			ObjectWithAddress obj = new DataObject(16);
+			r.Seek(0x10);
+			r.Writer.WriteRelativeAddressInstruction(SpuOpCode.brsl, HardwareRegister.LR, obj);
+			r.Seek(0x20);
+			r.Writer.WriteRelativeAddressInstruction(SpuOpCode.brsl, HardwareRegister.LR, obj);
+			r.Seek(0x30);
+			r.Writer.WriteRelativeAddressInstruction(SpuOpCode.brsl, HardwareRegister.LR, obj);
+
+			r.Offset = 0x100;
+			obj.Offset = 0x200;
+			r.PerformAddressPatching();
+			r.Emit();
+		}
+
+		[Test]
+		public void TestNoCode()
+		{
+			PatchRoutine r = new PatchRoutine(new int[0]);
+			r.PerformAddressPatching();
+			int[] code = r.Emit();
+			AreEqual(new int[0], code);
+		}
+
+		[Test]
+		public void TestNoModifications()
+		{
+			int[] rawcode = new int[] {2059824};
+			PatchRoutine r = new PatchRoutine(rawcode);
+			r.PerformAddressPatching();
+			int[] code = r.Emit();
+			AreEqual(rawcode, code);
 		}
 	}
 }

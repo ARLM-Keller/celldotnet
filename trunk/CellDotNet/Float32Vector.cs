@@ -27,7 +27,7 @@ namespace CellDotNet
 {
 	public struct Float32Vector
 	{
-		private float e1, e2, e3, e4;
+		private readonly float e1, e2, e3, e4;
 
 		[IntrinsicMethod(SpuIntrinsicMethod.CombineFourWords)]
 		public Float32Vector(float e1, float e2, float e3, float e4)
@@ -50,14 +50,7 @@ namespace CellDotNet
 			[SpuInstructionPart(SpuInstructionPart.Ra)]Float32Vector v1,
 			[SpuInstructionPart(SpuInstructionPart.Rb)]Float32Vector v2)
 		{
-			Float32Vector r = new Float32Vector();
-
-			r.e1 = v1.e1 + v2.e1;
-			r.e2 = v1.e2 + v2.e2;
-			r.e3 = v1.e3 + v2.e3;
-			r.e4 = v1.e4 + v2.e4;
-
-			return r;
+			return new Float32Vector(v1.e1 + v2.e1, v1.e2 + v2.e2, v1.e3 + v2.e3, v1.e4 + v2.e4);
 		}
 
 		[SpuOpCode(SpuOpCodeEnum.Fs)]
@@ -66,14 +59,7 @@ namespace CellDotNet
 			[SpuInstructionPart(SpuInstructionPart.Ra)]Float32Vector v1,
 			[SpuInstructionPart(SpuInstructionPart.Rb)]Float32Vector v2)
 		{
-			Float32Vector r = new Float32Vector();
-
-			r.e1 = v1.e1 - v2.e1;
-			r.e2 = v1.e2 - v2.e2;
-			r.e3 = v1.e3 - v2.e3;
-			r.e4 = v1.e4 - v2.e4;
-
-			return r;
+			return new Float32Vector(v1.e1 - v2.e1, v1.e2 - v2.e2, v1.e3 - v2.e3, v1.e4 - v2.e4);
 		}
 
 		[SpuOpCode(SpuOpCodeEnum.Fm)]
@@ -82,14 +68,7 @@ namespace CellDotNet
 			[SpuInstructionPart(SpuInstructionPart.Ra)]Float32Vector v1,
 			[SpuInstructionPart(SpuInstructionPart.Rb)]Float32Vector v2)
 		{
-			Float32Vector r = new Float32Vector();
-
-			r.e1 = v1.e1 * v2.e1;
-			r.e2 = v1.e2 * v2.e2;
-			r.e3 = v1.e3 * v2.e3;
-			r.e4 = v1.e4 * v2.e4;
-
-			return r;
+			return new Float32Vector(v1.e1 * v2.e1, v1.e2 * v2.e2, v1.e3 * v2.e3, v1.e4 * v2.e4);
 		}
 
 		// TODO can probably be implemented much more faster

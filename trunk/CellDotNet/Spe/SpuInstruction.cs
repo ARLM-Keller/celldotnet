@@ -189,7 +189,7 @@ namespace CellDotNet.Spe
 				case SpuInstructionFormat.RI7:
 					return _opcode.OpCode | ((Constant & 0x7F) << 14) | ((int)Ra.Register << 7) | (int)Rt.Register;
 				case SpuInstructionFormat.RI10:
-						return _opcode.OpCode | ((Constant & 0x3ff) << 14) | ((int)Ra.Register << 7) | (int)Rt.Register;
+					return _opcode.OpCode | ((Constant & 0x3ff) << 14) | ((int)Ra.Register << 7) | (int)Rt.Register;
 				case SpuInstructionFormat.RI16:
 					return _opcode.OpCode | ((Constant & 0xffff) << 7) | (int)Rt.Register;
 				case SpuInstructionFormat.RI16NoRegs:
