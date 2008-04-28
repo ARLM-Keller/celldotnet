@@ -1,13 +1,11 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using CellDotNet.Spe;
 
 namespace CellDotNet
 {
 	public struct Int32Vector
 	{
-		private int e1, e2, e3, e4;
+		private readonly int e1, e2, e3, e4;
 
 		[IntrinsicMethod(SpuIntrinsicMethod.CombineFourWords)]
 		public Int32Vector(int e1, int e2, int e3, int e4)
@@ -30,14 +28,7 @@ namespace CellDotNet
 			[SpuInstructionPart(SpuInstructionPart.Ra)]Int32Vector v1,
 			[SpuInstructionPart(SpuInstructionPart.Rb)]Int32Vector v2)
 		{
-			Int32Vector r;
-
-			r.e1 = v1.e1 + v2.e1;
-			r.e2 = v1.e2 + v2.e2;
-			r.e3 = v1.e3 + v2.e3;
-			r.e4 = v1.e4 + v2.e4;
-
-			return r;
+			return new Int32Vector(v1.e1 + v2.e1, v1.e2 + v2.e2, v1.e3 + v2.e3, v1.e4 + v2.e4);
 		}
 
 		[SpuOpCode(SpuOpCodeEnum.Sf)]
@@ -46,14 +37,7 @@ namespace CellDotNet
 			[SpuInstructionPart(SpuInstructionPart.Rb)]Int32Vector v1,
 			[SpuInstructionPart(SpuInstructionPart.Ra)]Int32Vector v2)
 		{
-			Int32Vector r;
-
-			r.e1 = v1.e1 - v2.e1;
-			r.e2 = v1.e2 - v2.e2;
-			r.e3 = v1.e3 - v2.e3;
-			r.e4 = v1.e4 - v2.e4;
-
-			return r;
+			return new Int32Vector(v1.e1 - v2.e1, v1.e2 - v2.e2, v1.e3 - v2.e3, v1.e4 - v2.e4);
 		}
 
 		// TODO can probably be implemented much more faster

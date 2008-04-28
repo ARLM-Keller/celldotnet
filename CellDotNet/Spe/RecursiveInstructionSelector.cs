@@ -271,128 +271,130 @@ namespace CellDotNet.Spe
 					WriteConditionalBranch(SpuOpCode.brnz, vrleft, (IRBasicBlock) inst.Operand);
 					return null;
 				case IRCode.Beq:
-					// NOTE: Asumes left and right operand is compatible
-					// TODO: Not implemented for all valid types.
-					switch (lefttype.CliType)
 					{
-						case CliType.Int32:
-						case CliType.NativeInt:
-							VirtualRegister vr1 = _writer.WriteCeq(vrleft, vrright);
-							WriteConditionalBranch(SpuOpCode.brnz, vr1, (IRBasicBlock) inst.Operand);
+						VirtualRegister vr = null;
+						switch (lefttype.CliType)
+						{
+							case CliType.Int32:
+							case CliType.NativeInt:
+								vr = _writer.WriteCeq(vrleft, vrright);
+								break;
+							case CliType.Float32:
+								vr = _writer.WriteFceq(vrleft, vrright);
+								break;
+							case CliType.Float64:
+								vr = _helper.WriteCeqFloat64(vrleft, vrright);
+								break;
+						}
+						if (vr != null)
+						{
+							WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
 							return null;
-						case CliType.Float32:
-							VirtualRegister vr2 = _writer.WriteFceq(vrleft, vrright);
-							WriteConditionalBranch(SpuOpCode.brnz, vr2, (IRBasicBlock) inst.Operand);
-							return null;
-						case CliType.Int64:
-						case CliType.Float64:
-						case CliType.ObjectType:
-						case CliType.ManagedPointer:
-							break;
+						}
 					}
 					break;
 				case IRCode.Bge:
 					{
-						// NOTE: Asumes left and right operand is compatible
-						// TODO: Not implemented for all valid types.
 						// (A >= B) == !(B > A)
-						VirtualRegister vr;
+						VirtualRegister vr = null;
 						switch (lefttype.CliType)
 						{
 							case CliType.Int32:
 							case CliType.NativeInt:
 								vr = _writer.WriteCgt(vrright, vrleft);
 								_writer.WriteXori(vr, vr, 0xfffffff);
-								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
-								return null;
+								break;
 							case CliType.Float32:
 								vr = _writer.WriteFcgt(vrright, vrleft);
 								_writer.WriteXori(vr, vr, 0xfffffff);
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
-							case CliType.Int64:
 							case CliType.Float64:
-							case CliType.ObjectType:
-							case CliType.ManagedPointer:
+								var veq = _helper.WriteCeqFloat64(vrleft, vrright);
+								var vgt = _helper.WriteCgtFloat64(vrleft, vrright);
+								vr = _writer.WriteOr(veq, vgt);
 								break;
+						}
+						if (vr != null)
+						{
+							WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
+							return null;
 						}
 						break;
 					}
 				case IRCode.Bgt:
 					{
-						// NOTE: Asumes left and right operand is compatible
-						// TODO: Not implemented for all valid types.
-						VirtualRegister vr;
+						VirtualRegister vr = null;
 						switch (lefttype.CliType)
 						{
 							case CliType.Int32:
 							case CliType.NativeInt:
 								vr = _writer.WriteCgt(vrleft, vrright);
-								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
-								return null;
+								break;
 							case CliType.Float32:
 								vr = _writer.WriteFcgt(vrleft, vrright);
-								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
-								return null;
-							case CliType.Int64:
-							case CliType.Float64:
-							case CliType.ObjectType:
-							case CliType.ManagedPointer:
 								break;
+							case CliType.Float64:
+								vr = _helper.WriteCgtFloat64(vrleft, vrright);
+								break;
+						}
+						if (vr != null)
+						{
+							WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
+							return null;
 						}
 						break;
 					}
 				case IRCode.Ble:
 					{
-						// NOTE: Asumes left and right operand is compatible
-						// TODO: Not implemented for all valid types.
 						// (A <= B) == !(A > B)
-						VirtualRegister vr;
+						VirtualRegister vr = null;
 						switch (lefttype.CliType)
 						{
 							case CliType.Int32:
 							case CliType.NativeInt:
 								vr = _writer.WriteCgt(vrleft, vrright);
 								_writer.WriteXori(vr, vr, 0xfffffff);
-								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
-								return null;
+								break;
 							case CliType.Float32:
 								vr = _writer.WriteFcgt(vrleft, vrright);
 								_writer.WriteXori(vr, vr, 0xfffffff);
 								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
 								return null;
-							case CliType.Int64:
-								break;
 							case CliType.Float64:
-//								throw new Exception();
-							case CliType.ObjectType:
-							case CliType.ManagedPointer:
+								var veq = _helper.WriteCeqFloat64(vrleft, vrright);
+								var vlt = _helper.WriteCltFloat64(vrleft, vrright);
+								vr = _writer.WriteOr(veq, vlt);
 								break;
+						}
+						if (vr != null)
+						{
+							WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
+							return null;
 						}
 						break;
 					}
 				case IRCode.Blt:
 					{
-						// NOTE: Asumes left and right operand is compatible
-						// TODO: Not implemented for all valid types.
 						// (A < B) == (B > A)
-						VirtualRegister vr;
+						VirtualRegister vr = null;
 						switch (lefttype.CliType)
 						{
 							case CliType.Int32:
 							case CliType.NativeInt:
 								vr = _writer.WriteCgt(vrright, vrleft);
-								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
-								return null;
+								break;
 							case CliType.Float32:
 								vr = _writer.WriteFcgt(vrright, vrleft);
-								WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock) inst.Operand);
-								return null;
-							case CliType.Int64:
-							case CliType.Float64:
-							case CliType.ObjectType:
-							case CliType.ManagedPointer:
 								break;
+							case CliType.Float64:
+								vr = _helper.WriteCltFloat64(vrleft, vrright);
+								break;
+						}
+						if (vr != null)
+						{
+							WriteConditionalBranch(SpuOpCode.brnz, vr, (IRBasicBlock)inst.Operand);
+							return null;
 						}
 						break;
 					}
@@ -673,8 +675,13 @@ namespace CellDotNet.Spe
 
 								return r4;
 							}
-//						case CliType.Float64:
-//							{
+						case CliType.Float64:
+							{
+								_writer.WriteMove(vrleft, HardwareRegister.GetHardwareArgumentRegister(0));
+								_writer.WriteMove(vrright, HardwareRegister.GetHardwareArgumentRegister(1));
+								_writer.WriteRelativeAddressInstruction(SpuOpCode.brsl, HardwareRegister.HardwareReturnValueRegister, _specialSpeObjects.MathObjects.Divdf3);
+								return HardwareRegister.HardwareReturnValueRegister;
+
 //								// TODO temporary implementation.
 //								VirtualRegister r2 = _writer.WriteFrds(vrright); ;
 //								VirtualRegister r3 = _writer.WriteFrds(vrleft); ;
@@ -697,7 +704,7 @@ namespace CellDotNet.Spe
 //								_writer.WriteSelb(r4, r5, r6, r4);
 //
 //								return r4;
-//							}
+							}
 					}
 
 					break;
@@ -1277,8 +1284,8 @@ namespace CellDotNet.Spe
 								return _writer.WriteAndi(val, 1);
 							}
 							break;
-//						case CliType.Float64:
-//							return WriteCltFloat64(vrright, vrleft);
+						case CliType.Float64:
+							return _helper.WriteCgtFloat64(vrleft, vrright);
 					}
 					break;
 				case IRCode.Cgt_Un:

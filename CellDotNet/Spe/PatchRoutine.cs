@@ -36,8 +36,9 @@ namespace CellDotNet.Spe
 	{
 		readonly int[] _code;
 		readonly List<KeyValuePair<int, int>> _offsetsAndCounts;
+		private int _totalWrittenInstructionCount = 0;
 
-		public PatchRoutine([NotNull]int[] rawCode)
+		public PatchRoutine([NotNull]int[] rawCode, string name) : base(name)
 		{
 			Utilities.AssertArgumentNotNull(rawCode, "rawCode");
 			_code = (int[]) rawCode.Clone();
@@ -46,6 +47,8 @@ namespace CellDotNet.Spe
 
 			_offsetsAndCounts = new List<KeyValuePair<int, int>> {new KeyValuePair<int, int>(0, 0)};
 		}
+
+		public PatchRoutine([NotNull]int[] rawCode) : this(rawCode, null) {}
 
 		public SpuInstructionWriter Writer { get; private set; }
 
@@ -86,6 +89,7 @@ namespace CellDotNet.Spe
 					_code[offsetAndCount.Key/4 + instnum] = inst.Emit();
 				}
 			}
+			Utilities.Assert(!enumerator.MoveNext(), "!enumerator.MoveNext()");
 		}
 
 		public void Seek(int bytePosition)
@@ -105,12 +109,15 @@ namespace CellDotNet.Spe
 			int currentInstCount = Writer.CurrentBlock.GetInstructionCount();
 
 			// Record number of insts written at old offset.
-			int previnstcount;
+			int prevOffsetInstCount;
 			if (_offsetsAndCounts.Count == 1)
-				previnstcount = currentInstCount;
+				prevOffsetInstCount = currentInstCount;
 			else
-				previnstcount = currentInstCount - _offsetsAndCounts[_offsetsAndCounts.Count - 2].Value;
-			_offsetsAndCounts[_offsetsAndCounts.Count - 1] = new KeyValuePair<int, int>(_offsetsAndCounts[_offsetsAndCounts.Count - 1].Key, previnstcount);
+				prevOffsetInstCount = currentInstCount - _totalWrittenInstructionCount;
+//				previnstcount = currentInstCount - _offsetsAndCounts[_offsetsAndCounts.Count - 2].Value;
+
+			_offsetsAndCounts[_offsetsAndCounts.Count - 1] = new KeyValuePair<int, int>(_offsetsAndCounts[_offsetsAndCounts.Count - 1].Key, prevOffsetInstCount);
+			_totalWrittenInstructionCount = currentInstCount;
 		}
 	}
 

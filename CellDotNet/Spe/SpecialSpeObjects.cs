@@ -198,44 +198,4 @@ namespace CellDotNet.Spe
 
 		#endregion
 	}
-
-	/// <summary>
-	/// Data used for math implementation.
-	/// </summary>
-	class MathObjects
-	{
-		/// <summary>
-		/// Static data used for some DP ops.
-		/// </summary>
-		public DataObject DoubleCompareDataArea { get; private set; }
-		public ObjectOffset DoubleSignFilter { get; private set; }
-		public ObjectOffset DoubleExponentFilter { get; private set; }
-		public ObjectOffset DoubleCeqMagic1 { get; private set; }
-
-		private static readonly int[] s_doubleCompareData = unchecked(new int[] {
-			0x7fffffff, (int)0xffffffff, 0x7fffffff, (int)0xffffffff, // sign filter
-			0x7ff00000,      0x00000000, 0x7ff00000,      0x00000000, // exponent filter
-			0x04050607, (int)0xc0c0c0c0, 0x0c0d0e0f, (int)0xc0c0c0c0, //
-			0x00010203,      0x00010203, 0x08090a0b,      0x08090a0b, //
-			0x00010203,      0x10111213, 0x08090a0b,      0x18191a1b, // ceq magic 1
-			0x04050607, (int)0x80808080, 0x0c0d0e0f, (int)0x80808080, // dp __divdf3 magic
-		});
-
-		public MathObjects()
-		{
-			DoubleCompareDataArea = DataObject.FromQuadWords(s_doubleCompareData.Length / 4, "DoubleCompareDataArea", s_doubleCompareData);
-			DoubleSignFilter = new ObjectOffset(DoubleCompareDataArea, 0);
-			DoubleExponentFilter = new ObjectOffset(DoubleCompareDataArea, 16);
-			DoubleCeqMagic1 = new ObjectOffset(DoubleCompareDataArea, 64);
-		}
-
-		public ObjectWithAddress[] GetAllObjectsWithStorage()
-		{
-			return new ObjectWithAddress[]
-			       	{
-			       		DoubleCompareDataArea
-			       	};
-		}
-
-	}
 }
