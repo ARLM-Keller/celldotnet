@@ -192,73 +192,93 @@ namespace CellDotNet.Spe
 			}
 		}
 
-//		[Test]
-//		public void TestArray_Double_1()
-//		{
-//			const double MagicNumber = -123455678	;
-//			DoubleReturnDelegate del =
-//				delegate
-//				{
-//					double[] arr = new double[10];
-//					arr[0] = MagicNumber;
-//					arr[1] = 20;
-//					return arr[0];
-//				};
-//			DoubleReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
-//
-//			if (!SpeContext.HasSpeHardware)
-//				return;
-//
-//			double retval = del2();
-//			AreEqual(MagicNumber, retval);
-//		}
-//
-//		[Test]
-//		public void TestArray_Double_2()
-//		{
-//			const double MagicNumber = 0xbababa;
-//			DoubleReturnDelegate del =
-//				delegate
-//				{
-//					// Check that arr2 doesn't overwrite arr1.
-//					double[] arr1 = new double[1];
-//					arr1[0] = MagicNumber;
-//					double[] arr2 = new double[1];
-//					arr2[0] = 50;
-//
-//					return arr1[0];
-//				};
-//
-//			DoubleReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
-//
-//			if (!SpeContext.HasSpeHardware)
-//				return;
-//
-//			double retval = del2();
-//			AreEqual(MagicNumber, retval);
-//		}
-//
-//		[Test]
-//		public void TestArray_Double_3()
-//		{
-//			DoubleReturnDelegate del =
-//				delegate
-//				{
-//					double[] arr1 = new double[2];
-//					arr1[0] = 10;
-//					arr1[1] = 50;
-//
-//					return arr1[0] + arr1[1];
-//				};
-//
-//			DoubleReturnDelegate del2 = SpeDelegateRunner.CreateSpeDelegate(del);
-//
-//			if (!SpeContext.HasSpeHardware)
-//				return;
-//
-//			double retval = del2();
-//			AreEqual(60.0, retval);
-//		}
+		[Test]
+		public void TestArray_Double_1()
+		{
+			const double MagicNumber = -123455678;
+			Func<double> del =
+				delegate
+				{
+					double[] arr = new double[10];
+					arr[0] = MagicNumber;
+					arr[1] = 20;
+					return arr[0];
+				};
+			Func<double> del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			double retval = del2();
+			AreEqual(MagicNumber, retval);
+		}
+
+		[Test]
+		public void TestArray_Double_2()
+		{
+			const double MagicNumber = 0xbababa;
+			Func<double> del =
+				delegate
+				{
+					// Check that arr2 doesn't overwrite arr1.
+					double[] arr1 = new double[1];
+					arr1[0] = MagicNumber;
+					double[] arr2 = new double[1];
+					arr2[0] = 50;
+
+					return arr1[0];
+				};
+
+			Func<double> del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			double retval = del2();
+			AreEqual(MagicNumber, retval);
+		}
+
+		[Test]
+		public void TestArray_Double_3()
+		{
+			Func<double> del =
+				delegate
+				{
+					double[] arr1 = new double[2];
+					arr1[0] = 10;
+					arr1[1] = 50;
+
+					return arr1[0] + arr1[1];
+				};
+
+			Func<double> del2 = SpeDelegateRunner.CreateSpeDelegate(del);
+
+			if (!SpeContext.HasSpeHardware)
+				return;
+
+			double retval = del2();
+			AreEqual(60.0, retval);
+		}
+
+		[Test]
+		public void TestArray_Double_4()
+		{
+			Func<int> del =
+				delegate
+				{
+					double[] arr1 = new double[2];
+					double[] arr2 = new double[3];
+					arr1[0] = 10;
+					arr2[0] = 10;
+
+					return arr1.Length + arr2.Length;
+				};
+
+
+			int expected = del();
+			int actual = (int) SpeContext.UnitTestRunProgram(del);
+			AreEqual(expected, actual);
+		}
 
 		[Test]
 		public void TestArray_Int5()
@@ -280,6 +300,7 @@ namespace CellDotNet.Spe
 
 			AreEqual(del(), del2());
 		}
+
 
 #region QWStruct
 
@@ -536,8 +557,8 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestStruct_BigField_2()
 		{
-			Converter<int, Int32Vector> del =
-				delegate(int input)
+			Func<Int32Vector> del =
+				delegate
 				{
 					BigFieldStruct_2 s = new BigFieldStruct_2();
 
@@ -556,15 +577,15 @@ namespace CellDotNet.Spe
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(del(0), (Int32Vector)SpeContext.UnitTestRunProgram(cc, 0));
+			AreEqual(del(), (Int32Vector)SpeContext.UnitTestRunProgram(cc));
 		}
 
 		[Test]
 		public void TestStruct_BigField_3()
 		{
-			Converter<int, Int32Vector> del =
-				delegate(int input)
-				{
+			Func<Int32Vector> del =
+				delegate
+					{
 					BigFieldStruct_2 s = new BigFieldStruct_2();
 
 					s.v2 = new Int32Vector(21, 22, 23, 24);
@@ -582,15 +603,15 @@ namespace CellDotNet.Spe
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(del(0), (Int32Vector)SpeContext.UnitTestRunProgram(cc, 0));
+			AreEqual(del(), (Int32Vector)SpeContext.UnitTestRunProgram(cc));
 		}
 
 		[Test]
 		public void TestStruct_BigField_4()
 		{
-			Converter<int, Int32Vector> del =
-				delegate(int input)
-				{
+			Func<Int32Vector> del =
+				delegate
+					{
 					BigFieldStruct_2 s = new BigFieldStruct_2();
 
 					s.v3 = new Int32Vector(21, 22, 23, 24);
@@ -608,14 +629,14 @@ namespace CellDotNet.Spe
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(del(0), (Int32Vector)SpeContext.UnitTestRunProgram(cc, 0));
+			AreEqual(del(), (Int32Vector)SpeContext.UnitTestRunProgram(cc));
 		}
 
 		[Test]
 		public void TestStruct_BigField_5()
 		{
-			Converter<int, Int32Vector> del =
-				delegate(int input)
+			Func<Int32Vector> del =
+				delegate
 				{
 					BigFieldStruct_2 s = new BigFieldStruct_2();
 
@@ -634,7 +655,7 @@ namespace CellDotNet.Spe
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(del(0), (Int32Vector)SpeContext.UnitTestRunProgram(cc, 0));
+			AreEqual(del(), (Int32Vector)SpeContext.UnitTestRunProgram(cc));
 		}
 
 #region  dsfdsf
@@ -649,7 +670,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestStruct_ArrayField_1()
 		{
-			Converter<int, int> del =
+			Func<int, int> del =
 				delegate(int input)
 				{
 					int [] array = new int[6];
@@ -672,7 +693,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestStruct_ArrayField_2()
 		{
-			Converter<int, int> del =
+			Func<int, int> del =
 				delegate(int input)
 				{
 					StructWithArray s = new StructWithArray();
@@ -714,6 +735,54 @@ namespace CellDotNet.Spe
 		{
 			BigStruct bs = new BigStruct(i1, i3, i5, i7);
 			return bs;
+		}
+
+		private struct DoubleStruct
+		{
+			public double d1;
+			public double d2;
+			public int i1;
+			public double d3;
+		}
+
+		[Test]
+		public void TestStruct_Double()
+		{
+			const double d1const = 11111111.76876;
+			const double d2const = -777777.999;
+			const int i1const = 223456789;
+			const double d3const = 976.999;
+
+			Func<double> del1;
+
+			del1 = delegate
+			       	{
+			       		var s = new DoubleStruct {d1 = d1const, d2 = d2const, i1 = i1const, d3 = d3const};
+			       		return s.d1;
+			       	};
+			AreEqual(del1(), (double)SpeContext.UnitTestRunProgram(del1), "d1");
+
+			del1 = delegate
+			       	{
+			       		var s = new DoubleStruct {d1 = d1const, d2 = d2const, i1 = i1const, d3 = d3const};
+			       		return s.d2;
+			       	};
+			AreEqual(del1(), (double)SpeContext.UnitTestRunProgram(del1), "d2");
+
+			Func<int> del2 = delegate
+			       	{
+			       		var s = new DoubleStruct {d1 = d1const, d2 = d2const, i1 = i1const, d3 = d3const};
+			       		return s.i1;
+			       	};
+			AreEqual(del2(), (int)SpeContext.UnitTestRunProgram(del2), "i1");
+
+			del1 = delegate
+			       	{
+						// Make sure that d3 is not the last field writte to, so that i1 gets a "chance" to overwrite it.
+						var s = new DoubleStruct { d1 = d1const, d2 = d2const, d3 = d3const, i1 = i1const };
+			       		return s.d3;
+			       	};
+			AreEqual(del1(), (double)SpeContext.UnitTestRunProgram(del1), "d3");
 		}
 
 		[Test]
@@ -1002,19 +1071,20 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestClass_ReferenceTypeField()
 		{
-			Func<int> del = 
+			Func<int> del =
 				delegate
 					{
-						ClassWithReferenceTypeFields c = new ClassWithReferenceTypeFields();
-						c.ReferenceTypeField1 = new ClassWithReferenceTypeFields();
-						c.ReferenceTypeField1.IntField = 500;
-						c.ReferenceTypeField2 = new ClassWithReferenceTypeFields();
-						c.ReferenceTypeField2.IntField = 700;
+						ClassWithReferenceTypeFields c =
+							new ClassWithReferenceTypeFields
+								{
+									ReferenceTypeField1 = new ClassWithReferenceTypeFields {IntField = 500},
+									ReferenceTypeField2 = new ClassWithReferenceTypeFields {IntField = 700}
+								};
 
-						int addressDiff = SpuRuntime.UnsafeGetAddress(c.ReferenceTypeField2) - 
-							SpuRuntime.UnsafeGetAddress(c.ReferenceTypeField1);
+						int addressDiff = SpuRuntime.UnsafeGetAddress(c.ReferenceTypeField2) -
+						                  SpuRuntime.UnsafeGetAddress(c.ReferenceTypeField1);
 
-						if (addressDiff != 3 *16)
+						if (addressDiff != 3*16)
 							return addressDiff;
 
 						if (c.ReferenceTypeField2.IntField - c.ReferenceTypeField1.IntField != 200)

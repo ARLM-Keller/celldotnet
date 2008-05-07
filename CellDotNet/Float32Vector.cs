@@ -71,15 +71,9 @@ namespace CellDotNet
 			return new Float32Vector(v1.e1 * v2.e1, v1.e2 * v2.e2, v1.e3 * v2.e3, v1.e4 * v2.e4);
 		}
 
-		// TODO can probably be implemented much more faster
 		public static Float32Vector operator /(Float32Vector v1, Float32Vector v2)
 		{
-			float r1 = v1.E1 / v2.E1;
-			float r2 = v1.E2 / v2.E2;
-			float r3 = v1.E3 / v2.E3;
-			float r4 = v1.E4 / v2.E4;
-
-			return new Float32Vector(r1, r2, r3, r4);
+			return new Float32Vector(v1.E1 / v2.E1, v1.E2 / v2.E2, v1.E3 / v2.E3, v1.E4 / v2.E4);
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.Float_Equals)]
@@ -127,12 +121,8 @@ namespace CellDotNet
 		public override bool Equals(object obj)
 		{
 			if (!(obj is Float32Vector)) return false;
-			Float32Vector float32Vector = (Float32Vector) obj;
-			if (e1 != float32Vector.e1) return false;
-			if (e2 != float32Vector.e2) return false;
-			if (e3 != float32Vector.e3) return false;
-			if (e4 != float32Vector.e4) return false;
-			return true;
+			Float32Vector other = (Float32Vector) obj;
+			return other == this;
 		}
 
 		public override int GetHashCode()

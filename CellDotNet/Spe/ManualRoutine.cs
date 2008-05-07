@@ -31,7 +31,7 @@ namespace CellDotNet.Spe
 	/// Represents code which is not the result of a method compilation, but
 	/// rather generated "manually".
 	/// </summary>
-	class ManualRoutine : SpuDynamicRoutine
+	class ManualRoutine : SpuRoutine
 	{
 		private bool _omitEpilog = false;
 		/// <summary>

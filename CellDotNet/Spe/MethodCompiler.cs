@@ -68,7 +68,7 @@ namespace CellDotNet.Spe
 	/// <summary>
 	/// Data used during compilation of a method.
 	/// </summary>
-	internal class MethodCompiler : SpuDynamicRoutine
+	internal class MethodCompiler : SpuRoutine
 	{
 		private MethodCompileState _state;
 

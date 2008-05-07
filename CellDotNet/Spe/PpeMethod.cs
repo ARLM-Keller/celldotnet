@@ -51,5 +51,15 @@ namespace CellDotNet.Spe
 		{
 			get { throw new InvalidOperationException(); }
 		}
+
+		public override int[] Emit()
+		{
+			throw new NotImplementedException();
+		}
+
+		public override void PerformAddressPatching()
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

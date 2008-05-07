@@ -55,7 +55,20 @@ namespace CellDotNet
 
 		private static void RunRasmus()
 		{
-			new ILOpCodeExecutionTest().Test_Div_R8();
+//			new ObjectModelTest().TestStruct_Double();
+//			Func<int, double> del = i => i;
+//			const int iconst = 223456789;
+//			double res1 = (double) SpeContext.UnitTestRunProgram(del, iconst);
+//			double res2 = Convert.ToDouble(Convert.ToSingle(iconst)); 
+//			Console.WriteLine("orig: {0} spe: {1}, ppe: {2}", iconst, res1, res2);
+
+//			Console.WriteLine("hejsa");
+			new SpeContext();
+			int size = new SpeContext().LocalStorageSize;
+//			int size = 234;
+			Console.WriteLine(size);
+//			new ILOpCodeE	xecutionTest().Test_ConvI4_R8();
+//			new SimpleProgramsTest().TestIntRefArgument();
 		}
 	}
 }

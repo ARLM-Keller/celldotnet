@@ -392,6 +392,86 @@ namespace CellDotNet.Spe
 			AreEqual(fun(n), result);
 
 		}
+
+		static void TestIntRefArgument_RefFunction(ref int val)
+		{
+			val++;
+		}
+
+		[Test]
+		public void TestIntRefArgument()
+		{
+			Func<int, int> del = val =>
+			{
+				TestIntRefArgument_RefFunction(ref val);
+				return val;
+			};
+
+			int expected = del(5);
+			int actual = (int) SpeContext.UnitTestRunProgram(del, 5);
+
+			AreEqual(expected, actual);
+		}
+
+		static void TestFloatRefArgument_RefFunction(ref float val)
+		{
+			val++;
+		}
+
+		[Test]
+		public void TestFloatRefArgument()
+		{
+			Func<float, float> del = val =>
+			{
+				TestFloatRefArgument_RefFunction(ref val);
+				return val;
+			};
+
+			float expected = del(5);
+			float actual = (float) SpeContext.UnitTestRunProgram(del, 5);
+
+			AreEqual(expected, actual);
+		}
+
+		static void TestDoubleRefArgument_RefFunction(ref double val)
+		{
+			val++;
+		}
+
+		[Test]
+		public void TestDoubleRefArgument()
+		{
+			Func<double, double> del = val =>
+			{
+				TestDoubleRefArgument_RefFunction(ref val);
+				return val;
+			};
+
+			double expected = del(5);
+			double actual = (double)SpeContext.UnitTestRunProgram(del, 5);
+
+			AreEqual(expected, actual);
+		}
+
+		static double TestDoubleArgument_Function(double val)
+		{
+			return val + 1;
+		}
+
+		[Test]
+		public void TestDoubleArgument()
+		{
+			Func<double, double> del = val =>
+			{
+				// this shouldn' be replaced with a method group, even if r# would like to do so.
+				return TestDoubleArgument_Function(val);
+			};
+
+			double expected = del(5);
+			double actual = (double)SpeContext.UnitTestRunProgram(del, 5);
+
+			AreEqual(expected, actual);
+		}
 	}
 }
 

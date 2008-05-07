@@ -21,8 +21,14 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+using System;
+
 namespace CellDotNet.Spe
 {
+	/// <summary>
+	/// Some of the functions in this class are taken from "SIMD Math Library Specification for Cell Broadband Engine Architecture" v1.1, and therefore
+	/// behaves exactly as it does.
+	/// </summary>
 	public static class SpuMath
 	{
 		public static int Abs(int value)
@@ -408,5 +414,43 @@ namespace CellDotNet.Spe
 			return (v1 * v2) + v3;
 		}
 
+		[SpeResource("sinf4")]
+		public static Float32Vector Sin(Float32Vector v)
+		{
+			return new Float32Vector((float)Math.Sin(v.E1), (float)Math.Sin(v.E2), (float)Math.Sin(v.E3), (float)Math.Sin(v.E4));
+		}
+
+		[SpeResource("cosf4")]
+		public static Float32Vector Cos(Float32Vector v)
+		{
+			return new Float32Vector((float)Math.Cos(v.E1), (float)Math.Cos(v.E2), (float)Math.Cos(v.E3), (float)Math.Cos(v.E4));
+		}
+
+		[SpeResource("tanf4")]
+		public static Float32Vector Tan(Float32Vector v)
+		{
+			return new Float32Vector((float)Math.Tan(v.E1), (float)Math.Tan(v.E2), (float)Math.Tan(v.E3), (float)Math.Tan(v.E4));
+		}
+
+		/// <summary>
+		/// Seems like asinf4 doesn't return NaN for elements which are out of range (-1 .. 1).
+		/// </summary>
+		[SpeResource("asinf4")]
+		public static Float32Vector Asin(Float32Vector v)
+		{
+			return new Float32Vector((float)Math.Asin(v.E1), (float)Math.Asin(v.E2)	, (float)Math.Asin(v.E3), (float)Math.Asin(v.E4));
+		}
+
+		[SpeResource("acosf4")]
+		public static Float32Vector Acos(Float32Vector v)
+		{
+			return new Float32Vector((float)Math.Acos(v.E1), (float)Math.Acos(v.E2), (float)Math.Acos(v.E3), (float)Math.Acos(v.E4));
+		}
+
+		[SpeResource("atanf4")]
+		public static Float32Vector Atan(Float32Vector v)
+		{
+			return new Float32Vector((float)Math.Atan(v.E1), (float)Math.Atan(v.E2), (float)Math.Atan(v.E3), (float)Math.Atan(v.E4));
+		}
 	}
 }

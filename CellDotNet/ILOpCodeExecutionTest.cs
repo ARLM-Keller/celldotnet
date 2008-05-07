@@ -593,6 +593,9 @@ namespace CellDotNet
 			ExecuteAndVerifyUnary(OpCodes.Conv_R8, 5, 5d);
 			ExecuteAndVerifyUnary(OpCodes.Conv_R8, -5, -5d);
 			ExecuteAndVerifyUnary(OpCodes.Conv_R8, 0, 0d);
+
+			const int iconst = 223456789;
+			ExecuteAndVerifyUnary(OpCodes.Conv_R8, iconst, (double)iconst);
 		}
 
 		[Test]
@@ -623,6 +626,9 @@ namespace CellDotNet
 
 			ExecuteAndVerifyUnary(OpCodes.Conv_I4, 5.8d, 5);
 			ExecuteAndVerifyUnary(OpCodes.Conv_I4, -5.8d, -5);
+
+			const int iconst = 223456789;
+			ExecuteAndVerifyUnary(OpCodes.Conv_I4, (double)iconst, iconst);
 		}
 
 		[Test]
@@ -1399,15 +1405,15 @@ namespace CellDotNet
 
 			foreach (ObjectWithAddress o in objectsWithAddresss)
 			{
-				SpuDynamicRoutine dynamicRoutine = o as SpuDynamicRoutine;
-				if(dynamicRoutine != null)
-					dynamicRoutine.PerformAddressPatching();
+				SpuRoutine routine = o as SpuRoutine;
+				if(routine != null)
+					routine.PerformAddressPatching();
 			}
 
 //			Disassembler.DisassembleToConsole(objectsWithAddresss);	
 
 			int[] code = new int[codeByteSize/4];
-			CompileContext.CopyCode(code, new SpuDynamicRoutine[] { spuinit, spum });
+			CompileContext.CopyCode(code, new SpuRoutine[] { spuinit, spum });
 
 			const int TotalSpeMem = 256*1024;
 			const int StackPointer = 256*1024 - 32;

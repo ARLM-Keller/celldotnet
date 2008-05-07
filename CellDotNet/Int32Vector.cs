@@ -40,34 +40,19 @@ namespace CellDotNet
 			return new Int32Vector(v1.e1 - v2.e1, v1.e2 - v2.e2, v1.e3 - v2.e3, v1.e4 - v2.e4);
 		}
 
-		// TODO can probably be implemented much more faster
 		public static Int32Vector operator *(Int32Vector v1, Int32Vector v2)
 		{
-			int r1 = v1.E1 * v2.E1;
-			int r2 = v1.E2 * v2.E2;
-			int r3 = v1.E3 * v2.E3;
-			int r4 = v1.E4 * v2.E4;
-			return new Int32Vector(r1, r2, r3, r4);
+			return new Int32Vector(v1.E1 * v2.E1, v1.E2 * v2.E2, v1.E3 * v2.E3, v1.E4 * v2.E4);
 		}
 
-		// TODO can probably be implemented much more faster
 		public static Int32Vector operator /(Int32Vector v1, Int32Vector v2)
 		{
-			int r1 = v1.E1 / v2.E1;
-			int r2 = v1.E2 / v2.E2;
-			int r3 = v1.E3 / v2.E3;
-			int r4 = v1.E4 / v2.E4;
-			return new Int32Vector(r1, r2, r3, r4);
+			return new Int32Vector(v1.E1 / v2.E1, v1.E2 / v2.E2, v1.E3 / v2.E3, v1.E4 / v2.E4);
 		}
 
-		// TODO can probably be implemented much more faster
 		public static Int32Vector operator %(Int32Vector v1, Int32Vector v2)
 		{
-			int r1 = v1.E1 % v2.E1;
-			int r2 = v1.E2 % v2.E2;
-			int r3 = v1.E3 % v2.E3;
-			int r4 = v1.E4 % v2.E4;
-			return new Int32Vector(r1, r2, r3, r4);
+			return new Int32Vector(v1.E1 % v2.E1, v1.E2 % v2.E2, v1.E3 % v2.E3, v1.E4 % v2.E4);
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.Int_Equals)]
@@ -106,46 +91,6 @@ namespace CellDotNet
 			get { return e4; }
 		}
 
-		//		[IntrinsicMethod(SpuIntrinsicMethod.Vector_GetWord2)]
-		//		public static int GetE3(Int32Vector v)
-		//		{
-		//			return v.e3;
-		//		}
-		//
-		//		[IntrinsicMethod(SpuIntrinsicMethod.Vector_GetWord3)]
-		//		public static int GetE4(Int32Vector v)
-		//		{
-		//			return v.e4;
-		//		}
-		//
-		//		[IntrinsicMethod(SpuIntrinsicMethod.Vector_PutWord0)]
-		//		public static Int32Vector PutE1(Int32Vector v, Int32 i)
-		//		{
-		//			Int32Vector r = new Int32Vector(i, v.e2, v.e3, v.e4);
-		//			return r;
-		//		}
-		//
-		//		[IntrinsicMethod(SpuIntrinsicMethod.Vector_PutWord1)]
-		//		public static Int32Vector PutE2(Int32Vector v, Int32 i)
-		//		{
-		//			Int32Vector r = new Int32Vector(v.e1, i, v.e3, v.e4);
-		//			return r;
-		//		}
-		//
-		//		[IntrinsicMethod(SpuIntrinsicMethod.Vector_PutWord2)]
-		//		public static Int32Vector PutE3(Int32Vector v, Int32 i)
-		//		{
-		//			Int32Vector r = new Int32Vector(v.e1, v.e2, i, v.e4);
-		//			return r;
-		//		}
-		//
-		//		[IntrinsicMethod(SpuIntrinsicMethod.Vector_PutWord3)]
-		//		public static Int32Vector PutE4(Int32Vector v, Int32 i)
-		//		{
-		//			Int32Vector r = new Int32Vector(v.e1, v.e2, v.e3, i);
-		//			return r;
-		//		}
-
 		public override string ToString()
 		{
 			return "{" + e1 + ", " + e2 + ", " + e3 + ", " + e4 + "}";
@@ -154,12 +99,8 @@ namespace CellDotNet
 		public override bool Equals(object obj)
 		{
 			if (!(obj is Int32Vector)) return false;
-			Int32Vector int32Vector = (Int32Vector)obj;
-			if (e1 != int32Vector.e1) return false;
-			if (e2 != int32Vector.e2) return false;
-			if (e3 != int32Vector.e3) return false;
-			if (e4 != int32Vector.e4) return false;
-			return true;
+			Int32Vector other = (Int32Vector)obj;
+			return this == other;
 		}
 
 		public override int GetHashCode()

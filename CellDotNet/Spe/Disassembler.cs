@@ -78,7 +78,7 @@ namespace CellDotNet.Spe
 			Disassemble(objects, writer);
 		}
 
-		static void DisassembleUnconditionalToConsole(SpuDynamicRoutine routine)
+		static void DisassembleUnconditionalToConsole(SpuRoutine routine)
 		{
 			StringWriter sw = new StringWriter();
 			DisassembleUnconditional(routine, sw);
@@ -98,9 +98,9 @@ namespace CellDotNet.Spe
 			DisassembleUnconditional(objects, writer);
 		}
 
-		static void DisassembleUnconditional(SpuDynamicRoutine routine, TextWriter writer)
+		static void DisassembleUnconditional(SpuRoutine routine, TextWriter writer)
 		{
-			DisassembleUnconditional(new SpuDynamicRoutine[] { routine }, writer);
+			DisassembleUnconditional(new SpuRoutine[] { routine }, writer);
 		}
 
 		/// <summary>
@@ -114,7 +114,7 @@ namespace CellDotNet.Spe
 			{
 				writer.WriteLine();
 
-				SpuDynamicRoutine r = o as SpuDynamicRoutine;
+				SpuRoutine r = o as SpuRoutine;
 				if (r == null)
 					continue;
 
@@ -142,7 +142,7 @@ namespace CellDotNet.Spe
 			List<ObjectWithAddress> nonRoutines = new List<ObjectWithAddress>();
 			foreach (ObjectWithAddress o in olist)
 			{
-				if (!(o is SpuDynamicRoutine))
+				if (!(o is SpuRoutine))
 					nonRoutines.Add(o);
 
 				if (o.Size == 0)
@@ -183,7 +183,7 @@ namespace CellDotNet.Spe
 			writer.WriteLine("# Code:");
 			foreach (ObjectWithAddress o in olist)
 			{
-				SpuDynamicRoutine r = o as SpuDynamicRoutine;
+				SpuRoutine r = o as SpuRoutine;
 				if (r == null)
 					continue;
 

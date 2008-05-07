@@ -338,6 +338,69 @@ namespace CellDotNet.Spe
 
 			AreEqual(correct, result);
 		}
+
+		[Test]
+		public void TestSpuMath_VectorFloat_Sin()
+		{
+			Func<Float32Vector, Float32Vector> del = v =>  SpuMath.Sin(v);
+
+			var arg = new Float32Vector(1, 2, 3, 4);
+			AreWithin(del(arg), (Float32Vector) SpeContext.UnitTestRunProgram(del, arg), 0.00001f);
+		}
+
+		[Test]
+		public void TestSpuMath_VectorFloat_Cos()
+		{
+			Func<Float32Vector, Float32Vector> del = v =>  SpuMath.Cos(v);
+
+			var arg = new Float32Vector(1, 2, 3, 4);
+			AreWithin(del(arg), (Float32Vector) SpeContext.UnitTestRunProgram(del, arg), 0.00001f);
+		}
+
+		[Test]
+		public void TestSpuMath_VectorFloat_Tan()
+		{
+			Func<Float32Vector, Float32Vector> del = v =>  SpuMath.Tan(v);
+
+			var arg = new Float32Vector(1, 2, 3, 4);
+			AreWithin(del(arg), (Float32Vector) SpeContext.UnitTestRunProgram(del, arg), 0.00001f);
+		}
+
+		[Test]
+		public void TestSpuMath_VectorFloat_Asin()
+		{
+			Func<Float32Vector, Float32Vector> del = v => SpuMath.Asin(v);
+
+			var arg = new Float32Vector(-.5f, 0, .6f, 2);
+			AreWithin(del(arg), (Float32Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f);
+		}
+
+		[Test]
+		public void TestSpuMath_VectorFloat_Acos()
+		{
+			Func<Float32Vector, Float32Vector> del = v => SpuMath.Acos(v);
+
+			var arg = new Float32Vector(-.5f, 0, .6f, 2);
+			AreWithin(del(arg), (Float32Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f);
+		}
+
+		[Test]
+		public void TestSpuMath_VectorFloat_ATan()
+		{
+			Func<Float32Vector, Float32Vector> del = v =>  SpuMath.Atan(v);
+
+			var arg = new Float32Vector(-.5f, 0, .6f, 2);
+			AreWithin(del(arg), (Float32Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f);
+		}
+
+		void AreWithin(Float32Vector expected, Float32Vector actual, float error)
+		{
+			var diff = actual - expected;
+
+			if (Math.Abs(diff.E1) > error || Math.Abs(diff.E2) > error || Math.Abs(diff.E3) > error || Math.Abs(diff.E4) > error)
+				AreEqual(expected, actual, "Should be equal within " + error);
+
+		}
 	}
 }
 #endif

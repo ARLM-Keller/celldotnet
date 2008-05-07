@@ -668,9 +668,9 @@ namespace CellDotNet.Intermediate
 				case IRCode.Stelem_R4:
 					stindOpcode = IROpCodes.Stind_R4;
 					break;
-//				case IRCode.Stelem_R8:
-//					stindOpcode = IROpCodes.Stind_R8;
-//					break;
+				case IRCode.Stelem_R8:
+					stindOpcode = IROpCodes.Stind_R8;
+					break;
 				case IRCode.Stelem:
 					stindOpcode = IROpCodes.Stobj;
 					break;
