@@ -538,6 +538,7 @@ namespace CellDotNet.Spe
 				case IRCode.Ldind_I:
 				case IRCode.Ldind_I4:
 				case IRCode.Ldind_U4:
+				case IRCode.Ldind_R4:
 					{
 						VirtualRegister ptr = vrleft;
 
@@ -546,10 +547,13 @@ namespace CellDotNet.Spe
 					}
 				case IRCode.Ldind_I8:
 					break;
-				case IRCode.Ldind_R4:
-					break;
 				case IRCode.Ldind_R8:
-					break;
+					{
+						VirtualRegister ptr = vrleft;
+
+						// Asssume (at least for now - 20080429) that the address is qw-aligned.
+						return _writer.WriteLqd(ptr, 0);
+					}
 				case IRCode.Ldind_Ref:
 					return _writer.WriteLqd(vrleft, 0);
 				case IRCode.Stind_Ref:
@@ -588,14 +592,14 @@ namespace CellDotNet.Spe
 						return null;
 					}
 				case IRCode.Stind_R8:
-//					{
-//						if (lefttype.IndirectionLevel != 1 && lefttype != StackTypeDescription.NativeInt)
-//							throw new InvalidIRTreeException("Invalid level of indirection for stind. Stack type: " + lefttype);
-//						VirtualRegister ptr = vrleft;
-//
-//						_writer.WriteStoreDoubleWord(ptr, 0, 0, vrright);
-//						return null;
-//					}
+					{
+						if (lefttype.IndirectionLevel != 1 && lefttype != StackTypeDescription.NativeInt)
+							throw new InvalidIRTreeException("Invalid level of indirection for stind. Stack type: " + lefttype);
+						VirtualRegister ptr = vrleft;
+
+						_writer.WriteStoreDoubleWord(ptr, 0, 0, vrright);
+						return null;
+					}
 					break;
 				case IRCode.Add:
 					switch (lefttype.CliType)
@@ -677,6 +681,7 @@ namespace CellDotNet.Spe
 							}
 						case CliType.Float64:
 							{
+								// TODO Use real call.
 								_writer.WriteMove(vrleft, HardwareRegister.GetHardwareArgumentRegister(0));
 								_writer.WriteMove(vrright, HardwareRegister.GetHardwareArgumentRegister(1));
 								_writer.WriteRelativeAddressInstruction(SpuOpCode.brsl, HardwareRegister.HardwareReturnValueRegister, _specialSpeObjects.MathObjects.Divdf3);
@@ -822,6 +827,9 @@ namespace CellDotNet.Spe
 								return _helper.WriteCflts(_writer, vrleft);
 							case CliType.Float64:
 								{
+									// HACK This looses precision - make fixdfsi work.
+//									_helper.WriteMethodCall(_specialSpeObjects.MathObjects.Fixdfsi, new[] {vrleft});
+//									return HardwareRegister.HardwareReturnValueRegister;
 									VirtualRegister r = _writer.WriteFrds(vrleft);
 									return _helper.WriteCflts(_writer, r);
 								}
@@ -834,7 +842,7 @@ namespace CellDotNet.Spe
 					switch (lefttype.CliType)
 					{
 						case CliType.Int32:
-							return _helper.WriteCsflt(_writer, vrleft);
+							return _writer.WriteCsflt(vrleft, 155);
 						case CliType.Float64:
 							return _writer.WriteFrds(vrleft);
 						case CliType.Int64:
@@ -845,8 +853,23 @@ namespace CellDotNet.Spe
 					switch (lefttype.CliType)
 					{
 						case CliType.Int32:
-							VirtualRegister r = _helper.WriteCsflt(_writer, vrleft);
-							return _writer.WriteFesd(r);
+							var r3 = vrleft;
+
+							var r14 = _writer.WriteIlhu(32768);
+							var r8 = _writer.WriteLoad(_specialSpeObjects.MathObjects.ConvR8_I4Magic1);
+							var r11 = _writer.WriteIl(1054);
+							var r13 = _writer.WriteXor(r3, r14);
+							var r2 = _writer.WriteLoad(_specialSpeObjects.MathObjects.ConvR8_I4Magic2);
+							var r12 = _writer.WriteClz(r13);
+							var r10 = _writer.WriteShl(r13, r12);
+							var r6 = _writer.WriteCeqi(r12, 32);
+							var r9 = _writer.WriteSf(r12, r11);
+							var r5 = _writer.WriteA(r10, r10);
+							var r4 = _writer.WriteAndc(r9, r6);
+							var r7 = _writer.WriteShufb(r4, r5, r8);
+							r3 = _writer.WriteShlqbii(r7, 4);
+							r3 = _writer.WriteDfs(r3, r2);
+							return r3;
 						case CliType.Float32:
 							return _writer.WriteFesd(vrleft);
 					}
@@ -929,6 +952,7 @@ namespace CellDotNet.Spe
 						}
 						else
 						{
+							Utilities.Assert(lefttype.IndirectionLevel != 0, "lefttype.IndirectionLevel != 0");
 							Utilities.Assert(byteoffset == 0, "wordoffset == 0");
 							return _writer.WriteLqd(vrleft, qwoffset);
 						}
@@ -939,20 +963,24 @@ namespace CellDotNet.Spe
 						Type vt = field.DeclaringType;
 
 						int qwoffset;
-//						int wordoffset;
 						int byteoffset;
 						int fieldsize;
+
 						_helper.GetStructFieldData(lefttype, vt, field, out qwoffset, out byteoffset, out fieldsize);
+						Utilities.Assert(fieldsize <= 16, "fieldsize <= 16");
 
 						if (lefttype.CliType == CliType.ManagedPointer && lefttype.Dereference().CliType == CliType.ValueType)
 						{
-							// if the field do NOT cross a quard word boundary.
+							// if the field do NOT cross a quad word boundary.
 							if (byteoffset + fieldsize <= 16)
 							{
 								switch (fieldsize)
 								{
 									case 4:
 										_writer.WriteStoreWord(vrleft, qwoffset, byteoffset / 4, vrright);
+										break;
+									case 8:
+										_writer.WriteStoreDoubleWord(vrleft, qwoffset, byteoffset / 8, vrright);
 										break;
 									case 16:
 										_writer.WriteStqd(vrright, vrleft, qwoffset);
@@ -1153,20 +1181,20 @@ namespace CellDotNet.Spe
 					}
 				case IRCode.Ldelem_I8:
 				case IRCode.Ldelem_R8:
-//					{
-//						VirtualRegister array = vrleft;
-//						VirtualRegister index = vrright;
-//
-//						// Load.
-//						VirtualRegister byteoffset = _writer.WriteShli(index, 3);
-//						VirtualRegister quad = _writer.WriteLqx(array, byteoffset);
-//
-//						// Move word to preferred slot.
-//						// We're going to use shlqby (Shift Left Quadword by Bytes),
-//						// so we have to clear bit 27 from the byte offset.
-//						VirtualRegister addrMod16 = _writer.WriteAndi(byteoffset, 0xf);
-//						return _writer.WriteShlqby(quad, addrMod16);
-//					}
+					{
+						VirtualRegister array = vrleft;
+						VirtualRegister index = vrright;
+
+						// Load.
+						VirtualRegister byteoffset = _writer.WriteShli(index, 3);
+						VirtualRegister quad = _writer.WriteLqx(array, byteoffset);
+
+						// Move word to preferred slot.
+						// We're going to use shlqby (Shift Left Quadword by Bytes),
+						// so we have to clear bit 27 from the byte offset.
+						VirtualRegister addrMod16 = _writer.WriteAndi(byteoffset, 0xf);
+						return _writer.WriteShlqby(quad, addrMod16);
+					}
 					break;
 				case IRCode.Ldelem_Ref:
 					break;

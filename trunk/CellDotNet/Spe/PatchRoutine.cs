@@ -1,4 +1,4 @@
-﻿// 
+// 
 // Copyright (C) 2007 Klaus Hansen and Rasmus Halland
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -32,7 +32,7 @@ namespace CellDotNet.Spe
 	/// <summary>
 	/// A routine which essentially consists of a blob, but also needs a bit of address patching.
 	/// </summary>
-	class PatchRoutine : SpuDynamicRoutine
+	class PatchRoutine : SpuRoutine
 	{
 		readonly int[] _code;
 		readonly List<KeyValuePair<int, int>> _offsetsAndCounts;

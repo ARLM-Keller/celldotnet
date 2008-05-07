@@ -73,8 +73,8 @@ namespace CellDotNet.Intermediate
 			new StackTypeDescription(CliType.NativeInt, CliNumericSize.None, true);
 
 		public CliType _cliType;
-		private bool _isSigned;
-		private CliNumericSize _numericSize;
+		private readonly bool _isSigned;
+		private readonly CliNumericSize _numericSize;
 		private byte _indirectionLevel;
 		private bool _isManaged;
 		private bool _isArray;

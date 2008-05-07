@@ -25,6 +25,8 @@ namespace CellDotNet.Spe
 		public ObjectWithAddress Double60FractionBitsPreferred { get; private set; }
 		public ObjectWithAddress Double11FractionBitsPreferred { get; private set; }
 		public ObjectWithAddress Double61FractionBitsPreferred { get; private set; }
+		public ObjectWithAddress ConvR8_I4Magic1 { get; private set; }
+		public ObjectWithAddress ConvR8_I4Magic2 { get; private set; }
 
 
 
@@ -40,6 +42,8 @@ namespace CellDotNet.Spe
 			0x0fffffff, (int)0xffffffff,          0,               0, // Double60FractionBitsPreferred
 			         0,      0x000007ff,          0,               0, // Double11FractionBitsPreferred
 		    0x1fffffff, (int)0xffffffff,          0,               0, // Double61FractionBitsPreferred
+			0x02031011,      0x12138080, 0x06071415,      0x16178080, // ConvR8_I4Magic1 1300
+			0x41e00000,               0,          0,               0, // ConvR8_I4Magic2 1310
 		});
 
 		public MathObjects()
@@ -56,6 +60,8 @@ namespace CellDotNet.Spe
 			Double60FractionBitsPreferred = new ObjectOffset(DoubleCompareDataArea, 0x80);
 			Double11FractionBitsPreferred = new ObjectOffset(DoubleCompareDataArea, 0x90);
 			Double61FractionBitsPreferred = new ObjectOffset(DoubleCompareDataArea, 0xa0);
+			ConvR8_I4Magic1 = new ObjectOffset(DoubleCompareDataArea, 0xb0);
+			ConvR8_I4Magic2 = new ObjectOffset(DoubleCompareDataArea, 0xc0);
 		}
 
 		public ObjectWithAddress[] GetAllObjectsWithStorage()
@@ -749,7 +755,7 @@ namespace CellDotNet.Spe
 
 
 		private PatchRoutine _packd;
-		public ObjectWithAddress Packd
+		public SpuRoutine Packd
 		{
 			get
 			{
@@ -804,7 +810,7 @@ namespace CellDotNet.Spe
 		}
 
 		private PatchRoutine _unpackd;
-		public ObjectWithAddress Unpackd
+		public SpuRoutine Unpackd
 		{
 			get
 			{
@@ -824,7 +830,7 @@ namespace CellDotNet.Spe
 		}
 
 		private PatchRoutine _fixdfsi;
-		public ObjectWithAddress Fixdfsi
+		public SpuRoutine Fixdfsi
 		{
 			get
 			{
@@ -844,7 +850,7 @@ namespace CellDotNet.Spe
 		}
 
 		private PatchRoutine _divdf3;
-		public ObjectWithAddress Divdf3
+		public SpuRoutine Divdf3
 		{
 			get
 			{

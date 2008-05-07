@@ -179,6 +179,13 @@
     <Compile Include="Set.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Spe\Binary\sinf4.bin" />
+    <EmbeddedResource Include="Spe\Binary\cosf4.bin" />
+    <EmbeddedResource Include="Spe\Binary\tanf4.bin" />
+    <EmbeddedResource Include="Spe\Binary\acosf4.bin" />
+    <EmbeddedResource Include="Spe\Binary\asinf4.bin" />
+    <EmbeddedResource Include="Spe\Binary\atanf4.bin" />
+    <EmbeddedResource Include="Spe\Binary\remainderf4.bin" />
     <None Include="SPU.cd" />
   </ItemGroup>
   <ItemGroup>

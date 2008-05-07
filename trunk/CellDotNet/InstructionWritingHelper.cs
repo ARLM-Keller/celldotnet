@@ -22,11 +22,6 @@ namespace CellDotNet
 			_writer = writer;
 		}
 
-		public VirtualRegister WriteCsflt(SpuInstructionWriter writer, VirtualRegister vrleft)
-		{
-			return writer.WriteCsflt(vrleft, 155);
-		}
-
 		public VirtualRegister WriteCflts(SpuInstructionWriter writer, VirtualRegister vrleft)
 		{
 			return writer.WriteCflts(vrleft, 173);
@@ -138,6 +133,15 @@ namespace CellDotNet
 			return null;
 		}
 
+		public void WriteMethodCall(SpuRoutine routine, IList<VirtualRegister> arguments)
+		{
+			// Move parameters into hardware registers.
+			for (int i = 0; i < arguments.Count; i++)
+				_writer.WriteMove(arguments[i], HardwareRegister.GetHardwareArgumentRegister(i));
+
+			_writer.WriteBrsl(routine);
+		}
+
 		public VirtualRegister WriteMethodCall(MethodCallInstruction callInst, List<VirtualRegister> childregs)
 		{
 			SpuRoutine target = callInst.TargetRoutine;
@@ -206,12 +210,12 @@ namespace CellDotNet
 			return array;
 		}
 
-		public void WriteZeroMemory(VirtualRegister target, int quadwordCount)
+		public void WriteZeroMemory(VirtualRegister address, int quadwordCount)
 		{
 			VirtualRegister zero = _writer.WriteIl(0);
 			for (int i = 0; i < quadwordCount; i++)
 			{
-				_writer.WriteStqd(zero, target, i);
+				_writer.WriteStqd(zero, address, i);
 			}
 		}
 
@@ -219,7 +223,6 @@ namespace CellDotNet
 		{
 			Utilities.AssertArgument(refType.CliType == CliType.ValueType || refType.IndirectionLevel == 1, "refType.IndirectionLevel != 1");
 
-			//			int byteoffset;
 			switch (refType.Dereference().CliType)
 			{
 				case CliType.ValueType:
@@ -237,34 +240,34 @@ namespace CellDotNet
 				fieldtype.CliType == CliType.ValueType)
 				throw new NotSupportedException("Only simple field types are supported.");
 
-			if (fieldtype != StackTypeDescription.Int32Vector && fieldtype != StackTypeDescription.Float32Vector)
-				if (fieldtype.IndirectionLevel != 1 && fieldtype.NumericSize != CliNumericSize.FourBytes)
-					throw new NotSupportedException("Only four-byte fields are supported.");
+			if (!fieldtype.IsImmutableSingleRegisterType)
+			{
+				if (fieldtype.IndirectionLevel != 1 && fieldtype.NumericSize != CliNumericSize.FourBytes && fieldtype.NumericSize != CliNumericSize.EightBytes)
+					throw new NotSupportedException("Only four- and eight-byte fields are supported.");
+			}
 
 			if (fieldtype.CliType == CliType.ObjectType)
 				valuesize = 4;
 			else
 				valuesize = (int)fieldtype.NumericSize;
 
-			// We don't do unaligned.
-			if (fieldtype == StackTypeDescription.Int32Vector || fieldtype == StackTypeDescription.Float32Vector)
+			if (fieldtype.IsImmutableSingleRegisterType)
 			{
-				// Asumes minnimum 8 byte alignment.
 				if (byteoffset % 4 != 0)
 					throw new NotSupportedException();
 			}
 			else
 			{
+				// We don't do unaligned.
 				if (byteoffset % valuesize != 0)
 					throw new NotSupportedException();
 			}
+
 			qwoffset = byteoffset / 16;
 			byteoffset = (byteoffset % 16);
-			//			wordoffset = (byteoffset % 16) / 4;
 		}
 
-			public VirtualRegister GenerateSpuInstructionMethod(
-				SpuInstructionWriter writer, MethodCallInstruction inst, List<VirtualRegister> childregs)
+		public VirtualRegister GenerateSpuInstructionMethod(SpuInstructionWriter writer, MethodCallInstruction inst, List<VirtualRegister> childregs)
 		{
 			MethodBase method = inst.IntrinsicMethod;
 			ParameterInfo[] parr = method.GetParameters();

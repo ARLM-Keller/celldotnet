@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -32,6 +33,7 @@ using System.Text;
 using CellDotNet.Intermediate;
 using CellDotNet.Spe;
 using System.Linq;
+using JetBrains.Annotations;
 
 namespace CellDotNet
 {
@@ -58,7 +60,7 @@ namespace CellDotNet
 
 		private int _totalCodeSize = -1;
 
-		private List<SpuDynamicRoutine> _spuRoutines;
+		private List<SpuRoutine> _spuRoutines;
 		private RegisterSizedObject _returnValueLocation;
 		private int[] _emittedCode;
 		private DataObject _argumentArea;
@@ -88,7 +90,7 @@ namespace CellDotNet
 
 		internal ICollection<MethodCompiler> Methods
 		{
-			get { return _methods.GetMethodCompilers(); }
+			get { return _methods.Values.OfType<MethodCompiler>().ToList(); }
 		}
 
 		public CompileContext(MethodInfo entryPoint)
@@ -252,8 +254,8 @@ namespace CellDotNet
 				MethodCompiler mc = owa as MethodCompiler;
 				if (mc != null)
 					mc.PerformProcessing(MethodCompileState.S8AddressPatchingDone);
-				else if (owa is SpuDynamicRoutine)
-					((SpuDynamicRoutine) owa).PerformAddressPatching();
+				else if (owa is SpuRoutine)
+					((SpuRoutine) owa).PerformAddressPatching();
 			}
 			
 
@@ -264,7 +266,7 @@ namespace CellDotNet
 		/// Returns a list of infrastructure SPU routines, including the initalization code.
 		/// </summary>
 		/// <returns></returns>
-		private List<SpuDynamicRoutine> GetSpuRoutines()
+		private List<SpuRoutine> GetSpuRoutines()
 		{
 			Utilities.Assert(_spuRoutines != null, "_spuRoutines != null");
 			return _spuRoutines;
@@ -284,7 +286,7 @@ namespace CellDotNet
 
 			_argumentArea = DataObject.FromQuadWords(EntryPoint.Parameters.Count, "ArgumentArea");
 
-			_spuRoutines = new List<SpuDynamicRoutine>();
+			_spuRoutines = new List<SpuRoutine>();
 			SpuInitializer init = new SpuInitializer(EntryPoint, _returnValueLocation,
 				_argumentArea, EntryPoint.Parameters.Count,
 				_specialSpeObjects.StackPointerObject,
@@ -307,7 +309,7 @@ namespace CellDotNet
 			var all = new List<ObjectWithAddress>();
 			all.AddRange(GetSpuRoutines().Cast<ObjectWithAddress>());
 			all.AddRange(_specialSpeObjects.GetAllObjectsWithStorage());
-			all.AddRange(Methods.Cast<ObjectWithAddress>());
+			all.AddRange(_methods.Values.Cast<ObjectWithAddress>());
 
 			// Data at the end.
 			if (_returnValueLocation != null)
@@ -328,7 +330,7 @@ namespace CellDotNet
 
 			List<ObjectWithAddress> allObjectsWithStorage = GetAllObjectsWithStorage();
 			_emittedCode = new int[Utilities.Align16(_totalCodeSize) / 4];
-			CopyCode(_emittedCode, allObjectsWithStorage.OfType<SpuDynamicRoutine>().ToList());
+			CopyCode(_emittedCode, allObjectsWithStorage.OfType<SpuRoutine>().ToList());
 
 			// Initialize memory allocation.
 			{
@@ -630,6 +632,26 @@ namespace CellDotNet
 				{
 					routine = LibMan.GetMethod((MethodInfo) method);
 				}
+				else if (method.IsDefined(typeof(SpeResourceAttribute), false))
+				{
+					// TODO handle multiple usages better.
+					object[] attributes = method.GetCustomAttributes(typeof(SpeResourceAttribute), false);
+					SpeResourceAttribute info = (SpeResourceAttribute)attributes[0];
+					string name = "Binary." + info.ResourceName + ".bin";
+					byte[] code;
+					using (var stream = GetType().Assembly.GetManifestResourceStream(typeof(MethodCompiler), name))
+					{
+						Utilities.AssertNotNull(stream, "stream");
+						Utilities.Assert(stream.Length > 0, "stream.Length > 0");
+						code = new byte[stream.Length];
+						stream.Read(code, 0, (int)stream.Length);
+					}
+					routine = new BlobRoutine(info.ResourceName, (MethodInfo)method, code);
+
+//					_routines.Add(methodkey, routine);
+
+					_methods.Add(methodkey, routine);
+				}
 				else
 				{
 					routine = CreateMethodCompiler(method, methodkey, instructionsToPatch, methodsToCompile);
@@ -711,7 +733,7 @@ namespace CellDotNet
 			return false;
 		}
 
-		readonly MethodSet _methods = new MethodSet();
+		readonly Dictionary<string, SpuRoutine> _methods = new Dictionary<string, SpuRoutine>();
 
 		/// <summary>
 		/// Creates a <see cref="MethodCompiler"/> from <paramref name="method"/> while 
@@ -813,11 +835,11 @@ namespace CellDotNet
 			}
 		}
 
-		static internal void CopyCode(int[] targetBuffer, ICollection<SpuDynamicRoutine> objects)
+		static internal void CopyCode(int[] targetBuffer, ICollection<SpuRoutine> objects)
 		{
 			Set<int> usedOffsets = new Set<int>();
 
-			foreach (SpuDynamicRoutine routine in objects)
+			foreach (SpuRoutine routine in objects)
 			{
 				int[] code;
 				try
@@ -1077,6 +1099,75 @@ main:
 			Buffer.BlockCopy(argmem, 0, code, ArgumentArea.Offset, argmem.Length);
 
 			return code;
+		}
+	}
+
+	[AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
+	internal sealed class SpeResourceAttribute : Attribute
+	{
+		public SpeResourceAttribute(string resourceName)
+		{
+			ResourceName = resourceName;
+		}
+
+		public string ResourceName { get; private set; }
+	}
+
+	class BlobRoutine : SpuRoutine
+	{
+		private readonly int[] _code;
+		private MethodInfo _methodinfo;
+		private readonly ReadOnlyCollection<MethodParameter> _parameters;
+		private readonly StackTypeDescription _returnType;
+
+		public BlobRoutine([NotNull] string name, [NotNull] MethodInfo methodinfo, [NotNull] byte[] code)
+		{
+			_code = new int[code.Length / 4];
+			Buffer.BlockCopy(code, 0, _code, 0, code.Length);
+
+			// TODO swap bytes if on little endian so that code dump works.
+
+			var i = 0;
+			List<MethodParameter> parlist = new List<MethodParameter>();
+			foreach (ParameterInfo pi in methodinfo.GetParameters())
+			{
+				Utilities.Assert(pi.Position == i - ((methodinfo.CallingConvention & CallingConventions.HasThis) != 0 ? 1 : 0), "pi.Index == i");
+				i++;
+
+				parlist.Add(new MethodParameter(pi, new TypeDeriver().GetStackTypeDescription(pi.ParameterType)));
+			}
+			_parameters = new ReadOnlyCollection<MethodParameter>(parlist);
+
+
+			_returnType = new TypeDeriver().GetStackTypeDescription(methodinfo.ReturnType);
+
+		}
+
+
+		public override ReadOnlyCollection<MethodParameter> Parameters
+		{
+			get { return _parameters; }
+		}
+
+		public override StackTypeDescription ReturnType
+		{
+			get { return _returnType; }
+		}
+
+		public override int Size
+		{
+			get { return _code.Length*4; }
+		}
+
+		public override int[] Emit()
+		{
+			return _code;
+		}
+
+		public override void PerformAddressPatching()
+		{
+			// Nothing.
+//				throw new NotImplementedException();
 		}
 	}
 }
