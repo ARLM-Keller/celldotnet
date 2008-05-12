@@ -28,19 +28,19 @@ namespace CellDotNet.Spe
 	sealed class ObjectOffset : ObjectWithAddress
 	{
 		private readonly ObjectWithAddress _parent;
-		private readonly int _offset;
+		private readonly int _offsetFromParent;
 
-		public ObjectOffset(ObjectWithAddress parent, int offset)
+		public ObjectOffset(ObjectWithAddress parent, int offsetFromParent)
 		{
 			_parent = parent;
-			_offset = offset;
+			_offsetFromParent = offsetFromParent;
 		}
 
 		public override int Offset
 		{
 			get
 			{
-				return _parent.Offset + _offset;
+				return _parent.Offset + OffsetFromParent;
 			}
 			set { throw new InvalidOperationException("This is not an independant object."); }
 		}
@@ -48,6 +48,11 @@ namespace CellDotNet.Spe
 		public override int Size
 		{
 			get { throw new InvalidOperationException(); }
+		}
+
+		public int OffsetFromParent
+		{
+			get { return _offsetFromParent; }
 		}
 	}
 }

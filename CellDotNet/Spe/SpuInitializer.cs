@@ -29,7 +29,7 @@ namespace CellDotNet.Spe
 	/// <summary>
 	/// Used to generate code to initialize an spu and call the initial method.
 	/// </summary>
-	class SpuInitializer : SpuRoutine
+	sealed class SpuInitializer : SpuRoutine
 	{
 		private SpuInstructionWriter _writer = new SpuInstructionWriter();
 		private bool _isPatched;

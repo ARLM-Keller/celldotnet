@@ -416,6 +416,10 @@ namespace CellDotNet
 						VirtualRegister cwdreg = writer.WriteCwd(index, 0);
 						return writer.WriteShufb(childregs[0], childregs[1], cwdreg);
 					}
+				case SpuIntrinsicMethod.Vector_GetDWord0:
+					return childregs[0];
+				case SpuIntrinsicMethod.Vector_GetDWord1:
+					return writer.WriteRotqbyi(childregs[0], 8);
 				case SpuIntrinsicMethod.Int_Equals:
 					{
 						VirtualRegister r1 = writer.WriteCeq(childregs[0], childregs[1]);
@@ -467,10 +471,28 @@ namespace CellDotNet
 
 						return v012_3;
 					}
+				case SpuIntrinsicMethod.CombineTwoDWords:
+					{
+						VirtualRegister w0 = childregs[0];
+						VirtualRegister w1 = writer.WriteRotqbyi(childregs[1], 8);
+
+						VirtualRegister merge0_1_mask = writer.WriteFsmbi(0x00ff);
+						VirtualRegister v0_1 = writer.WriteSelb(w0, w1, merge0_1_mask);
+
+						return v0_1;
+					}
 				case SpuIntrinsicMethod.SplatWord:
 					{
 						VirtualRegister pattern = writer.WriteIla(0x00010203);
 						return writer.WriteShufb(childregs[0], childregs[0], pattern);
+					}
+				case SpuIntrinsicMethod.SplatDWord:
+					{
+						VirtualRegister w0 = childregs[0];
+						VirtualRegister w1 = writer.WriteRotqbyi(w0, 8);
+						VirtualRegister maskinput = writer.WriteIl(0x3);
+						var mask = writer.WriteFsm(maskinput);
+						return writer.WriteSelb(w0, w1, mask);
 					}
 				case SpuIntrinsicMethod.CompareGreaterThanIntAndSelect:
 					{
@@ -528,7 +550,7 @@ namespace CellDotNet
 						return writer.WriteCsflt(childregs[0], 155);
 					}
 				default:
-					throw new ArgumentException();
+					throw new ArgumentException(method.ToString());
 			}
 		}
 

@@ -35,7 +35,7 @@ namespace CellDotNet.Spe
 	/// </summary>
 	class DataObject : ObjectWithAddress
 	{
-		private readonly int _size;
+		private int _size;
 
 		public DataObject(int size, string name) : base(name)
 		{
@@ -94,6 +94,11 @@ namespace CellDotNet.Spe
 			var o = FromQuadWords(count, name);
 			o.SetValue(data);
 			return o;
+		}
+
+		public void Resize(int size)
+		{
+			_size = size;
 		}
 	}
 }

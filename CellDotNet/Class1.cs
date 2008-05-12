@@ -23,14 +23,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
-using CellDotNet.Intermediate;
+using System.Text.RegularExpressions;
 using CellDotNet.Spe;
+using System.Linq;
 
 namespace CellDotNet
 {
@@ -55,20 +53,150 @@ namespace CellDotNet
 
 		private static void RunRasmus()
 		{
-//			new ObjectModelTest().TestStruct_Double();
-//			Func<int, double> del = i => i;
-//			const int iconst = 223456789;
-//			double res1 = (double) SpeContext.UnitTestRunProgram(del, iconst);
-//			double res2 = Convert.ToDouble(Convert.ToSingle(iconst)); 
-//			Console.WriteLine("orig: {0} spe: {1}, ppe: {2}", iconst, res1, res2);
+			GeneratePatchCode(@"\\10.0.3.13\linux\codetests\dp.s", @"C:\Temp\pstext\out.cs");
+		}
+		
 
-//			Console.WriteLine("hejsa");
-			new SpeContext();
-			int size = new SpeContext().LocalStorageSize;
-//			int size = 234;
-			Console.WriteLine(size);
-//			new ILOpCodeE	xecutionTest().Test_ConvI4_R8();
-//			new SimpleProgramsTest().TestIntRefArgument();
+		static void GeneratePatchCode(string fileWithDisassembly, string outputFile)
+		{
+			Dictionary<int, QuadWord> constants = new Dictionary<int, QuadWord>();
+
+			var instRegex = new Regex(@"^\s+([0-9a-f]+):\s*(\w\w \w\w \w\w \w\w)");
+
+			Console.WriteLine("Reading constants...");
+			{
+				uint i1 = 0, i2 = 0, i3 = 0;
+				int qwStartAddress = 0;
+				int linenum = 0;
+				foreach (string line in File.ReadAllLines(fileWithDisassembly))
+				{
+					linenum++;
+					var match = instRegex.Match(line);
+					if (!match.Success)
+						continue;
+
+					int address = Convert.ToInt32(match.Groups[1].Value, 16);
+					uint hex = Convert.ToUInt32(match.Groups[2].Value.Replace(" ", ""), 16);
+
+					switch (address % 16)
+					{
+						case 0:
+							i1 = hex;
+							qwStartAddress = address;
+							break;
+						case 4:
+							i2 = hex;
+							break;
+						case 8:
+							i3 = hex;
+							break;
+						case 12:
+							if (address == qwStartAddress + 12)
+							{
+								uint i4 = hex;
+								QuadWord qw = new QuadWord(i1, i2, i3, i4);
+								constants.Add(qwStartAddress, qw);
+							}
+							break;
+						default:
+							throw new Exception();
+					}
+					
+				}
+				
+			}
+
+			var desiredFunctions = new HashSet<string>(StringComparer.Ordinal)
+			                       	{
+			                       		"cosd2", "sind2", "tand2",
+			                       		"acosd2", "asind2", "atand2", "atan2d2",
+			                       		"cosf4", "sinf4", "tanf4",
+			                       		"acosf4", "asinf4", "atanf4", "atan2f4",
+										"divd2"
+			                       	};
+
+			Console.WriteLine("Reading disassembly...");
+			{
+				var headerRegex = new Regex(@"^([0-9a-f]{8}) <(\w+)>:");
+				var lqrRegex = new Regex(@"^\s+([0-9a-f]+):.+\slqr\s\$(\d+).+#\s*([0-9a-f]+)");
+				int lineno = 0;
+
+				string currentfunctionname = null;
+				int? currentfunctionaddress = null;
+				File.Delete(outputFile);
+
+				var sw = new StringWriter();
+				List<int> currentfunctionbody = null;
+
+				foreach (string line in File.ReadAllLines(fileWithDisassembly))
+				{
+					lineno++;
+
+					if (line == "")
+						continue;
+
+					var h = headerRegex.Match(line);
+					var inst = lqrRegex.Match(line);
+
+					if (h.Success)
+					{
+						if (currentfunctionbody != null && !string.IsNullOrEmpty(currentfunctionname))
+						{
+							int[] arr = currentfunctionbody.ToArray();
+							Utilities.HostToBigEndian(arr);
+							byte[] codebytes = new byte[arr.Length * 4];
+							Buffer.BlockCopy(arr, 0, codebytes, 0, codebytes.Length);
+							File.WriteAllBytes(Path.Combine(Path.GetDirectoryName(outputFile), currentfunctionname + ".bin"), codebytes);
+						}
+
+						currentfunctionname = h.Groups[2].Value;
+						currentfunctionaddress = Convert.ToInt32(h.Groups[1].Value, 16);
+						string outputline = string.Format(@"
+					// {0} ", currentfunctionname);
+
+						sw.WriteLine();
+						sw.Write(outputline);
+
+						if (desiredFunctions.Contains(currentfunctionname))
+							currentfunctionbody = new List<int>();
+						else
+							currentfunctionbody = null;
+					}
+					else if (inst.Success)
+					{
+						if (string.IsNullOrEmpty(currentfunctionname) || currentfunctionaddress == null)
+							throw new Exception("xxasdf");
+
+						if (!desiredFunctions.Contains(currentfunctionname))
+							continue;
+
+						int instaddress = Convert.ToInt32(inst.Groups[1].Value, 16);
+						int regnum = Convert.ToInt32(inst.Groups[2].Value);
+						int constaddress = Convert.ToInt32(inst.Groups[3].Value, 16);
+						QuadWord fs = constants[constaddress];
+
+						int instoffset = instaddress - currentfunctionaddress.Value;
+						string outputline = string.Format(@"
+					{0}.Seek(0x{1:x});
+					{0}.Writer.WriteLoad(HardwareRegister.GetHardwareRegister({2}), RegisterConstant({3})); // {4}", 
+							currentfunctionname, instoffset, regnum, 
+							"0x" + fs.I1.ToString("x") + ", 0x" + fs.I2.ToString("x") + ", 0x" + fs.I3.ToString("x") + ", 0x" + fs.I4.ToString("x"), 
+							line);
+
+						sw.WriteLine();
+						sw.Write(outputline);
+					}
+
+					var match2 = instRegex.Match(line);
+					if (match2.Success && currentfunctionbody != null)
+					{
+						uint hex = Convert.ToUInt32(match2.Groups[2].Value.Replace(" ", ""), 16);
+						currentfunctionbody.Add((int) hex);
+					}
+				}
+
+				File.WriteAllText(outputFile, sw.GetStringBuilder().ToString());
+			}
 		}
 	}
 }

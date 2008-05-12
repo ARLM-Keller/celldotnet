@@ -55,9 +55,6 @@ namespace CellDotNet.Spe
 
 			Int32Vector result = (Int32Vector)SpeContext.UnitTestRunProgram(del, arg);
 
-//			Console.WriteLine("{0}", arg);
-//			Console.WriteLine("Correct: {0} result: {1}", corret, result);
-
 			AreEqual(corret, result);
 		}
 
@@ -78,9 +75,6 @@ namespace CellDotNet.Spe
 			Float32Vector corret = del(arg);
 
 			Float32Vector result = (Float32Vector)SpeContext.UnitTestRunProgram(del, arg);
-
-			//			Console.WriteLine("{0}", arg);
-			//			Console.WriteLine("Correct: {0} result: {1}", corret, result);
 
 			AreEqual(corret, result);
 		}
@@ -105,9 +99,6 @@ namespace CellDotNet.Spe
 
 			Int32Vector result = (Int32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2, arg3, arg4);
 
-//			Console.WriteLine("{0} {1} {2} {3}", arg1, arg2, arg3, arg4);
-//			Console.WriteLine("Correct: {0} result: {1}", correct, result);
-
 			AreEqual(correct, result);
 		}
 
@@ -130,9 +121,6 @@ namespace CellDotNet.Spe
 			Float32Vector correct = del(arg1, arg2, arg3, arg4);
 
 			Float32Vector result = (Float32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2, arg3, arg4);
-
-//			Console.WriteLine("{0} {1} {2} {3}", arg1, arg2, arg3, arg4);
-//			Console.WriteLine("Correct: {0} result: {1}", corret, result);
 
 			AreEqual(correct, result);
 		}
@@ -157,9 +145,6 @@ namespace CellDotNet.Spe
 
 			Int32Vector result = (Int32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2, arg3, arg4);
 
-//			Console.WriteLine("{0} {1} {2} {3}", arg1, arg2, arg3, arg4);
-//			Console.WriteLine("Correct: {0} result: {1}", correct, result);
-
 			AreEqual(correct, result);
 		}
 
@@ -183,9 +168,6 @@ namespace CellDotNet.Spe
 
 			Float32Vector result = (Float32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2, arg3, arg4);
 
-//			Console.WriteLine("{0} {1} {2} {3}", arg1, arg2, arg3, arg4);
-//			Console.WriteLine("Correct: {0} result: {1}", correct, result);
-
 			AreEqual(correct, result);
 		}
 
@@ -208,9 +190,6 @@ namespace CellDotNet.Spe
 			Int32Vector correct = del(arg1, arg2, arg3, arg4);
 
 			Int32Vector result = (Int32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2, arg3, arg4);
-
-//			Console.WriteLine("{0} {1} {2} {3}", arg1, arg2, arg3, arg4);
-//			Console.WriteLine("Correct: {0} result: {1}", correct, result);
 
 			AreEqual(correct, result);
 		}
@@ -345,7 +324,7 @@ namespace CellDotNet.Spe
 			Func<Float32Vector, Float32Vector> del = v =>  SpuMath.Sin(v);
 
 			var arg = new Float32Vector(1, 2, 3, 4);
-			AreWithin(del(arg), (Float32Vector) SpeContext.UnitTestRunProgram(del, arg), 0.00001f);
+			AreWithinLimits(del(arg), (Float32Vector) SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
 		}
 
 		[Test]
@@ -354,7 +333,7 @@ namespace CellDotNet.Spe
 			Func<Float32Vector, Float32Vector> del = v =>  SpuMath.Cos(v);
 
 			var arg = new Float32Vector(1, 2, 3, 4);
-			AreWithin(del(arg), (Float32Vector) SpeContext.UnitTestRunProgram(del, arg), 0.00001f);
+			AreWithinLimits(del(arg), (Float32Vector) SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
 		}
 
 		[Test]
@@ -363,7 +342,7 @@ namespace CellDotNet.Spe
 			Func<Float32Vector, Float32Vector> del = v =>  SpuMath.Tan(v);
 
 			var arg = new Float32Vector(1, 2, 3, 4);
-			AreWithin(del(arg), (Float32Vector) SpeContext.UnitTestRunProgram(del, arg), 0.00001f);
+			AreWithinLimits(del(arg), (Float32Vector) SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
 		}
 
 		[Test]
@@ -371,8 +350,10 @@ namespace CellDotNet.Spe
 		{
 			Func<Float32Vector, Float32Vector> del = v => SpuMath.Asin(v);
 
-			var arg = new Float32Vector(-.5f, 0, .6f, 2);
-			AreWithin(del(arg), (Float32Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f);
+			var arg = new Float32Vector(-.5f, 0, .6f, .9f);
+			Float32Vector expected = del(arg);
+			Float32Vector actual = (Float32Vector)SpeContext.UnitTestRunProgram(del, arg);
+			AreWithinLimits(expected, actual, 0.00001f, null);
 		}
 
 		[Test]
@@ -380,26 +361,91 @@ namespace CellDotNet.Spe
 		{
 			Func<Float32Vector, Float32Vector> del = v => SpuMath.Acos(v);
 
-			var arg = new Float32Vector(-.5f, 0, .6f, 2);
-			AreWithin(del(arg), (Float32Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f);
+			var arg = new Float32Vector(-.5f, 0, .6f, .9f);
+			AreWithinLimits(del(arg), (Float32Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorFloat_ATan()
+		public void TestSpuMath_VectorFloat_Atan()
 		{
 			Func<Float32Vector, Float32Vector> del = v =>  SpuMath.Atan(v);
 
 			var arg = new Float32Vector(-.5f, 0, .6f, 2);
-			AreWithin(del(arg), (Float32Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f);
+			AreWithinLimits(del(arg), (Float32Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
 		}
 
-		void AreWithin(Float32Vector expected, Float32Vector actual, float error)
+		[Test]
+		public void TestSpuMath_VectorFloat_Atan2()
 		{
-			var diff = actual - expected;
+			Func<Float32Vector, Float32Vector, Float32Vector> del = (x, y) => SpuMath.Atan2(x, y);
 
-			if (Math.Abs(diff.E1) > error || Math.Abs(diff.E2) > error || Math.Abs(diff.E3) > error || Math.Abs(diff.E4) > error)
-				AreEqual(expected, actual, "Should be equal within " + error);
+			var arg1 = new Float32Vector(-.5f, 0, .6f, 2);
+			var arg2 = new Float32Vector(.6f, 2, -.5f, 0);
+			AreWithinLimits(del(arg1, arg2), (Float32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2), 0.00001f, null);
+		}
 
+		[Test]
+		public void TestSpuMath_VectorDouble_Sin()
+		{
+			Func<Float64Vector, Float64Vector> del = v => SpuMath.Sin(v);
+
+			var arg = new Float64Vector(1, 2);
+			AreWithinLimits(del(arg), (Float64Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+		}
+
+		[Test]
+		public void TestSpuMath_VectorDouble_Cos()
+		{
+			Func<Float64Vector, Float64Vector> del = v => SpuMath.Cos(v);
+
+			var arg = new Float64Vector(1, 2);
+			AreWithinLimits(del(arg), (Float64Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001d, null);
+		}
+
+		[Test]
+		public void TestSpuMath_VectorDouble_Tan()
+		{
+			Func<Float64Vector, Float64Vector> del = v => SpuMath.Tan(v);
+
+			var arg = new Float64Vector(1, 2);
+			AreWithinLimits(del(arg), (Float64Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+		}
+
+		[Test]
+		public void TestSpuMath_VectorDouble_Asin()
+		{
+			Func<Float64Vector, Float64Vector> del = v => SpuMath.Asin(v);
+
+			var arg = new Float64Vector(-.5f, .6f);
+			AreWithinLimits(del(arg), (Float64Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+		}
+
+		[Test]
+		public void TestSpuMath_VectorDouble_Acos()
+		{
+			Func<Float64Vector, Float64Vector> del = v => SpuMath.Acos(v);
+
+			var arg = new Float64Vector(-.5f, .6f);
+			AreWithinLimits(del(arg), (Float64Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+		}
+
+		[Test]
+		public void TestSpuMath_VectorDouble_Atan()
+		{
+			Func<Float64Vector, Float64Vector> del = v => SpuMath.Atan(v);
+
+			var arg = new Float64Vector(-.5f, .6f);
+			AreWithinLimits(del(arg), (Float64Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+		}
+
+		[Test]
+		public void TestSpuMath_VectorDouble_Atan2()
+		{
+			Func<Float64Vector, Float64Vector, Float64Vector> del = (x, y) => SpuMath.Atan2(x, y);
+
+			var arg1 = new Float64Vector(-.5f, .6f);
+			var arg2 = new Float64Vector(.6f, -.5f);
+			AreWithinLimits(del(arg1, arg2), (Float64Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2), 0.00001f, null);
 		}
 	}
 }

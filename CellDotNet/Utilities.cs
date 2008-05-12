@@ -101,45 +101,6 @@ namespace CellDotNet
 				throw new DebugAssertException();
 		}
 
-		/// <summary>
-		/// Note, if <paramref name="target" /> &lt; <paramref name="error"/> then it is sufficient for <paramref name="value"/> to be within +/- <paramref name="error"/> from 0.
-		/// </summary>
-		static public void AssertWithinLimits(float value, float target, float error, string message)
-		{
-			if(!(Math.Abs(target) < error && Math.Abs(value) < error))
-				if(Math.Abs(value) > Math.Abs(target) * (1 + error) || Math.Abs(value) < Math.Abs(target) * (1 - error) || Math.Sign(value) != Math.Sign(target))
-					throw new DebugAssertException(message);
-		}
-
-		/// <summary>
-		/// Note, if <paramref name="target" /> &lt; <paramref name="error"/> then it is sufficient for <paramref name="value"/> to be within +/- <paramref name="error"/> from 0.
-		/// </summary>
-		static public void AssertWithinLimits(double value, double target, double error, string message)
-		{
-			if(!(Math.Abs(target) < error && Math.Abs(value) < error))
-				if(Math.Abs(value) > Math.Abs(target) * (1 + error) || Math.Abs(value) < Math.Abs(target) * (1 - error) || Math.Sign(value) != Math.Sign(target))
-					throw new DebugAssertException(message);
-		}
-
-		static public void AssertWithinLimits(Float32Vector value, Float32Vector target, float error, string message)
-		{
-			if (!(Math.Abs(target.E1) < error && Math.Abs(value.E1) < error))
-				if (Math.Abs(value.E1) > Math.Abs(target.E1) * (1 + error) || Math.Abs(value.E1) < Math.Abs(target.E1) * (1 - error) || Math.Sign(value.E1) != Math.Sign(target.E1))
-					throw new DebugAssertException(message);
-
-			if (!(Math.Abs(target.E2) < error && Math.Abs(value.E2) < error))
-				if (Math.Abs(value.E2) > Math.Abs(target.E2) * (1 + error) || Math.Abs(value.E2) < Math.Abs(target.E2) * (1 - error) || Math.Sign(value.E2) != Math.Sign(target.E2))
-					throw new DebugAssertException(message);
-
-			if (!(Math.Abs(target.E3) < error && Math.Abs(value.E3) < error))
-				if (Math.Abs(value.E3) > Math.Abs(target.E3) * (1 + error) || Math.Abs(value.E3) < Math.Abs(target.E3) * (1 - error) || Math.Sign(value.E3) != Math.Sign(target.E3))
-					throw new DebugAssertException(message);
-
-			if (!(Math.Abs(target.E4) < error && Math.Abs(value.E4) < error))
-				if (Math.Abs(value.E4) > Math.Abs(target.E4) * (1 + error) || Math.Abs(value.E4) < Math.Abs(target.E4) * (1 - error) || Math.Sign(value.E4) != Math.Sign(target.E4))
-					throw new DebugAssertException(message);
-		}
-
 		static public void AssertOperation(bool condition, string message)
 		{
 			if (!condition)
@@ -344,6 +305,32 @@ namespace CellDotNet
 		static internal unsafe long ReinterpretAsLong(double value)
 		{
 			return *((long*)&value);
+		}
+
+		static public void BigEndianToHost(int[] code)
+		{
+			if (!BitConverter.IsLittleEndian)
+				return;
+
+			for (int i = 0; i < code.Length; i++)
+			{
+				uint w = (uint) code[i];
+				uint w2 = (w >> 24) | ((w >> 8) & 0xff00) | ((w << 8) & 0xff0000) | (w << 24);
+				code[i] = (int) w2;
+			}
+		}
+
+		static public void HostToBigEndian(int[] code)
+		{
+			if (!BitConverter.IsLittleEndian)
+				return;
+
+			for (int i = 0; i < code.Length; i++)
+			{
+				uint w = (uint) code[i];
+				uint w2 = (w >> 24) | ((w >> 8) & 0xff00) | ((w << 8) & 0xff0000) | (w << 24);
+				code[i] = (int) w2;
+			}
 		}
 	}
 }

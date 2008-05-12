@@ -34,7 +34,7 @@ namespace CellDotNet.Spe
 	/// </summary>
 	class Marshaler
 	{
-		List<KeyValuePair<int, object>> _objects = new List<KeyValuePair<int, object>>();
+		readonly List<KeyValuePair<int, object>> _objects = new List<KeyValuePair<int, object>>();
 		private int _nextObjectKey = 0xf000000;
 
 		public byte[] GetImage(object[] arguments)

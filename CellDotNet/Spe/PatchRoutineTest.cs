@@ -45,7 +45,7 @@ namespace CellDotNet.Spe
 				rawcode[i] = rand.Next();
 
 			// Make some changes.
-			PatchRoutine r = new PatchRoutine(rawcode);
+			PatchRoutine r = new PatchRoutine("xx", rawcode);
 			ObjectWithAddress obj = new DataObject(16);
 			r.Seek(0x10);
 			r.Writer.WriteRelativeAddressInstruction(SpuOpCode.brsl, HardwareRegister.LR, obj);
@@ -111,7 +111,7 @@ namespace CellDotNet.Spe
 				rawcode[i] = rand.Next();
 
 			// Make some changes.
-			PatchRoutine r = new PatchRoutine(rawcode);
+			PatchRoutine r = new PatchRoutine("wwerew", rawcode);
 			ObjectWithAddress obj = new DataObject(16);
 			r.Seek(0x10);
 			r.Writer.WriteRelativeAddressInstruction(SpuOpCode.brsl, HardwareRegister.LR, obj);
@@ -129,7 +129,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestNoCode()
 		{
-			PatchRoutine r = new PatchRoutine(new int[0]);
+			PatchRoutine r = new PatchRoutine("welkrj", new int[0]);
 			r.PerformAddressPatching();
 			int[] code = r.Emit();
 			AreEqual(new int[0], code);
@@ -139,7 +139,7 @@ namespace CellDotNet.Spe
 		public void TestNoModifications()
 		{
 			int[] rawcode = new int[] {2059824};
-			PatchRoutine r = new PatchRoutine(rawcode);
+			PatchRoutine r = new PatchRoutine("asdf", rawcode);
 			r.PerformAddressPatching();
 			int[] code = r.Emit();
 			AreEqual(rawcode, code);

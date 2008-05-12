@@ -113,4 +113,16 @@ namespace CellDotNet.Spe
 		  StreamingContext context)
 			: base(info, context) { }
 	}
+
+	[Serializable]
+	public class MethodResolveException : Exception
+	{
+		public MethodResolveException() { }
+		public MethodResolveException(string message) : base(message) { }
+		public MethodResolveException(string message, Exception inner) : base(message, inner) { }
+		protected MethodResolveException(
+		  SerializationInfo info,
+		  StreamingContext context)
+			: base(info, context) { }
+	}
 }

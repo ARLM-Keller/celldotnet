@@ -476,7 +476,8 @@ namespace CellDotNet.Intermediate
 			           		{typeof (float), StackTypeDescription.Float32},
 			           		{typeof (double), StackTypeDescription.Float64},
 			           		{typeof (Int32Vector), StackTypeDescription.Int32Vector},
-			           		{typeof (Float32Vector), StackTypeDescription.Float32Vector}
+			           		{typeof (Float32Vector), StackTypeDescription.Float32Vector},
+			           		{typeof (Float64Vector), StackTypeDescription.Float64Vector}
 			           	};
 
 
@@ -507,6 +508,8 @@ namespace CellDotNet.Intermediate
 				std = StackTypeDescription.Int32Vector;
 			else if(realtype == typeof(Float32Vector))
 				std = StackTypeDescription.Float32Vector;
+			else if(realtype == typeof(Float64Vector))
+				std = StackTypeDescription.Float64Vector;
 			else if (realtype == typeof(void))
 				std = StackTypeDescription.None;
 			else if (realtype.IsArray)
