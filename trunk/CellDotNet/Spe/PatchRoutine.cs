@@ -23,8 +23,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using CellDotNet.Intermediate;
 using JetBrains.Annotations;
 
 namespace CellDotNet.Spe
@@ -32,23 +35,52 @@ namespace CellDotNet.Spe
 	/// <summary>
 	/// A routine which essentially consists of a blob, but also needs a bit of address patching.
 	/// </summary>
-	class PatchRoutine : SpuRoutine
+	sealed class PatchRoutine : SpuRoutine
 	{
 		readonly int[] _code;
 		readonly List<KeyValuePair<int, int>> _offsetsAndCounts;
-		private int _totalWrittenInstructionCount = 0;
+		private int _totalWrittenInstructionCount;
 
-		public PatchRoutine([NotNull]int[] rawCode, string name) : base(name)
+		private readonly ReadOnlyCollection<MethodParameter> _parameters;
+		private readonly StackTypeDescription _returnType;
+
+		public PatchRoutine([NotNull] string name, [NotNull] MethodInfo methodinfo, [NotNull] byte[] codeInBigEndian) : base(name)
+		{
+			_code = new int[codeInBigEndian.Length / 4];
+			Buffer.BlockCopy(codeInBigEndian, 0, _code, 0, codeInBigEndian.Length);
+
+			Utilities.BigEndianToHost(_code);
+
+			var i = 0;
+			List<MethodParameter> parlist = new List<MethodParameter>();
+			foreach (ParameterInfo pi in methodinfo.GetParameters())
+			{
+				Utilities.Assert(pi.Position == i - ((methodinfo.CallingConvention & CallingConventions.HasThis) != 0 ? 1 : 0), "pi.Index == i");
+				i++;
+
+				parlist.Add(new MethodParameter(pi, new TypeDeriver().GetStackTypeDescription(pi.ParameterType)));
+			}
+			_parameters = new ReadOnlyCollection<MethodParameter>(parlist);
+			_returnType = new TypeDeriver().GetStackTypeDescription(methodinfo.ReturnType);
+
+
+			Writer = new SpuInstructionWriter();
+			Writer.BeginNewBasicBlock();
+
+			_offsetsAndCounts = new List<KeyValuePair<int, int>> { new KeyValuePair<int, int>(0, 0) };
+		}
+
+		public PatchRoutine([NotNull]string name, [NotNull] int[] rawCode) : base(name)
 		{
 			Utilities.AssertArgumentNotNull(rawCode, "rawCode");
 			_code = (int[]) rawCode.Clone();
+
+
 			Writer = new SpuInstructionWriter();
 			Writer.BeginNewBasicBlock();
 
 			_offsetsAndCounts = new List<KeyValuePair<int, int>> {new KeyValuePair<int, int>(0, 0)};
 		}
-
-		public PatchRoutine([NotNull]int[] rawCode) : this(rawCode, null) {}
 
 		public SpuInstructionWriter Writer { get; private set; }
 
@@ -118,6 +150,16 @@ namespace CellDotNet.Spe
 
 			_offsetsAndCounts[_offsetsAndCounts.Count - 1] = new KeyValuePair<int, int>(_offsetsAndCounts[_offsetsAndCounts.Count - 1].Key, prevOffsetInstCount);
 			_totalWrittenInstructionCount = currentInstCount;
+		}
+
+		public override ReadOnlyCollection<MethodParameter> Parameters
+		{
+			get { return _parameters; }
+		}
+
+		public override StackTypeDescription ReturnType
+		{
+			get { return _returnType; }
 		}
 	}
 

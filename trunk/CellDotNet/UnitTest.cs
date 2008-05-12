@@ -24,11 +24,8 @@
 #if UNITTEST
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
-using System.Text;
-using CellDotNet.Spe;
 using NUnit.Framework;
 
 
@@ -135,6 +132,56 @@ namespace CellDotNet
 				}
 			}
 			throw new InvalidOperationException("Not in nunit test.");
+		}
+
+		/// <summary>
+		/// If <paramref name="target" /> &lt; <paramref name="error"/> then it is sufficient for <paramref name="value"/> to be within +/- <paramref name="error"/> from 0.
+		/// </summary>
+		static public void AreWithinLimits(float target, float value, float error, string message)
+		{
+			if (!(Math.Abs(target) < error && Math.Abs(value) < error))
+				if (Math.Abs(value) > Math.Abs(target) * (1 + error) || Math.Abs(value) < Math.Abs(target) * (1 - error) || Math.Sign(value) != Math.Sign(target))
+					throw new DebugAssertException(message);
+		}
+
+		/// <summary>
+		/// If <paramref name="target" /> &lt; <paramref name="error"/> then it is sufficient for <paramref name="value"/> to be within +/- <paramref name="error"/> from 0.
+		/// </summary>
+		static public void AreWithinLimits(double target, double value, double error, string message)
+		{
+			if (!(Math.Abs(target) < error && Math.Abs(value) < error))
+				if (Math.Abs(value) > Math.Abs(target) * (1 + error) || Math.Abs(value) < Math.Abs(target) * (1 - error) || Math.Sign(value) != Math.Sign(target))
+					throw new DebugAssertException(message);
+		}
+
+		static public void AreWithinLimits(Float32Vector target, Float32Vector value, float error, string message)
+		{
+			if (!(Math.Abs(target.E1) < error && Math.Abs(value.E1) < error))
+				if (Math.Abs(value.E1) > Math.Abs(target.E1) * (1 + error) || Math.Abs(value.E1) < Math.Abs(target.E1) * (1 - error) || Math.Sign(value.E1) != Math.Sign(target.E1))
+					throw new DebugAssertException(message);
+
+			if (!(Math.Abs(target.E2) < error && Math.Abs(value.E2) < error))
+				if (Math.Abs(value.E2) > Math.Abs(target.E2) * (1 + error) || Math.Abs(value.E2) < Math.Abs(target.E2) * (1 - error) || Math.Sign(value.E2) != Math.Sign(target.E2))
+					throw new DebugAssertException(message);
+
+			if (!(Math.Abs(target.E3) < error && Math.Abs(value.E3) < error))
+				if (Math.Abs(value.E3) > Math.Abs(target.E3) * (1 + error) || Math.Abs(value.E3) < Math.Abs(target.E3) * (1 - error) || Math.Sign(value.E3) != Math.Sign(target.E3))
+					throw new DebugAssertException(message);
+
+			if (!(Math.Abs(target.E4) < error && Math.Abs(value.E4) < error))
+				if (Math.Abs(value.E4) > Math.Abs(target.E4) * (1 + error) || Math.Abs(value.E4) < Math.Abs(target.E4) * (1 - error) || Math.Sign(value.E4) != Math.Sign(target.E4))
+					throw new DebugAssertException(message);
+		}
+
+		static public void AreWithinLimits(Float64Vector target, Float64Vector value, double error, string message)
+		{
+			if (!(Math.Abs(target.E1) < error && Math.Abs(value.E1) < error))
+				if (Math.Abs(value.E1) > Math.Abs(target.E1) * (1 + error) || Math.Abs(value.E1) < Math.Abs(target.E1) * (1 - error) || Math.Sign(value.E1) != Math.Sign(target.E1))
+					throw new DebugAssertException(message);
+
+			if (!(Math.Abs(target.E2) < error && Math.Abs(value.E2) < error))
+				if (Math.Abs(value.E2) > Math.Abs(target.E2) * (1 + error) || Math.Abs(value.E2) < Math.Abs(target.E2) * (1 - error) || Math.Sign(value.E2) != Math.Sign(target.E2))
+					throw new DebugAssertException(message);
 		}
 	}
 }

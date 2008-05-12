@@ -129,7 +129,7 @@ namespace CellDotNet.Spe
 			AreEqual(0, cc.Methods.Count);
 			Assert.AreSame(libmethod, cc.EntryPoint);
 
-			cc.WriteAssemblyToFile("externalmethod.s", 5);
+			cc.DisassembleToFile("externalmethod.s", 5);
 
 			if (!SpeContext.HasSpeHardware)
 				return;
@@ -154,7 +154,7 @@ namespace CellDotNet.Spe
 
 			AreEqual(1, cc.Methods.Count);
 
-			cc.WriteAssemblyToFile("externalmethod.s", 5);
+			cc.DisassembleToFile("externalmethod.s", 5);
 
 			if (!SpeContext.HasSpeHardware)
 				return;

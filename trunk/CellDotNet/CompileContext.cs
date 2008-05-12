@@ -544,44 +544,7 @@ namespace CellDotNet
 			}
 		}
 
-		/// <summary>
-		/// Tracks the methods which need to be compiled and also external methods like <see cref="LibraryMethod"/> and
-		/// <see cref="PpeMethod"/>.
-		/// </summary>
-		class MethodSet
-		{
-			private readonly Dictionary<string, MethodCompiler> _methodcompilers;
-
-
-			public MethodSet()
-			{
-				_methodcompilers = new Dictionary<string, MethodCompiler>();
-			}
-
-			public void Add(string key, MethodCompiler mc)
-			{
-				_methodcompilers.Add(key, mc);
-			}
-
-			public bool TryGetValue(string methodkey, out SpuRoutine routine)
-			{
-				MethodCompiler mc;
-				if (_methodcompilers.TryGetValue(methodkey, out mc))
-				{
-					routine = mc;
-					return true;
-				}
-				routine = null;
-				return false;
-			}
-
-			public ICollection<MethodCompiler> GetMethodCompilers()
-			{
-				return _methodcompilers.Values;
-			}
-		}
-
-		readonly Set<Type> _ppeTypes = new Set<Type>();
+		readonly HashSet<Type> _ppeTypes = new HashSet<Type>();
 
 		public void AddPpeType(Type t)
 		{
@@ -610,11 +573,14 @@ namespace CellDotNet
 			}
 
 			// Compile entry point and any called methods, except PPE class methods.
-			Dictionary<string, MethodBase> methodsToCompile = new Dictionary<string, MethodBase>();
-			Dictionary<string, List<TreeInstruction>> instructionsToPatch = new Dictionary<string, List<TreeInstruction>>();
+			var methodsToCompile = new Dictionary<string, MethodBase>();
+			var instructionsToPatch = new Dictionary<string, List<TreeInstruction>>();
 			methodsToCompile.Add(CreateMethodRefKey(EntryPointMethod), EntryPointMethod);
 
 			bool isfirst = true;
+
+			_specialSpeObjects = new SpecialSpeObjects();
+
 
 			while (methodsToCompile.Count > 0)
 			{
@@ -634,21 +600,24 @@ namespace CellDotNet
 				}
 				else if (method.IsDefined(typeof(SpeResourceAttribute), false))
 				{
-					// TODO handle multiple usages better.
 					object[] attributes = method.GetCustomAttributes(typeof(SpeResourceAttribute), false);
-					SpeResourceAttribute info = (SpeResourceAttribute)attributes[0];
+					var info = (SpeResourceAttribute)attributes[0];
 					string name = "Binary." + info.ResourceName + ".bin";
+					methodkey = name; // for the case of multiple methods being attributed with the function.
 					byte[] code;
 					using (var stream = GetType().Assembly.GetManifestResourceStream(typeof(MethodCompiler), name))
 					{
+						if (stream == null)
+							throw new MethodResolveException("Cannot find method body for " + name + "."); 
+
 						Utilities.AssertNotNull(stream, "stream");
 						Utilities.Assert(stream.Length > 0, "stream.Length > 0");
 						code = new byte[stream.Length];
 						stream.Read(code, 0, (int)stream.Length);
 					}
-					routine = new BlobRoutine(info.ResourceName, (MethodInfo)method, code);
-
-//					_routines.Add(methodkey, routine);
+					routine = new PatchRoutine(info.ResourceName, (MethodInfo) method, code);
+					if (info.NeedsPatching)
+						_specialSpeObjects.MathObjects.Patch((PatchRoutine) routine);
 
 					_methods.Add(methodkey, routine);
 				}
@@ -701,7 +670,7 @@ namespace CellDotNet
 		/// <param name="currentlyKnownPpeTypes"></param>
 		/// <param name="type"></param>
 		/// <returns></returns>
-		private bool DetectPpeType(Set<Type> currentlyKnownPpeTypes, Type type)
+		private bool DetectPpeType(HashSet<Type> currentlyKnownPpeTypes, Type type)
 		{
 			if (type.IsValueType)
 				return false;
@@ -804,7 +773,6 @@ namespace CellDotNet
 		{
 			AssertState(CompileContextState.S3InstructionSelectionDone - 1);
 
-			_specialSpeObjects = new SpecialSpeObjects();
 
 			foreach (MethodCompiler mc in Methods)
 			{
@@ -876,7 +844,7 @@ namespace CellDotNet
 		/// </summary>
 		/// <param name="filename"></param>
 		/// <param name="arguments">Optional.</param>
-		public void WriteAssemblyToFile(string filename, params ValueType[] arguments)
+		public void DisassembleToFile(string filename, params ValueType[] arguments)
 		{
 			if (State < CompileContextState.S6AddressPatchingDone)
 				throw new InvalidOperationException("Address patching has not yet been performed.");
@@ -888,12 +856,12 @@ namespace CellDotNet
 				code = GetEmittedCode();
 
 			List<ObjectWithAddress> symbols = new List<ObjectWithAddress>(GetAllObjectsForDisassembly());
-			WriteAssemblyToFile(filename, code, symbols, LibMan);
+			DisassembleToFile(filename, code, symbols, LibMan);
 		}
 
-		internal static void WriteAssemblyToFile(string filename, int[] code, List<ObjectWithAddress> symbols)
+		internal static void DisassembleToFile(string filename, int[] code, List<ObjectWithAddress> symbols)
 		{
-			WriteAssemblyToFile(filename, code, symbols, null);
+			DisassembleToFile(filename, code, symbols, null);
 		}
 
 		/// <summary>
@@ -904,7 +872,7 @@ namespace CellDotNet
 		/// <param name="code"></param>
 		/// <param name="symbols"></param>
 		/// <param name="libman">Can be null.</param>
-		private static void WriteAssemblyToFile(string filename, int[] code, List<ObjectWithAddress> symbols, LibraryManager libman)
+		private static void DisassembleToFile(string filename, int[] code, List<ObjectWithAddress> symbols, LibraryManager libman)
 		{
 			using (StreamWriter writer = new StreamWriter(filename, false, Encoding.ASCII))
 			{
@@ -1058,7 +1026,7 @@ main:
 			Disassembler.DisassembleToConsole(this);
 		}
 
-		public void DisassembleToFile(string filename)
+		public void DisassembleSymbolicToFile(string filename)
 		{
 			Disassembler.DisassembleToFile(filename, this);
 		}
@@ -1105,69 +1073,13 @@ main:
 	[AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
 	internal sealed class SpeResourceAttribute : Attribute
 	{
-		public SpeResourceAttribute(string resourceName)
+		public SpeResourceAttribute(string resourceName, bool needsPatching)
 		{
+			NeedsPatching = needsPatching;
 			ResourceName = resourceName;
 		}
 
 		public string ResourceName { get; private set; }
-	}
-
-	class BlobRoutine : SpuRoutine
-	{
-		private readonly int[] _code;
-		private MethodInfo _methodinfo;
-		private readonly ReadOnlyCollection<MethodParameter> _parameters;
-		private readonly StackTypeDescription _returnType;
-
-		public BlobRoutine([NotNull] string name, [NotNull] MethodInfo methodinfo, [NotNull] byte[] code)
-		{
-			_code = new int[code.Length / 4];
-			Buffer.BlockCopy(code, 0, _code, 0, code.Length);
-
-			// TODO swap bytes if on little endian so that code dump works.
-
-			var i = 0;
-			List<MethodParameter> parlist = new List<MethodParameter>();
-			foreach (ParameterInfo pi in methodinfo.GetParameters())
-			{
-				Utilities.Assert(pi.Position == i - ((methodinfo.CallingConvention & CallingConventions.HasThis) != 0 ? 1 : 0), "pi.Index == i");
-				i++;
-
-				parlist.Add(new MethodParameter(pi, new TypeDeriver().GetStackTypeDescription(pi.ParameterType)));
-			}
-			_parameters = new ReadOnlyCollection<MethodParameter>(parlist);
-
-
-			_returnType = new TypeDeriver().GetStackTypeDescription(methodinfo.ReturnType);
-
-		}
-
-
-		public override ReadOnlyCollection<MethodParameter> Parameters
-		{
-			get { return _parameters; }
-		}
-
-		public override StackTypeDescription ReturnType
-		{
-			get { return _returnType; }
-		}
-
-		public override int Size
-		{
-			get { return _code.Length*4; }
-		}
-
-		public override int[] Emit()
-		{
-			return _code;
-		}
-
-		public override void PerformAddressPatching()
-		{
-			// Nothing.
-//				throw new NotImplementedException();
-		}
+		public bool NeedsPatching { get; private set; }
 	}
 }

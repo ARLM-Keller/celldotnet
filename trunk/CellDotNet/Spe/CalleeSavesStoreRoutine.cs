@@ -40,7 +40,7 @@ namespace CellDotNet.Spe
 	/// allocator clean it up a bit.
 	/// </para>
 	/// </summary>
-	class CalleeSavesStoreRoutine : SpuRoutine
+	sealed class CalleeSavesStoreRoutine : SpuRoutine
 	{
 		private readonly SpuInstructionWriter _writer;
 

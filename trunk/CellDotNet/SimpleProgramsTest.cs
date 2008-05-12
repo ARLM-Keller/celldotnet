@@ -43,7 +43,7 @@ namespace CellDotNet.Spe
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			cc.WriteAssemblyToFile("dumpx.s", 0xaeae);
+			cc.DisassembleToFile("dumpx.s", 0xaeae);
 		}
 
 		[Test]
@@ -316,9 +316,9 @@ namespace CellDotNet.Spe
 			object result2 = SpeContext.UnitTestRunProgram(cc, 123.45f);
 			object result3 = SpeContext.UnitTestRunProgram(cc, 435643.23f);
 
-			Utilities.AssertWithinLimits((float)result1, 6.28f / 3.14f, 0.000001f, "6.28f / 3.14f failed.");
-			Utilities.AssertWithinLimits((float)result2, 123.45f / 3.14f, 0.000001f, "123.45f / 3.14f failed.");
-			Utilities.AssertWithinLimits((float)result3, 435643.23f / 3.14f, 0.000001f, "435643.23f / 3.14f failed.");
+			AreWithinLimits(6.28f / 3.14f, (float)result1, 0.000001f, "6.28f / 3.14f failed.");
+			AreWithinLimits(123.45f / 3.14f, (float)result2, 0.000001f, "123.45f / 3.14f failed.");
+			AreWithinLimits(435643.23f / 3.14f, (float)result3, 0.000001f, "435643.23f / 3.14f failed.");
 		}
 
 		[Test]
@@ -407,6 +407,10 @@ namespace CellDotNet.Spe
 				return val;
 			};
 
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+//			cc.DisassembleToFile("intref.s");
+
 			int expected = del(5);
 			int actual = (int) SpeContext.UnitTestRunProgram(del, 5);
 
@@ -428,7 +432,7 @@ namespace CellDotNet.Spe
 			};
 
 			float expected = del(5);
-			float actual = (float) SpeContext.UnitTestRunProgram(del, 5);
+			float actual = (float) SpeContext.UnitTestRunProgram(del, 5f);
 
 			AreEqual(expected, actual);
 		}
@@ -448,7 +452,7 @@ namespace CellDotNet.Spe
 			};
 
 			double expected = del(5);
-			double actual = (double)SpeContext.UnitTestRunProgram(del, 5);
+			double actual = (double)SpeContext.UnitTestRunProgram(del, 5d);
 
 			AreEqual(expected, actual);
 		}
@@ -461,14 +465,15 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestDoubleArgument()
 		{
-			Func<double, double> del = val =>
-			{
-				// this shouldn' be replaced with a method group, even if r# would like to do so.
-				return TestDoubleArgument_Function(val);
-			};
+			// this shouldn' be replaced with a method group, even if r# would like to do so.
+			Func<double, double> del = val => TestDoubleArgument_Function(val);
+
+			CompileContext cc = new CompileContext(del.Method);
+			cc.PerformProcessing(CompileContextState.S8Complete);
+			cc.DisassembleToFile(@"doublearg.s");
 
 			double expected = del(5);
-			double actual = (double)SpeContext.UnitTestRunProgram(del, 5);
+			double actual = (double)SpeContext.UnitTestRunProgram(del, 5d);
 
 			AreEqual(expected, actual);
 		}

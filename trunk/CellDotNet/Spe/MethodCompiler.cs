@@ -68,7 +68,7 @@ namespace CellDotNet.Spe
 	/// <summary>
 	/// Data used during compilation of a method.
 	/// </summary>
-	internal class MethodCompiler : SpuRoutine
+	sealed internal class MethodCompiler : SpuRoutine
 	{
 		private MethodCompileState _state;
 
@@ -228,7 +228,11 @@ namespace CellDotNet.Spe
 			i = 0;
 			if (!(_methodBase is DynamicMethod))
 			{
-				foreach (LocalVariableInfo lv in _methodBase.GetMethodBody().LocalVariables)
+				MethodBody body = _methodBase.GetMethodBody();
+				if (body == null)
+					throw new MethodResolveException("Method " + _methodBase.Name + " has no body.");
+
+				foreach (LocalVariableInfo lv in body.LocalVariables)
 				{
 					Utilities.Assert(lv.LocalIndex == i, "lv.LocalIndex == i");
 					i++;
@@ -368,23 +372,35 @@ namespace CellDotNet.Spe
 					                 "ldthis.Opcode == IROpCodes.Ldloc || ldthis.Opcode == IROpCodes.Ldarg");
 
 					// Insert an ldobj before the method call.
-					TreeInstruction ldobj = new TreeInstruction(IROpCodes.Ldobj);
-					ldobj.Operand = thistype.Dereference();
-					ldobj.Left = ldthis;
-
+					var ldobj = new TreeInstruction(IROpCodes.Ldobj) {Operand = thistype.Dereference(), Left = ldthis};
 					mci.Parameters[0] = ldobj;
 				}
 			}
 		}
 
+		static readonly MethodBase div_un_i4_mb = new Func<uint, uint, uint>(SpuMath.Div_Un).Method;
+		static readonly MethodBase div_i4_mb = new Func<int, int, int>(SpuMath.Div).Method;
+
+		static readonly MethodBase rem_un_i4_mb = new Func<uint, uint, uint>(SpuMath.Rem_Un).Method;
+		static readonly MethodBase rem_i4_mb = new Func<int, int, int>(SpuMath.Rem).Method;
+
+		static readonly MethodBase div_r8_mb = new Func<double, double, double>(SpuMath.Div).Method;
+
+		static private readonly Dictionary<MethodInfo, MethodInfo> s_replacements = new Dictionary<MethodInfo, MethodInfo>
+    	{
+    		{ new Func<double, double>(Math.Cos).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Cos).Method },
+    		{ new Func<double, double>(Math.Sin).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Sin).Method },
+    		{ new Func<double, double>(Math.Tan).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Tan).Method },
+    		{ new Func<double, double>(Math.Acos).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Acos).Method },
+    		{ new Func<double, double>(Math.Asin).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Asin).Method },
+    		{ new Func<double, double>(Math.Atan).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Atan).Method },
+    		{ new Func<double, double, double>(Math.Atan2).Method, new Func<Float64Vector, Float64Vector, Float64Vector>(SpuMath.Atan2).Method },
+    	};
+
+//		static readonly MethodBase rem_r4v_mb = new Func<Float32Vector, Float32Vector, Float32Vector>(SpuMath.Rem).Method;
+
 		private static TreeInstruction DivConverter(TreeInstruction inst)
 		{
-			MethodBase div_un_mb = new Func<uint, uint, uint>(SpuMath.Div_Un).Method;
-			MethodBase div_mb = new Func<int, int, int>(SpuMath.Div).Method;
-
-			MethodBase rem_un_mb = new Func<uint, uint, uint>(SpuMath.Rem_Un).Method;
-			MethodBase rem_mb = new Func<int, int, int>(SpuMath.Rem).Method;
-			
 			MethodCallInstruction newInst = null;
 
 			if (inst.Opcode == IROpCodes.Div)
@@ -392,7 +408,7 @@ namespace CellDotNet.Spe
 				if ((inst.Left.StackType == StackTypeDescription.Int32 || inst.Left.StackType == StackTypeDescription.NativeInt) &&
 					(inst.Right.StackType == StackTypeDescription.Int32 || inst.Right.StackType == StackTypeDescription.NativeInt))
 				{
-					newInst = new MethodCallInstruction(div_mb, IROpCodes.Call);
+					newInst = new MethodCallInstruction(div_i4_mb, IROpCodes.Call);
 
 					newInst.Parameters.AddRange(inst.GetChildInstructions());
 					newInst.Offset = inst.Offset;
@@ -400,6 +416,13 @@ namespace CellDotNet.Spe
 				else if (inst.Left.StackType == StackTypeDescription.Float32 && inst.Right.StackType == StackTypeDescription.Float32)
 				{
 					// TODO
+				}
+				else if (inst.Left.StackType == StackTypeDescription.Float64 && inst.Right.StackType == StackTypeDescription.Float64)
+				{
+					newInst = new MethodCallInstruction(div_r8_mb, IROpCodes.Call);
+
+					newInst.Parameters.AddRange(inst.GetChildInstructions());
+					newInst.Offset = inst.Offset;
 				}
 			}
 			else if (inst.Opcode == IROpCodes.Div_Un)
@@ -407,7 +430,7 @@ namespace CellDotNet.Spe
 				if ((inst.Left.StackType == StackTypeDescription.Int32 || inst.Left.StackType == StackTypeDescription.NativeInt) &&
 					(inst.Right.StackType == StackTypeDescription.Int32 || inst.Right.StackType == StackTypeDescription.NativeInt))
 				{
-					newInst = new MethodCallInstruction(div_un_mb, IROpCodes.Call);
+					newInst = new MethodCallInstruction(div_un_i4_mb, IROpCodes.Call);
 
 					newInst.Parameters.AddRange(inst.GetChildInstructions());
 					newInst.Offset = inst.Offset;
@@ -422,26 +445,36 @@ namespace CellDotNet.Spe
 				if ((inst.Left.StackType == StackTypeDescription.Int32 || inst.Left.StackType == StackTypeDescription.NativeInt) &&
 					(inst.Right.StackType == StackTypeDescription.Int32 || inst.Right.StackType == StackTypeDescription.NativeInt))
 				{
-					newInst = new MethodCallInstruction(rem_mb, IROpCodes.Call);
+					newInst = new MethodCallInstruction(rem_i4_mb, IROpCodes.Call);
 
 					newInst.Parameters.AddRange(inst.GetChildInstructions());
 					newInst.Offset = inst.Offset;
 				}
 				else if (inst.Left.StackType == StackTypeDescription.Float32 && inst.Right.StackType == StackTypeDescription.Float32)
 				{
-					// TODO
+//					newInst = new MethodCallInstruction(rem_r4_mb, IROpCodes.Call);
+//
+//					newInst.Parameters.AddRange(inst.GetChildInstructions());
+//					newInst.Offset = inst.Offset;
 				}
 			}
-			else if (inst.Opcode == IROpCodes.Rem)
+			else if (inst.Opcode == IROpCodes.Rem_Un)
 			{
 				if ((inst.Left.StackType == StackTypeDescription.Int32 || inst.Left.StackType == StackTypeDescription.NativeInt) &&
 					(inst.Right.StackType == StackTypeDescription.Int32 || inst.Right.StackType == StackTypeDescription.NativeInt))
 				{
-					newInst = new MethodCallInstruction(rem_un_mb, IROpCodes.Call);
+					newInst = new MethodCallInstruction(rem_un_i4_mb, IROpCodes.Call);
 
 					newInst.Parameters.AddRange(inst.GetChildInstructions());
 					newInst.Offset = inst.Offset;
 				}
+			}
+
+			if (inst.Opcode == IROpCodes.Call && inst.Operand is MethodInfo)
+			{
+				MethodInfo replacement;
+				if (s_replacements.TryGetValue((MethodInfo)inst.OperandAsMethod, out replacement))
+					inst.Operand = replacement;
 			}
 
 			if (newInst != null)

@@ -475,11 +475,11 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestDelegateRun_ReturnDouble()
 		{
-			Func<double> del = () => 40;
-			Func<double> del2 = CreateSpeDelegate(del);
+			Func<double> del1 = () => 40;
+			AreEqual(del1(), SpeContext.UnitTestRunProgram(del1));
 
-			double retval = del2();
-			AreEqual(40d, retval);
+			Func<double, double> del2 = d => d;
+			AreEqual(del2(-10d), SpeContext.UnitTestRunProgram(del2, -10d));
 		}
 
 		[Test, Ignore("Make this work.")]

@@ -30,7 +30,7 @@ namespace CellDotNet.Spe
 	/// <summary>
 	/// Represents a method in an external library.
 	/// </summary>
-	class LibraryMethod : SpuRoutine
+	sealed class LibraryMethod : SpuRoutine
 	{
 		private Library _library;
 		private int _offsetInLibrary;

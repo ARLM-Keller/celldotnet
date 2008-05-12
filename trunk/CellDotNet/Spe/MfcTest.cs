@@ -123,7 +123,7 @@ namespace CellDotNet.Spe
 					return;
 
 				object rv = SpeContext.UnitTestRunProgram(cc, mem.GetArea());
-				Utilities.AssertWithinLimits((float) rv, 13f, 0.0001f, "");
+				AreWithinLimits(13f, (float) rv, 0.0001f, "");
 			}
 		}
 

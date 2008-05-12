@@ -800,6 +800,12 @@ namespace CellDotNet.Spe
 							VirtualRegister r1 = _writer.WriteIl(0);
 							VirtualRegister r2 = _writer.WriteCsflt(r1, 155);
 							return _writer.WriteFs(r2, vrleft);
+						case CliType.Float64:
+							{
+								var tmpr1 = _writer.WriteFsmbi(0x8080);
+								var tmpr2 = _writer.WriteAndbi(tmpr1, -128);
+								return _writer.WriteXor(vrleft, tmpr2);
+							}
 					}
 					break;
 				case IRCode.Not:

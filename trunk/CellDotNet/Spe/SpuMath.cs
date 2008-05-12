@@ -109,6 +109,12 @@ namespace CellDotNet.Spe
 			return SpuMath.CompareGreaterThanAndSelect(value1, value2, value1, value2);
 		}
 
+		[SpeResource("divd2", true)]
+		public static double Div(double x, double y)
+		{
+			return x/y;
+		}
+
 		internal static int Div(int dividend, int divisor)
 		{
 			int quotient=0, remainder=0;
@@ -414,19 +420,19 @@ namespace CellDotNet.Spe
 			return (v1 * v2) + v3;
 		}
 
-		[SpeResource("sinf4")]
+		[SpeResource("sinf4", false)]
 		public static Float32Vector Sin(Float32Vector v)
 		{
 			return new Float32Vector((float)Math.Sin(v.E1), (float)Math.Sin(v.E2), (float)Math.Sin(v.E3), (float)Math.Sin(v.E4));
 		}
 
-		[SpeResource("cosf4")]
+		[SpeResource("cosf4", false)]
 		public static Float32Vector Cos(Float32Vector v)
 		{
 			return new Float32Vector((float)Math.Cos(v.E1), (float)Math.Cos(v.E2), (float)Math.Cos(v.E3), (float)Math.Cos(v.E4));
 		}
 
-		[SpeResource("tanf4")]
+		[SpeResource("tanf4", false)]
 		public static Float32Vector Tan(Float32Vector v)
 		{
 			return new Float32Vector((float)Math.Tan(v.E1), (float)Math.Tan(v.E2), (float)Math.Tan(v.E3), (float)Math.Tan(v.E4));
@@ -435,22 +441,77 @@ namespace CellDotNet.Spe
 		/// <summary>
 		/// Seems like asinf4 doesn't return NaN for elements which are out of range (-1 .. 1).
 		/// </summary>
-		[SpeResource("asinf4")]
+		[SpeResource("asinf4", false)]
 		public static Float32Vector Asin(Float32Vector v)
 		{
 			return new Float32Vector((float)Math.Asin(v.E1), (float)Math.Asin(v.E2)	, (float)Math.Asin(v.E3), (float)Math.Asin(v.E4));
 		}
 
-		[SpeResource("acosf4")]
+		[SpeResource("acosf4", false)]
 		public static Float32Vector Acos(Float32Vector v)
 		{
 			return new Float32Vector((float)Math.Acos(v.E1), (float)Math.Acos(v.E2), (float)Math.Acos(v.E3), (float)Math.Acos(v.E4));
 		}
 
-		[SpeResource("atanf4")]
+		[SpeResource("atanf4", false)]
 		public static Float32Vector Atan(Float32Vector v)
 		{
 			return new Float32Vector((float)Math.Atan(v.E1), (float)Math.Atan(v.E2), (float)Math.Atan(v.E3), (float)Math.Atan(v.E4));
+		}
+
+		[SpeResource("atan2f4", false)]
+		public static Float32Vector Atan2(Float32Vector x, Float32Vector y)
+		{
+			return new Float32Vector((float)Math.Atan2(x.E1, y.E1), (float)Math.Atan2(x.E2, y.E2), (float)Math.Atan2(x.E3, y.E3), (float)Math.Atan2(x.E4, y.E4));
+		}
+
+		[SpeResource("remainderf4", false)]
+		[Obsolete("remainderf4 doesn't what the rem opcode does - it doesn't return negative numbers. Need another implementation.")]
+		public static Float32Vector Rem(Float32Vector x, Float32Vector y)
+		{
+			return new Float32Vector(x.E1 % y.E1, x.E2 % y.E2, x.E3 % y.E3, x.E4 % y.E4);
+		}
+
+		[SpeResource("sind2", true)]
+		public static Float64Vector Sin(Float64Vector v)
+		{
+			return new Float64Vector(Math.Sin(v.E1), Math.Sin(v.E2));
+		}
+
+		[SpeResource("cosd2", true)]
+		public static Float64Vector Cos(Float64Vector v)
+		{
+			return new Float64Vector(Math.Cos(v.E1), Math.Cos(v.E2));
+		}
+
+		[SpeResource("tand2", true)]
+		public static Float64Vector Tan(Float64Vector v)
+		{
+			return new Float64Vector(Math.Tan(v.E1), Math.Tan(v.E2));
+		}
+
+		[SpeResource("asind2", true)]
+		public static Float64Vector Asin(Float64Vector v)
+		{
+			return new Float64Vector(Math.Asin(v.E1), Math.Asin(v.E2));
+		}
+
+		[SpeResource("acosd2", true)]
+		public static Float64Vector Acos(Float64Vector v)
+		{
+			return new Float64Vector(Math.Acos(v.E1), Math.Acos(v.E2));
+		}
+
+		[SpeResource("atand2", true)]
+		public static Float64Vector Atan(Float64Vector v)
+		{
+			return new Float64Vector(Math.Atan(v.E1), Math.Atan(v.E2));
+		}
+
+		[SpeResource("atan2d2", true)]
+		public static Float64Vector Atan2(Float64Vector x, Float64Vector y)
+		{
+			return new Float64Vector(Math.Atan2(x.E1, y.E1), Math.Atan2(x.E2, y.E2));
 		}
 	}
 }

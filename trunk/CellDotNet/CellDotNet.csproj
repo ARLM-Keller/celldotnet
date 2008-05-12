@@ -57,6 +57,7 @@
     <Compile Include="CommonDelegates.cs" />
     <Compile Include="CompileContextTest.cs" />
     <Compile Include="Float32Vector.cs" />
+    <Compile Include="Float64Vector.cs" />
     <Compile Include="ILOpCodeExecutionTest.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -166,6 +167,7 @@
     <Compile Include="Spe\StaticFileLibraryResolverTest.cs" />
     <Compile Include="Spe\SystemLibMap.cs" />
     <Compile Include="Spe\SystemLibTest.cs" />
+    <Compile Include="Spe\SystemMathTest.cs" />
     <Compile Include="Spe\VirtualRegister.cs" />
     <Compile Include="SortedLinkedList.cs" />
     <Compile Include="SpeContext.cs" />
@@ -186,6 +188,15 @@
     <EmbeddedResource Include="Spe\Binary\asinf4.bin" />
     <EmbeddedResource Include="Spe\Binary\atanf4.bin" />
     <EmbeddedResource Include="Spe\Binary\remainderf4.bin" />
+    <EmbeddedResource Include="Spe\Binary\cosd2.bin" />
+    <EmbeddedResource Include="Spe\Binary\divd2.bin" />
+    <EmbeddedResource Include="Spe\Binary\sind2.bin" />
+    <EmbeddedResource Include="Spe\Binary\tand2.bin" />
+    <EmbeddedResource Include="Spe\Binary\acosd2.bin" />
+    <EmbeddedResource Include="Spe\Binary\asind2.bin" />
+    <EmbeddedResource Include="Spe\Binary\atand2.bin" />
+    <EmbeddedResource Include="Spe\Binary\atan2d2.bin" />
+    <EmbeddedResource Include="Spe\Binary\atan2f4.bin" />
     <None Include="SPU.cd" />
   </ItemGroup>
   <ItemGroup>

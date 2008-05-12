@@ -32,7 +32,7 @@ namespace CellDotNet.Spe
 	/// <summary>
 	/// Represents a routine which must execute on the PPE.
 	/// </summary>
-	class PpeMethod : SpuRoutine
+	sealed class PpeMethod : SpuRoutine
 	{
 		private MethodInfo _method;
 

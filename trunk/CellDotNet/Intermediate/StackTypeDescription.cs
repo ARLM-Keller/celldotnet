@@ -66,6 +66,9 @@ namespace CellDotNet.Intermediate
 		public static readonly StackTypeDescription Float32Vector =
 			new StackTypeDescription(CliType.Float32Vector, CliNumericSize.SixteenBytes, true);
 
+		public static readonly StackTypeDescription Float64Vector =
+			new StackTypeDescription(CliType.Float64Vector, CliNumericSize.SixteenBytes, true);
+
 		public static readonly StackTypeDescription ObjectType =
 			new StackTypeDescription(CliType.ObjectType, CliNumericSize.None, false);
 
@@ -479,6 +482,7 @@ namespace CellDotNet.Intermediate
 		Float64 = 5,
 		Int32Vector = 6,
 		Float32Vector = 7,
+		Float64Vector = 7,
 		/// <summary>
 		/// Any value type.
 		/// </summary>
