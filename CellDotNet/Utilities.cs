@@ -228,10 +228,11 @@ namespace CellDotNet
 		{
 			AssertArgument(IsQuadwordAligned(lsa), "IsQuadwordAligned(lsa): " + lsa.Value.ToString("x6"));
 
-			int[] mem = context.GetCopyOfLocalStorage16K();
-			if (lsa.Value + bytecount > mem.Length * 4)
+			var alignedLsa = (LocalStorageAddress) (lsa.Value & ~0xf);
+			byte[] mem = context.GetLocalStorageMax16K(alignedLsa, Align16(bytecount));
+			if (lsa.Value + bytecount > mem.Length)
 				throw new ArgumentException("Memory out of range.");
-			DumpMemory(mem, lsa.Value / 4, lsa, bytecount, writer);
+			DumpMemory(mem, lsa.Value - alignedLsa.Value, (LocalStorageAddress)lsa.Value, bytecount, writer);
 		}
 
 		static internal void DumpMemoryToConsole(byte[] memDump)

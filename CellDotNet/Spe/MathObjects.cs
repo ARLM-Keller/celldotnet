@@ -971,6 +971,12 @@ namespace CellDotNet.Spe
 				case "atan2d2":
 					PatchAtan2d2(routine);
 					break;
+//				case "logf4":
+//					PatchLogf4(routine);
+//					break;
+//				case "sqrtf4":
+//					PatchAtan2f4(routine);
+//					break;
 				case "cosd2":
 					PatchCosd2(routine);
 					break;
@@ -980,12 +986,129 @@ namespace CellDotNet.Spe
 				case "tand2":
 					PatchTand2(routine);
 					break;
+				case "logd2":
+					PatchLogd2(routine);
+					break;
+				case "sqrtd2":
+					PatchSqrtd2(routine);
+					break;
 				case "divd2":
 					PatchDivd2(routine);
 					break;
 				default:
 					throw new ArgumentException("Don't know how to patch '" + routine.Name + "'.");
 			}
+		}
+
+		private void PatchSqrtd2(PatchRoutine sqrtd2)
+		{
+			sqrtd2.Seek(0x4);
+			sqrtd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(60), RegisterConstant(0xfff00000, 0x0, 0xfff00000, 0x0)); //     3254:	33 83 bf bc 	lqr	$60,5050 <_fini+0xd0>	# 5050
+
+			sqrtd2.Seek(0x10);
+			sqrtd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(58), RegisterConstant(0x3ff00000, 0x0, 0x3ff00000, 0x0)); //     3260:	33 83 c0 3a 	lqr	$58,5060 <_fini+0xe0>	# 5060
+
+			sqrtd2.Seek(0x14);
+			sqrtd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(59), RegisterConstant(0x43300000, 0x0, 0x43300000, 0x0)); //     3264:	33 83 c3 bb 	lqr	$59,5080 <_fini+0x100>	# 5080
+
+			sqrtd2.Seek(0x18);
+			sqrtd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(50), RegisterConstant(0x7fe00000, 0x0, 0x7fe00000, 0x0)); //     3268:	33 83 c1 32 	lqr	$50,5070 <_fini+0xf0>	# 5070
+
+			sqrtd2.Seek(0x1c);
+			sqrtd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(15), RegisterConstant(0x3fe00000, 0x0, 0x3fe00000, 0x0)); //     326c:	33 83 ba 8f 	lqr	$15,5040 <_fini+0xc0>	# 5040
+
+			sqrtd2.Seek(0x24);
+			sqrtd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(51), RegisterConstant(0x7fffffff, 0xffffffff, 0x7fffffff, 0xffffffff)); //     3274:	33 83 a5 b3 	lqr	$51,4fa0 <_fini+0x20>	# 4fa0
+
+			sqrtd2.Seek(0x2c);
+			sqrtd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(49), RegisterConstant(0x7ff00000, 0x0, 0x7ff00000, 0x0)); //     327c:	33 83 a6 b1 	lqr	$49,4fb0 <_fini+0x30>	# 4fb0
+
+			sqrtd2.Seek(0x34);
+			sqrtd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(46), RegisterConstant(0x3fe00000, 0x0, 0x3fe00000, 0x0)); //     3284:	33 83 b7 ae 	lqr	$46,5040 <_fini+0xc0>	# 5040
+
+			sqrtd2.Seek(0x3c);
+			sqrtd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(55), RegisterConstant(0x10203, 0x10203, 0x8090a0b, 0x8090a0b)); //     328c:	33 83 a8 b7 	lqr	$55,4fd0 <_fini+0x50>	# 4fd0
+
+			sqrtd2.Seek(0x50);
+			sqrtd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(53), RegisterConstant(0x1a00000, 0x0, 0x1a00000, 0x0)); //     32a0:	33 83 be 35 	lqr	$53,5090 <_fini+0x110>	# 5090
+
+			sqrtd2.Seek(0x54);
+			sqrtd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(24), RegisterConstant(0x10203, 0x10111213, 0x8090a0b, 0x18191a1b)); //     32a4:	33 83 a3 98 	lqr	$24,4fc0 <_fini+0x40>	# 4fc0
+		}
+
+		private void PatchLogd2(PatchRoutine logd2)
+		{
+			logd2.Seek(0x4);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(37), RegisterConstant(0x3ff00000, 0x0, 0x3ff00000, 0x0)); //     292c:	33 84 e6 a5 	lqr	$37,5060 <_fini+0xe0>	# 5060
+
+			logd2.Seek(0x10);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(38), RegisterConstant(0x7ff00000, 0x0, 0x7ff00000, 0x0)); //     2938:	33 84 cf 26 	lqr	$38,4fb0 <_fini+0x30>	# 4fb0
+
+			logd2.Seek(0x14);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(33), RegisterConstant(0xbf3b4e6e, 0x3586f61f, 0xbf3b4e6e, 0x3586f61f)); //     293c:	33 85 58 a1 	lqr	$33,5400 <_fini+0x480>	# 5400
+
+			logd2.Seek(0x1c);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(35), RegisterConstant(0x3f02f0f8, 0x6b9ddbc6, 0x3f02f0f8, 0x6b9ddbc6)); //     2944:	33 85 67 a3 	lqr	$35,5480 <_fini+0x500>	# 5480
+
+			logd2.Seek(0x24);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(32), RegisterConstant(0x3fc482ed, 0xd53203cf, 0x3fc482ed, 0xd53203cf)); //     294c:	33 85 58 a0 	lqr	$32,5410 <_fini+0x490>	# 5410
+
+			logd2.Seek(0x2c);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(30), RegisterConstant(0x3f62b191, 0x5d28ec91, 0x3f62b191, 0x5d28ec91)); //     2954:	33 85 59 9e 	lqr	$30,5420 <_fini+0x4a0>	# 5420
+
+			logd2.Seek(0x34);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(34), RegisterConstant(0xbfc26e35, 0x13571695, 0xbfc26e35, 0x13571695)); //     295c:	33 85 66 a2 	lqr	$34,5490 <_fini+0x510>	# 5490
+
+			logd2.Seek(0x3c);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(29), RegisterConstant(0xbfc71505, 0x9a278867, 0xbfc71505, 0x9a278867)); //     2964:	33 85 59 9d 	lqr	$29,5430 <_fini+0x4b0>	# 5430
+
+			logd2.Seek(0x44);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(20), RegisterConstant(0xbf8041c4, 0xaf4039d, 0xbf8041c4, 0xaf4039d)); //     296c:	33 85 5a 94 	lqr	$20,5440 <_fini+0x4c0>	# 5440
+
+			logd2.Seek(0x4c);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(21), RegisterConstant(0x3fca616f, 0x12be5488, 0x3fca616f, 0x12be5488)); //     2974:	33 85 5b 95 	lqr	$21,5450 <_fini+0x4d0>	# 5450
+
+			logd2.Seek(0x54);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(22), RegisterConstant(0x3f94528d, 0x53531e8, 0x3f94528d, 0x53531e8)); //     297c:	33 85 5c 96 	lqr	$22,5460 <_fini+0x4e0>	# 5460
+
+			logd2.Seek(0x5c);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(23), RegisterConstant(0xbfcec709, 0x512b3c1f, 0xbfcec709, 0x512b3c1f)); //     2984:	33 85 5d 97 	lqr	$23,5470 <_fini+0x4f0>	# 5470
+
+			logd2.Seek(0x64);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(15), RegisterConstant(0xbfa3aa64, 0x11ba1f37, 0xbfa3aa64, 0x11ba1f37)); //     298c:	33 85 62 8f 	lqr	$15,54a0 <_fini+0x520>	# 54a0
+
+			logd2.Seek(0x68);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(16), RegisterConstant(0x3fd2776c, 0x4d5d60d6, 0x3fd2776c, 0x4d5d60d6)); //     2990:	33 85 64 10 	lqr	$16,54b0 <_fini+0x530>	# 54b0
+
+			logd2.Seek(0x6c);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(17), RegisterConstant(0x3faf2594, 0x771a38ce, 0x3faf2594, 0x771a38ce)); //     2994:	33 85 65 91 	lqr	$17,54c0 <_fini+0x540>	# 54c0
+
+			logd2.Seek(0x70);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(18), RegisterConstant(0xbfd71547, 0x650ea6a3, 0xbfd71547, 0x650ea6a3)); //     2998:	33 85 67 12 	lqr	$18,54d0 <_fini+0x550>	# 54d0
+
+			logd2.Seek(0x74);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(19), RegisterConstant(0xbfb531f7, 0xe1a22620, 0xbfb531f7, 0xe1a22620)); //     299c:	33 85 68 93 	lqr	$19,54e0 <_fini+0x560>	# 54e0
+
+			logd2.Seek(0x7c);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(14), RegisterConstant(0x3fdec709, 0xdc39880e, 0x3fdec709, 0xdc39880e)); //     29a4:	33 85 69 8e 	lqr	$14,54f0 <_fini+0x570>	# 54f0
+
+			logd2.Seek(0x84);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(9), RegisterConstant(0x3fb9f4d9, 0x89634135, 0x3fb9f4d9, 0x89634135)); //     29ac:	33 85 6a 89 	lqr	$9,5500 <_fini+0x580>	# 5500
+
+			logd2.Seek(0x8c);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(10), RegisterConstant(0xbfe71547, 0x652b8294, 0xbfe71547, 0x652b8294)); //     29b4:	33 85 6b 8a 	lqr	$10,5510 <_fini+0x590>	# 5510
+
+			logd2.Seek(0x90);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(11), RegisterConstant(0xbfbdd4f1, 0x35d4671c, 0xbfbdd4f1, 0x35d4671c)); //     29b8:	33 85 6d 0b 	lqr	$11,5520 <_fini+0x5a0>	# 5520
+
+			logd2.Seek(0x98);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(6), RegisterConstant(0x3fdc551d, 0x94ae0bf8, 0x3fdc551d, 0x94ae0bf8)); //     29c0:	33 85 6e 06 	lqr	$6,5530 <_fini+0x5b0>	# 5530
+
+			logd2.Seek(0x9c);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(7), RegisterConstant(0x3fc0a424, 0x28d49027, 0x3fc0a424, 0x28d49027)); //     29c4:	33 85 6f 87 	lqr	$7,5540 <_fini+0x5c0>	# 5540
+
+			logd2.Seek(0xa4);
+			logd2.Writer.WriteLoad(HardwareRegister.GetHardwareRegister(2), RegisterConstant(0x3fe62e42, 0xfefa39ef, 0x3fe62e42, 0xfefa39ef)); //     29cc:	33 85 70 82 	lqr	$2,5550 <_fini+0x5d0>	# 5550
 		}
 
 		private void PatchAtan2d2(PatchRoutine atan2d2)

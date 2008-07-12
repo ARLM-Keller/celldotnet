@@ -391,9 +391,11 @@ namespace CellDotNet.Spe
     		{ new Func<double, double>(Math.Cos).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Cos).Method },
     		{ new Func<double, double>(Math.Sin).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Sin).Method },
     		{ new Func<double, double>(Math.Tan).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Tan).Method },
+    		{ new Func<double, double>(Math.Log).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Log).Method },
+    		{ new Func<double, double>(Math.Sqrt).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Sqrt).Method },
     		{ new Func<double, double>(Math.Acos).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Acos).Method },
     		{ new Func<double, double>(Math.Asin).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Asin).Method },
-    		{ new Func<double, double>(Math.Atan).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Atan).Method },
+    		{ new Func<double, double>(Math.Atan).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Atan	).Method },
     		{ new Func<double, double, double>(Math.Atan2).Method, new Func<Float64Vector, Float64Vector, Float64Vector>(SpuMath.Atan2).Method },
     	};
 

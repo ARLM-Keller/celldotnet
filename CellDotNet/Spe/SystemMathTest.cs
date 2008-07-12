@@ -71,5 +71,25 @@ namespace CellDotNet.Spe
 
 			AreWithinLimits(del(arg1, arg2), (double)SpeContext.UnitTestRunProgram(del, arg1, arg2), 0.000001, null);
 		}
+
+		[Test]
+		public void TestSqrt()
+		{
+			Func<double, double> del = x => Math.Sqrt(x);
+
+			double arg = 3;
+
+			AreWithinLimits(del(arg), (double)SpeContext.UnitTestRunProgram(del, arg), 0.000001, null);
+		}
+
+		[Test]
+		public void TestLog()
+		{
+			Func<double, double> del = x => Math.Log(x);
+
+			double arg = 15;
+
+			AreWithinLimits(del(arg), (double)SpeContext.UnitTestRunProgram(del, arg), 0.000001, null);
+		}
 	}
 }

@@ -48,8 +48,9 @@ namespace CellDotNet.Spe
 			{
 				ctxt.LoadProgram(new int[] { 13, 14, 15, 16 });
 
-				int[] lsa = ctxt.GetCopyOfLocalStorage16K();
-				AreEqual(13, lsa[0], "DMA error.");
+				byte[] ls = ctxt.GetLocalStorageMax16K((LocalStorageAddress) 0, 128);
+				AreEqual(13, BitConverter.ToInt32(ls, 0), "DMA error.");
+				AreEqual(14, BitConverter.ToInt32(ls, 4), "DMA error.");
 			}
 		}
 
@@ -87,9 +88,9 @@ namespace CellDotNet.Spe
 				ctx.LoadProgram(bincode);
 
 				ctx.Run();
-				int[] ls = ctx.GetCopyOfLocalStorage16K();
+				byte[] ls = ctx.GetLocalStorageMax16K((LocalStorageAddress) 0, 1024);
 
-				if (ls[0x40 / 4] != 34)
+				if (BitConverter.ToInt32(ls, 0x40) != 34)
 				{
 					Console.WriteLine("Damn");
 					Console.WriteLine("Value: {0}", ls[0x40/4]);
