@@ -385,6 +385,24 @@ namespace CellDotNet.Spe
 		}
 
 		[Test]
+		public void TestSpuMath_VectorFloat_Log()
+		{
+			Func<Float32Vector, Float32Vector> del = v => SpuMath.Log(v);
+
+			var arg = new Float32Vector(1, 2, 12.5f, 100);
+			AreWithinLimits(del(arg), (Float32Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+		}
+
+		[Test]
+		public void TestSpuMath_VectorFloat_Sqrt()
+		{
+			Func<Float32Vector, Float32Vector> del = v => SpuMath.Sqrt(v);
+
+			var arg = new Float32Vector(1, 2, 12.5f, 100);
+			AreWithinLimits(del(arg), (Float32Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+		}
+
+		[Test]
 		public void TestSpuMath_VectorDouble_Sin()
 		{
 			Func<Float64Vector, Float64Vector> del = v => SpuMath.Sin(v);
@@ -447,6 +465,25 @@ namespace CellDotNet.Spe
 			var arg2 = new Float64Vector(.6f, -.5f);
 			AreWithinLimits(del(arg1, arg2), (Float64Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2), 0.00001f, null);
 		}
+
+		[Test]
+		public void TestSpuMath_VectorDouble_Log()
+		{
+			Func<Float64Vector, Float64Vector> del = v => SpuMath.Log(v);
+
+			var arg = new Float64Vector(1, 12.5);
+			AreWithinLimits(del(arg), (Float64Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+		}
+
+		[Test]
+		public void TestSpuMath_VectorDouble_Sqrt()
+		{
+			Func<Float64Vector, Float64Vector> del = v => SpuMath.Sqrt(v);
+
+			var arg = new Float64Vector(1, 12.5);
+			AreWithinLimits(del(arg), (Float64Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+		}
+
 	}
 }
 #endif

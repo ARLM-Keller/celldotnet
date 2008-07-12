@@ -26,7 +26,7 @@ using System.Collections.Generic;
 
 namespace CellDotNet.Spe
 {
-	struct LocalStorageAddress : IFormattable
+	public struct LocalStorageAddress : IFormattable
 	{
 		public LocalStorageAddress(int value)
 		{

@@ -423,7 +423,7 @@ namespace CellDotNet
 			PutLocalStorage(mem, lsAddress, mem.Length);
 		}
 
-		private unsafe byte[] GetLocalStorageMax16K(LocalStorageAddress lsa, int size)
+		public unsafe byte[] GetLocalStorageMax16K(LocalStorageAddress lsa, int size)
 		{
 			ValidateDmaTransfer(null, lsa, size);
 
@@ -442,40 +442,6 @@ namespace CellDotNet
 			byte[] data = new byte[size];
 			Marshal.Copy(buf, data, 0, size);
 			return data;
-		}
-
-		public int[] GetCopyOfLocalStorage16K()
-		{
-			IntPtr dataBufMain = IntPtr.Zero;
-
-			try
-			{
-				const int sixteenK = 16*1024;
-
-				dataBufMain = Marshal.AllocHGlobal(sixteenK + 16);
-
-				IntPtr dataBuf = (IntPtr) (((int) dataBufMain + 15) & ~0xf);
-
-				uint DMA_tag = 2;
-
-				spe_mfcio_put((LocalStorageAddress) 0, dataBuf, sixteenK, DMA_tag, 0, 0);
-
-				// TODO mask skal sættes til noget fornuftigt
-				uint tag_status = 0;
-				int waitresult = UnsafeNativeMethods.spe_mfcio_tag_status_read(_handle, 0, SPE_TAG_ANY, ref tag_status);
-
-				if (waitresult != 0)
-					throw new LibSpeException("spe_mfcio_tag_status_read failed.");
-
-				int[] data = new int[sixteenK/4];
-				Marshal.Copy(dataBuf, data, 0, sixteenK/4);
-				return data;
-			}
-			finally
-			{
-				if (dataBufMain != IntPtr.Zero)
-					Marshal.FreeHGlobal(dataBufMain);
-			}
 		}
 
 		private void PutLocalStorage(byte[] buffer, LocalStorageAddress lsa, int transferSize)

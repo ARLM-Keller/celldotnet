@@ -197,6 +197,10 @@
     <EmbeddedResource Include="Spe\Binary\atand2.bin" />
     <EmbeddedResource Include="Spe\Binary\atan2d2.bin" />
     <EmbeddedResource Include="Spe\Binary\atan2f4.bin" />
+    <EmbeddedResource Include="Spe\Binary\logd2.bin" />
+    <EmbeddedResource Include="Spe\Binary\logf4.bin" />
+    <EmbeddedResource Include="Spe\Binary\sqrtd2.bin" />
+    <EmbeddedResource Include="Spe\Binary\sqrtf4.bin" />
     <None Include="SPU.cd" />
   </ItemGroup>
   <ItemGroup>

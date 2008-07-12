@@ -465,6 +465,18 @@ namespace CellDotNet.Spe
 			return new Float32Vector((float)Math.Atan2(x.E1, y.E1), (float)Math.Atan2(x.E2, y.E2), (float)Math.Atan2(x.E3, y.E3), (float)Math.Atan2(x.E4, y.E4));
 		}
 
+		[SpeResource("logf4", false)]
+		public static Float32Vector Log(Float32Vector v)
+		{
+			return new Float32Vector((float)Math.Log(v.E1), (float)Math.Log(v.E2), (float)Math.Log(v.E3), (float)Math.Log(v.E4));
+		}
+
+		[SpeResource("sqrtf4", false)]
+		public static Float32Vector Sqrt(Float32Vector v)
+		{
+			return new Float32Vector((float)Math.Sqrt(v.E1), (float)Math.Sqrt(v.E2), (float)Math.Sqrt(v.E3), (float)Math.Sqrt(v.E4));
+		}
+
 		[SpeResource("remainderf4", false)]
 		[Obsolete("remainderf4 doesn't what the rem opcode does - it doesn't return negative numbers. Need another implementation.")]
 		public static Float32Vector Rem(Float32Vector x, Float32Vector y)
@@ -512,6 +524,18 @@ namespace CellDotNet.Spe
 		public static Float64Vector Atan2(Float64Vector x, Float64Vector y)
 		{
 			return new Float64Vector(Math.Atan2(x.E1, y.E1), Math.Atan2(x.E2, y.E2));
+		}
+
+		[SpeResource("logd2", true)]
+		public static Float64Vector Log(Float64Vector v)
+		{
+			return new Float64Vector(Math.Log(v.E1), Math.Log(v.E2));
+		}
+
+		[SpeResource("sqrtd2", true)]
+		public static Float64Vector Sqrt(Float64Vector v)
+		{
+			return new Float64Vector(Math.Sqrt(v.E1), Math.Sqrt(v.E2));
 		}
 	}
 }
