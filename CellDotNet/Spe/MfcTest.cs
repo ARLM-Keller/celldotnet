@@ -549,6 +549,44 @@ namespace CellDotNet.Spe
 			}
 		}
 
+		[Test]
+		public void TestDma_GetGlobalMemory()
+		{
+			const int elementcount = 16 * 1024;
+			const float magicnumber = 1234.5f;
+
+			Converter<GlobalArea<float>, int> del =
+				delegate(GlobalArea<float> input)
+				{
+					float[] arr = new float[elementcount];
+
+					for (int i = 0; i < arr.Length; i++)
+						arr[i] = 0;
+
+					Mfc.Get(arr, input);
+
+					int result = 0;
+
+					for (int i = 0; i < arr.Length; i++)
+						if (arr[i] == magicnumber)
+							result++;
+
+					return result;
+				};
+
+			using (AlignedMemory<float> mem = SpeContext.AllocateAlignedFloat(elementcount))
+			{
+				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
+					mem.ArraySegment.Array[i] = magicnumber;
+
+				if (!SpeContext.HasSpeHardware)
+					return;
+
+				object rv = SpeContext.UnitTestRunProgram(del, mem.GetGlobalArea());
+				AreEqual(elementcount, (int)rv);
+			}
+		}
+
 
 
 	}

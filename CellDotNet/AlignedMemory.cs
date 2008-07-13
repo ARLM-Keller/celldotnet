@@ -42,7 +42,19 @@ namespace CellDotNet
 			_arraySegment = arraySegment;
 		}
 
+		/// <summary>
+		/// This one will be deprecated - use <see cref="GetGlobalArea"/> instead.
+		/// </summary>
+		/// <returns></returns>
 		public MainStorageArea GetArea()
+		{
+			IntPtr ptr = GetIntPtr();
+			MainStorageArea area = new MainStorageArea(ptr);
+
+			return area;
+		}
+
+		public MainStorageArea GetGlobalArea()
 		{
 			IntPtr ptr = GetIntPtr();
 			MainStorageArea area = new MainStorageArea(ptr);
