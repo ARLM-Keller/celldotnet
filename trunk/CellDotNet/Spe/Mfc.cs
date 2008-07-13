@@ -23,7 +23,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 namespace CellDotNet.Spe
 {
@@ -50,25 +49,31 @@ namespace CellDotNet.Spe
 
 		static public void Get(int[] target, MainStorageArea ea)
 		{
-			GetLarge(SpuRuntime.UnsafeGetAddress(target), ea, target.Length*4, 31);
+			GetLarge(SpuRuntime.UnsafeGetAddress(target), ea.EffectiveAddress, target.Length*4, 31);
 			WaitForDmaCompletion(uint.MaxValue);
 		}
 
 		static public void Get(float[] target, MainStorageArea ea)
 		{
-			GetLarge(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 4, 31);
+			GetLarge(SpuRuntime.UnsafeGetAddress(target), ea.EffectiveAddress, target.Length * 4, 31);
 			WaitForDmaCompletion(uint.MaxValue);
 		}
 
 		static public void Get(Int32Vector[] target, MainStorageArea ea)
 		{
-			GetLarge(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 16, 31);
+			GetLarge(SpuRuntime.UnsafeGetAddress(target), ea.EffectiveAddress, target.Length * 16, 31);
 			WaitForDmaCompletion(uint.MaxValue);
 		}
 
 		static public void Get(Float32Vector[] target, MainStorageArea ea)
 		{
-			GetLarge(SpuRuntime.UnsafeGetAddress(target), ea, target.Length * 16, 31);
+			GetLarge(SpuRuntime.UnsafeGetAddress(target), ea.EffectiveAddress, target.Length * 16, 31);
+			WaitForDmaCompletion(uint.MaxValue);
+		}
+
+		static public void Get<T>(T[] target, GlobalArea<T> area) where T : struct
+		{
+			GetLarge(SpuRuntime.UnsafeGetAddress(target), area.EffectiveAddress, target.Length * 4, 31);
 			WaitForDmaCompletion(uint.MaxValue);
 		}
 
@@ -105,7 +110,7 @@ namespace CellDotNet.Spe
 			}
 
 		[CLSCompliant(false)]
-		unsafe static public void Get(float[] target, MainStorageArea ea, short count, uint tag)
+		static public void Get(float[] target, MainStorageArea ea, short count, uint tag)
 		{
 			int bytecount = count * 4;
 
@@ -116,13 +121,13 @@ namespace CellDotNet.Spe
 		/// Handels transfers of blocks larger than 16KB.
 		/// </summary>
 		/// <param name="lsaddress"></param>
-		/// <param name="ea"></param>
+		/// <param name="effectiveAddress"></param>
 		/// <param name="bytecount"></param>
 		/// <param name="tag"></param>
 		[CLSCompliant(false)]
-		unsafe static public void GetLarge(int lsaddress, MainStorageArea ea, int bytecount, uint tag)
+		static private void GetLarge(int lsaddress, uint effectiveAddress, int bytecount, uint tag)
 		{
-			uint msa = ea.EffectiveAddress;
+			uint msa = effectiveAddress;
 
 			while (bytecount > 0)
 			{
