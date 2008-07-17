@@ -154,7 +154,7 @@ namespace CellDotNet
 					throw new DebugAssertException(message);
 		}
 
-		static public void AreWithinLimits(Float32Vector target, Float32Vector value, float error, string message)
+		static public void AreWithinLimits(VectorF4 target, VectorF4 value, float error, string message)
 		{
 			if (!(Math.Abs(target.E1) < error && Math.Abs(value.E1) < error))
 				if (Math.Abs(value.E1) > Math.Abs(target.E1) * (1 + error) || Math.Abs(value.E1) < Math.Abs(target.E1) * (1 - error) || Math.Sign(value.E1) != Math.Sign(target.E1))
@@ -173,7 +173,7 @@ namespace CellDotNet
 					throw new DebugAssertException(message);
 		}
 
-		static public void AreWithinLimits(Float64Vector target, Float64Vector value, double error, string message)
+		static public void AreWithinLimits(VectorD2 target, VectorD2 value, double error, string message)
 		{
 			if (!(Math.Abs(target.E1) < error && Math.Abs(value.E1) < error))
 				if (Math.Abs(value.E1) > Math.Abs(target.E1) * (1 + error) || Math.Abs(value.E1) < Math.Abs(target.E1) * (1 - error) || Math.Sign(value.E1) != Math.Sign(target.E1))

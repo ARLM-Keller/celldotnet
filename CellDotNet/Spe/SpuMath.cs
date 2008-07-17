@@ -79,32 +79,32 @@ namespace CellDotNet.Spe
 				return value1;
 		}
 
-		public static Int32Vector Abs(Int32Vector value)
+		public static VectorI4 Abs(VectorI4 value)
 		{
-			return SpuMath.CompareGreaterThanAndSelect(value, Int32Vector.Splat(0), value, Int32Vector.Splat(0) - value);
+			return SpuMath.CompareGreaterThanAndSelect(value, VectorI4.Splat(0), value, VectorI4.Splat(0) - value);
 		}
 
-		public static Int32Vector Min(Int32Vector value1, Int32Vector value2)
+		public static VectorI4 Min(VectorI4 value1, VectorI4 value2)
 		{
 			return SpuMath.CompareGreaterThanAndSelect(value1, value2, value2, value1);
 		}
 
-		public static Int32Vector Max(Int32Vector value1, Int32Vector value2)
+		public static VectorI4 Max(VectorI4 value1, VectorI4 value2)
 		{
 			return SpuMath.CompareGreaterThanAndSelect(value1, value2, value1, value2);
 		}
 
-		public static Float32Vector Abs(Float32Vector value)
+		public static VectorF4 Abs(VectorF4 value)
 		{
-			return SpuMath.CompareGreaterThanAndSelect(value, Float32Vector.Splat(0), value, Float32Vector.Splat(0) - value);
+			return SpuMath.CompareGreaterThanAndSelect(value, VectorF4.Splat(0), value, VectorF4.Splat(0) - value);
 		}
 
-		public static Float32Vector Min(Float32Vector value1, Float32Vector value2)
+		public static VectorF4 Min(VectorF4 value1, VectorF4 value2)
 		{
 			return SpuMath.CompareGreaterThanAndSelect(value1, value2, value2, value1);
 		}
 
-		public static Float32Vector Max(Float32Vector value1, Float32Vector value2)
+		public static VectorF4 Max(VectorF4 value1, VectorF4 value2)
 		{
 			return SpuMath.CompareGreaterThanAndSelect(value1, value2, value1, value2);
 		}
@@ -229,17 +229,17 @@ namespace CellDotNet.Spe
 		} /* signed_divide */
 
 		[IntrinsicMethod(SpuIntrinsicMethod.ConvertFloatToInteger)]
-		public static Int32Vector ConvertToInteger(Float32Vector v)
+		public static VectorI4 ConvertToInteger(VectorF4 v)
 		{
-			Int32Vector r = new Int32Vector((int)v.E1, (int)v.E2, (int)v.E3, (int)v.E4);
+			VectorI4 r = new VectorI4((int)v.E1, (int)v.E2, (int)v.E3, (int)v.E4);
 
 			return r;
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.ConvertIntToFloat)]
-		public static Float32Vector ConvertToFloat(Int32Vector v)
+		public static VectorF4 ConvertToFloat(VectorI4 v)
 		{
-			Float32Vector r = new Float32Vector(v.E1, v.E2, v.E3, v.E4);
+			VectorF4 r = new VectorF4(v.E1, v.E2, v.E3, v.E4);
 
 			return r;
 		}
@@ -255,14 +255,14 @@ namespace CellDotNet.Spe
 		/// <param name="e2"></param>
 		/// <returns></returns>
 		[IntrinsicMethod(SpuIntrinsicMethod.CompareGreaterThanIntAndSelect)]
-		public static Int32Vector CompareGreaterThanAndSelect(Int32Vector c1, Int32Vector c2, Int32Vector e1, Int32Vector e2)
+		public static VectorI4 CompareGreaterThanAndSelect(VectorI4 c1, VectorI4 c2, VectorI4 e1, VectorI4 e2)
 		{
 			int r1 = c1.E1 > c2.E1 ? e1.E1 : e2.E1;
 			int r2 = c1.E2 > c2.E2 ? e1.E2 : e2.E2;
 			int r3 = c1.E3 > c2.E3 ? e1.E3 : e2.E3;
 			int r4 = c1.E4 > c2.E4 ? e1.E4 : e2.E4;
 
-			return new Int32Vector(r1, r2, r3, r4);
+			return new VectorI4(r1, r2, r3, r4);
 		}
 
 		/// <summary>
@@ -276,14 +276,14 @@ namespace CellDotNet.Spe
 		/// <param name="e2"></param>
 		/// <returns></returns>
 		[IntrinsicMethod(SpuIntrinsicMethod.CompareGreaterThanIntAndSelect)]
-		public static Float32Vector CompareGreaterThanAndSelect(Int32Vector c1, Int32Vector c2, Float32Vector e1, Float32Vector e2)
+		public static VectorF4 CompareGreaterThanAndSelect(VectorI4 c1, VectorI4 c2, VectorF4 e1, VectorF4 e2)
 		{
 			float r1 = c1.E1 > c2.E1 ? e1.E1 : e2.E1;
 			float r2 = c1.E2 > c2.E2 ? e1.E2 : e2.E2;
 			float r3 = c1.E3 > c2.E3 ? e1.E3 : e2.E3;
 			float r4 = c1.E4 > c2.E4 ? e1.E4 : e2.E4;
 
-			return new Float32Vector(r1, r2, r3, r4);
+			return new VectorF4(r1, r2, r3, r4);
 		}
 
 		/// <summary>
@@ -297,14 +297,14 @@ namespace CellDotNet.Spe
 		/// <param name="e2"></param>
 		/// <returns></returns>
 		[IntrinsicMethod(SpuIntrinsicMethod.CompareGreaterThanFloatAndSelect)]
-		public static Int32Vector CompareGreaterThanAndSelect(Float32Vector c1, Float32Vector c2, Int32Vector e1, Int32Vector e2)
+		public static VectorI4 CompareGreaterThanAndSelect(VectorF4 c1, VectorF4 c2, VectorI4 e1, VectorI4 e2)
 		{
 			int r1 = c1.E1 > c2.E1 ? e1.E1 : e2.E1;
 			int r2 = c1.E2 > c2.E2 ? e1.E2 : e2.E2;
 			int r3 = c1.E3 > c2.E3 ? e1.E3 : e2.E3;
 			int r4 = c1.E4 > c2.E4 ? e1.E4 : e2.E4;
 
-			return new Int32Vector(r1, r2, r3, r4);
+			return new VectorI4(r1, r2, r3, r4);
 		}
 
 		/// <summary>
@@ -318,36 +318,36 @@ namespace CellDotNet.Spe
 		/// <param name="e2"></param>
 		/// <returns></returns>
 		[IntrinsicMethod(SpuIntrinsicMethod.CompareGreaterThanFloatAndSelect)]
-		public static Float32Vector CompareGreaterThanAndSelect(Float32Vector c1, Float32Vector c2, Float32Vector e1, Float32Vector e2)
+		public static VectorF4 CompareGreaterThanAndSelect(VectorF4 c1, VectorF4 c2, VectorF4 e1, VectorF4 e2)
 		{
 			float r1 = c1.E1 > c2.E1 ? e1.E1 : e2.E1;
 			float r2 = c1.E2 > c2.E2 ? e1.E2 : e2.E2;
 			float r3 = c1.E3 > c2.E3 ? e1.E3 : e2.E3;
 			float r4 = c1.E4 > c2.E4 ? e1.E4 : e2.E4;
 
-			return new Float32Vector(r1, r2, r3, r4);
+			return new VectorF4(r1, r2, r3, r4);
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.CompareEqualsIntAndSelect)]
-		public static Int32Vector CompareEqualsAndSelect(Int32Vector c1, Int32Vector c2, Int32Vector e1, Int32Vector e2)
+		public static VectorI4 CompareEqualsAndSelect(VectorI4 c1, VectorI4 c2, VectorI4 e1, VectorI4 e2)
 		{
 			int r1 = c1.E1 == c2.E1 ? e1.E1 : e2.E1;
 			int r2 = c1.E2 == c2.E2 ? e1.E2 : e2.E2;
 			int r3 = c1.E3 == c2.E3 ? e1.E3 : e2.E3;
 			int r4 = c1.E4 == c2.E4 ? e1.E4 : e2.E4;
 
-			return new Int32Vector(r1, r2, r3, r4);
+			return new VectorI4(r1, r2, r3, r4);
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.CompareEqualsIntAndSelect)]
-		public static Float32Vector CompareEqualsAndSelect(Int32Vector c1, Int32Vector c2, Float32Vector e1, Float32Vector e2)
+		public static VectorF4 CompareEqualsAndSelect(VectorI4 c1, VectorI4 c2, VectorF4 e1, VectorF4 e2)
 		{
 			float r1 = c1.E1 == c2.E1 ? e1.E1 : e2.E1;
 			float r2 = c1.E2 == c2.E2 ? e1.E2 : e2.E2;
 			float r3 = c1.E3 == c2.E3 ? e1.E3 : e2.E3;
 			float r4 = c1.E4 == c2.E4 ? e1.E4 : e2.E4;
 
-			return new Float32Vector(r1, r2, r3, r4);
+			return new VectorF4(r1, r2, r3, r4);
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.CompareEqualsIntAndSelect)]
@@ -399,143 +399,143 @@ namespace CellDotNet.Spe
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.ConditionalSelectVector)]
-		public static Int32Vector ConditionalSelect(bool c, Int32Vector e1, Int32Vector e2)
+		public static VectorI4 ConditionalSelect(bool c, VectorI4 e1, VectorI4 e2)
 		{
 			return c ? e1 : e2;
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.ConditionalSelectVector)]
-		public static Float32Vector ConditionalSelect(bool c, Float32Vector e1, Float32Vector e2)
+		public static VectorF4 ConditionalSelect(bool c, VectorF4 e1, VectorF4 e2)
 		{
 			return c ? e1 : e2;
 		}
 
 		[SpuOpCode(SpuOpCodeEnum.Fma)]
 		[return: SpuInstructionPart(SpuInstructionPart.Rt)]
-		public static Float32Vector MultiplyAdd(
-			[SpuInstructionPart(SpuInstructionPart.Ra)]Float32Vector v1,
-			[SpuInstructionPart(SpuInstructionPart.Rb)]Float32Vector v2,
-			[SpuInstructionPart(SpuInstructionPart.Rc)]Float32Vector v3)
+		public static VectorF4 MultiplyAdd(
+			[SpuInstructionPart(SpuInstructionPart.Ra)]VectorF4 v1,
+			[SpuInstructionPart(SpuInstructionPart.Rb)]VectorF4 v2,
+			[SpuInstructionPart(SpuInstructionPart.Rc)]VectorF4 v3)
 		{
 			return (v1 * v2) + v3;
 		}
 
 		[SpeResource("sinf4", false)]
-		public static Float32Vector Sin(Float32Vector v)
+		public static VectorF4 Sin(VectorF4 v)
 		{
-			return new Float32Vector((float)Math.Sin(v.E1), (float)Math.Sin(v.E2), (float)Math.Sin(v.E3), (float)Math.Sin(v.E4));
+			return new VectorF4((float)Math.Sin(v.E1), (float)Math.Sin(v.E2), (float)Math.Sin(v.E3), (float)Math.Sin(v.E4));
 		}
 
 		[SpeResource("cosf4", false)]
-		public static Float32Vector Cos(Float32Vector v)
+		public static VectorF4 Cos(VectorF4 v)
 		{
-			return new Float32Vector((float)Math.Cos(v.E1), (float)Math.Cos(v.E2), (float)Math.Cos(v.E3), (float)Math.Cos(v.E4));
+			return new VectorF4((float)Math.Cos(v.E1), (float)Math.Cos(v.E2), (float)Math.Cos(v.E3), (float)Math.Cos(v.E4));
 		}
 
 		[SpeResource("tanf4", false)]
-		public static Float32Vector Tan(Float32Vector v)
+		public static VectorF4 Tan(VectorF4 v)
 		{
-			return new Float32Vector((float)Math.Tan(v.E1), (float)Math.Tan(v.E2), (float)Math.Tan(v.E3), (float)Math.Tan(v.E4));
+			return new VectorF4((float)Math.Tan(v.E1), (float)Math.Tan(v.E2), (float)Math.Tan(v.E3), (float)Math.Tan(v.E4));
 		}
 
 		/// <summary>
 		/// Seems like asinf4 doesn't return NaN for elements which are out of range (-1 .. 1).
 		/// </summary>
 		[SpeResource("asinf4", false)]
-		public static Float32Vector Asin(Float32Vector v)
+		public static VectorF4 Asin(VectorF4 v)
 		{
-			return new Float32Vector((float)Math.Asin(v.E1), (float)Math.Asin(v.E2)	, (float)Math.Asin(v.E3), (float)Math.Asin(v.E4));
+			return new VectorF4((float)Math.Asin(v.E1), (float)Math.Asin(v.E2)	, (float)Math.Asin(v.E3), (float)Math.Asin(v.E4));
 		}
 
 		[SpeResource("acosf4", false)]
-		public static Float32Vector Acos(Float32Vector v)
+		public static VectorF4 Acos(VectorF4 v)
 		{
-			return new Float32Vector((float)Math.Acos(v.E1), (float)Math.Acos(v.E2), (float)Math.Acos(v.E3), (float)Math.Acos(v.E4));
+			return new VectorF4((float)Math.Acos(v.E1), (float)Math.Acos(v.E2), (float)Math.Acos(v.E3), (float)Math.Acos(v.E4));
 		}
 
 		[SpeResource("atanf4", false)]
-		public static Float32Vector Atan(Float32Vector v)
+		public static VectorF4 Atan(VectorF4 v)
 		{
-			return new Float32Vector((float)Math.Atan(v.E1), (float)Math.Atan(v.E2), (float)Math.Atan(v.E3), (float)Math.Atan(v.E4));
+			return new VectorF4((float)Math.Atan(v.E1), (float)Math.Atan(v.E2), (float)Math.Atan(v.E3), (float)Math.Atan(v.E4));
 		}
 
 		[SpeResource("atan2f4", false)]
-		public static Float32Vector Atan2(Float32Vector x, Float32Vector y)
+		public static VectorF4 Atan2(VectorF4 x, VectorF4 y)
 		{
-			return new Float32Vector((float)Math.Atan2(x.E1, y.E1), (float)Math.Atan2(x.E2, y.E2), (float)Math.Atan2(x.E3, y.E3), (float)Math.Atan2(x.E4, y.E4));
+			return new VectorF4((float)Math.Atan2(x.E1, y.E1), (float)Math.Atan2(x.E2, y.E2), (float)Math.Atan2(x.E3, y.E3), (float)Math.Atan2(x.E4, y.E4));
 		}
 
 		[SpeResource("logf4", false)]
-		public static Float32Vector Log(Float32Vector v)
+		public static VectorF4 Log(VectorF4 v)
 		{
-			return new Float32Vector((float)Math.Log(v.E1), (float)Math.Log(v.E2), (float)Math.Log(v.E3), (float)Math.Log(v.E4));
+			return new VectorF4((float)Math.Log(v.E1), (float)Math.Log(v.E2), (float)Math.Log(v.E3), (float)Math.Log(v.E4));
 		}
 
 		[SpeResource("sqrtf4", false)]
-		public static Float32Vector Sqrt(Float32Vector v)
+		public static VectorF4 Sqrt(VectorF4 v)
 		{
-			return new Float32Vector((float)Math.Sqrt(v.E1), (float)Math.Sqrt(v.E2), (float)Math.Sqrt(v.E3), (float)Math.Sqrt(v.E4));
+			return new VectorF4((float)Math.Sqrt(v.E1), (float)Math.Sqrt(v.E2), (float)Math.Sqrt(v.E3), (float)Math.Sqrt(v.E4));
 		}
 
 		[SpeResource("remainderf4", false)]
 		[Obsolete("remainderf4 doesn't what the rem opcode does - it doesn't return negative numbers. Need another implementation.")]
-		public static Float32Vector Rem(Float32Vector x, Float32Vector y)
+		public static VectorF4 Rem(VectorF4 x, VectorF4 y)
 		{
-			return new Float32Vector(x.E1 % y.E1, x.E2 % y.E2, x.E3 % y.E3, x.E4 % y.E4);
+			return new VectorF4(x.E1 % y.E1, x.E2 % y.E2, x.E3 % y.E3, x.E4 % y.E4);
 		}
 
 		[SpeResource("sind2", true)]
-		public static Float64Vector Sin(Float64Vector v)
+		public static VectorD2 Sin(VectorD2 v)
 		{
-			return new Float64Vector(Math.Sin(v.E1), Math.Sin(v.E2));
+			return new VectorD2(Math.Sin(v.E1), Math.Sin(v.E2));
 		}
 
 		[SpeResource("cosd2", true)]
-		public static Float64Vector Cos(Float64Vector v)
+		public static VectorD2 Cos(VectorD2 v)
 		{
-			return new Float64Vector(Math.Cos(v.E1), Math.Cos(v.E2));
+			return new VectorD2(Math.Cos(v.E1), Math.Cos(v.E2));
 		}
 
 		[SpeResource("tand2", true)]
-		public static Float64Vector Tan(Float64Vector v)
+		public static VectorD2 Tan(VectorD2 v)
 		{
-			return new Float64Vector(Math.Tan(v.E1), Math.Tan(v.E2));
+			return new VectorD2(Math.Tan(v.E1), Math.Tan(v.E2));
 		}
 
 		[SpeResource("asind2", true)]
-		public static Float64Vector Asin(Float64Vector v)
+		public static VectorD2 Asin(VectorD2 v)
 		{
-			return new Float64Vector(Math.Asin(v.E1), Math.Asin(v.E2));
+			return new VectorD2(Math.Asin(v.E1), Math.Asin(v.E2));
 		}
 
 		[SpeResource("acosd2", true)]
-		public static Float64Vector Acos(Float64Vector v)
+		public static VectorD2 Acos(VectorD2 v)
 		{
-			return new Float64Vector(Math.Acos(v.E1), Math.Acos(v.E2));
+			return new VectorD2(Math.Acos(v.E1), Math.Acos(v.E2));
 		}
 
 		[SpeResource("atand2", true)]
-		public static Float64Vector Atan(Float64Vector v)
+		public static VectorD2 Atan(VectorD2 v)
 		{
-			return new Float64Vector(Math.Atan(v.E1), Math.Atan(v.E2));
+			return new VectorD2(Math.Atan(v.E1), Math.Atan(v.E2));
 		}
 
 		[SpeResource("atan2d2", true)]
-		public static Float64Vector Atan2(Float64Vector x, Float64Vector y)
+		public static VectorD2 Atan2(VectorD2 x, VectorD2 y)
 		{
-			return new Float64Vector(Math.Atan2(x.E1, y.E1), Math.Atan2(x.E2, y.E2));
+			return new VectorD2(Math.Atan2(x.E1, y.E1), Math.Atan2(x.E2, y.E2));
 		}
 
 		[SpeResource("logd2", true)]
-		public static Float64Vector Log(Float64Vector v)
+		public static VectorD2 Log(VectorD2 v)
 		{
-			return new Float64Vector(Math.Log(v.E1), Math.Log(v.E2));
+			return new VectorD2(Math.Log(v.E1), Math.Log(v.E2));
 		}
 
 		[SpeResource("sqrtd2", true)]
-		public static Float64Vector Sqrt(Float64Vector v)
+		public static VectorD2 Sqrt(VectorD2 v)
 		{
-			return new Float64Vector(Math.Sqrt(v.E1), Math.Sqrt(v.E2));
+			return new VectorD2(Math.Sqrt(v.E1), Math.Sqrt(v.E2));
 		}
 	}
 }

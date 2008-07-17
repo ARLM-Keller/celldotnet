@@ -3,12 +3,12 @@ using CellDotNet.Spe;
 
 namespace CellDotNet
 {
-	public struct Int32Vector
+	public struct VectorI4
 	{
 		private readonly int e1, e2, e3, e4;
 
 		[IntrinsicMethod(SpuIntrinsicMethod.CombineFourWords)]
-		public Int32Vector(int e1, int e2, int e3, int e4)
+		public VectorI4(int e1, int e2, int e3, int e4)
 		{
 			this.e1 = e1;
 			this.e2 = e2;
@@ -17,52 +17,52 @@ namespace CellDotNet
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.SplatWord)]
-		public static Int32Vector Splat(int e)
+		public static VectorI4 Splat(int e)
 		{
-			return new Int32Vector(e, e, e, e);
+			return new VectorI4(e, e, e, e);
 		}
 
 		[SpuOpCode(SpuOpCodeEnum.A)]
 		[return: SpuInstructionPart(SpuInstructionPart.Rt)]
-		public static Int32Vector operator +(
-			[SpuInstructionPart(SpuInstructionPart.Ra)]Int32Vector v1,
-			[SpuInstructionPart(SpuInstructionPart.Rb)]Int32Vector v2)
+		public static VectorI4 operator +(
+			[SpuInstructionPart(SpuInstructionPart.Ra)]VectorI4 v1,
+			[SpuInstructionPart(SpuInstructionPart.Rb)]VectorI4 v2)
 		{
-			return new Int32Vector(v1.e1 + v2.e1, v1.e2 + v2.e2, v1.e3 + v2.e3, v1.e4 + v2.e4);
+			return new VectorI4(v1.e1 + v2.e1, v1.e2 + v2.e2, v1.e3 + v2.e3, v1.e4 + v2.e4);
 		}
 
 		[SpuOpCode(SpuOpCodeEnum.Sf)]
 		[return: SpuInstructionPart(SpuInstructionPart.Rt)]
-		public static Int32Vector operator -(
-			[SpuInstructionPart(SpuInstructionPart.Rb)]Int32Vector v1,
-			[SpuInstructionPart(SpuInstructionPart.Ra)]Int32Vector v2)
+		public static VectorI4 operator -(
+			[SpuInstructionPart(SpuInstructionPart.Rb)]VectorI4 v1,
+			[SpuInstructionPart(SpuInstructionPart.Ra)]VectorI4 v2)
 		{
-			return new Int32Vector(v1.e1 - v2.e1, v1.e2 - v2.e2, v1.e3 - v2.e3, v1.e4 - v2.e4);
+			return new VectorI4(v1.e1 - v2.e1, v1.e2 - v2.e2, v1.e3 - v2.e3, v1.e4 - v2.e4);
 		}
 
-		public static Int32Vector operator *(Int32Vector v1, Int32Vector v2)
+		public static VectorI4 operator *(VectorI4 v1, VectorI4 v2)
 		{
-			return new Int32Vector(v1.E1 * v2.E1, v1.E2 * v2.E2, v1.E3 * v2.E3, v1.E4 * v2.E4);
+			return new VectorI4(v1.E1 * v2.E1, v1.E2 * v2.E2, v1.E3 * v2.E3, v1.E4 * v2.E4);
 		}
 
-		public static Int32Vector operator /(Int32Vector v1, Int32Vector v2)
+		public static VectorI4 operator /(VectorI4 v1, VectorI4 v2)
 		{
-			return new Int32Vector(v1.E1 / v2.E1, v1.E2 / v2.E2, v1.E3 / v2.E3, v1.E4 / v2.E4);
+			return new VectorI4(v1.E1 / v2.E1, v1.E2 / v2.E2, v1.E3 / v2.E3, v1.E4 / v2.E4);
 		}
 
-		public static Int32Vector operator %(Int32Vector v1, Int32Vector v2)
+		public static VectorI4 operator %(VectorI4 v1, VectorI4 v2)
 		{
-			return new Int32Vector(v1.E1 % v2.E1, v1.E2 % v2.E2, v1.E3 % v2.E3, v1.E4 % v2.E4);
+			return new VectorI4(v1.E1 % v2.E1, v1.E2 % v2.E2, v1.E3 % v2.E3, v1.E4 % v2.E4);
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.Int_Equals)]
-		public static bool operator ==(Int32Vector v1, Int32Vector v2)
+		public static bool operator ==(VectorI4 v1, VectorI4 v2)
 		{
 			return v1.e1 == v2.e1 && v1.e2 == v2.e2 && v1.e3 == v2.e3 && v1.e4 == v2.e4;
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.Int_NotEquals)]
-		public static bool operator !=(Int32Vector v1, Int32Vector v2)
+		public static bool operator !=(VectorI4 v1, VectorI4 v2)
 		{
 			return !(v1 == v2);
 		}
@@ -98,8 +98,8 @@ namespace CellDotNet
 
 		public override bool Equals(object obj)
 		{
-			if (!(obj is Int32Vector)) return false;
-			Int32Vector other = (Int32Vector)obj;
+			if (!(obj is VectorI4)) return false;
+			VectorI4 other = (VectorI4)obj;
 			return this == other;
 		}
 

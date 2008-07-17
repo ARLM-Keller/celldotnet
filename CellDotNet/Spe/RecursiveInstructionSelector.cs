@@ -565,7 +565,7 @@ namespace CellDotNet.Spe
 					break;
 				case IRCode.Stind_I4:
 					{
-						if (lefttype.IndirectionLevel != 1 && lefttype != StackTypeDescription.NativeInt)
+						if (!lefttype.IsPointerType && lefttype != StackTypeDescription.NativeInt)
 							throw new InvalidIRTreeException("Invalid level of indirection for stind. Stack type: " + lefttype);
 						VirtualRegister ptr = vrleft;
 
@@ -584,7 +584,7 @@ namespace CellDotNet.Spe
 					break;
 				case IRCode.Stind_R4:
 					{
-						if (lefttype.IndirectionLevel != 1 && lefttype != StackTypeDescription.NativeInt)
+						if (!lefttype.IsPointerType && lefttype != StackTypeDescription.NativeInt)
 							throw new InvalidIRTreeException("Invalid level of indirection for stind. Stack type: " + lefttype);
 						VirtualRegister ptr = vrleft;
 
@@ -593,7 +593,7 @@ namespace CellDotNet.Spe
 					}
 				case IRCode.Stind_R8:
 					{
-						if (lefttype.IndirectionLevel != 1 && lefttype != StackTypeDescription.NativeInt)
+						if (!lefttype.IsPointerType && lefttype != StackTypeDescription.NativeInt)
 							throw new InvalidIRTreeException("Invalid level of indirection for stind. Stack type: " + lefttype);
 						VirtualRegister ptr = vrleft;
 
@@ -892,8 +892,8 @@ namespace CellDotNet.Spe
 						StackTypeDescription type = lefttype.Dereference();
 						switch (type.CliType)
 						{
-							case CliType.Int32Vector:
-							case CliType.Float32Vector:
+							case CliType.VectorI4:
+							case CliType.VectorF4:
 								return _writer.WriteLqd(vrleft, 0);
 							case CliType.ValueType:
 								if (!type.IsImmutableSingleRegisterType)
@@ -1059,8 +1059,8 @@ namespace CellDotNet.Spe
 
 						switch (desttype.CliType)
 						{
-							case CliType.Int32Vector:
-							case CliType.Float32Vector:
+							case CliType.VectorI4:
+							case CliType.VectorF4:
 								_writer.WriteStqd(vrright, vrleft, 0);
 								return null;
 							case CliType.ValueType:

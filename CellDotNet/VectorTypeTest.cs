@@ -38,12 +38,12 @@ namespace CellDotNet
 		[Test]
 		public void TestVectorInt_GetElement()
 		{
-			Func<Int32Vector, int> del = input => input.E3;
+			Func<VectorI4, int> del = input => input.E3;
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v = new Int32Vector(3, 4, 5, 6);
+			var v = new VectorI4(3, 4, 5, 6);
 
 			AreEqual(del(v), (int) SpeContext.UnitTestRunProgram(cc, v));
 		}
@@ -51,8 +51,8 @@ namespace CellDotNet
 		[Test]
 		public void TestVectorInt_GetElement2()
 		{
-			Func<Int32Vector, int, int> del =
-				delegate(Int32Vector v, int i)
+			Func<VectorI4, int, int> del =
+				delegate(VectorI4 v, int i)
 					{
 						if (i == 1)
 							return v.E1;
@@ -69,7 +69,7 @@ namespace CellDotNet
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v1 = new Int32Vector(3, 9, 13, -42);
+			var v1 = new VectorI4(3, 9, 13, -42);
 
 			AreEqual(del(v1, 1), (int) SpeContext.UnitTestRunProgram(cc, v1, 1));
 			AreEqual(del(v1, 2), (int) SpeContext.UnitTestRunProgram(cc, v1, 2));
@@ -79,7 +79,7 @@ namespace CellDotNet
 
 		#region TestVectorInt_RefArgument
 
-		static private void ReplaceArgument(ref Int32Vector v1, Int32Vector v2)
+		static private void ReplaceArgument(ref VectorI4 v1, VectorI4 v2)
 		{
 			v1 = v2;
 		}
@@ -90,8 +90,8 @@ namespace CellDotNet
 		[Test]
 		public void TestVectorInt_RefArgument()
 		{
-			Func<Int32Vector, Int32Vector, Int32Vector> del = 
-				delegate(Int32Vector arg1, Int32Vector arg2)
+			Func<VectorI4, VectorI4, VectorI4> del = 
+				delegate(VectorI4 arg1, VectorI4 arg2)
 					{
 						ReplaceArgument(ref arg2, arg1);
 						return arg2;
@@ -100,10 +100,10 @@ namespace CellDotNet
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v1 = new Int32Vector(1, 2, 3, 4);
-			var v2 = new Int32Vector(5, 6, 7, 8);
+			var v1 = new VectorI4(1, 2, 3, 4);
+			var v2 = new VectorI4(5, 6, 7, 8);
 
-			AreEqual(del(v1, v2), (Int32Vector) SpeContext.UnitTestRunProgram(cc, v1, v2));
+			AreEqual(del(v1, v2), (VectorI4) SpeContext.UnitTestRunProgram(cc, v1, v2));
 		}
 
 		#endregion
@@ -111,111 +111,111 @@ namespace CellDotNet
 		[Test]
 		public void TestVectorInt_Copy()
 		{
-			Func<Int32Vector, Int32Vector> del = 
-				delegate(Int32Vector input)
+			Func<VectorI4, VectorI4> del = 
+				delegate(VectorI4 input)
 					{
-						Int32Vector v2 = input;
+						VectorI4 v2 = input;
 						return v2;
 					};
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v = new Int32Vector(1, 2, 3, 4);
-			AreEqual(del(v), (Int32Vector) SpeContext.UnitTestRunProgram(cc, v));
+			var v = new VectorI4(1, 2, 3, 4);
+			AreEqual(del(v), (VectorI4) SpeContext.UnitTestRunProgram(cc, v));
 		}
 
 		[Test]
 		public void TestVectorInt_Add()
 		{
-			Func<Int32Vector, Int32Vector, Int32Vector> del = (arg1, arg2) => arg1 + arg2;
+			Func<VectorI4, VectorI4, VectorI4> del = (arg1, arg2) => arg1 + arg2;
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			Int32Vector v1 = new Int32Vector(1, 2, 3, 4);
-			Int32Vector v2 = new Int32Vector(5, 6, 7, 8);
-			Int32Vector v3 = new Int32Vector(-16, -32, -128, -1234567);
+			VectorI4 v1 = new VectorI4(1, 2, 3, 4);
+			VectorI4 v2 = new VectorI4(5, 6, 7, 8);
+			VectorI4 v3 = new VectorI4(-16, -32, -128, -1234567);
 
-			AreEqual(del(v1, v2), (Int32Vector) SpeContext.UnitTestRunProgram(cc, v1, v2), "First test failed.");
-			AreEqual(del(v2, v3), (Int32Vector) SpeContext.UnitTestRunProgram(cc, v2, v3), "Second test failed.");
+			AreEqual(del(v1, v2), (VectorI4) SpeContext.UnitTestRunProgram(cc, v1, v2), "First test failed.");
+			AreEqual(del(v2, v3), (VectorI4) SpeContext.UnitTestRunProgram(cc, v2, v3), "Second test failed.");
 		}
 
 		[Test]
 		public void TestVectorInt_Sub()
 		{
-			Func<Int32Vector, Int32Vector, Int32Vector> del = (arg1, arg2) => arg1 - arg2;
+			Func<VectorI4, VectorI4, VectorI4> del = (arg1, arg2) => arg1 - arg2;
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			Int32Vector v1 = new Int32Vector(5, 6, 7, 8);
-			Int32Vector v2 = new Int32Vector(1, 2, 3, 4);
-			Int32Vector v3 = new Int32Vector(-16, -32, -128, -1234567);
+			VectorI4 v1 = new VectorI4(5, 6, 7, 8);
+			VectorI4 v2 = new VectorI4(1, 2, 3, 4);
+			VectorI4 v3 = new VectorI4(-16, -32, -128, -1234567);
 
-			IsTrue((Int32Vector) SpeContext.UnitTestRunProgram(cc, v1, v2) == del(v1, v2), "First test failed.");
-			IsTrue((Int32Vector) SpeContext.UnitTestRunProgram(cc, v2, v3) == del(v2, v3), "Second test failed.");
+			IsTrue((VectorI4) SpeContext.UnitTestRunProgram(cc, v1, v2) == del(v1, v2), "First test failed.");
+			IsTrue((VectorI4) SpeContext.UnitTestRunProgram(cc, v2, v3) == del(v2, v3), "Second test failed.");
 		}
 
 		[Test]
 		public void TestVectorInt_Mul()
 		{
-			Func<Int32Vector, Int32Vector, Int32Vector> del = (arg1, arg2) => arg1*arg2;
+			Func<VectorI4, VectorI4, VectorI4> del = (arg1, arg2) => arg1*arg2;
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			Int32Vector v1 = new Int32Vector(5, -6, 7, 8);
-			Int32Vector v2 = new Int32Vector(1, 2, -3, 4);
-			Int32Vector v3 = new Int32Vector(-16, -32, -128, -324);
+			VectorI4 v1 = new VectorI4(5, -6, 7, 8);
+			VectorI4 v2 = new VectorI4(1, 2, -3, 4);
+			VectorI4 v3 = new VectorI4(-16, -32, -128, -324);
 
-			IsTrue((Int32Vector) SpeContext.UnitTestRunProgram(cc, v1, v2) == del(v1, v2), "First test failed.");
-			IsTrue((Int32Vector) SpeContext.UnitTestRunProgram(cc, v2, v3) == del(v2, v3), "Second test failed.");
+			IsTrue((VectorI4) SpeContext.UnitTestRunProgram(cc, v1, v2) == del(v1, v2), "First test failed.");
+			IsTrue((VectorI4) SpeContext.UnitTestRunProgram(cc, v2, v3) == del(v2, v3), "Second test failed.");
 		}
 
 		[Test]
 		public void TestVectorInt_Div()
 		{
-			Func<Int32Vector, Int32Vector, Int32Vector> del = (arg1, arg2) => arg1/arg2;
+			Func<VectorI4, VectorI4, VectorI4> del = (arg1, arg2) => arg1/arg2;
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v1 = new Int32Vector(5543, -654, 7345, 8553);
-			var v2 = new Int32Vector(5, 7, 53, 14);
-			var v3 = new Int32Vector(-6, -52, -128, -324);
+			var v1 = new VectorI4(5543, -654, 7345, 8553);
+			var v2 = new VectorI4(5, 7, 53, 14);
+			var v3 = new VectorI4(-6, -52, -128, -324);
 
-			AreEqual(del(v1, v2), (Int32Vector)SpeContext.UnitTestRunProgram(cc, v1, v2), "First test failed.");
-			AreEqual(del(v2, v3), (Int32Vector) SpeContext.UnitTestRunProgram(cc, v2, v3), "Second test failed.");
+			AreEqual(del(v1, v2), (VectorI4)SpeContext.UnitTestRunProgram(cc, v1, v2), "First test failed.");
+			AreEqual(del(v2, v3), (VectorI4) SpeContext.UnitTestRunProgram(cc, v2, v3), "Second test failed.");
 		}
 
 		[Test]
 		public void TestVectorInt_Rem()
 		{
-			Func<Int32Vector, Int32Vector, Int32Vector> del = (arg1, arg2) => arg1%arg2;
+			Func<VectorI4, VectorI4, VectorI4> del = (arg1, arg2) => arg1%arg2;
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v1 = new Int32Vector(5543, -654, 7345, 8553);
-			var v2 = new Int32Vector(5, 7, 53, 14);
-			var v3 = new Int32Vector(-6, -52, -128, -324);
+			var v1 = new VectorI4(5543, -654, 7345, 8553);
+			var v2 = new VectorI4(5, 7, 53, 14);
+			var v3 = new VectorI4(-6, -52, -128, -324);
 
-			AreEqual(del(v1, v2), (Int32Vector) SpeContext.UnitTestRunProgram(cc, v1, v2), "First test failed.");
-			AreEqual(del(v2, v3), (Int32Vector) SpeContext.UnitTestRunProgram(cc, v2, v3), "Second test failed.");
+			AreEqual(del(v1, v2), (VectorI4) SpeContext.UnitTestRunProgram(cc, v1, v2), "First test failed.");
+			AreEqual(del(v2, v3), (VectorI4) SpeContext.UnitTestRunProgram(cc, v2, v3), "Second test failed.");
 		}
 
 		[Test]
 		public void TestVectorInt_Constructor()
 		{
 			// This will use newobj.
-			Func<Int32Vector> del = () => new Int32Vector(1, 2, 3, 4);
+			Func<VectorI4> del = () => new VectorI4(1, 2, 3, 4);
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			List<MethodVariable> vlist = cc.EntryPointAsMetodCompiler.Variables
-				.Where(var => var.StackType == StackTypeDescription.Int32Vector)
+				.Where(var => var.StackType == StackTypeDescription.VectorI4)
 				.ToList();
 
 			if (vlist.Count == 1)
@@ -223,16 +223,16 @@ namespace CellDotNet
 			else
 				AreEqual(0, vlist.Count);
 
-			AreEqual(new Int32Vector(1, 2, 3, 4), (Int32Vector) SpeContext.UnitTestRunProgram(cc));
+			AreEqual(new VectorI4(1, 2, 3, 4), (VectorI4) SpeContext.UnitTestRunProgram(cc));
 		}
 
 		[Test]
 		public void TestVectorInt_ConstructorLocalVariable()
 		{
 			// This will use call.
-			Func<Int32Vector> del = () =>
+			Func<VectorI4> del = () =>
 			{
-				Int32Vector v = new Int32Vector(1, 2, 3, 4);
+				VectorI4 v = new VectorI4(1, 2, 3, 4);
 				return v;
 			};
 
@@ -240,7 +240,7 @@ namespace CellDotNet
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			List<MethodVariable> vlist = cc.EntryPointAsMetodCompiler.Variables
-				.Where(var => var.StackType == StackTypeDescription.Int32Vector)
+				.Where(var => var.StackType == StackTypeDescription.VectorI4)
 				.ToList();
 
 			// allow 2 since debug mode branch might have induced an extra variable.
@@ -249,166 +249,166 @@ namespace CellDotNet
 			if (vlist.Count == 2)
 				IsFalse(vlist[1].Escapes.Value);
 
-			AreEqual(new Int32Vector(1, 2, 3, 4), (Int32Vector)SpeContext.UnitTestRunProgram(cc));
+			AreEqual(new VectorI4(1, 2, 3, 4), (VectorI4)SpeContext.UnitTestRunProgram(cc));
 		}
 
 		[Test]
 		public void TestVectorInt_Splat()
 		{
-			Func<int, Int32Vector> del = i => Int32Vector.Splat(i);
+			Func<int, VectorI4> del = i => VectorI4.Splat(i);
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			int arg = 17;
 
-			AreEqual(new Int32Vector(arg, arg, arg, arg), Int32Vector.Splat(arg));
-			AreEqual(Int32Vector.Splat(arg), (Int32Vector)SpeContext.UnitTestRunProgram(cc, arg));
+			AreEqual(new VectorI4(arg, arg, arg, arg), VectorI4.Splat(arg));
+			AreEqual(VectorI4.Splat(arg), (VectorI4)SpeContext.UnitTestRunProgram(cc, arg));
 		}
 
 		[Test]
 		public void TestVectorInt_Equal()
 		{
-			Func<Int32Vector, Int32Vector, bool> del = (arg1, arg2) => arg1 == arg2;
+			Func<VectorI4, VectorI4, bool> del = (arg1, arg2) => arg1 == arg2;
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v1 = new Int32Vector(5, 6, 7, 8);
-			var v2 = new Int32Vector(1, 2, 3, 4);
-			var v3 = new Int32Vector(1, 2, 3, 4);
+			var v1 = new VectorI4(5, 6, 7, 8);
+			var v2 = new VectorI4(1, 2, 3, 4);
+			var v3 = new VectorI4(1, 2, 3, 4);
 
 			AreEqual(del(v1, v2), (bool)SpeContext.UnitTestRunProgram(cc, v1, v2), "First test failed.");
 			AreEqual(del(v2, v3), (bool)SpeContext.UnitTestRunProgram(cc, v2, v3), "Second test failed.");
 		}
 
 		[Test]
-		public void TestVectorFloat_Add()
+		public void TestVectorF4_Add()
 		{
-			Func<Float32Vector, Float32Vector, Float32Vector> del = (arg1, arg2) => arg2 + arg1;
+			Func<VectorF4, VectorF4, VectorF4> del = (arg1, arg2) => arg2 + arg1;
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v1 = new Float32Vector(1, 2, 3, 4);
-			var v2 = new Float32Vector(5, 6, 7, 8);
-			var v3 = new Float32Vector(-16, -32, -128, -1234567);
+			var v1 = new VectorF4(1, 2, 3, 4);
+			var v2 = new VectorF4(5, 6, 7, 8);
+			var v3 = new VectorF4(-16, -32, -128, -1234567);
 
-			AreEqual(del(v1, v2), (Float32Vector)SpeContext.UnitTestRunProgram(cc, v1, v2), "First test failed.");
-			AreEqual(del(v2, v3), (Float32Vector)SpeContext.UnitTestRunProgram(cc, v2, v3), "Second test failed.");
+			AreEqual(del(v1, v2), (VectorF4)SpeContext.UnitTestRunProgram(cc, v1, v2), "First test failed.");
+			AreEqual(del(v2, v3), (VectorF4)SpeContext.UnitTestRunProgram(cc, v2, v3), "Second test failed.");
 		}
 
 		[Test]
-		public void TestVectorFloat_Sub()
+		public void TestVectorF4_Sub()
 		{
-			Func<Float32Vector, Float32Vector, Float32Vector> del = (arg1, arg2) => arg1 - arg2;
+			Func<VectorF4, VectorF4, VectorF4> del = (arg1, arg2) => arg1 - arg2;
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v1 = new Float32Vector(5, 6, 7, 8);
-			var v2 = new Float32Vector(1, 2, 3, 4);
-			var v3 = new Float32Vector(-16, -32, -128, -1234567);
+			var v1 = new VectorF4(5, 6, 7, 8);
+			var v2 = new VectorF4(1, 2, 3, 4);
+			var v3 = new VectorF4(-16, -32, -128, -1234567);
 
-			AreEqual(del(v1, v2), (Float32Vector) SpeContext.UnitTestRunProgram(cc, v1, v2), "First test failed.");
-			AreEqual(del(v2, v3), (Float32Vector)SpeContext.UnitTestRunProgram(cc, v2, v3), "Second test failed.");
+			AreEqual(del(v1, v2), (VectorF4) SpeContext.UnitTestRunProgram(cc, v1, v2), "First test failed.");
+			AreEqual(del(v2, v3), (VectorF4)SpeContext.UnitTestRunProgram(cc, v2, v3), "Second test failed.");
 		}
 
 		[Test]
-		public void TestVectorFloat_Mul()
+		public void TestVectorF4_Mul()
 		{
-			Func<Float32Vector, Float32Vector, Float32Vector> del = (arg1, arg2) => arg1*arg2;
+			Func<VectorF4, VectorF4, VectorF4> del = (arg1, arg2) => arg1*arg2;
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v1 = new Float32Vector(5, 6, 7, 8);
-			var v2 = new Float32Vector(1, 2, 3, 4);
-			var v3 = new Float32Vector(-16, -32, -128, -1234567);
+			var v1 = new VectorF4(5, 6, 7, 8);
+			var v2 = new VectorF4(1, 2, 3, 4);
+			var v3 = new VectorF4(-16, -32, -128, -1234567);
 
-			AreWithinLimits(del(v1, v2), (Float32Vector) SpeContext.UnitTestRunProgram(cc, v1, v2), 0.00001f, "First test failed.");
-			AreWithinLimits(del(v2, v3), (Float32Vector) SpeContext.UnitTestRunProgram(cc, v2, v3), 0.00001f, "Second test failed.");
+			AreWithinLimits(del(v1, v2), (VectorF4) SpeContext.UnitTestRunProgram(cc, v1, v2), 0.00001f, "First test failed.");
+			AreWithinLimits(del(v2, v3), (VectorF4) SpeContext.UnitTestRunProgram(cc, v2, v3), 0.00001f, "Second test failed.");
 		}
 
 		[Test]
-		public void TestVectorFloat_Div()
+		public void TestVectorF4_Div()
 		{
-			Func<Float32Vector, Float32Vector, Float32Vector> del = (arg1, arg2) => arg1/arg2;
+			Func<VectorF4, VectorF4, VectorF4> del = (arg1, arg2) => arg1/arg2;
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v1 = new Float32Vector(5, -6, 7, 8);
-			var v2 = new Float32Vector(1, 2, -3, 4);
-			var v3 = new Float32Vector(-16, -32, -128, -324);
+			var v1 = new VectorF4(5, -6, 7, 8);
+			var v2 = new VectorF4(1, 2, -3, 4);
+			var v3 = new VectorF4(-16, -32, -128, -324);
 
-			AreWithinLimits(del(v1, v2), (Float32Vector) SpeContext.UnitTestRunProgram(cc, v1, v2), 0.00001f, "First test failed.");
-			AreWithinLimits(del(v2, v3), (Float32Vector) SpeContext.UnitTestRunProgram(cc, v2, v3), 0.00001f, "Second test failed.");
+			AreWithinLimits(del(v1, v2), (VectorF4) SpeContext.UnitTestRunProgram(cc, v1, v2), 0.00001f, "First test failed.");
+			AreWithinLimits(del(v2, v3), (VectorF4) SpeContext.UnitTestRunProgram(cc, v2, v3), 0.00001f, "Second test failed.");
 		}
 
 		[Test]
-		public void TestVectorFloat_Constructor()
+		public void TestVectorF4_Constructor()
 		{
-			Func<Float32Vector> del = () => new Float32Vector(1, 2, 3, 4);
+			Func<VectorF4> del = () => new VectorF4(1, 2, 3, 4);
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(new Float32Vector(1, 2, 3, 4), (Float32Vector)SpeContext.UnitTestRunProgram(cc));
+			AreEqual(new VectorF4(1, 2, 3, 4), (VectorF4)SpeContext.UnitTestRunProgram(cc));
 		}
 
 		[Test]
-		public void TestVectorFloat_ConstructorLocalVariable()
+		public void TestVectorF4_ConstructorLocalVariable()
 		{
-			Func<Float32Vector> del = () => new Float32Vector(1, 2, 3, 4);
+			Func<VectorF4> del = () => new VectorF4(1, 2, 3, 4);
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(new Float32Vector(1, 2, 3, 4), (Float32Vector)SpeContext.UnitTestRunProgram(cc));
+			AreEqual(new VectorF4(1, 2, 3, 4), (VectorF4)SpeContext.UnitTestRunProgram(cc));
 		}
 
-		static private void TestVectorFloat_ConstructorRefArg_RefArgMehod(out Float32Vector v)
+		static private void TestVectorF4_ConstructorRefArg_RefArgMehod(out VectorF4 v)
 		{
-			v = new Float32Vector(1, 2, 3, 4);
+			v = new VectorF4(1, 2, 3, 4);
 		}
 
 		[Test]
-		public void TestVectorFloat_ConstructorRefArg()
+		public void TestVectorF4_ConstructorRefArg()
 		{
-			Func<Float32Vector> del = 
+			Func<VectorF4> del = 
 				delegate
 					{
-						Float32Vector v;
-						TestVectorFloat_ConstructorRefArg_RefArgMehod(out v);
+						VectorF4 v;
+						TestVectorF4_ConstructorRefArg_RefArgMehod(out v);
 						return v;
 					};
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(new Float32Vector(1, 2, 3, 4), (Float32Vector)SpeContext.UnitTestRunProgram(cc));
+			AreEqual(new VectorF4(1, 2, 3, 4), (VectorF4)SpeContext.UnitTestRunProgram(cc));
 		}
 
 		[Test]
-		public void TestVectorFloat_Splat()
+		public void TestVectorF4_Splat()
 		{
-			Func<float, Float32Vector> del = f => Float32Vector.Splat(f);
+			Func<float, VectorF4> del = f => VectorF4.Splat(f);
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			float arg = 17;
 
-			AreEqual(new Float32Vector(arg, arg, arg, arg), Float32Vector.Splat(arg));
-			AreEqual(Float32Vector.Splat(arg), (Float32Vector)SpeContext.UnitTestRunProgram(cc, arg));
+			AreEqual(new VectorF4(arg, arg, arg, arg), VectorF4.Splat(arg));
+			AreEqual(VectorF4.Splat(arg), (VectorF4)SpeContext.UnitTestRunProgram(cc, arg));
 		}
 
 		[Test]
-		public void TestVectorFloat_GetElement()
+		public void TestVectorF4_GetElement()
 		{
-			Func<Float32Vector, int, float> del =
-				delegate(Float32Vector v, int i)
+			Func<VectorF4, int, float> del =
+				delegate(VectorF4 v, int i)
 					{
 						if (i == 1)
 							return v.E1;
@@ -425,7 +425,7 @@ namespace CellDotNet
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v1 = new Float32Vector(3, 9, 13, -42);
+			var v1 = new VectorF4(3, 9, 13, -42);
 
 			AreEqual(del(v1, 1), (float) SpeContext.UnitTestRunProgram(cc, v1, 1));
 			AreEqual(del(v1, 2), (float) SpeContext.UnitTestRunProgram(cc, v1, 2));
@@ -434,148 +434,148 @@ namespace CellDotNet
 		}
 
 		[Test]
-		public void TestVectorFloat_Equal()
+		public void TestVectorF4_Equal()
 		{
-			Func<Float32Vector, Float32Vector, bool> del = (arg1, arg2) => arg1 == arg2;
+			Func<VectorF4, VectorF4, bool> del = (arg1, arg2) => arg1 == arg2;
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v1 = new Float32Vector(5, 6, 7, 8);
-			var v2 = new Float32Vector(1, 2, 3, 4);
-			var v3 = new Float32Vector(1, 2, 3, 4);
+			var v1 = new VectorF4(5, 6, 7, 8);
+			var v2 = new VectorF4(1, 2, 3, 4);
+			var v3 = new VectorF4(1, 2, 3, 4);
 
 			AreEqual(del(v1, v2), (bool) SpeContext.UnitTestRunProgram(cc, v1, v2), "First test failed.");
 			AreEqual(del(v2, v3), (bool) SpeContext.UnitTestRunProgram(cc, v2, v3), "Second test failed.");
 		}
 
 		[Test]
-		public void TestVectorDouble_Add()
+		public void TestVectorD2_Add()
 		{
-			Func<Float64Vector, Float64Vector, Float64Vector> del = (arg1, arg2) => arg2 + arg1;
+			Func<VectorD2, VectorD2, VectorD2> del = (arg1, arg2) => arg2 + arg1;
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v1 = new Float64Vector(1, 2);
-			var v2 = new Float64Vector(5, 6);
-			var v3 = new Float64Vector(-16, -32);
+			var v1 = new VectorD2(1, 2);
+			var v2 = new VectorD2(5, 6);
+			var v3 = new VectorD2(-16, -32);
 
-			AreEqual(del(v1, v2), (Float64Vector)SpeContext.UnitTestRunProgram(cc, v1, v2), "First test failed.");
-			AreEqual(del(v2, v3), (Float64Vector)SpeContext.UnitTestRunProgram(cc, v2, v3), "Second test failed.");
+			AreEqual(del(v1, v2), (VectorD2)SpeContext.UnitTestRunProgram(cc, v1, v2), "First test failed.");
+			AreEqual(del(v2, v3), (VectorD2)SpeContext.UnitTestRunProgram(cc, v2, v3), "Second test failed.");
 		}
 
 		[Test]
-		public void TestVectorDouble_Sub()
+		public void TestVectorD2_Sub()
 		{
-			Func<Float64Vector, Float64Vector, Float64Vector> del = (arg1, arg2) => arg1 - arg2;
+			Func<VectorD2, VectorD2, VectorD2> del = (arg1, arg2) => arg1 - arg2;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v1 = new Float64Vector(5, 6);
-			var v2 = new Float64Vector(1, 2);
-			var v3 = new Float64Vector(-16, -32);
+			var v1 = new VectorD2(5, 6);
+			var v2 = new VectorD2(1, 2);
+			var v3 = new VectorD2(-16, -32);
 
-			AreEqual(del(v1, v2), (Float64Vector) SpeContext.UnitTestRunProgram(cc, v1, v2), "First test failed.");
-			AreEqual(del(v2, v3), (Float64Vector)SpeContext.UnitTestRunProgram(cc, v2, v3), "Second test failed.");
+			AreEqual(del(v1, v2), (VectorD2) SpeContext.UnitTestRunProgram(cc, v1, v2), "First test failed.");
+			AreEqual(del(v2, v3), (VectorD2)SpeContext.UnitTestRunProgram(cc, v2, v3), "Second test failed.");
 		}
 
 		[Test]
-		public void TestVectorDouble_Mul()
+		public void TestVectorD2_Mul()
 		{
-			Func<Float64Vector, Float64Vector, Float64Vector> del = (arg1, arg2) => arg1*arg2;
+			Func<VectorD2, VectorD2, VectorD2> del = (arg1, arg2) => arg1*arg2;
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v1 = new Float64Vector(5, 6);
-			var v2 = new Float64Vector(1, 2);
-			var v3 = new Float64Vector(-16, -32);
+			var v1 = new VectorD2(5, 6);
+			var v2 = new VectorD2(1, 2);
+			var v3 = new VectorD2(-16, -32);
 
-			AreWithinLimits(del(v1, v2), (Float64Vector) SpeContext.UnitTestRunProgram(cc, v1, v2), 0.00001f, "First test failed.");
-			AreWithinLimits(del(v2, v3), (Float64Vector) SpeContext.UnitTestRunProgram(cc, v2, v3), 0.00001f, "Second test failed.");
+			AreWithinLimits(del(v1, v2), (VectorD2) SpeContext.UnitTestRunProgram(cc, v1, v2), 0.00001f, "First test failed.");
+			AreWithinLimits(del(v2, v3), (VectorD2) SpeContext.UnitTestRunProgram(cc, v2, v3), 0.00001f, "Second test failed.");
 		}
 
 		[Test]
-		public void TestVectorDouble_Div()
+		public void TestVectorD2_Div()
 		{
-			Func<Float64Vector, Float64Vector, Float64Vector> del = (arg1, arg2) => arg1/arg2;
+			Func<VectorD2, VectorD2, VectorD2> del = (arg1, arg2) => arg1/arg2;
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v1 = new Float64Vector(5, -6);
-			var v2 = new Float64Vector(1, -3);
-			var v3 = new Float64Vector(-16, -32);
+			var v1 = new VectorD2(5, -6);
+			var v2 = new VectorD2(1, -3);
+			var v3 = new VectorD2(-16, -32);
 
-			AreWithinLimits(del(v1, v2), (Float64Vector) SpeContext.UnitTestRunProgram(cc, v1, v2), 0.00001f, "First test failed.");
-			AreWithinLimits(del(v2, v3), (Float64Vector) SpeContext.UnitTestRunProgram(cc, v2, v3), 0.00001f, "Second test failed.");
+			AreWithinLimits(del(v1, v2), (VectorD2) SpeContext.UnitTestRunProgram(cc, v1, v2), 0.00001f, "First test failed.");
+			AreWithinLimits(del(v2, v3), (VectorD2) SpeContext.UnitTestRunProgram(cc, v2, v3), 0.00001f, "Second test failed.");
 		}
 
 		[Test]
-		public void TestVectorDouble_Constructor()
+		public void TestVectorD2_Constructor()
 		{
-			Func<Float64Vector> del = () => new Float64Vector(1, 2);
+			Func<VectorD2> del = () => new VectorD2(1, 2);
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(new Float64Vector(1, 2), (Float64Vector)SpeContext.UnitTestRunProgram(cc));
+			AreEqual(new VectorD2(1, 2), (VectorD2)SpeContext.UnitTestRunProgram(cc));
 		}
 
 		[Test]
-		public void TestVectorDouble_ConstructorLocalVariable()
+		public void TestVectorD2_ConstructorLocalVariable()
 		{
-			Func<Float64Vector> del = () => new Float64Vector(1, 2);
+			Func<VectorD2> del = () => new VectorD2(1, 2);
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(new Float64Vector(1, 2), (Float64Vector)SpeContext.UnitTestRunProgram(cc));
+			AreEqual(new VectorD2(1, 2), (VectorD2)SpeContext.UnitTestRunProgram(cc));
 		}
 
-		static private void TestVectorDouble_ConstructorRefArg_RefArgMehod(out Float64Vector v)
+		static private void TestVectorD2_ConstructorRefArg_RefArgMehod(out VectorD2 v)
 		{
-			v = new Float64Vector(1, 2);
+			v = new VectorD2(1, 2);
 		}
 
 		[Test]
-		public void TestVectorDouble_ConstructorRefArg()
+		public void TestVectorD2_ConstructorRefArg()
 		{
-			Func<Float64Vector> del =
+			Func<VectorD2> del =
 				delegate
 				{
-					Float64Vector v;
-					TestVectorDouble_ConstructorRefArg_RefArgMehod(out v);
+					VectorD2 v;
+					TestVectorD2_ConstructorRefArg_RefArgMehod(out v);
 					return v;
 				};
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(new Float64Vector(1, 2), (Float64Vector)SpeContext.UnitTestRunProgram(cc));
+			AreEqual(new VectorD2(1, 2), (VectorD2)SpeContext.UnitTestRunProgram(cc));
 		}
 
 		[Test]
-		public void TestVectorDouble_Splat()
+		public void TestVectorD2_Splat()
 		{
-			Func<double, Float64Vector> del = d => Float64Vector.Splat(d);
+			Func<double, VectorD2> del = d => VectorD2.Splat(d);
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
 			double arg = 17;
 
-			AreEqual(new Float64Vector(arg, arg), Float64Vector.Splat(arg));
-			AreEqual(Float64Vector.Splat(arg), (Float64Vector)SpeContext.UnitTestRunProgram(cc, arg));
+			AreEqual(new VectorD2(arg, arg), VectorD2.Splat(arg));
+			AreEqual(VectorD2.Splat(arg), (VectorD2)SpeContext.UnitTestRunProgram(cc, arg));
 		}
 
 		[Test]
-		public void TestVectorDouble_GetElement()
+		public void TestVectorD2_GetElement()
 		{
-			Func<Float64Vector, int, double> del =
-				delegate(Float64Vector v, int i)
+			Func<VectorD2, int, double> del =
+				delegate(VectorD2 v, int i)
 					{
 						if (i == 1)
 							return v.E1;
@@ -588,31 +588,31 @@ namespace CellDotNet
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v1 = new Float64Vector(3, 9);
+			var v1 = new VectorD2(3, 9);
 
 			AreEqual(del(v1, 1), (double)SpeContext.UnitTestRunProgram(cc, v1, 1));
 			AreEqual(del(v1, 2), (double)SpeContext.UnitTestRunProgram(cc, v1, 2));
 		}
 
 		[Test]
-		public void TestVectorDouble_Equal()
+		public void TestVectorD2_Equal()
 		{
-			Func<Float64Vector, Float64Vector, bool> del = (arg1, arg2) => arg1 == arg2;
+			Func<VectorD2, VectorD2, bool> del = (arg1, arg2) => arg1 == arg2;
 
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v1 = new Float64Vector(5, 6);
-			var v2 = new Float64Vector(1, 2);
-			var v3 = new Float64Vector(1, 2);
+			var v1 = new VectorD2(5, 6);
+			var v2 = new VectorD2(1, 2);
+			var v3 = new VectorD2(1, 2);
 
 			AreEqual(del(v1, v2), (bool) SpeContext.UnitTestRunProgram(cc, v1, v2), "First test failed.");
 			AreEqual(del(v2, v3), (bool) SpeContext.UnitTestRunProgram(cc, v2, v3), "Second test failed.");
 		}
 
-		private static Float32Vector ArrayIntVectorFunc2(Float32Vector v1, Float32Vector v2)
+		private static VectorF4 ArrayIntVectorFunc2(VectorF4 v1, VectorF4 v2)
 		{
-			Float32Vector[] varr = new Float32Vector[3];
+			VectorF4[] varr = new VectorF4[3];
 
 			varr[0] = v1;
 			varr[1] = v2;
@@ -625,9 +625,9 @@ namespace CellDotNet
 		[Test]
 		public void TestVectorIntArray_Simple()
 		{
-			Func<Int32Vector, Int32Vector> del1 = delegate(Int32Vector vec)
+			Func<VectorI4, VectorI4> del1 = delegate(VectorI4 vec)
 			                                      	{
-			                                      		var varr = new Int32Vector[1];
+			                                      		var varr = new VectorI4[1];
 
 			                                      		varr[0] = vec;
 			                                      		return varr[0];
@@ -636,20 +636,20 @@ namespace CellDotNet
 			var cc = new CompileContext(del1.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v1 = new Int32Vector(5, 6, 7, 8);
-			var v2 = new Int32Vector(1, 2, 3, 4);
+			var v1 = new VectorI4(5, 6, 7, 8);
+			var v2 = new VectorI4(1, 2, 3, 4);
 
-			AreEqual(del1(v1), (Int32Vector) SpeContext.UnitTestRunProgram(cc, v1), "First test failed.");
-			AreEqual(del1(v2), (Int32Vector) SpeContext.UnitTestRunProgram(cc, v2), "Second test failed.");
+			AreEqual(del1(v1), (VectorI4) SpeContext.UnitTestRunProgram(cc, v1), "First test failed.");
+			AreEqual(del1(v2), (VectorI4) SpeContext.UnitTestRunProgram(cc, v2), "Second test failed.");
 		}
 
 		[Test]
 		public void TestVectorIntArray()
 		{
-			Func<Int32Vector, Int32Vector, Int32Vector> del =
+			Func<VectorI4, VectorI4, VectorI4> del =
 				(arg1, arg2) =>
 					{
-						var varr = new Int32Vector[3];
+						var varr = new VectorI4[3];
 
 						varr[0] = arg1;
 						varr[1] = arg2;
@@ -662,21 +662,21 @@ namespace CellDotNet
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v1 = new Int32Vector(5, 6, 7, 8);
-			var v2 = new Int32Vector(1, 2, 3, 4);
-			var v3 = new Int32Vector(1, 2, 3, 4);
+			var v1 = new VectorI4(5, 6, 7, 8);
+			var v2 = new VectorI4(1, 2, 3, 4);
+			var v3 = new VectorI4(1, 2, 3, 4);
 
-			AreEqual(del(v1, v2), (Int32Vector) SpeContext.UnitTestRunProgram(cc, v1, v2), "First test failed.");
-			AreEqual(del(v2, v3), (Int32Vector)SpeContext.UnitTestRunProgram(cc, v2, v3), "Second test failed.");
+			AreEqual(del(v1, v2), (VectorI4) SpeContext.UnitTestRunProgram(cc, v1, v2), "First test failed.");
+			AreEqual(del(v2, v3), (VectorI4)SpeContext.UnitTestRunProgram(cc, v2, v3), "Second test failed.");
 		}
 
 		[Test]
 		public void TestVectorIntArray_OverWrite()
 		{
-			Func<Int32Vector, Int32Vector, Int32Vector> del =
-				delegate(Int32Vector arg1, Int32Vector arg2)
+			Func<VectorI4, VectorI4, VectorI4> del =
+				delegate(VectorI4 arg1, VectorI4 arg2)
 					{
-						var varr = new Int32Vector[100];
+						var varr = new VectorI4[100];
 
 						varr[14] = arg2;
 
@@ -690,12 +690,12 @@ namespace CellDotNet
 			var cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			var v1 = new Int32Vector(5, 6, 7, 8);
-			var v2 = new Int32Vector(1, 2, 3, 4);
-			var v3 = new Int32Vector(25, 64325, 23645, 435);
+			var v1 = new VectorI4(5, 6, 7, 8);
+			var v2 = new VectorI4(1, 2, 3, 4);
+			var v3 = new VectorI4(25, 64325, 23645, 435);
 
-			AreEqual(del(v1, v2), (Int32Vector) SpeContext.UnitTestRunProgram(cc, v1, v2), "First test failed. Expected");
-			AreEqual(del(v2, v3), (Int32Vector) SpeContext.UnitTestRunProgram(cc, v2, v3), "Second test failed.");
+			AreEqual(del(v1, v2), (VectorI4) SpeContext.UnitTestRunProgram(cc, v1, v2), "First test failed. Expected");
+			AreEqual(del(v2, v3), (VectorI4) SpeContext.UnitTestRunProgram(cc, v2, v3), "Second test failed.");
 		}
 	}
 }

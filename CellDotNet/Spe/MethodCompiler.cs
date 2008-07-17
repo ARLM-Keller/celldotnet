@@ -201,7 +201,7 @@ namespace CellDotNet.Spe
 				StackTypeDescription type = new StackTypeDescription(new TypeDescription(_methodBase.DeclaringType));
 
 				StackTypeDescription thistype;
-				if (type.IndirectionLevel == 0 && type.CliType == CliType.ValueType)
+				if (!type.IsPointerType && type.CliType == CliType.ValueType)
 					thistype = type.GetManagedPointer();
 				else
 					thistype = type;
@@ -349,7 +349,7 @@ namespace CellDotNet.Spe
 
 //				bool isDefiningTypeInstanceMethodCall = method.DeclaringType == ldthis.OperandAsVariable.ReflectionType;
 				bool canRemoveAddressOp = ldthis.OperandAsVariable != null && method.DeclaringType == ldthis.OperandAsVariable.ReflectionType &&
-				                          thistype.IndirectionLevel == 1 && thistype.Dereference().IsImmutableSingleRegisterType;
+										  thistype.IsPointerType && thistype.Dereference().IsImmutableSingleRegisterType;
 
 				if (!canRemoveAddressOp)
 					return;
@@ -388,18 +388,18 @@ namespace CellDotNet.Spe
 
 		static private readonly Dictionary<MethodInfo, MethodInfo> s_replacements = new Dictionary<MethodInfo, MethodInfo>
     	{
-    		{ new Func<double, double>(Math.Cos).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Cos).Method },
-    		{ new Func<double, double>(Math.Sin).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Sin).Method },
-    		{ new Func<double, double>(Math.Tan).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Tan).Method },
-    		{ new Func<double, double>(Math.Log).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Log).Method },
-    		{ new Func<double, double>(Math.Sqrt).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Sqrt).Method },
-    		{ new Func<double, double>(Math.Acos).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Acos).Method },
-    		{ new Func<double, double>(Math.Asin).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Asin).Method },
-    		{ new Func<double, double>(Math.Atan).Method, new Func<Float64Vector, Float64Vector>(SpuMath.Atan	).Method },
-    		{ new Func<double, double, double>(Math.Atan2).Method, new Func<Float64Vector, Float64Vector, Float64Vector>(SpuMath.Atan2).Method },
+    		{ new Func<double, double>(Math.Cos).Method, new Func<VectorD2, VectorD2>(SpuMath.Cos).Method },
+    		{ new Func<double, double>(Math.Sin).Method, new Func<VectorD2, VectorD2>(SpuMath.Sin).Method },
+    		{ new Func<double, double>(Math.Tan).Method, new Func<VectorD2, VectorD2>(SpuMath.Tan).Method },
+    		{ new Func<double, double>(Math.Log).Method, new Func<VectorD2, VectorD2>(SpuMath.Log).Method },
+    		{ new Func<double, double>(Math.Sqrt).Method, new Func<VectorD2, VectorD2>(SpuMath.Sqrt).Method },
+    		{ new Func<double, double>(Math.Acos).Method, new Func<VectorD2, VectorD2>(SpuMath.Acos).Method },
+    		{ new Func<double, double>(Math.Asin).Method, new Func<VectorD2, VectorD2>(SpuMath.Asin).Method },
+    		{ new Func<double, double>(Math.Atan).Method, new Func<VectorD2, VectorD2>(SpuMath.Atan	).Method },
+    		{ new Func<double, double, double>(Math.Atan2).Method, new Func<VectorD2, VectorD2, VectorD2>(SpuMath.Atan2).Method },
     	};
 
-//		static readonly MethodBase rem_r4v_mb = new Func<Float32Vector, Float32Vector, Float32Vector>(SpuMath.Rem).Method;
+//		static readonly MethodBase rem_r4v_mb = new Func<VectorF4, VectorF4, VectorF4>(SpuMath.Rem).Method;
 
 		private static TreeInstruction DivConverter(TreeInstruction inst)
 		{

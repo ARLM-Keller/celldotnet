@@ -517,19 +517,19 @@ namespace CellDotNet.Spe
 
 		struct BigFieldStruct_1
 		{
-			public Int32Vector v1;
+			public VectorI4 v1;
 		}
 
 		struct BigFieldStruct_2
 		{
 			public int i1;
-			public Int32Vector v1;
+			public VectorI4 v1;
 			public int i2;
-			public Int32Vector v2;
+			public VectorI4 v2;
 			public int i3;
-			public Int32Vector v3;
+			public VectorI4 v3;
 			public int i4;
-			public Int32Vector v4;
+			public VectorI4 v4;
 		}
 
 		#endregion
@@ -538,12 +538,12 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestStruct_BigField_1()
 		{
-			Converter<int, Int32Vector> del =
+			Converter<int, VectorI4> del =
 				delegate(int input)
 				{
 					BigFieldStruct_1 s = new BigFieldStruct_1();
 
-					s.v1 = new Int32Vector(7, 9, 13, 17);
+					s.v1 = new VectorI4(7, 9, 13, 17);
 
 					return s.v1;
 				};
@@ -551,21 +551,21 @@ namespace CellDotNet.Spe
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(del(0), (Int32Vector)SpeContext.UnitTestRunProgram(cc, 0));
+			AreEqual(del(0), (VectorI4)SpeContext.UnitTestRunProgram(cc, 0));
 		}
 
 		[Test]
 		public void TestStruct_BigField_2()
 		{
-			Func<Int32Vector> del =
+			Func<VectorI4> del =
 				delegate
 				{
 					BigFieldStruct_2 s = new BigFieldStruct_2();
 
-					s.v1 = new Int32Vector(21, 22, 23, 24);
-					s.v2 = new Int32Vector(5, 6, 7, 8);
-					s.v3 = new Int32Vector(5, 6, 7, 8);
-					s.v4 = new Int32Vector(5, 6, 7, 8);
+					s.v1 = new VectorI4(21, 22, 23, 24);
+					s.v2 = new VectorI4(5, 6, 7, 8);
+					s.v3 = new VectorI4(5, 6, 7, 8);
+					s.v4 = new VectorI4(5, 6, 7, 8);
 					s.i1 = 1;
 					s.i2 = 2;
 					s.i3 = 3;
@@ -577,21 +577,21 @@ namespace CellDotNet.Spe
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(del(), (Int32Vector)SpeContext.UnitTestRunProgram(cc));
+			AreEqual(del(), (VectorI4)SpeContext.UnitTestRunProgram(cc));
 		}
 
 		[Test]
 		public void TestStruct_BigField_3()
 		{
-			Func<Int32Vector> del =
+			Func<VectorI4> del =
 				delegate
 					{
 					BigFieldStruct_2 s = new BigFieldStruct_2();
 
-					s.v2 = new Int32Vector(21, 22, 23, 24);
-					s.v1 = new Int32Vector(5, 6, 7, 8);
-					s.v3 = new Int32Vector(5, 6, 7, 8);
-					s.v4 = new Int32Vector(5, 6, 7, 8);
+					s.v2 = new VectorI4(21, 22, 23, 24);
+					s.v1 = new VectorI4(5, 6, 7, 8);
+					s.v3 = new VectorI4(5, 6, 7, 8);
+					s.v4 = new VectorI4(5, 6, 7, 8);
 					s.i1 = 1;
 					s.i2 = 2;
 					s.i3 = 3;
@@ -603,21 +603,21 @@ namespace CellDotNet.Spe
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(del(), (Int32Vector)SpeContext.UnitTestRunProgram(cc));
+			AreEqual(del(), (VectorI4)SpeContext.UnitTestRunProgram(cc));
 		}
 
 		[Test]
 		public void TestStruct_BigField_4()
 		{
-			Func<Int32Vector> del =
+			Func<VectorI4> del =
 				delegate
 					{
 					BigFieldStruct_2 s = new BigFieldStruct_2();
 
-					s.v3 = new Int32Vector(21, 22, 23, 24);
-					s.v1 = new Int32Vector(5, 6, 7, 8);
-					s.v2 = new Int32Vector(5, 6, 7, 8);
-					s.v4 = new Int32Vector(5, 6, 7, 8);
+					s.v3 = new VectorI4(21, 22, 23, 24);
+					s.v1 = new VectorI4(5, 6, 7, 8);
+					s.v2 = new VectorI4(5, 6, 7, 8);
+					s.v4 = new VectorI4(5, 6, 7, 8);
 					s.i1 = 1;
 					s.i2 = 2;
 					s.i3 = 3;
@@ -629,21 +629,21 @@ namespace CellDotNet.Spe
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(del(), (Int32Vector)SpeContext.UnitTestRunProgram(cc));
+			AreEqual(del(), (VectorI4)SpeContext.UnitTestRunProgram(cc));
 		}
 
 		[Test]
 		public void TestStruct_BigField_5()
 		{
-			Func<Int32Vector> del =
+			Func<VectorI4> del =
 				delegate
 				{
 					BigFieldStruct_2 s = new BigFieldStruct_2();
 
-					s.v4 = new Int32Vector(21, 22, 23, 24);
-					s.v1 = new Int32Vector(5, 6, 7, 8);
-					s.v2 = new Int32Vector(5, 6, 7, 8);
-					s.v3 = new Int32Vector(5, 6, 7, 8);
+					s.v4 = new VectorI4(21, 22, 23, 24);
+					s.v1 = new VectorI4(5, 6, 7, 8);
+					s.v2 = new VectorI4(5, 6, 7, 8);
+					s.v3 = new VectorI4(5, 6, 7, 8);
 					s.i1 = 1;
 					s.i2 = 2;
 					s.i3 = 3;
@@ -655,7 +655,7 @@ namespace CellDotNet.Spe
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
 
-			AreEqual(del(), (Int32Vector)SpeContext.UnitTestRunProgram(cc));
+			AreEqual(del(), (VectorI4)SpeContext.UnitTestRunProgram(cc));
 		}
 
 #region  dsfdsf
@@ -1108,7 +1108,7 @@ namespace CellDotNet.Spe
 			public const int MagicNumber2 = 0x50;
 			public const int MagicReturn = 0x0b0c0d0;
 
-			public Int32Vector Int32VectorReturnValue;
+			public VectorI4 VectorI4ReturnValue;
 			public BigStruct BigStructReturnValue;
 			public OtherPpeClass OtherPpeClassReturnValue;
 
@@ -1124,10 +1124,10 @@ namespace CellDotNet.Spe
 				get { return _hitObject; }
 			}
 
-			private Int32Vector _hitInt32Vector;
-			public Int32Vector HitInt32Vector
+			private VectorI4 _hitVectorI4;
+			public VectorI4 HitVectorI4
 			{
-				get { return _hitInt32Vector; }
+				get { return _hitVectorI4; }
 			}
 
 			int _hitcount;
@@ -1155,9 +1155,9 @@ namespace CellDotNet.Spe
 				_hitcount++;
 			}
 
-			public void Hit(Int32Vector v)
+			public void Hit(VectorI4 v)
 			{
-				_hitInt32Vector = v;
+				_hitVectorI4 = v;
 				_hitcount++;
 			}
 
@@ -1167,10 +1167,10 @@ namespace CellDotNet.Spe
 				return MagicReturn;
 			}
 
-			public Int32Vector HitWithVectorReturn()
+			public VectorI4 HitWithVectorReturn()
 			{
 				_hitcount++;
-				return Int32VectorReturnValue;
+				return VectorI4ReturnValue;
 			}
 
 			public BigStruct HitWithBigStructReturn()
@@ -1233,7 +1233,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestPpeClass_InstanceMethodCall_ArgsVector()
 		{
-			Action<PpeClass> del = delegate(PpeClass obj) { obj.Hit(new Int32Vector(10, 11, 12, 13)); };
+			Action<PpeClass> del = delegate(PpeClass obj) { obj.Hit(new VectorI4(10, 11, 12, 13)); };
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -1244,7 +1244,7 @@ namespace CellDotNet.Spe
 			SpeContext.UnitTestRunProgram(cc, inst);
 
 			AreEqual(1, inst.Hitcount);
-			AreEqual(new Int32Vector(10, 11, 12, 13), inst.HitInt32Vector);
+			AreEqual(new VectorI4(10, 11, 12, 13), inst.HitVectorI4);
 		}
 
 		[Test]
@@ -1327,7 +1327,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestPpeClass_InstanceMethodCall_ReturnVector()
 		{
-			Converter<PpeClass, Int32Vector> del = delegate(PpeClass obj) { return obj.HitWithVectorReturn(); };
+			Converter<PpeClass, VectorI4> del = delegate(PpeClass obj) { return obj.HitWithVectorReturn(); };
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -1335,8 +1335,8 @@ namespace CellDotNet.Spe
 			AreEqual(1, cc.Methods.Count);
 
 			PpeClass inst = new PpeClass();
-			inst.Int32VectorReturnValue = new Int32Vector(100, 200, 300, 400);
-			AreEqual(inst.Int32VectorReturnValue, (Int32Vector) SpeContext.UnitTestRunProgram(cc, inst));
+			inst.VectorI4ReturnValue = new VectorI4(100, 200, 300, 400);
+			AreEqual(inst.VectorI4ReturnValue, (VectorI4) SpeContext.UnitTestRunProgram(cc, inst));
 			AreEqual(1, inst.Hitcount);
 		}
 
