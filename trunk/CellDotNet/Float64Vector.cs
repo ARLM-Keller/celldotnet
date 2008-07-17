@@ -27,64 +27,64 @@ using CellDotNet.Spe;
 
 namespace CellDotNet
 {
-	public struct Float64Vector
+	public struct VectorD2
 	{
 		private readonly double e1, e2;
 
 		[IntrinsicMethod(SpuIntrinsicMethod.CombineTwoDWords)]
-		public Float64Vector(double e1, double e2)
+		public VectorD2(double e1, double e2)
 		{
 			this.e1 = e1;
 			this.e2 = e2;
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.SplatDWord)]
-		public static Float64Vector Splat(double e)
+		public static VectorD2 Splat(double e)
 		{
-			return new Float64Vector(e, e);
+			return new VectorD2(e, e);
 		}
 
 		[SpuOpCode(SpuOpCodeEnum.Dfa)]
 		[return: SpuInstructionPart(SpuInstructionPart.Rt)]
-		public static Float64Vector operator +(
-			[SpuInstructionPart(SpuInstructionPart.Ra)]Float64Vector v1,
-			[SpuInstructionPart(SpuInstructionPart.Rb)]Float64Vector v2)
+		public static VectorD2 operator +(
+			[SpuInstructionPart(SpuInstructionPart.Ra)]VectorD2 v1,
+			[SpuInstructionPart(SpuInstructionPart.Rb)]VectorD2 v2)
 		{
-			return new Float64Vector(v1.e1 + v2.e1, v1.e2 + v2.e2);
+			return new VectorD2(v1.e1 + v2.e1, v1.e2 + v2.e2);
 		}
 
 		[SpuOpCode(SpuOpCodeEnum.Dfs)]
 		[return: SpuInstructionPart(SpuInstructionPart.Rt)]
-		public static Float64Vector operator -(
-			[SpuInstructionPart(SpuInstructionPart.Ra)]Float64Vector v1,
-			[SpuInstructionPart(SpuInstructionPart.Rb)]Float64Vector v2)
+		public static VectorD2 operator -(
+			[SpuInstructionPart(SpuInstructionPart.Ra)]VectorD2 v1,
+			[SpuInstructionPart(SpuInstructionPart.Rb)]VectorD2 v2)
 		{
-			return new Float64Vector(v1.e1 - v2.e1, v1.e2 - v2.e2);
+			return new VectorD2(v1.e1 - v2.e1, v1.e2 - v2.e2);
 		}
 
 		[SpuOpCode(SpuOpCodeEnum.Dfm)]
 		[return: SpuInstructionPart(SpuInstructionPart.Rt)]
-		public static Float64Vector operator *(
-			[SpuInstructionPart(SpuInstructionPart.Ra)]Float64Vector v1,
-			[SpuInstructionPart(SpuInstructionPart.Rb)]Float64Vector v2)
+		public static VectorD2 operator *(
+			[SpuInstructionPart(SpuInstructionPart.Ra)]VectorD2 v1,
+			[SpuInstructionPart(SpuInstructionPart.Rb)]VectorD2 v2)
 		{
-			return new Float64Vector(v1.e1 * v2.e1, v1.e2 * v2.e2);
+			return new VectorD2(v1.e1 * v2.e1, v1.e2 * v2.e2);
 		}
 
 		[SpeResource("divd2", true)]
-		public static Float64Vector operator /(Float64Vector v1, Float64Vector v2)
+		public static VectorD2 operator /(VectorD2 v1, VectorD2 v2)
 		{
-			return new Float64Vector(v1.E1 / v2.E1, v1.E2 / v2.E2);
+			return new VectorD2(v1.E1 / v2.E1, v1.E2 / v2.E2);
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.Double_Equals)]
-		public static bool operator ==(Float64Vector v1, Float64Vector v2)
+		public static bool operator ==(VectorD2 v1, VectorD2 v2)
 		{
 			return v1.e1 == v2.e1 && v1.e2 == v2.e2;
 		}
 
 		[IntrinsicMethod(SpuIntrinsicMethod.Double_NotEquals)]
-		public static bool operator !=(Float64Vector v1, Float64Vector v2)
+		public static bool operator !=(VectorD2 v1, VectorD2 v2)
 		{
 			return !(v1 == v2);
 		}
@@ -108,8 +108,8 @@ namespace CellDotNet
 
 		public override bool Equals(object obj)
 		{
-			if (!(obj is Float64Vector)) return false;
-			Float64Vector other = (Float64Vector)obj;
+			if (!(obj is VectorD2)) return false;
+			VectorD2 other = (VectorD2)obj;
 			return other == this;
 		}
 

@@ -58,7 +58,7 @@ namespace CellDotNet
 			{
 				TreeInstruction param = mci.Parameters[paramidx];
 				StackTypeDescription type = param.StackType;
-				if (type.IndirectionLevel == 0)
+				if (!type.IsPointerType)
 				{
 					// Byval value types.
 					Utilities.Assert(type.CliType != CliType.ObjectType, "type.CliType != CliType.ObjectType");
@@ -77,7 +77,7 @@ namespace CellDotNet
 						_writer.WriteStore(childregs[paramidx], argaddress, areaSlot++);
 					}
 				}
-				else if (type.IndirectionLevel == 1)
+				else
 				{
 					StackTypeDescription etype = type.Dereference();
 					if (etype.CliType != CliType.ObjectType)
@@ -87,8 +87,6 @@ namespace CellDotNet
 					// Should be a PPE reference type handle.
 					_writer.WriteStore(childregs[paramidx], argaddress, areaSlot++);
 				}
-				else
-					throw new NotSupportedException("Argument type '" + type + "' is not supported.");
 
 				Utilities.Assert(areaSlot * 16 <= _specialSpeObjects.PpeCallDataArea.Size,
 								 "areaSlot * 16 < _specialSpeObjects.PpeCallDataArea.Size");
@@ -242,7 +240,7 @@ namespace CellDotNet
 
 			if (!fieldtype.IsImmutableSingleRegisterType)
 			{
-				if (fieldtype.IndirectionLevel != 1 && fieldtype.NumericSize != CliNumericSize.FourBytes && fieldtype.NumericSize != CliNumericSize.EightBytes)
+				if (!fieldtype.IsPointerType && fieldtype.NumericSize != CliNumericSize.FourBytes && fieldtype.NumericSize != CliNumericSize.EightBytes)
 					throw new NotSupportedException("Only four- and eight-byte fields are supported.");
 			}
 

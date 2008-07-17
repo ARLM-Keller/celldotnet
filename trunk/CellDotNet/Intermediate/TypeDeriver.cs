@@ -475,9 +475,9 @@ namespace CellDotNet.Intermediate
 			           		{typeof (UIntPtr), StackTypeDescription.NativeInt},
 			           		{typeof (float), StackTypeDescription.Float32},
 			           		{typeof (double), StackTypeDescription.Float64},
-			           		{typeof (Int32Vector), StackTypeDescription.Int32Vector},
-			           		{typeof (Float32Vector), StackTypeDescription.Float32Vector},
-			           		{typeof (Float64Vector), StackTypeDescription.Float64Vector}
+			           		{typeof (VectorI4), StackTypeDescription.VectorI4},
+			           		{typeof (VectorF4), StackTypeDescription.VectorF4},
+			           		{typeof (VectorD2), StackTypeDescription.VectorD2}
 			           	};
 
 
@@ -504,12 +504,12 @@ namespace CellDotNet.Intermediate
 			{
 				std = s_metadataCilTypes[realtype];
 			}
-			else if(realtype == typeof(Int32Vector))
-				std = StackTypeDescription.Int32Vector;
-			else if(realtype == typeof(Float32Vector))
-				std = StackTypeDescription.Float32Vector;
-			else if(realtype == typeof(Float64Vector))
-				std = StackTypeDescription.Float64Vector;
+			else if(realtype == typeof(VectorI4))
+				std = StackTypeDescription.VectorI4;
+			else if(realtype == typeof(VectorF4))
+				std = StackTypeDescription.VectorF4;
+			else if(realtype == typeof(VectorD2))
+				std = StackTypeDescription.VectorD2;
 			else if (realtype == typeof(void))
 				std = StackTypeDescription.None;
 			else if (realtype.IsArray)
@@ -518,7 +518,7 @@ namespace CellDotNet.Intermediate
 
 				if (realtype.GetArrayRank() != 1)
 					throw new NotSupportedException("Only 1D arrays are supported.");
-				if (!elementtype.IsValueType || !(elementtype.IsPrimitive || elementtype.Equals(typeof(Int32Vector)) || elementtype.Equals(typeof(Float32Vector))))
+				if (!elementtype.IsValueType || !(elementtype.IsPrimitive || elementtype.Equals(typeof(VectorI4)) || elementtype.Equals(typeof(VectorF4))))
 					throw new NotSupportedException("Only 1D primitive value type arrays are supported.");
 
 				StackTypeDescription elementstd = s_metadataCilTypes[elementtype];

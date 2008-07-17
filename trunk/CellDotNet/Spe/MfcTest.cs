@@ -171,17 +171,17 @@ namespace CellDotNet.Spe
 			Converter<MainStorageArea, int> del =
 				delegate(MainStorageArea input)
 					{
-						Int32Vector zerrovector = Int32Vector.Splat(0);
-						Int32Vector unitvector = Int32Vector.Splat(1);
-						Int32Vector magicvector = Int32Vector.Splat(magicnumber);
+						VectorI4 zerrovector = VectorI4.Splat(0);
+						VectorI4 unitvector = VectorI4.Splat(1);
+						VectorI4 magicvector = VectorI4.Splat(magicnumber);
 
-						Int32Vector[] arr = new Int32Vector[elementcount];
+						VectorI4[] arr = new VectorI4[elementcount];
 						for (int i = 0; i < arr.Length; i++)
 							arr[i] = zerrovector;
 
 						Mfc.Get(arr, input);
 
-						Int32Vector result = zerrovector;
+						VectorI4 result = zerrovector;
 						for (int i = 0; i < arr.Length; i++)
 							result += SpuMath.CompareEqualsAndSelect(arr[i], magicvector, unitvector, zerrovector);
 
@@ -210,19 +210,19 @@ namespace CellDotNet.Spe
 			Converter<MainStorageArea, int> del =
 				delegate(MainStorageArea input)
 					{
-						Int32Vector zerrovector = Int32Vector.Splat(0);
-						Int32Vector unitvector = Int32Vector.Splat(1);
+						VectorI4 zerrovector = VectorI4.Splat(0);
+						VectorI4 unitvector = VectorI4.Splat(1);
 
-						Float32Vector zerrofloatvector = Float32Vector.Splat(0f);
-						Float32Vector magicvector = Float32Vector.Splat(magicnumber);
+						VectorF4 zerrofloatvector = VectorF4.Splat(0f);
+						VectorF4 magicvector = VectorF4.Splat(magicnumber);
 
-						Float32Vector[] arr = new Float32Vector[elementcount];
+						VectorF4[] arr = new VectorF4[elementcount];
 						for (int i = 0; i < arr.Length; i++)
 							arr[i] = zerrofloatvector;
 
 						Mfc.Get(arr, input);
 
-						Int32Vector result = zerrovector;
+						VectorI4 result = zerrovector;
 						for (int i = 0; i < arr.Length; i++)
 						{
 							result += SpuMath.CompareGreaterThanAndSelect(arr[i], magicvector, zerrovector, unitvector);
@@ -436,17 +436,17 @@ namespace CellDotNet.Spe
 			Converter<MainStorageArea, int> del =
 				delegate(MainStorageArea input)
 					{
-						Int32Vector zerrovector = Int32Vector.Splat(0);
-						Int32Vector unitvector = Int32Vector.Splat(1);
-						Int32Vector magicvector = Int32Vector.Splat(magicnumber);
+						VectorI4 zerrovector = VectorI4.Splat(0);
+						VectorI4 unitvector = VectorI4.Splat(1);
+						VectorI4 magicvector = VectorI4.Splat(magicnumber);
 
-						Int32Vector[] arr = new Int32Vector[elementcount];
+						VectorI4[] arr = new VectorI4[elementcount];
 						for (int i = 0; i < arr.Length; i++)
 							arr[i] = zerrovector;
 
 						Mfc.Get(arr, input);
 
-						Int32Vector result = zerrovector;
+						VectorI4 result = zerrovector;
 						for (int i = 0; i < arr.Length; i++)
 							result += SpuMath.CompareEqualsAndSelect(arr[i], magicvector, unitvector, zerrovector);
 
@@ -476,19 +476,19 @@ namespace CellDotNet.Spe
 			Converter<MainStorageArea, int> del =
 				delegate(MainStorageArea input)
 					{
-						Int32Vector zerrovector = Int32Vector.Splat(0);
-						Int32Vector unitvector = Int32Vector.Splat(1);
+						VectorI4 zerrovector = VectorI4.Splat(0);
+						VectorI4 unitvector = VectorI4.Splat(1);
 
-						Float32Vector zerrofloatvector = Float32Vector.Splat(0f);
-						Float32Vector magicvector = Float32Vector.Splat(magicnumber);
+						VectorF4 zerrofloatvector = VectorF4.Splat(0f);
+						VectorF4 magicvector = VectorF4.Splat(magicnumber);
 
-						Float32Vector[] arr = new Float32Vector[elementcount];
+						VectorF4[] arr = new VectorF4[elementcount];
 						for (int i = 0; i < arr.Length; i++)
 							arr[i] = zerrofloatvector;
 
 						Mfc.Get(arr, input);
 
-						Int32Vector result = zerrovector;
+						VectorI4 result = zerrovector;
 						for (int i = 0; i < arr.Length; i++)
 						{
 							result += SpuMath.CompareGreaterThanAndSelect(arr[i], magicvector, zerrovector, unitvector);
@@ -546,44 +546,6 @@ namespace CellDotNet.Spe
 
 				object rv = SpeContext.UnitTestRunProgram(del, mem.GetArea());
 				AreEqual(elementcount, (int) rv);
-			}
-		}
-
-		[Test]
-		public void TestDma_GetGlobalMemory()
-		{
-			const int elementcount = 16 * 1024;
-			const float magicnumber = 1234.5f;
-
-			Converter<GlobalArea<float>, int> del =
-				delegate(GlobalArea<float> input)
-				{
-					float[] arr = new float[elementcount];
-
-					for (int i = 0; i < arr.Length; i++)
-						arr[i] = 0;
-
-					Mfc.Get(arr, input);
-
-					int result = 0;
-
-					for (int i = 0; i < arr.Length; i++)
-						if (arr[i] == magicnumber)
-							result++;
-
-					return result;
-				};
-
-			using (AlignedMemory<float> mem = SpeContext.AllocateAlignedFloat(elementcount))
-			{
-				for (int i = mem.ArraySegment.Offset; i < mem.ArraySegment.Offset + mem.ArraySegment.Count; i++)
-					mem.ArraySegment.Array[i] = magicnumber;
-
-				if (!SpeContext.HasSpeHardware)
-					return;
-
-				object rv = SpeContext.UnitTestRunProgram(del, mem.GetGlobalArea());
-				AreEqual(elementcount, (int)rv);
 			}
 		}
 

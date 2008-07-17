@@ -48,11 +48,11 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestVectorTypes()
 		{
-			object[] arr = new object[] { new Int32Vector(1, 2, 3, 4), new Float32Vector(1, 2, 3, 4) };
+			object[] arr = new object[] { new VectorI4(1, 2, 3, 4), new VectorF4(1, 2, 3, 4) };
 			byte[] buf = new Marshaler().GetImage(arr);
 
 			AreEqual(arr.Length * 16, buf.Length);
-			object[] arr2 = new Marshaler().GetValues(buf, new Type[] { typeof(Int32Vector), typeof(Float32Vector) });
+			object[] arr2 = new Marshaler().GetValues(buf, new Type[] { typeof(VectorI4), typeof(VectorF4) });
 			AreEqual(arr, arr2);
 		}
 

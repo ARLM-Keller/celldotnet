@@ -40,7 +40,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_ConvertToInteger()
 		{
-			Func<Float32Vector, Int32Vector> del = SpuMath.ConvertToInteger;
+			Func<VectorF4, VectorI4> del = SpuMath.ConvertToInteger;
 
 			CompileContext cc = new CompileContext(del.Method);
 
@@ -49,11 +49,11 @@ namespace CellDotNet.Spe
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			Float32Vector arg = new Float32Vector(32, 65, 8, 3);
+			VectorF4 arg = new VectorF4(32, 65, 8, 3);
 
-			Int32Vector corret = del(arg);
+			VectorI4 corret = del(arg);
 
-			Int32Vector result = (Int32Vector)SpeContext.UnitTestRunProgram(del, arg);
+			VectorI4 result = (VectorI4)SpeContext.UnitTestRunProgram(del, arg);
 
 			AreEqual(corret, result);
 		}
@@ -61,7 +61,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_ConvertToFloat()
 		{
-			Func<Int32Vector, Float32Vector> del = SpuMath.ConvertToFloat;
+			Func<VectorI4, VectorF4> del = SpuMath.ConvertToFloat;
 
 			CompileContext cc = new CompileContext(del.Method);
 
@@ -70,11 +70,11 @@ namespace CellDotNet.Spe
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			Int32Vector arg = new Int32Vector(32, 65, 8, 3);
+			VectorI4 arg = new VectorI4(32, 65, 8, 3);
 
-			Float32Vector corret = del(arg);
+			VectorF4 corret = del(arg);
 
-			Float32Vector result = (Float32Vector)SpeContext.UnitTestRunProgram(del, arg);
+			VectorF4 result = (VectorF4)SpeContext.UnitTestRunProgram(del, arg);
 
 			AreEqual(corret, result);
 		}
@@ -82,7 +82,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_CompareGreaterThanAndSelectIntInt()
 		{
-			CompareAndSelector<Int32Vector, Int32Vector> del = SpuMath.CompareGreaterThanAndSelect;
+			CompareAndSelector<VectorI4, VectorI4> del = SpuMath.CompareGreaterThanAndSelect;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -90,14 +90,14 @@ namespace CellDotNet.Spe
 			if(!SpeContext.HasSpeHardware) 
 				return;
 
-			Int32Vector arg1 = new Int32Vector(32, 65, 8, 3);
-			Int32Vector arg2 = new Int32Vector(30, 65, 9, -1);
-			Int32Vector arg3 = new Int32Vector(14, 1243, 324, 3);
-			Int32Vector arg4 = new Int32Vector(745, 664, 82, 17);
+			VectorI4 arg1 = new VectorI4(32, 65, 8, 3);
+			VectorI4 arg2 = new VectorI4(30, 65, 9, -1);
+			VectorI4 arg3 = new VectorI4(14, 1243, 324, 3);
+			VectorI4 arg4 = new VectorI4(745, 664, 82, 17);
 
-			Int32Vector correct = del(arg1, arg2, arg3, arg4);
+			VectorI4 correct = del(arg1, arg2, arg3, arg4);
 
-			Int32Vector result = (Int32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2, arg3, arg4);
+			VectorI4 result = (VectorI4)SpeContext.UnitTestRunProgram(del, arg1, arg2, arg3, arg4);
 
 			AreEqual(correct, result);
 		}
@@ -105,7 +105,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_CompareGreaterThanAndSelectIntFloat()
 		{
-			CompareAndSelector<Int32Vector, Float32Vector> del = SpuMath.CompareGreaterThanAndSelect;
+			CompareAndSelector<VectorI4, VectorF4> del = SpuMath.CompareGreaterThanAndSelect;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -113,14 +113,14 @@ namespace CellDotNet.Spe
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			Int32Vector arg1 = new Int32Vector(32, 65, 8, 3);
-			Int32Vector arg2 = new Int32Vector(30, 65, 9, -1);
-			Float32Vector arg3 = new Float32Vector(14, 1243, 324, 3);
-			Float32Vector arg4 = new Float32Vector(745, 664, 82, 17);
+			VectorI4 arg1 = new VectorI4(32, 65, 8, 3);
+			VectorI4 arg2 = new VectorI4(30, 65, 9, -1);
+			VectorF4 arg3 = new VectorF4(14, 1243, 324, 3);
+			VectorF4 arg4 = new VectorF4(745, 664, 82, 17);
 
-			Float32Vector correct = del(arg1, arg2, arg3, arg4);
+			VectorF4 correct = del(arg1, arg2, arg3, arg4);
 
-			Float32Vector result = (Float32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2, arg3, arg4);
+			VectorF4 result = (VectorF4)SpeContext.UnitTestRunProgram(del, arg1, arg2, arg3, arg4);
 
 			AreEqual(correct, result);
 		}
@@ -128,7 +128,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_CompareGreaterThanAndSelectFloatInt()
 		{
-			CompareAndSelector<Float32Vector, Int32Vector> del = SpuMath.CompareGreaterThanAndSelect;
+			CompareAndSelector<VectorF4, VectorI4> del = SpuMath.CompareGreaterThanAndSelect;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -136,14 +136,14 @@ namespace CellDotNet.Spe
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			Float32Vector arg1 = new Float32Vector(32, 65, 8, 3);
-			Float32Vector arg2 = new Float32Vector(30, 65, 9, -1);
-			Int32Vector arg3 = new Int32Vector(14, 1243, 324, 3);
-			Int32Vector arg4 = new Int32Vector(745, 664, 82, 17);
+			VectorF4 arg1 = new VectorF4(32, 65, 8, 3);
+			VectorF4 arg2 = new VectorF4(30, 65, 9, -1);
+			VectorI4 arg3 = new VectorI4(14, 1243, 324, 3);
+			VectorI4 arg4 = new VectorI4(745, 664, 82, 17);
 
-			Int32Vector correct = del(arg1, arg2, arg3, arg4);
+			VectorI4 correct = del(arg1, arg2, arg3, arg4);
 
-			Int32Vector result = (Int32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2, arg3, arg4);
+			VectorI4 result = (VectorI4)SpeContext.UnitTestRunProgram(del, arg1, arg2, arg3, arg4);
 
 			AreEqual(correct, result);
 		}
@@ -151,7 +151,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_CompareGreaterThanAndSelectFloatFloat()
 		{
-			CompareAndSelector<Float32Vector, Float32Vector> del = SpuMath.CompareGreaterThanAndSelect;
+			CompareAndSelector<VectorF4, VectorF4> del = SpuMath.CompareGreaterThanAndSelect;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -159,14 +159,14 @@ namespace CellDotNet.Spe
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			Float32Vector arg1 = new Float32Vector(32, 65, 8, 3);
-			Float32Vector arg2 = new Float32Vector(30, 65, 9, -1);
-			Float32Vector arg3 = new Float32Vector(14, 1243, 324, 3);
-			Float32Vector arg4 = new Float32Vector(745, 664, 82, 17);
+			VectorF4 arg1 = new VectorF4(32, 65, 8, 3);
+			VectorF4 arg2 = new VectorF4(30, 65, 9, -1);
+			VectorF4 arg3 = new VectorF4(14, 1243, 324, 3);
+			VectorF4 arg4 = new VectorF4(745, 664, 82, 17);
 
-			Float32Vector correct = del(arg1, arg2, arg3, arg4);
+			VectorF4 correct = del(arg1, arg2, arg3, arg4);
 
-			Float32Vector result = (Float32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2, arg3, arg4);
+			VectorF4 result = (VectorF4)SpeContext.UnitTestRunProgram(del, arg1, arg2, arg3, arg4);
 
 			AreEqual(correct, result);
 		}
@@ -174,7 +174,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_CompareEqualAndSelectInt()
 		{
-			CompareAndSelector<Int32Vector, Int32Vector> del = SpuMath.CompareEqualsAndSelect;
+			CompareAndSelector<VectorI4, VectorI4> del = SpuMath.CompareEqualsAndSelect;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -182,14 +182,14 @@ namespace CellDotNet.Spe
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			Int32Vector arg1 = new Int32Vector(32, 65, 8, 3);
-			Int32Vector arg2 = new Int32Vector(30, 65, 9, -1);
-			Int32Vector arg3 = new Int32Vector(14, 1243, 324, 3);
-			Int32Vector arg4 = new Int32Vector(745, 664, 82, 17);
+			VectorI4 arg1 = new VectorI4(32, 65, 8, 3);
+			VectorI4 arg2 = new VectorI4(30, 65, 9, -1);
+			VectorI4 arg3 = new VectorI4(14, 1243, 324, 3);
+			VectorI4 arg4 = new VectorI4(745, 664, 82, 17);
 
-			Int32Vector correct = del(arg1, arg2, arg3, arg4);
+			VectorI4 correct = del(arg1, arg2, arg3, arg4);
 
-			Int32Vector result = (Int32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2, arg3, arg4);
+			VectorI4 result = (VectorI4)SpeContext.UnitTestRunProgram(del, arg1, arg2, arg3, arg4);
 
 			AreEqual(correct, result);
 		}
@@ -197,7 +197,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_VectorInt_Abs()
 		{
-			Func<Int32Vector, Int32Vector> del = SpuMath.Abs;
+			Func<VectorI4, VectorI4> del = SpuMath.Abs;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -205,11 +205,11 @@ namespace CellDotNet.Spe
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			Int32Vector arg = new Int32Vector(32, -65, 34568, -4374573);
+			VectorI4 arg = new VectorI4(32, -65, 34568, -4374573);
 
-			Int32Vector correct = del(arg);
+			VectorI4 correct = del(arg);
 
-			Int32Vector result = (Int32Vector)SpeContext.UnitTestRunProgram(del, arg);
+			VectorI4 result = (VectorI4)SpeContext.UnitTestRunProgram(del, arg);
 
 			AreEqual(correct, result);
 		}
@@ -217,7 +217,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_VectorInt_Min()
 		{
-			Operator<Int32Vector> del = SpuMath.Min;
+			Operator<VectorI4> del = SpuMath.Min;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -225,12 +225,12 @@ namespace CellDotNet.Spe
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			Int32Vector arg1 = new Int32Vector(32, -65, 34568, -44573);
-			Int32Vector arg2 = new Int32Vector(324, -60, 348, -4374573);
+			VectorI4 arg1 = new VectorI4(32, -65, 34568, -44573);
+			VectorI4 arg2 = new VectorI4(324, -60, 348, -4374573);
 
-			Int32Vector correct = del(arg1, arg2);
+			VectorI4 correct = del(arg1, arg2);
 
-			Int32Vector result = (Int32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2);
+			VectorI4 result = (VectorI4)SpeContext.UnitTestRunProgram(del, arg1, arg2);
 
 			AreEqual(correct, result);
 		}
@@ -238,7 +238,7 @@ namespace CellDotNet.Spe
 		[Test]
 		public void TestSpuMath_VectorInt_Max()
 		{
-			Operator<Int32Vector> del = SpuMath.Max;
+			Operator<VectorI4> del = SpuMath.Max;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -246,20 +246,20 @@ namespace CellDotNet.Spe
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			Int32Vector arg1 = new Int32Vector(32, -65, 34568, -44573);
-			Int32Vector arg2 = new Int32Vector(324, -60, 348, -4374573);
+			VectorI4 arg1 = new VectorI4(32, -65, 34568, -44573);
+			VectorI4 arg2 = new VectorI4(324, -60, 348, -4374573);
 
-			Int32Vector correct = del(arg1, arg2);
+			VectorI4 correct = del(arg1, arg2);
 
-			Int32Vector result = (Int32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2);
+			VectorI4 result = (VectorI4)SpeContext.UnitTestRunProgram(del, arg1, arg2);
 
 			AreEqual(correct, result);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorFloat_Abs()
+		public void TestSpuMath_VectorF4_Abs()
 		{
-			Func<Float32Vector, Float32Vector> del = SpuMath.Abs;
+			Func<VectorF4, VectorF4> del = SpuMath.Abs;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -267,19 +267,19 @@ namespace CellDotNet.Spe
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			Float32Vector arg = new Float32Vector(32, -65, 34568, -4374573);
+			VectorF4 arg = new VectorF4(32, -65, 34568, -4374573);
 
-			Float32Vector correct = del(arg);
+			VectorF4 correct = del(arg);
 
-			Float32Vector result = (Float32Vector)SpeContext.UnitTestRunProgram(del, arg);
+			VectorF4 result = (VectorF4)SpeContext.UnitTestRunProgram(del, arg);
 
 			AreEqual(correct, result);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorFloat_Min()
+		public void TestSpuMath_VectorF4_Min()
 		{
-			Operator<Float32Vector> del = SpuMath.Min;
+			Operator<VectorF4> del = SpuMath.Min;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -287,20 +287,20 @@ namespace CellDotNet.Spe
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			Float32Vector arg1 = new Float32Vector(32, -65, 34568, -44573);
-			Float32Vector arg2 = new Float32Vector(324, -60, 348, -4374573);
+			VectorF4 arg1 = new VectorF4(32, -65, 34568, -44573);
+			VectorF4 arg2 = new VectorF4(324, -60, 348, -4374573);
 
-			Float32Vector correct = del(arg1, arg2);
+			VectorF4 correct = del(arg1, arg2);
 
-			Float32Vector result = (Float32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2);
+			VectorF4 result = (VectorF4)SpeContext.UnitTestRunProgram(del, arg1, arg2);
 
 			AreEqual(correct, result);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorFloat_Max()
+		public void TestSpuMath_VectorF4_Max()
 		{
-			Operator<Float32Vector> del = SpuMath.Max;
+			Operator<VectorF4> del = SpuMath.Max;
 
 			CompileContext cc = new CompileContext(del.Method);
 			cc.PerformProcessing(CompileContextState.S8Complete);
@@ -308,180 +308,180 @@ namespace CellDotNet.Spe
 			if (!SpeContext.HasSpeHardware)
 				return;
 
-			Float32Vector arg1 = new Float32Vector(32, -65, 34568, -44573);
-			Float32Vector arg2 = new Float32Vector(324, -60, 348, -4374573);
+			VectorF4 arg1 = new VectorF4(32, -65, 34568, -44573);
+			VectorF4 arg2 = new VectorF4(324, -60, 348, -4374573);
 
-			Float32Vector correct = del(arg1, arg2);
+			VectorF4 correct = del(arg1, arg2);
 
-			Float32Vector result = (Float32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2);
+			VectorF4 result = (VectorF4)SpeContext.UnitTestRunProgram(del, arg1, arg2);
 
 			AreEqual(correct, result);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorFloat_Sin()
+		public void TestSpuMath_VectorF4_Sin()
 		{
-			Func<Float32Vector, Float32Vector> del = v =>  SpuMath.Sin(v);
+			Func<VectorF4, VectorF4> del = v =>  SpuMath.Sin(v);
 
-			var arg = new Float32Vector(1, 2, 3, 4);
-			AreWithinLimits(del(arg), (Float32Vector) SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+			var arg = new VectorF4(1, 2, 3, 4);
+			AreWithinLimits(del(arg), (VectorF4) SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorFloat_Cos()
+		public void TestSpuMath_VectorF4_Cos()
 		{
-			Func<Float32Vector, Float32Vector> del = v =>  SpuMath.Cos(v);
+			Func<VectorF4, VectorF4> del = v =>  SpuMath.Cos(v);
 
-			var arg = new Float32Vector(1, 2, 3, 4);
-			AreWithinLimits(del(arg), (Float32Vector) SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+			var arg = new VectorF4(1, 2, 3, 4);
+			AreWithinLimits(del(arg), (VectorF4) SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorFloat_Tan()
+		public void TestSpuMath_VectorF4_Tan()
 		{
-			Func<Float32Vector, Float32Vector> del = v =>  SpuMath.Tan(v);
+			Func<VectorF4, VectorF4> del = v =>  SpuMath.Tan(v);
 
-			var arg = new Float32Vector(1, 2, 3, 4);
-			AreWithinLimits(del(arg), (Float32Vector) SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+			var arg = new VectorF4(1, 2, 3, 4);
+			AreWithinLimits(del(arg), (VectorF4) SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorFloat_Asin()
+		public void TestSpuMath_VectorF4_Asin()
 		{
-			Func<Float32Vector, Float32Vector> del = v => SpuMath.Asin(v);
+			Func<VectorF4, VectorF4> del = v => SpuMath.Asin(v);
 
-			var arg = new Float32Vector(-.5f, 0, .6f, .9f);
-			Float32Vector expected = del(arg);
-			Float32Vector actual = (Float32Vector)SpeContext.UnitTestRunProgram(del, arg);
+			var arg = new VectorF4(-.5f, 0, .6f, .9f);
+			VectorF4 expected = del(arg);
+			VectorF4 actual = (VectorF4)SpeContext.UnitTestRunProgram(del, arg);
 			AreWithinLimits(expected, actual, 0.00001f, null);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorFloat_Acos()
+		public void TestSpuMath_VectorF4_Acos()
 		{
-			Func<Float32Vector, Float32Vector> del = v => SpuMath.Acos(v);
+			Func<VectorF4, VectorF4> del = v => SpuMath.Acos(v);
 
-			var arg = new Float32Vector(-.5f, 0, .6f, .9f);
-			AreWithinLimits(del(arg), (Float32Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+			var arg = new VectorF4(-.5f, 0, .6f, .9f);
+			AreWithinLimits(del(arg), (VectorF4)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorFloat_Atan()
+		public void TestSpuMath_VectorF4_Atan()
 		{
-			Func<Float32Vector, Float32Vector> del = v =>  SpuMath.Atan(v);
+			Func<VectorF4, VectorF4> del = v =>  SpuMath.Atan(v);
 
-			var arg = new Float32Vector(-.5f, 0, .6f, 2);
-			AreWithinLimits(del(arg), (Float32Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+			var arg = new VectorF4(-.5f, 0, .6f, 2);
+			AreWithinLimits(del(arg), (VectorF4)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorFloat_Atan2()
+		public void TestSpuMath_VectorF4_Atan2()
 		{
-			Func<Float32Vector, Float32Vector, Float32Vector> del = (x, y) => SpuMath.Atan2(x, y);
+			Func<VectorF4, VectorF4, VectorF4> del = (x, y) => SpuMath.Atan2(x, y);
 
-			var arg1 = new Float32Vector(-.5f, 0, .6f, 2);
-			var arg2 = new Float32Vector(.6f, 2, -.5f, 0);
-			AreWithinLimits(del(arg1, arg2), (Float32Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2), 0.00001f, null);
+			var arg1 = new VectorF4(-.5f, 0, .6f, 2);
+			var arg2 = new VectorF4(.6f, 2, -.5f, 0);
+			AreWithinLimits(del(arg1, arg2), (VectorF4)SpeContext.UnitTestRunProgram(del, arg1, arg2), 0.00001f, null);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorFloat_Log()
+		public void TestSpuMath_VectorF4_Log()
 		{
-			Func<Float32Vector, Float32Vector> del = v => SpuMath.Log(v);
+			Func<VectorF4, VectorF4> del = v => SpuMath.Log(v);
 
-			var arg = new Float32Vector(1, 2, 12.5f, 100);
-			AreWithinLimits(del(arg), (Float32Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+			var arg = new VectorF4(1, 2, 12.5f, 100);
+			AreWithinLimits(del(arg), (VectorF4)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorFloat_Sqrt()
+		public void TestSpuMath_VectorF4_Sqrt()
 		{
-			Func<Float32Vector, Float32Vector> del = v => SpuMath.Sqrt(v);
+			Func<VectorF4, VectorF4> del = v => SpuMath.Sqrt(v);
 
-			var arg = new Float32Vector(1, 2, 12.5f, 100);
-			AreWithinLimits(del(arg), (Float32Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+			var arg = new VectorF4(1, 2, 12.5f, 100);
+			AreWithinLimits(del(arg), (VectorF4)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorDouble_Sin()
+		public void TestSpuMath_VectorD2_Sin()
 		{
-			Func<Float64Vector, Float64Vector> del = v => SpuMath.Sin(v);
+			Func<VectorD2, VectorD2> del = v => SpuMath.Sin(v);
 
-			var arg = new Float64Vector(1, 2);
-			AreWithinLimits(del(arg), (Float64Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+			var arg = new VectorD2(1, 2);
+			AreWithinLimits(del(arg), (VectorD2)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorDouble_Cos()
+		public void TestSpuMath_VectorD2_Cos()
 		{
-			Func<Float64Vector, Float64Vector> del = v => SpuMath.Cos(v);
+			Func<VectorD2, VectorD2> del = v => SpuMath.Cos(v);
 
-			var arg = new Float64Vector(1, 2);
-			AreWithinLimits(del(arg), (Float64Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001d, null);
+			var arg = new VectorD2(1, 2);
+			AreWithinLimits(del(arg), (VectorD2)SpeContext.UnitTestRunProgram(del, arg), 0.00001d, null);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorDouble_Tan()
+		public void TestSpuMath_VectorD2_Tan()
 		{
-			Func<Float64Vector, Float64Vector> del = v => SpuMath.Tan(v);
+			Func<VectorD2, VectorD2> del = v => SpuMath.Tan(v);
 
-			var arg = new Float64Vector(1, 2);
-			AreWithinLimits(del(arg), (Float64Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+			var arg = new VectorD2(1, 2);
+			AreWithinLimits(del(arg), (VectorD2)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorDouble_Asin()
+		public void TestSpuMath_VectorD2_Asin()
 		{
-			Func<Float64Vector, Float64Vector> del = v => SpuMath.Asin(v);
+			Func<VectorD2, VectorD2> del = v => SpuMath.Asin(v);
 
-			var arg = new Float64Vector(-.5f, .6f);
-			AreWithinLimits(del(arg), (Float64Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+			var arg = new VectorD2(-.5f, .6f);
+			AreWithinLimits(del(arg), (VectorD2)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorDouble_Acos()
+		public void TestSpuMath_VectorD2_Acos()
 		{
-			Func<Float64Vector, Float64Vector> del = v => SpuMath.Acos(v);
+			Func<VectorD2, VectorD2> del = v => SpuMath.Acos(v);
 
-			var arg = new Float64Vector(-.5f, .6f);
-			AreWithinLimits(del(arg), (Float64Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+			var arg = new VectorD2(-.5f, .6f);
+			AreWithinLimits(del(arg), (VectorD2)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorDouble_Atan()
+		public void TestSpuMath_VectorD2_Atan()
 		{
-			Func<Float64Vector, Float64Vector> del = v => SpuMath.Atan(v);
+			Func<VectorD2, VectorD2> del = v => SpuMath.Atan(v);
 
-			var arg = new Float64Vector(-.5f, .6f);
-			AreWithinLimits(del(arg), (Float64Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+			var arg = new VectorD2(-.5f, .6f);
+			AreWithinLimits(del(arg), (VectorD2)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorDouble_Atan2()
+		public void TestSpuMath_VectorD2_Atan2()
 		{
-			Func<Float64Vector, Float64Vector, Float64Vector> del = (x, y) => SpuMath.Atan2(x, y);
+			Func<VectorD2, VectorD2, VectorD2> del = (x, y) => SpuMath.Atan2(x, y);
 
-			var arg1 = new Float64Vector(-.5f, .6f);
-			var arg2 = new Float64Vector(.6f, -.5f);
-			AreWithinLimits(del(arg1, arg2), (Float64Vector)SpeContext.UnitTestRunProgram(del, arg1, arg2), 0.00001f, null);
+			var arg1 = new VectorD2(-.5f, .6f);
+			var arg2 = new VectorD2(.6f, -.5f);
+			AreWithinLimits(del(arg1, arg2), (VectorD2)SpeContext.UnitTestRunProgram(del, arg1, arg2), 0.00001f, null);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorDouble_Log()
+		public void TestSpuMath_VectorD2_Log()
 		{
-			Func<Float64Vector, Float64Vector> del = v => SpuMath.Log(v);
+			Func<VectorD2, VectorD2> del = v => SpuMath.Log(v);
 
-			var arg = new Float64Vector(1, 12.5);
-			AreWithinLimits(del(arg), (Float64Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+			var arg = new VectorD2(1, 12.5);
+			AreWithinLimits(del(arg), (VectorD2)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
 		}
 
 		[Test]
-		public void TestSpuMath_VectorDouble_Sqrt()
+		public void TestSpuMath_VectorD2_Sqrt()
 		{
-			Func<Float64Vector, Float64Vector> del = v => SpuMath.Sqrt(v);
+			Func<VectorD2, VectorD2> del = v => SpuMath.Sqrt(v);
 
-			var arg = new Float64Vector(1, 12.5);
-			AreWithinLimits(del(arg), (Float64Vector)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
+			var arg = new VectorD2(1, 12.5);
+			AreWithinLimits(del(arg), (VectorD2)SpeContext.UnitTestRunProgram(del, arg), 0.00001f, null);
 		}
 
 	}

@@ -60,14 +60,14 @@ namespace CellDotNet.Intermediate
 		public static readonly StackTypeDescription Float64 =
 			new StackTypeDescription(CliType.Float64, CliNumericSize.EightBytes, true);
 
-		public static readonly StackTypeDescription Int32Vector =
-			new StackTypeDescription(CliType.Int32Vector, CliNumericSize.SixteenBytes, true);
+		public static readonly StackTypeDescription VectorI4 =
+			new StackTypeDescription(CliType.VectorI4, CliNumericSize.SixteenBytes, true);
 
-		public static readonly StackTypeDescription Float32Vector =
-			new StackTypeDescription(CliType.Float32Vector, CliNumericSize.SixteenBytes, true);
+		public static readonly StackTypeDescription VectorF4 =
+			new StackTypeDescription(CliType.VectorF4, CliNumericSize.SixteenBytes, true);
 
-		public static readonly StackTypeDescription Float64Vector =
-			new StackTypeDescription(CliType.Float64Vector, CliNumericSize.SixteenBytes, true);
+		public static readonly StackTypeDescription VectorD2 =
+			new StackTypeDescription(CliType.VectorD2, CliNumericSize.SixteenBytes, true);
 
 		public static readonly StackTypeDescription ObjectType =
 			new StackTypeDescription(CliType.ObjectType, CliNumericSize.None, false);
@@ -176,7 +176,7 @@ namespace CellDotNet.Intermediate
 		/// </summary>
 		public bool IsImmutableSingleRegisterType
 		{
-			get { return this == Int32Vector || this == Float32Vector || (CliType == CliType.ValueType && ComplexType.IsImmutableSingleRegisterStruct); }
+			get { return this == VectorI4 || this == VectorF4 || (CliType == CliType.ValueType && ComplexType.IsImmutableSingleRegisterStruct); }
 		}
 
 		/// <summary>
@@ -195,7 +195,7 @@ namespace CellDotNet.Intermediate
 		{
 			get
 			{
-				if (IndirectionLevel > 0)
+				if (IsPointerType)
 				{
 					if (_isManaged)
 						return CliType.ManagedPointer;
@@ -252,6 +252,11 @@ namespace CellDotNet.Intermediate
 			get { return _indirectionLevel; }
 		}
 
+		public bool IsPointerType
+		{
+			get { return IndirectionLevel != 0; }
+		}
+
 		public StackTypeDescription GetManagedPointer()
 		{
 			if (_isManaged)
@@ -269,7 +274,7 @@ namespace CellDotNet.Intermediate
 		/// </summary>
 		private void AssertSimple()
 		{
-			if (IsArray || IndirectionLevel > 0)
+			if (IsArray || IsPointerType)
 				throw new InvalidOperationException("Invalid operation since this is not a simple type (" + this + ").");
 		}
 
@@ -322,10 +327,10 @@ namespace CellDotNet.Intermediate
 					return typeof(float);
 				case CliType.Float64:
 					return typeof(double);
-				case CliType.Int32Vector:
-					return typeof(Int32Vector);
-				case CliType.Float32Vector:
-					return typeof(Float32Vector);
+				case CliType.VectorI4:
+					return typeof(VectorI4);
+				case CliType.VectorF4:
+					return typeof(VectorF4);
 				default:
 					throw new ArgumentException();
 			}
@@ -338,8 +343,8 @@ namespace CellDotNet.Intermediate
 				case CliType.Int32:
 				case CliType.Float32:
 					return 4;
-				case CliType.Int32Vector:
-				case CliType.Float32Vector:
+				case CliType.VectorI4:
+				case CliType.VectorF4:
 					return 16;
 				case CliType.Int64:
 				case CliType.Float64:
@@ -356,7 +361,7 @@ namespace CellDotNet.Intermediate
 
 		public StackTypeDescription Dereference()
 		{
-			if (IndirectionLevel == 0 || _isArray)
+			if (!IsPointerType || _isArray)
 				throw new InvalidOperationException("ReflectionType is not byref.");
 
 			StackTypeDescription e = this;
@@ -374,7 +379,7 @@ namespace CellDotNet.Intermediate
 
 		private StackTypeDescription DereferenceFully()
 		{
-			if (IndirectionLevel == 0 || _isArray)
+			if (!IsPointerType || _isArray)
 				throw new InvalidOperationException("ReflectionType is not byref.");
 
 			StackTypeDescription e = this;
@@ -480,9 +485,9 @@ namespace CellDotNet.Intermediate
 		NativeInt = 3,
 		Float32 = 4,
 		Float64 = 5,
-		Int32Vector = 6,
-		Float32Vector = 7,
-		Float64Vector = 7,
+		VectorI4 = 6,
+		VectorF4 = 7,
+		VectorD2 = 7,
 		/// <summary>
 		/// Any value type.
 		/// </summary>
