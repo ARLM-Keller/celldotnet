@@ -26,8 +26,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
-using System.Text;
 using CellDotNet.Spe;
 using JetBrains.Annotations;
 
@@ -249,7 +247,7 @@ namespace CellDotNet
 
 		static internal void DumpMemory(int[] memDump, int arrayOffset, LocalStorageAddress arrayOffsetAddress, int bytecount, TextWriter writer)
 		{
-			int bytesPerLine = 16;
+			const int bytesPerLine = 16;
 			for (int i = 0; i < Math.Min(memDump.Length, bytecount / 4); i++)
 			{
 				int address = arrayOffsetAddress.Value + i*4;
@@ -272,11 +270,9 @@ namespace CellDotNet
 
 		}
 
-		public static Set<T> RemoveDuplicates<T>(IEnumerable<T> enumerable)
+		public static HashSet<T> RemoveDuplicates<T>(IEnumerable<T> enumerable)
 		{
-			Set<T> s = new Set<T>();
-			s.AddAll(enumerable);
-			return s;
+			return new HashSet<T>(enumerable);
 		}
 
 		static internal unsafe uint ReinterpretAsUInt(float value)

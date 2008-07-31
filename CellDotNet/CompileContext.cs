@@ -805,7 +805,7 @@ namespace CellDotNet
 
 		static internal void CopyCode(int[] targetBuffer, ICollection<SpuRoutine> objects)
 		{
-			Set<int> usedOffsets = new Set<int>();
+			var usedOffsets = new HashSet<int>();
 
 			foreach (SpuRoutine routine in objects)
 			{
@@ -896,7 +896,7 @@ main:
 				Utilities.Assert(symbols.Count == 0 || symbols[0].Offset == 0, "symbols.Count == 0 || symbols[0].Offset == 0");
 
 				// We don't want duplicate names.
-				Set<string> usedNames = new Set<string>(symbols.Count);
+				var usedNames = new HashSet<string>();
 				List<KeyValuePair<ObjectWithAddress, string>> sortedSymbolsWithNames = new List<KeyValuePair<ObjectWithAddress, string>>();
 				foreach (ObjectWithAddress symbol in symbols)
 				{

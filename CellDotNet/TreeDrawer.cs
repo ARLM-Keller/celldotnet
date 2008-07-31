@@ -36,7 +36,7 @@ namespace CellDotNet
 	/// </summary>
 	class TreeDrawer
 	{
-		Set<int> _branchTargets;
+		HashSet<int> _branchTargets;
 
 		private TextWriter _output;
 
@@ -212,7 +212,7 @@ namespace CellDotNet
 		{
 			Output = output;
 
-			_branchTargets = new Set<int>();
+			_branchTargets = new HashSet<int>();
 
 			foreach (IRBasicBlock block in blocks)
 			{

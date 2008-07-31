@@ -54,7 +54,7 @@ namespace CellDotNet.Intermediate
 			_blockNumber = blockNumber;
 		}
 
-		private List<TreeInstruction> _roots = new List<TreeInstruction>();
+		private readonly List<TreeInstruction> _roots = new List<TreeInstruction>();
 
 		/// <summary>
 		/// Roots of the tree representation.
@@ -65,23 +65,23 @@ namespace CellDotNet.Intermediate
 		}
 
 
-		private Set<IRBasicBlock> _ingoing = new Set<IRBasicBlock>();
+		private readonly HashSet<IRBasicBlock> _ingoing = new HashSet<IRBasicBlock>();
 
 		/// <summary>
 		/// Ingoing basic blocks.
 		/// </summary>
-		public Set<IRBasicBlock> Ingoing
+		public HashSet<IRBasicBlock> Ingoing
 		{
 			get { return _ingoing; }
 		}
 
 
-		private Set<IRBasicBlock> _outgoing = new Set<IRBasicBlock>();
+		private readonly HashSet<IRBasicBlock> _outgoing = new HashSet<IRBasicBlock>();
 
 		/// <summary>
 		/// Outgoing basic blocks.
 		/// </summary>
-		public Set<IRBasicBlock> Outgoing
+		public HashSet<IRBasicBlock> Outgoing
 		{
 			get { return _outgoing; }
 		}
