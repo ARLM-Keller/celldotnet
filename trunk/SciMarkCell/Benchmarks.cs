@@ -107,7 +107,7 @@ namespace SciMark2
 
 			watch2.stop();
 
-			cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_Montecarlo_Single_Spu_113_{0}.s", 10000).ToString(), 113, 10000);
+			cc.DisassembleToFile(new StringBuilder().AppendFormat("Benchmark_Montecarlo_Single_Spu_113_{0}.s", 10000).ToString(), 113, 10000);
 
 //			Console.WriteLine("Monte Carlo, Single, SPU: run time: {3}, compile time: {2}, n={0} pi={1} ", n, spuPi, watch1.read(), watch2.read());
 			PrintBenchmarkResults("Monte Carlo, Single", "n=" + n, watch2.read(), "pi=" + spuPi + ", compile time: " + watch1.read());
@@ -132,7 +132,7 @@ namespace SciMark2
 
 			watch2.stop();
 
-			cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_Montecarlo_Vector_Spu_113_{0}.s", 10000).ToString(), 113, 10000);
+			cc.DisassembleToFile(new StringBuilder().AppendFormat("Benchmark_Montecarlo_Vector_Spu_113_{0}.s", 10000).ToString(), 113, 10000);
 
 			Console.WriteLine("Monte Carlo, Vector, SPU: run time: {3}, compile time: {2}, n={0} pi={1} ", n, spuPi, watch1.read(), watch2.read());
 		}
@@ -156,7 +156,7 @@ namespace SciMark2
 
 			watch2.stop();
 
-			cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_Montecarlo_Dynamic_Unrolled_Spu_113_{0}.s", 10000).ToString(), 113, 10000);
+			cc.DisassembleToFile(new StringBuilder().AppendFormat("Benchmark_Montecarlo_Dynamic_Unrolled_Spu_113_{0}.s", 10000).ToString(), 113, 10000);
 
 //			Console.WriteLine("Monte Carlo, dynamic Unroled, SPU: run time: {3}, compile time: {2}, n={0} pi={1} ", n, spuPi, watch1.read(), watch2.read());
 			PrintBenchmarkResults("Monte Carlo, dynamic Unroled, SPU", "n=" + n, watch2.read(), "pi=" + spuPi + " compile time=" + watch1.read());
@@ -181,7 +181,7 @@ namespace SciMark2
 
 			watch2.stop();
 
-			cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_Montecarlo_Unrolled_Spu_113_{0}.s", 10000).ToString(), 113, 10000);
+			cc.DisassembleToFile(new StringBuilder().AppendFormat("Benchmark_Montecarlo_Unrolled_Spu_113_{0}.s", 10000).ToString(), 113, 10000);
 
 //			Console.WriteLine("Monte Carlo, Unroled, SPU: run time: {3}, compile time: {2}, n={0} pi={1} ", n, spuPi, watch1.read(), watch2.read());
 			PrintBenchmarkResults("Monte Carlo, Unroled, SPU", "n=" + n, watch2.read(), "pi=" + spuPi + " compile time=" + watch1.read());
@@ -206,7 +206,7 @@ namespace SciMark2
 
 			watch2.stop();
 
-			cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_Montecarlo_Simple_Unrolled_Spu_113_{0}.s", 10000).ToString(), 113, 10000);
+			cc.DisassembleToFile(new StringBuilder().AppendFormat("Benchmark_Montecarlo_Simple_Unrolled_Spu_113_{0}.s", 10000).ToString(), 113, 10000);
 
 //			Console.WriteLine("Monte Carlo, Simple Unroled, SPU: run time: {3}, compile time: {2}, n={0} pi={1} ", n, spuPi, watch1.read(), watch2.read());
 			PrintBenchmarkResults("Monte Carlo, Simple Unroled, SPU", "n=" + n, watch2.read(), "pi=" + spuPi + " compile time=" + watch1.read());
@@ -228,7 +228,7 @@ namespace SciMark2
 
 //		private delegate void SORDelegate(float a, float[][] b, int c);
 		private delegate void SORSPUDelegate(float a, MainStorageArea b, int N, int M, int c);
-//		private delegate void SORVectorSPUDelegate(float a, Float32Vector[] b, int N, int M, int c);
+//		private delegate void SORVectorSPUDelegate(float a, VectorF4[] b, int N, int M, int c);
 
 		public static void Benchmark_SOR_Single(int n, int M, int N)
 		{
@@ -277,7 +277,7 @@ namespace SciMark2
 
 				watch2.stop();
 
-				cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_SOR_Single_SPU_1.25_{0}_{1}_{2}.s", M, N, n).ToString(), 1.25f, 0, M, N, n);
+				cc.DisassembleToFile(new StringBuilder().AppendFormat("Benchmark_SOR_Single_SPU_1.25_{0}_{1}_{2}.s", M, N, n).ToString(), 1.25f, 0, M, N, n);
 
 //				Console.WriteLine("SOR, Single, SPU: run time {1} compile time {2}, n={0} M={3} N={4}", n, watch2.read(),
 //				                  watch1.read(), M, N);
@@ -318,7 +318,7 @@ namespace SciMark2
 
 				watch2.stop();
 
-				cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_SOR_Vector_SPU_1.25_{0}_{1}_{2}.s", M, N, n).ToString(), 1.25f, 0, M, N, n);
+				cc.DisassembleToFile(new StringBuilder().AppendFormat("Benchmark_SOR_Vector_SPU_1.25_{0}_{1}_{2}.s", M, N, n).ToString(), 1.25f, 0, M, N, n);
 
 //				Console.WriteLine("SOR, Vector, SPU: run time {1} compile time {2}, n={0} M={3} N={4}", n, watch2.read(),
 //				                  watch1.read(), M, N);
@@ -458,7 +458,7 @@ namespace SciMark2
 
 				watch2.stop();
 
-				cc.WriteAssemblyToFile(new StringBuilder().AppendFormat("Benchmark_SCR_Single_SPU---.s").ToString(), ymem.GetArea(), y.Length, valmem.GetArea(), val.Length, rowmem.GetArea(),
+				cc.DisassembleToFile(new StringBuilder().AppendFormat("Benchmark_SCR_Single_SPU---.s").ToString(), ymem.GetArea(), y.Length, valmem.GetArea(), val.Length, rowmem.GetArea(),
 											  row.Length, colmem.GetArea(), col.Length, xmem.GetArea(), x.Length, num_iterations);
 
 //				Console.WriteLine("SparseCompRow, Single, SPU: run time {0} compile time {1}, n={2}", watch2.read(), watch1.read(), num_iterations);
@@ -660,9 +660,9 @@ namespace SciMark2
 			return A;
 		}
 
-		private static Float32Vector[] RandomVectorVector(int N, RandomVector R)
+		private static VectorF4[] RandomVectorVector(int N, RandomVector R)
 		{
-			Float32Vector[] A = new Float32Vector[N];
+			VectorF4[] A = new VectorF4[N];
 
 			for (int i = 0; i < N; i++)
 				A[i] = R.nextFloat();

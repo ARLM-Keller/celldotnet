@@ -10,16 +10,16 @@ namespace SciMark2Cell
 			int inneriterations = 256*4;
 			int iterations = (Num_samples / (4 * inneriterations)) + 1;
 
-			RandomVector R = new RandomVector(Int32Vector.Splat(seed));
+			RandomVector R = new RandomVector(VectorI4.Splat(seed));
 
-			Int32Vector under_curve = Int32Vector.Splat(0);
+			VectorI4 under_curve = VectorI4.Splat(0);
 
-			Int32Vector _zerro = Int32Vector.Splat(0);
-			Int32Vector _one = Int32Vector.Splat(1);
-			Float32Vector unitVector = Float32Vector.Splat(1f);
+			VectorI4 _zerro = VectorI4.Splat(0);
+			VectorI4 _one = VectorI4.Splat(1);
+			VectorF4 unitVector = VectorF4.Splat(1f);
 
-			Float32Vector[] xs = new Float32Vector[inneriterations];
-			Float32Vector[] ys = new Float32Vector[inneriterations];
+			VectorF4[] xs = new VectorF4[inneriterations];
+			VectorF4[] ys = new VectorF4[inneriterations];
 
 			for (int count = 0; count < iterations; count++)
 			{
@@ -28,29 +28,29 @@ namespace SciMark2Cell
 
 				for (int i = 0; i < inneriterations; )
 				{
-					Float32Vector x0 = xs[i];
-					Float32Vector y0 = ys[i];
+					VectorF4 x0 = xs[i];
+					VectorF4 y0 = ys[i];
 					i++;
 
 					under_curve += SpuMath.CompareGreaterThanAndSelect(unitVector, SpuMath.MultiplyAdd(y0, y0, x0 * x0), _one, _zerro);
 //					under_curve += SpuMath.CompareGreaterThanAndSelect(unitVector, x0 * x0 + y0 * y0, _one, _zerro);
 
-					Float32Vector x1 = xs[i];
-					Float32Vector y1 = ys[i];
+					VectorF4 x1 = xs[i];
+					VectorF4 y1 = ys[i];
 					i++;
 
 					under_curve += SpuMath.CompareGreaterThanAndSelect(unitVector, SpuMath.MultiplyAdd(y1, y1, x1 * x1), _one, _zerro);
 //					under_curve += SpuMath.CompareGreaterThanAndSelect(unitVector, x1 * x1 + y1 * y1, _one, _zerro);
 
-					Float32Vector x2 = xs[i];
-					Float32Vector y2 = ys[i];
+					VectorF4 x2 = xs[i];
+					VectorF4 y2 = ys[i];
 					i++;
 
 					under_curve += SpuMath.CompareGreaterThanAndSelect(unitVector, SpuMath.MultiplyAdd(y2, y2, x2 * x2), _one, _zerro);
 //					under_curve += SpuMath.CompareGreaterThanAndSelect(unitVector, x2 * x2 + y2 * y2, _one, _zerro);
 
-					Float32Vector x3 = xs[i];
-					Float32Vector y3 = ys[i];
+					VectorF4 x3 = xs[i];
+					VectorF4 y3 = ys[i];
 					i++;
 
 					under_curve += SpuMath.CompareGreaterThanAndSelect(unitVector, SpuMath.MultiplyAdd(y3, y3, x3 * x3), _one, _zerro);

@@ -5,54 +5,54 @@ namespace SciMark2Cell
 {
 	public class RandomVector
 	{
-		internal Int32Vector _seed;
+		internal VectorI4 _seed;
 
-		private Int32Vector m1;
-		private Int32Vector m2;
-		private Float32Vector dm1;
+		private VectorI4 m1;
+		private VectorI4 m2;
+		private VectorF4 dm1;
 
-		private Float32Vector _left;
-		private Float32Vector _width;
+		private VectorF4 _left;
+		private VectorF4 _width;
 
-		private Int32Vector[] m;
+		private VectorI4[] m;
 		private int i;
 		private int j;
 
 		private bool haveRange;
 		
-		public RandomVector(Int32Vector seed)
+		public RandomVector(VectorI4 seed)
 		{
 			i = 4;
 			j = 16;
 
 			haveRange = false;
-			_left = Float32Vector.Splat(0.0f);
-			_width = Float32Vector.Splat(1.0f);
+			_left = VectorF4.Splat(0.0f);
+			_width = VectorF4.Splat(1.0f);
 
 			initialize(seed);
 		}
 
-		public RandomVector(Int32Vector seed, float left, float right)
+		public RandomVector(VectorI4 seed, float left, float right)
 		{
 			i = 4;
 			j = 16;
 
 			haveRange = false;
-			_left = Float32Vector.Splat(0.0f);
-			_width = Float32Vector.Splat(1.0f);
+			_left = VectorF4.Splat(0.0f);
+			_width = VectorF4.Splat(1.0f);
 
 			initialize(seed);
-			_left = new Float32Vector(left, left, left, left);
+			_left = new VectorF4(left, left, left, left);
 			float _widthscale = right - left;
-			_width = new Float32Vector(_widthscale, _widthscale, _widthscale, _widthscale);
+			_width = new VectorF4(_widthscale, _widthscale, _widthscale, _widthscale);
 			haveRange = true;
 		}
 		
-		public Float32Vector nextFloat()
+		public VectorF4 nextFloat()
 		{
-			Int32Vector zerro = Int32Vector.Splat(0);
+			VectorI4 zerro = VectorI4.Splat(0);
 
-			Int32Vector k;
+			VectorI4 k;
 		
 			k = m[i] - m[j];
 
@@ -79,13 +79,13 @@ namespace SciMark2Cell
 //			else
 //				return dm1 * SpuMath.ConvertToFloat(k);
 
-			Float32Vector r = dm1 * SpuMath.ConvertToFloat(k);
+			VectorF4 r = dm1 * SpuMath.ConvertToFloat(k);
 
 			return SpuMath.ConditionalSelect(haveRange, SpuMath.MultiplyAdd(r, _width, _left), r);
 		}
 
 
-		public void nextFloats(Float32Vector[] x)
+		public void nextFloats(VectorF4[] x)
 		{
 			int N = x.Length;
 			int remainder = N & 3;
@@ -94,8 +94,8 @@ namespace SciMark2Cell
 			{
 				for (int count = 0; count < remainder; count++)
 				{
-					Int32Vector zerro = Int32Vector.Splat(0);
-					Int32Vector k;
+					VectorI4 zerro = VectorI4.Splat(0);
+					VectorI4 k;
 					k = m[i] - m[j];
 					k += SpuMath.CompareGreaterThanAndSelect(zerro, k, m1, zerro);
 					m[j] = k;
@@ -106,8 +106,8 @@ namespace SciMark2Cell
 
 				for (int count = remainder; count < N; count += 4)
 				{
-					Int32Vector zerro = Int32Vector.Splat(0);
-					Int32Vector k;
+					VectorI4 zerro = VectorI4.Splat(0);
+					VectorI4 k;
 					k = m[i] - m[j];
 					k += SpuMath.CompareGreaterThanAndSelect(zerro, k, m1, zerro);
 					m[j] = k;
@@ -141,8 +141,8 @@ namespace SciMark2Cell
 			{
 				for (int count = 0; count < remainder; count++)
 				{
-					Int32Vector zerro = Int32Vector.Splat(0);
-					Int32Vector k;
+					VectorI4 zerro = VectorI4.Splat(0);
+					VectorI4 k;
 					k = m[i] - m[j];
 					k += SpuMath.CompareGreaterThanAndSelect(zerro, k, m1, zerro);
 					m[j] = k;
@@ -153,8 +153,8 @@ namespace SciMark2Cell
 
 				for (int count = remainder; count < N; count += 4)
 				{
-					Int32Vector zerro = Int32Vector.Splat(0);
-					Int32Vector k;
+					VectorI4 zerro = VectorI4.Splat(0);
+					VectorI4 k;
 					k = m[i] - m[j];
 					k += SpuMath.CompareGreaterThanAndSelect(zerro, k, m1, zerro);
 					m[j] = k;
@@ -186,7 +186,7 @@ namespace SciMark2Cell
 			}
 		}
 
-		private void initialize(Int32Vector seed)
+		private void initialize(VectorI4 seed)
 		{
 			const int mdig_s = 32;
 			const int one_s = 1;
@@ -197,35 +197,35 @@ namespace SciMark2Cell
 			m1_s = (one_s << mdig_s - 2) + ((one_s << mdig_s - 2) - one_s);
 			m2_s = one_s << mdig_s / 2;
 
-			m1 = Int32Vector.Splat(m1_s);
-			m2 = Int32Vector.Splat(m2_s);
+			m1 = VectorI4.Splat(m1_s);
+			m2 = VectorI4.Splat(m2_s);
 
-			dm1 = Float32Vector.Splat(1) / SpuMath.ConvertToFloat(m1);
+			dm1 = VectorF4.Splat(1) / SpuMath.ConvertToFloat(m1);
 
-			Int32Vector jseed, k0, k1, j0, j1;
+			VectorI4 jseed, k0, k1, j0, j1;
 			int iloop;
 			
 			_seed = seed;
 			
-			m = new Int32Vector[17];
+			m = new VectorI4[17];
 			
 			jseed = SpuMath.Min(SpuMath.Abs(seed), m1);
 
-//			if (jseed % Int32Vector.Splat(0) == 0)
+//			if (jseed % VectorI4.Splat(0) == 0)
 //				--jseed;
 
 			jseed -=
-				SpuMath.CompareEqualsAndSelect(jseed%Int32Vector.Splat(2), Int32Vector.Splat(0),
-				                               Int32Vector.Splat(1), Int32Vector.Splat(0));
+				SpuMath.CompareEqualsAndSelect(jseed%VectorI4.Splat(2), VectorI4.Splat(0),
+				                               VectorI4.Splat(1), VectorI4.Splat(0));
 
-			k0 = Int32Vector.Splat(9069) % m2;
-			k1 = Int32Vector.Splat(9069) % m2;
+			k0 = VectorI4.Splat(9069) % m2;
+			k1 = VectorI4.Splat(9069) % m2;
 			j0 = jseed % m2;
 			j1 = jseed / m2;
 			for (iloop = 0; iloop < 17; ++iloop)
 			{
 				jseed = j0*k0;
-				j1 = (jseed/m2 + j0*k1 + j1*k0)%(m2/Int32Vector.Splat(2));
+				j1 = (jseed/m2 + j0*k1 + j1*k0)%(m2/VectorI4.Splat(2));
 				j0 = jseed%m2;
 				m[iloop] = j0 + m2*j1;
 			}

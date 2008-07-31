@@ -7,7 +7,7 @@ namespace SciMark2Cell
 	{
 		public static void execute(float omega, MainStorageArea Gv_msa, int M, int N, int iterations)
 		{
-			Float32Vector[] Gv = new Float32Vector[M * N];
+			VectorF4[] Gv = new VectorF4[M * N];
 
 			Mfc.Get(Gv, Gv_msa);
 
@@ -33,10 +33,10 @@ namespace SciMark2Cell
 		/// <param name="M">Height of vector matrix.</param>
 		/// <param name="N">Weidth of vector matrix.</param>
 		/// <param name="iterations">Number of iterations</param>
-		public static void execute_inner(float omega, Float32Vector[] Gv, int M, int N, int iterations)
+		public static void execute_inner(float omega, VectorF4[] Gv, int M, int N, int iterations)
 		{
-			Float32Vector omega_over_four = Float32Vector.Splat(omega * 0.25f);
-			Float32Vector one_minus_omega = Float32Vector.Splat(1.0f - omega);
+			VectorF4 omega_over_four = VectorF4.Splat(omega * 0.25f);
+			VectorF4 one_minus_omega = VectorF4.Splat(1.0f - omega);
 
 			int Mm1 = M - 1;
 			int Nm1 = N - 1;
@@ -49,8 +49,8 @@ namespace SciMark2Cell
 					int Nip1 = (i + 1)*N;
 					int Ni = i*N;
 
-					Float32Vector Gjm1 = new Float32Vector(Gv[Ni].E1, Gv[Ni+Nm1-1].E1, Gv[Ni+Nm1-1].E2, Gv[Ni+Nm1-1].E3);
-					Float32Vector Gjp1 = new Float32Vector(Gv[Ni+1].E2, Gv[Ni+1].E3, Gv[Ni+1].E4, Gv[Ni].E4);
+					VectorF4 Gjm1 = new VectorF4(Gv[Ni].E1, Gv[Ni+Nm1-1].E1, Gv[Ni+Nm1-1].E2, Gv[Ni+Nm1-1].E3);
+					VectorF4 Gjp1 = new VectorF4(Gv[Ni+1].E2, Gv[Ni+1].E3, Gv[Ni+1].E4, Gv[Ni].E4);
 
 					Gv[Ni + 1] = omega_over_four * (Gv[Nim1 + 1] + Gv[Nip1 + 1] + Gjm1 + Gv[Ni + 1 + 1]) + one_minus_omega * Gv[Ni + 1];
 
