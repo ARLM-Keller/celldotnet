@@ -34,6 +34,6 @@ The procedure goes something like this:
 
 
 
-Now you're ready to compile CellDotNet. We use Visual Studio 2005 for the development, but Mono can obviously also be used.
+Now you're ready to compile CellDotNet. We use Visual Studio 2008 for the development, but Mono can obviously also be used.
 
 Now you're ready to try it out. The easiest way to experiment is by modifying Class1.cs. Look at the unit tests to get an idea of what's currently possible to do.
