@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="CellDotNet.Spe.ObjectWithAddress" Collapsed="true">
+    <Position X="4.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAAAAAgAAAIAAAAAQAAAAAAAAAAAAAAAAAgAA=</HashCode>
+      <FileName>Spe\ObjectWithAddress.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CellDotNet.Spe.DataObject" Collapsed="true">
+    <Position X="0.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAggAgAAAAAAAAAAAAAAAAAAAgAAIAAAA=</HashCode>
+      <FileName>Spe\DataObject.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CellDotNet.Spe.ObjectOffset" Collapsed="true">
+    <Position X="6.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgAAAIAAAAAAQAAAAAAAAAAAAAAAAgAA=</HashCode>
+      <FileName>Spe\ObjectOffset.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CellDotNet.Spe.SpuRoutine" Collapsed="true">
+    <Position X="4.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAGAAAAAAAAABAAAgAAAAAAAYAAAAAEAgg=</HashCode>
+      <FileName>Spe\SpuRoutine.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CellDotNet.BlobRoutine" Collapsed="true">
+    <Position X="3.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAGgAAAAAAAABAAAgAAAAAAAIAAAAAkAAA=</HashCode>
+      <FileName>CompileContext.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CellDotNet.Spe.CalleeSavesStoreRoutine" Collapsed="true">
+    <Position X="3.25" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAAAAACgAAAAAAAABAAAAAAAAAAAAAAAAAAAIA=</HashCode>
+      <FileName>Spe\CalleeSavesStoreRoutine.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CellDotNet.Spe.LibraryMethod" Collapsed="true">
+    <Position X="3.25" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAACgAAACAAAABAQAAAAAAACAAABAAAAgAA=</HashCode>
+      <FileName>Spe\LibraryMethod.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CellDotNet.Spe.ManualRoutine" Collapsed="true">
+    <Position X="6.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABAAAAACgAAAAAAACBAAAAAAAAAgEQAAAAEAAoA=</HashCode>
+      <FileName>Spe\ManualRoutine.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CellDotNet.Spe.MethodCompiler" Collapsed="true">
+    <Position X="6.25" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BACGABAIAGAGpAEIAIpQCBZAkgAAEAMwA4QAToSMAsA=</HashCode>
+      <FileName>Spe\MethodCompiler.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CellDotNet.Spe.PatchRoutine" Collapsed="true">
+    <Position X="6.25" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAgCgAgACAAAABAAAAAAAAAAAAAAAAEgAIA=</HashCode>
+      <FileName>Spe\PatchRoutine.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CellDotNet.Spe.PpeMethod" Collapsed="true">
+    <Position X="3.25" Y="7.75" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAACgAAAAABgABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Spe\PpeMethod.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CellDotNet.Spe.SpuInitializer" Collapsed="true">
+    <Position X="6.25" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAACgAAEAAAAABAAAAAAAAAAAQAAAAAAAoA=</HashCode>
+      <FileName>Spe\SpuInitializer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CellDotNet.Spe.RegisterSizedObject" Collapsed="true">
+    <Position X="0.75" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Spe\RegisterSizedObject.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

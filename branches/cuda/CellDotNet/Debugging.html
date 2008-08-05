@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+	<head>
+	<style type="text/css">
+	
+	body, td {
+		font-family: calibri, verdana;
+		font-size: 11pt;
+	}
+	
+	pre.code {
+		font-family: consolas, courier new;
+		font-size: 9pt;
+		margin-left: 20px;
+		padding: 10px;
+		border: 1px solid #a0a0a0;
+		background-color: #f8f8f8;
+	}
+	
+	</style>
+		<title></title>
+	</head>
+	<body>
+	
+	<h3>Disassembly of generated code</h3>
+	<h4>Option 1</h4>
+	<p>Call SpeContext.WriteAssemblyToFile() to dump a CompileContext to a assembler file with instructions on how to compile it.</p>
+	<p>This also defines symbols that spu-gdb will use.</p>
+		<p>
+			Debug with DDD with the command "ddd --debugger spu-gdb &lt;compiled file name&gt;".</p>
+
+	<h4>Option 2</h4>
+	<p>
+		This one is not so cool: It dumps a raw binary code file and converts it to a program.</p>
+		<p>
+		Create the following shell script which can perform the conversion:</p>
+		<pre class="code">#!/bin/sh
+
+# Convert the raw binary file to an ELF relocatable.
+# At the same time, we want objcopy to call the main symbol "main"
+# so that the linker knows what to start.
+
+spu-objcopy -B spu -I binary -O elf32-spu --redefine-sym _binary_$1_bin_start=main $1.bin $1.o 
+
+# Finish by linking it.
+
+spu-gcc $1.o -o $1
+</pre>
+<p>
+	Call this script with the name of the dump file without the .bin extension.</p>
+		<p>
+			To disassemble the file, calll "spu-objdump -D &lt;unit test method name&gt;".
+		</p>
+		<p><em></em>&nbsp;</p>
+		
+		<h3>Disassembly of elf binary</h3>
+		<p>Handy for using spu_timing.</p>
+		<pre>
+spu-objdump -d my_file.asm | awk '/^ *[0-9a-f]+:/ { printf("  %-10s%-15s # %s%s\n", $6, $7, $8, $9) } /^[0-9a-f]+ / { gsub(/[<>-:]/, "", $2); printf ("\n  .global %2$s\n  .type   %2$s, @function\n  . = 0x%1$s\n%2$s:\n", $1, $2) }'
+		</pre>
+		<p>
+			&nbsp;</p>
+		<h3>
+			Blob functions</h3>
+		<p>
+			Some math functions are taken from the &quot;SIMD Math Library Specification for Cell 
+			Broadband Engine Architecture&quot; v1.1 from the Cell SDK. They have been ripped out 
+			from the compiled library and included as embedded resources.</p>
+		<p>
+			It&#39;s a relatively mechanical procedure, and it goes something like 
+			this:</p>
+	<ol>
+		<li>Create a tiny C program which uses the function you want to use, say &quot;sinf4&quot;.<br />
+				<pre class="code">#include &lt;simdmath.h&gt;
+
+int main() { 
+    vector float fx;
+    vector float fxsin = sinf4(fx);
+}</pre>
+		</li>
+		<li>Compile the program with spu-gcc and disassemble the resulting binary.<pre 
+				class="code">spu-gcc p.c -lsimdmath -o p &amp;&amp; spu-objdump -D &gt; p.s</pre>
+		</li>
+		<li>Open the assembly file and locate the code for sinf4.</li>
+		<li>Check that sinf4 doesn&#39;t reference other symbols. If it does, it&#39;s beyond the 
+			scope of this guide.</li>
+		<li>Extract the hex code for sinf4- it&#39;s the four columns of hex. Insert it into a 
+			new file called sinf4.hex.</li>
+		<li>Remove spaces and line breaks from sinf4.hex.</li>
+		<li>Convert it to binary using xxd.<pre class="code">xxd -r -plain sinf4.hex &gt; sinf4.bin</pre>
+		</li>
+		<li>Now you&#39;ve got a file containing the machine code for sinf4. Place the file in 
+			this project in the &quot;Binary&quot; folder and set Build Action to &quot;Embedded Resource&quot;.</li>
+		<li>Create dummy c# method used for representing the function, and annotate it 
+			appropriately. See SpuMath.Sin for an example.</li>
+	</ol>
+	<p>
+		&nbsp;</p>
+	</body>
+</html>
