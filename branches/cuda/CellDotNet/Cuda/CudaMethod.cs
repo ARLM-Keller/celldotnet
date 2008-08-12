@@ -61,14 +61,30 @@ namespace CellDotNet.Cuda
 		static List<BasicBlock> PerformListConstruction(List<IRBasicBlock> treeblocks, List<MethodParameter> parameters, List<MethodVariable> variables)
 		{
 			var blocks = new List<BasicBlock>();
+			var blockmap = new Dictionary<IRBasicBlock, BasicBlock>();
+
 			foreach (IRBasicBlock irblock in treeblocks)
 			{
 				var block = new BasicBlock();
+				blockmap.Add(irblock, block);
 				blocks.Add(block);
 
 				foreach (var treeroot in irblock.Roots)
 				{
 					ConvertTreeNode(treeroot, block, false);
+				}
+			}
+
+			// Replace branch targets with the new blocks.
+			foreach (BasicBlock block in blocks)
+			{
+				foreach (ListInstruction inst in block.Instructions)
+				{
+					if (inst.Operand is IRBasicBlock)
+					{
+						BasicBlock newtarget = blockmap[(IRBasicBlock) inst.Operand];
+						inst.Operand = newtarget;
+					}
 				}
 			}
 
@@ -92,8 +108,6 @@ namespace CellDotNet.Cuda
 				var mci = (MethodCallInstruction) treenode;
 				var callinst = new MethodCallListInstruction(treenode.Opcode, mci.Operand);
 
-				// TODO parameters.
-				callinst.Parameters = new List<MethodVariable>(mci.Parameters.Count);
 				foreach (TreeInstruction parameter in mci.Parameters)
 				{
 					callinst.Parameters.Add(ConvertTreeNode(parameter, block, true));

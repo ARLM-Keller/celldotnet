@@ -27,7 +27,7 @@ using System.Collections.Generic;
 namespace CellDotNet.Intermediate
 {
 	/// <summary>
-	/// A basic block.
+	/// A basic block for trees.
 	/// </summary>
 	internal class IRBasicBlock
 	{

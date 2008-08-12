@@ -11,7 +11,7 @@ namespace CellDotNet.Cuda
 	public class CudaMethodTest : UnitTest
 	{
 		[Test]
-		public void TestBuildTreeIRSimple()
+		public void TestBuildTreeIR_Simple()
 		{
 			Action action = delegate
 			                	{
@@ -39,7 +39,7 @@ namespace CellDotNet.Cuda
 		}
 
 		[Test]
-		public void TestBuildListIRSimple()
+		public void TestBuildListIR_Simple()
 		{
 			Func<int, int> del = i => i + 10;
 
@@ -69,6 +69,25 @@ namespace CellDotNet.Cuda
 			};
 			var cm = new CudaMethod(action.Method);
 			cm.PerformProcessing(CudaMethod.CompileState.ListContructionDone);
+		}
+
+		[Test]
+		public void TestBuildListIR_Branch()
+		{
+			Func<int, int> del = delegate(int i)
+			                     	{
+										if (i > 10)
+											return 10;
+			                     		return i;
+			                     	};
+
+			var cm = new CudaMethod(del.Method);
+			cm.PerformProcessing(CudaMethod.CompileState.ListContructionDone);
+
+			AreEqual(3, cm.Blocks.Count);
+
+			var branchinst = cm.Blocks[0].Instructions.Single(inst => inst.Operand is BasicBlock);
+			IsTrue(ReferenceEquals(branchinst.Operand, cm.Blocks[1]) || ReferenceEquals(branchinst.Operand, cm.Blocks[2]), "Should have branched to one of the blocks.");
 		}
 	}
 }
