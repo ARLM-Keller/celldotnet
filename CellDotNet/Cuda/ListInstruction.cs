@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using CellDotNet.Intermediate;
 
 namespace CellDotNet.Cuda
 {
+	[DebuggerDisplay("{OpCode}")]
 	class ListInstruction
 	{
 		public ListInstruction(IROpCode opcode, object operand)
@@ -15,7 +17,7 @@ namespace CellDotNet.Cuda
 		}
 
 		public IROpCode OpCode { get; private set; }
-		public object Operand { get; private set; }
+		public object Operand { get; set; }
 
 		public ListInstruction Next { get; set; }
 		public ListInstruction Previous { get; set; }
@@ -29,6 +31,7 @@ namespace CellDotNet.Cuda
 	{
 		public MethodCallListInstruction(IROpCode opcode, object operand) : base(opcode, operand)
 		{
+			Parameters = new List<MethodVariable>(2);
 		}
 	
 		public override MethodVariable Source1
@@ -43,6 +46,6 @@ namespace CellDotNet.Cuda
 			set { throw new InvalidOperationException(); }
 		}
 
-		public List<MethodVariable> Parameters { get; set; }
+		public List<MethodVariable> Parameters { get; private set; }
 	}
 }

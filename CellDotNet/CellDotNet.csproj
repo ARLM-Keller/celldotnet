@@ -73,6 +73,7 @@
     <Compile Include="CompileContextTest.cs" />
     <Compile Include="Cuda\BasicBlock.cs" />
     <Compile Include="Cuda\CudaKernel.cs" />
+    <Compile Include="Cuda\CudaKernelTest.cs" />
     <Compile Include="Cuda\CudaMethodTest.cs" />
     <Compile Include="Cuda\CudaRuntime.cs" />
     <Compile Include="Cuda\GlobalMemory.cs" />
