@@ -106,7 +106,7 @@ namespace CellDotNet.Cuda
 			if (treenode is MethodCallInstruction)
 			{
 				var mci = (MethodCallInstruction) treenode;
-				var callinst = new MethodCallListInstruction(treenode.Opcode, mci.Operand);
+				var callinst = new MethodCallListInstruction(treenode.Opcode.IRCode, mci.Operand);
 
 				foreach (TreeInstruction parameter in mci.Parameters)
 				{
@@ -116,7 +116,7 @@ namespace CellDotNet.Cuda
 			}
 			else
 			{
-				newinst = new ListInstruction(treenode.Opcode, treenode.Operand);
+				newinst = new ListInstruction(treenode.Opcode.IRCode, treenode.Operand);
 				if (treenode.Left != null)
 					newinst.Source1 = ConvertTreeNode(treenode.Left, block, true);
 				if (treenode.Right != null)

@@ -72,6 +72,7 @@
     <Compile Include="CommonDelegates.cs" />
     <Compile Include="CompileContextTest.cs" />
     <Compile Include="Cuda\BasicBlock.cs" />
+    <Compile Include="Cuda\PtxInstructionSelector.cs" />
     <Compile Include="Cuda\CudaKernel.cs" />
     <Compile Include="Cuda\CudaKernelTest.cs" />
     <Compile Include="Cuda\CudaMethodTest.cs" />
@@ -79,7 +80,10 @@
     <Compile Include="Cuda\GlobalMemory.cs" />
     <Compile Include="Cuda\Attributes.cs" />
     <Compile Include="Cuda\ListInstruction.cs" />
+    <Compile Include="Cuda\PtxCode.cs" />
     <Compile Include="Cuda\ThreadIndex.cs" />
+    <Compile Include="DelegateWrapper.cs" />
+    <Compile Include="DelegateWrapperTest.cs" />
     <Compile Include="Float32Vector.cs" />
     <Compile Include="Float64Vector.cs" />
     <Compile Include="ILOpCodeExecutionTest.cs">
