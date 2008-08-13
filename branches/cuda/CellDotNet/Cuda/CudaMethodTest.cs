@@ -48,11 +48,11 @@ namespace CellDotNet.Cuda
 
 			AreEqual(1, cm.Blocks.Count);
 			AreEqual(4, cm.Blocks[0].Instructions.Count());
-			AreEqual(IROpCodes.Ldarg, cm.Blocks[0].Instructions.ElementAt(0).OpCode);
-			AreEqual(IROpCodes.Ldc_I4, cm.Blocks[0].Instructions.ElementAt(1).OpCode);
+			AreEqual(IRCode.Ldarg, cm.Blocks[0].Instructions.ElementAt(0).IRCode);
+			AreEqual(IRCode.Ldc_I4, cm.Blocks[0].Instructions.ElementAt(1).IRCode);
 			AreEqual(10, cm.Blocks[0].Instructions.ElementAt(1).Operand);
-			AreEqual(IROpCodes.Add, cm.Blocks[0].Instructions.ElementAt(2).OpCode);
-			AreEqual(IROpCodes.Ret, cm.Blocks[0].Instructions.ElementAt(3).OpCode);
+			AreEqual(IRCode.Add, cm.Blocks[0].Instructions.ElementAt(2).IRCode);
+			AreEqual(IRCode.Ret, cm.Blocks[0].Instructions.ElementAt(3).IRCode);
 		}
 
 		[Test]

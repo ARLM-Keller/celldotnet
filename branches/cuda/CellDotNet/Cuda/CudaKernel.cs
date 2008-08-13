@@ -23,6 +23,11 @@ namespace CellDotNet.Cuda
 			_methods = PerformIRConstruction(_kernelMethod);
 		}
 
+		static public void InvokeDelegate(Action<object[]> del, object[] arg)
+		{
+			del(arg);
+		}
+
 		static private List<CudaMethod> PerformIRConstruction(MethodInfo kernelMethod)
 		{
 			var methodmap = new Dictionary<MethodBase, CudaMethod>();
