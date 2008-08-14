@@ -75,13 +75,13 @@ namespace CellDotNet.Intermediate
 		public static readonly StackTypeDescription NativeInt =
 			new StackTypeDescription(CliType.NativeInt, CliNumericSize.None, true);
 
-		public CliType _cliType;
+		private CliType _cliType;
 		private readonly bool _isSigned;
 		private readonly CliNumericSize _numericSize;
 		private byte _indirectionLevel;
 		private bool _isManaged;
 		private bool _isArray;
-		public TypeDescription _complexType;
+		private TypeDescription _complexType;
 
 		/// <summary>
 		/// For simple types.

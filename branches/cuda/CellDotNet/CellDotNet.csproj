@@ -72,6 +72,7 @@
     <Compile Include="CommonDelegates.cs" />
     <Compile Include="CompileContextTest.cs" />
     <Compile Include="Cuda\BasicBlock.cs" />
+    <Compile Include="Cuda\GlobalVReg.cs" />
     <Compile Include="Cuda\PtxInstructionSelector.cs" />
     <Compile Include="Cuda\CudaKernel.cs" />
     <Compile Include="Cuda\CudaKernelTest.cs" />

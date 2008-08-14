@@ -27,6 +27,7 @@ namespace CellDotNet.Cuda
 		private MethodBase _method;
 
 		public List<BasicBlock> Blocks { get; private set; }
+		private int _nextVarIdx = 1;
 
 		public CudaMethod(MethodBase method)
 		{
@@ -58,7 +59,7 @@ namespace CellDotNet.Cuda
 		/// <summary>
 		/// Constructs list IR from tree IR.
 		/// </summary>
-		static List<BasicBlock> PerformListConstruction(List<IRBasicBlock> treeblocks, List<MethodParameter> parameters, List<MethodVariable> variables)
+		List<BasicBlock> PerformListConstruction(List<IRBasicBlock> treeblocks, List<MethodParameter> parameters, List<MethodVariable> variables)
 		{
 			var blocks = new List<BasicBlock>();
 			var blockmap = new Dictionary<IRBasicBlock, BasicBlock>();
@@ -99,7 +100,7 @@ namespace CellDotNet.Cuda
 		/// <param name="block"></param>
 		/// <param name="returnsValue"></param>
 		/// <returns></returns>
-		private static MethodVariable ConvertTreeNode(TreeInstruction treenode, BasicBlock block, bool returnsValue)
+		private GlobalVReg ConvertTreeNode(TreeInstruction treenode, BasicBlock block, bool returnsValue)
 		{
 			ListInstruction newinst;
 
@@ -126,7 +127,7 @@ namespace CellDotNet.Cuda
 			block.Append(newinst);
 			if (returnsValue)
 			{
-				newinst.Destination = new MethodVariable(5000, treenode.StackType);
+				newinst.Destination = GlobalVReg.FromStackTypeDescription(treenode.StackType, _nextVarIdx++);
 				return newinst.Destination;
 			}
 			return null;

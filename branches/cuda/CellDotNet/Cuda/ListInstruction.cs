@@ -49,33 +49,33 @@ namespace CellDotNet.Cuda
 		public ListInstruction Next { get; set; }
 		public ListInstruction Previous { get; set; }
 
-		public virtual MethodVariable Source1 { get; set; }
-		public virtual MethodVariable Source2 { get; set; }
-		public virtual MethodVariable Source3 { get; set; }
-		public MethodVariable Destination { get; set; }
+		public virtual GlobalVReg Source1 { get; set; }
+		public virtual GlobalVReg Source2 { get; set; }
+		public virtual GlobalVReg Source3 { get; set; }
+		public GlobalVReg Destination { get; set; }
 
-		public MethodVariable Predicate { get; set; }
+		public GlobalVReg Predicate { get; set; }
 	}
 
 	class MethodCallListInstruction : ListInstruction
 	{
 		public MethodCallListInstruction(IRCode opcode, object operand) : base(opcode, operand)
 		{
-			Parameters = new List<MethodVariable>(2);
+			Parameters = new List<GlobalVReg>(2);
 		}
-	
-		public override MethodVariable Source1
+
+		public override GlobalVReg Source1
 		{
 			get { throw new InvalidOperationException(); }
 			set { throw new InvalidOperationException(); }
 		}
 
-		public override MethodVariable Source2
+		public override GlobalVReg Source2
 		{
 			get { throw new InvalidOperationException(); }
 			set { throw new InvalidOperationException(); }
 		}
 
-		public List<MethodVariable> Parameters { get; private set; }
+		public List<GlobalVReg> Parameters { get; private set; }
 	}
 }
