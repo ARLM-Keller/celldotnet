@@ -20,6 +20,7 @@ namespace CellDotNet.Cuda
 			None,
 			TreeConstructionDone,
 			ListContructionDone,
+			ConditionalBranchHandlingDone,
 			InstructionSelectionDone
 		}
 
@@ -55,10 +56,95 @@ namespace CellDotNet.Cuda
 				Blocks = PerformListConstruction(treeblocks, parameters, variables);
 				_state = CompileState.ListContructionDone;
 			}
+			if (targetstate > _state && _state <= CompileState.ConditionalBranchHandlingDone - 1)
+			{
+				PerformConditionalBranchDecomposition();
+				_state = CompileState.ConditionalBranchHandlingDone;
+			}
 			if (targetstate > _state && _state == CompileState.InstructionSelectionDone - 1)
 			{
 				PerformInstructionSelection();
 				_state = CompileState.InstructionSelectionDone;
+			}
+		}
+
+		private void PerformConditionalBranchDecomposition()
+		{
+			foreach (var block in Blocks)
+			{
+				ListInstruction inst = block.Head;
+				while (inst != null)
+				{
+					IRCode cmpopcode = 0;
+					GlobalVReg pred = null;
+					bool predicatenegation = false;
+
+					var isFP = !(inst is MethodCallListInstruction) && inst.Source1 != null &&
+					           (inst.Source1.StackType == StackType.R4 || inst.Source1.StackType == StackType.R8);
+
+					switch (inst.IRCode)
+					{
+						case IRCode.Beq:
+							cmpopcode = IRCode.Ceq;
+							goto case IRCode.Brtrue;
+                        case IRCode.Bge:
+							cmpopcode = isFP ? IRCode.Cgt_Un : IRCode.Clt;
+							goto case IRCode.Brfalse;
+						case IRCode.Bge_Un:
+							cmpopcode = IRCode.Clt_Un;
+							goto case IRCode.Brfalse;
+						case IRCode.Bgt:
+							cmpopcode = IRCode.Cgt;
+							goto case IRCode.Brtrue;
+						case IRCode.Bgt_Un:
+							cmpopcode = IRCode.Cgt_Un;
+							goto case IRCode.Brtrue;
+						case IRCode.Ble:
+							cmpopcode = isFP ? IRCode.Cgt_Un : IRCode.Cgt;
+							goto case IRCode.Brfalse;
+						case IRCode.Ble_Un:
+							cmpopcode = isFP ? IRCode.Cgt : IRCode.Cgt_Un;
+							goto case IRCode.Brfalse;
+						case IRCode.Blt:
+							cmpopcode = IRCode.Clt;
+							goto case IRCode.Brtrue;
+						case IRCode.Blt_Un:
+							cmpopcode = IRCode.Clt_Un;
+							goto case IRCode.Brtrue;
+						case IRCode.Bne_Un:
+							cmpopcode = IRCode.Ceq;
+							goto case IRCode.Brfalse;
+						case IRCode.Brfalse:
+							predicatenegation = true;
+							goto case IRCode.Brtrue;
+						case IRCode.Brtrue:
+							Utilities.DebugAssert(inst.Predicate == null, "Can't handle existing predicate.");
+							BasicBlock target = (BasicBlock) inst.Operand;
+							if (cmpopcode != 0)
+							{
+								pred = GlobalVReg.FromType(StackType.ValueType, typeof(PredicateValue), _nextVarIdx++);
+								var newcmp = new ListInstruction(cmpopcode) { Source1 = inst.Source1, Source2 = inst.Source2, Destination = pred };
+								block.Replace(inst, newcmp);
+								inst = newcmp;
+							}
+							else if (inst.Source1.ReflectionType != typeof(PredicateValue))
+							{
+								// We don't handle the case where the condition is a native int, because that would mean
+								// using ptx setp here, and it's probably best to avoid ptx opcodes before instruction selection.
+								// Alternatively, an intrinsic method call could be used.
+								throw new NotImplementedException();
+							}
+
+							var newbranch = new ListInstruction(IRCode.Br, target) { Predicate = pred, PredicateNegation = predicatenegation };
+
+							block.InsertAfter(inst, newbranch);
+
+							/// remember to forward when adding.
+							break;
+					}
+
+					inst = inst.Next;
+				}
 			}
 		}
 
@@ -229,8 +315,6 @@ namespace CellDotNet.Cuda
 
 		#endregion
 
-		#region  Tree construction
-
 		/// <summary>
 		/// Constructs list IR from tree IR.
 		/// </summary>
@@ -243,8 +327,6 @@ namespace CellDotNet.Cuda
 			return newblocklist;
 		}
 
-
-		#endregion
 
 		private void PerformInstructionSelection()
 		{

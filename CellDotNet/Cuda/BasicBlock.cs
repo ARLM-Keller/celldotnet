@@ -23,21 +23,50 @@ namespace CellDotNet.Cuda
 			}
 		}
 
-//		public BasicBlock Next { get; set; }
-//		public BasicBlock Previous { get; set; }
-
-		//		public ICollection<ListInstruction> Heads { get; private set; }
-
 		public void Append(ListInstruction newinst)
 		{
 			if (Tail != null)
+			{
 				Tail.Next = newinst;
+				newinst.Previous = Tail;
+			}
 			Tail = newinst;
 
 			if (Head == null)
 				Head = newinst;
+		}
 
-//			throw new NotImplementedException();
+		public void Replace(ListInstruction inst, ListInstruction replacement)
+		{
+			Utilities.DebugAssert(replacement.Previous == null && replacement.Next == null, "inst.Previous == null && inst.Next == null");
+
+			replacement.Next = inst.Next;
+			replacement.Previous = inst.Previous;
+
+			if (inst.Previous != null)
+				inst.Previous.Next = replacement;
+			if (inst.Next != null)
+				inst.Next.Previous = replacement;
+
+			if (Head == inst)
+				Head = replacement;
+			if (Tail == inst)
+				Tail = replacement;
+		}
+
+		public void InsertAfter(ListInstruction inst, ListInstruction newinst)
+		{
+			Utilities.DebugAssert(newinst.Previous == null && newinst.Next == null, "inst.Previous == null && inst.Next == null");
+
+			newinst.Previous = inst;
+			newinst.Next = inst.Next;
+
+			if (inst.Next != null)
+				inst.Next.Previous = newinst;
+			if (Tail == inst)
+				Tail = newinst;
+
+			inst.Next = newinst;
 		}
 	}
 }

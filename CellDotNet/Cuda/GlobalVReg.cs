@@ -33,11 +33,13 @@ namespace CellDotNet.Cuda
 		public int ID { get; private set; }
 
 		/// <summary>
-		/// Byte offset in parameter space or stack.
+		/// Used by ptx gen to declare parameters.
 		/// </summary>
-		public int Offset { get; set; }
+		public bool IsParameter { get; set; }
 
-		private object _value;
+		private object _assemblyRepresentation;
+
+		private GlobalVReg() { }
 
 		public static GlobalVReg FromNumericType(StackType stacktype, int id)
 		{
@@ -49,14 +51,14 @@ namespace CellDotNet.Cuda
 			return new GlobalVReg { StackType = stacktype, ReflectionType = reflectionType, ID = id };
 		}
 
-		public static GlobalVReg FromValue(StackType stacktype, Type reflectionType, object value)
+		public static GlobalVReg FromValue(StackType stacktype, Type reflectionType, object assemblyRepresentation)
 		{
-			return new GlobalVReg { StackType = stacktype, ReflectionType = reflectionType, _value = value };
+			return new GlobalVReg { StackType = stacktype, ReflectionType = reflectionType, _assemblyRepresentation = assemblyRepresentation };
 		}
 
 		public override string ToString()
 		{
-			return _value != null ? _value.ToString() : base.ToString();
+			return _assemblyRepresentation != null ? _assemblyRepresentation.ToString() : base.ToString();
 		}
 
 		public static GlobalVReg FromStackTypeDescription(StackTypeDescription stackType, int id)
