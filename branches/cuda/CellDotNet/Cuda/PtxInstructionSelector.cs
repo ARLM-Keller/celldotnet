@@ -26,31 +26,44 @@ namespace CellDotNet.Cuda
 			return inputblocks.Select(ib => blockmap[ib]).ToList();
 		}
 
-		void Select(ListInstruction inputinst, BasicBlock ob, Dictionary<BasicBlock, BasicBlock> blockmap)
+		void Select(ListInstruction inst, BasicBlock ob, Dictionary<BasicBlock, BasicBlock> blockmap)
 		{
 			ListInstruction new1, new2;
 			PtxCode opcode;
-			GlobalVReg s1 = inputinst.Source1;
-			GlobalVReg s2 = inputinst.Source2;
-			GlobalVReg s3 = inputinst.Source3;
-			GlobalVReg d = inputinst.Destination;
+			GlobalVReg s1 = inst.Source1;
+			GlobalVReg s2 = inst.Source2;
+			GlobalVReg s3 = inst.Source3;
+			GlobalVReg d = inst.Destination;
 
-			switch (inputinst.IRCode)
+			switch (inst.IRCode)
 			{
 				case IRCode.Add:
-					switch (inputinst.Destination.StackType)
+					switch (inst.Destination.StackType)
 					{
-						case StackType.I4: opcode = PtxCode.Add_S32; break;
-						case StackType.R4: opcode = PtxCode.Add_F32; break;
-						default: throw new InvalidIRException();
+						case StackType.I4:
+							opcode = PtxCode.Add_S32;
+							break;
+						case StackType.R4:
+							opcode = PtxCode.Add_F32;
+							break;
+						default:
+							throw new InvalidIRException();
 					}
-					new1 = new ListInstruction(opcode) { Source1 = s1, Source2 = s2, Destination = d };
+					new1 = new ListInstruction(opcode)
+					       	{
+					       		Source1 = s1,
+					       		Source2 = s2,
+					       		Destination = d,
+					       		Predicate = inst.Predicate,
+					       		PredicateNegation = inst.PredicateNegation
+					       	};
 					ob.Append(new1);
-					break;
+					return;
 				case IRCode.Add_Ovf:
 				case IRCode.Add_Ovf_Un:
 				case IRCode.And:
 				case IRCode.Arglist:
+					break;
 				case IRCode.Beq:
 				case IRCode.Bge:
 				case IRCode.Bge_Un:
@@ -62,10 +75,14 @@ namespace CellDotNet.Cuda
 				case IRCode.Blt_Un:
 				case IRCode.Bne_Un:
 				case IRCode.Box:
-				case IRCode.Br:
-				case IRCode.Break:
 				case IRCode.Brfalse:
 				case IRCode.Brtrue:
+					throw new InvalidIRException("Conditional branch code " + inst.IRCode + " encountered.");
+				case IRCode.Br:
+					new1 = new ListInstruction(PtxCode.Bra) {Predicate = inst.Predicate, PredicateNegation = inst.PredicateNegation};
+					ob.Append(new1);
+					return;
+				case IRCode.Break:
 				case IRCode.Call:
 				case IRCode.Calli:
 				case IRCode.Callvirt:
@@ -124,6 +141,15 @@ namespace CellDotNet.Cuda
 				case IRCode.Isinst:
 				case IRCode.Jmp:
 				case IRCode.Ldarg:
+					switch (inst.Destination.StackType)
+					{
+						case StackType.I4: opcode = PtxCode.Ld_Param_S32; break;
+						case StackType.R4: opcode = PtxCode.Ld_Param_F32; break;
+						default: throw new InvalidIRException();
+					}
+					new1 = new ListInstruction(opcode) {Source1 = s1, Destination = d};
+					ob.Append(new1);
+					return;
 				case IRCode.Ldarga:
 				case IRCode.Ldc_I4:
 				case IRCode.Ldc_I8:
@@ -236,7 +262,8 @@ namespace CellDotNet.Cuda
 				case IRCode.Xor:
 					break;
 			}
-			
+
+			throw new NotImplementedException("Opcode not implemented in instruction selector: " + inst.IRCode);
 		}
 	}
 }

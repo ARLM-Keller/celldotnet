@@ -8,6 +8,10 @@ namespace CellDotNet.Cuda
 	enum PtxCode
 	{
 		None,
+		/// <summary>
+		/// Not a PTX instruction, but this ensures that PTX and IR opcodes do not overlap and cause confusion.
+		/// </summary>
+		Ptx_First = 500,
 		Add_S32,
 		Add_F32,
 		Sub_S32,
@@ -26,5 +30,8 @@ namespace CellDotNet.Cuda
 		Max_S32,
 		Max_F32,
 
+		Bra,
+		Ld_Param_S32,
+		Ld_Param_F32
 	}
 }

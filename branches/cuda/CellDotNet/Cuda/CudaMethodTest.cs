@@ -103,6 +103,23 @@ namespace CellDotNet.Cuda
 
 			AreEqual(IRCode.Ldarga, ilist[0].IRCode);
 			IsTrue(ilist[0].Operand is GlobalVReg, "Argument not vreg, but " + ilist[0].Operand.GetType());
+		}
+
+		[Test]
+		public void TestConditionalBranchPredication_Int()
+		{
+			Action<int> action = i =>
+			                     	{
+										if (i > 5)
+											i.ToString();
+			                     	};
+			var cm = new CudaMethod(action.Method);
+			cm.PerformProcessing(CudaMethod.CompileState.ConditionalBranchHandlingDone);
+
+			List<ListInstruction> instlist = cm.Blocks.SelectMany(b => b.Instructions).ToList();
+			ListInstruction br = instlist.Single(inst => inst.IRCode == IRCode.Br);
+			IsNotNull(br.Predicate);
+			IsTrue(typeof (PredicateValue).IsAssignableFrom(br.Predicate.ReflectionType), "The branch needs to be properly predicated.");
 			
 		}
 	}

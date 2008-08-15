@@ -11,7 +11,7 @@ namespace CellDotNet.Cuda
 	/// This class is used for the IL-based IR, but also for the output of instruction selection, so it needs to accomodate to
 	/// multiple ISAs.
 	/// </summary>
-	[DebuggerDisplay("{OpCode}")]
+	[DebuggerDisplay("{IRCode} - {PtxCode}")]
 	class ListInstruction
 	{
 		public ListInstruction(IRCode opcode, object operand)
@@ -21,6 +21,11 @@ namespace CellDotNet.Cuda
 		}
 
 		public ListInstruction(PtxCode opcode)
+		{
+			_opCode = (int) opcode;
+		}
+
+		public ListInstruction(IRCode opcode)
 		{
 			_opCode = (int) opcode;
 		}
@@ -60,6 +65,7 @@ namespace CellDotNet.Cuda
 		public GlobalVReg Destination { get; set; }
 
 		public GlobalVReg Predicate { get; set; }
+		public bool PredicateNegation { get; set; }
 	}
 
 	class MethodCallListInstruction : ListInstruction
