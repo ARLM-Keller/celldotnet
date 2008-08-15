@@ -6,6 +6,16 @@ namespace CellDotNet.Cuda
 {
 	public class CudaKernel<T> where T : class
 	{
+		public enum CompileState
+		{
+			None,
+			IRConstructionDone,
+
+			InstructionSelectionDone
+		}
+
+		private CompileState _state;
+
 		private readonly T _kernelWrapperDelegate;
 		private List<CudaMethod> _methods;
 		private MethodInfo _kernelMethod;
@@ -20,7 +30,6 @@ namespace CellDotNet.Cuda
 
 			_kernelMethod = (kerneldelegate as Delegate).Method;
 			Utilities.AssertArgument(_kernelMethod.IsStatic, "Kernel method must be static.");
-			_methods = PerformIRConstruction(_kernelMethod);
 		}
 
 		static public void InvokeDelegate(Action<object[]> del, object[] arg)
@@ -28,8 +37,43 @@ namespace CellDotNet.Cuda
 			del(arg);
 		}
 
-		static private List<CudaMethod> PerformIRConstruction(MethodInfo kernelMethod)
+		public void PerformProcessing(CompileState targetstate)
 		{
+			if (targetstate > _state && _state == CompileState.IRConstructionDone)
+			{
+				_methods = PerformIRConstruction(_kernelMethod);
+				_state = CompileState.IRConstructionDone;
+			}
+			if (targetstate > _state && _state == CompileState.InstructionSelectionDone)
+			{
+				PerformInstructionSelection(_methods);
+				_state = CompileState.IRConstructionDone;
+			}			
+		}
+
+		private void AssertState(CompileState requiredState)
+		{
+			if (_state != requiredState)
+				throw new InvalidOperationException(string.Format("Operation is invalid for the current state. " +
+					"Current state: {0}; required state: {1}.", _state, requiredState));
+		}
+
+		private void PerformInstructionSelection(List<CudaMethod> methods)
+		{
+			AssertState(CompileState.InstructionSelectionDone - 1);
+
+			foreach (CudaMethod method in methods)
+			{
+				method.PerformProcessing(CudaMethod.CompileState.InstructionSelectionDone);
+			}
+
+			throw new NotImplementedException();
+		}
+
+		private List<CudaMethod> PerformIRConstruction(MethodInfo kernelMethod)
+		{
+			AssertState(CompileState.IRConstructionDone - 1);
+
 			var methodmap = new Dictionary<MethodBase, CudaMethod>();
 			var methodWorkList = new Stack<MethodBase>();
 			var instructionsNeedingPatching = new List<ListInstruction>();

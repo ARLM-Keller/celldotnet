@@ -5,19 +5,6 @@ using System.Text;
 
 namespace CellDotNet.Cuda
 {
-	enum PtxVariations
-	{
-		None,
-//		U16,
-//		S16,
-		U32,
-		S32,
-		U64,
-		S64,
-		F32,
-		F64,
-	}
-
 	enum PtxCode
 	{
 		None,
