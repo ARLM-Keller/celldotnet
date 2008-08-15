@@ -8,7 +8,7 @@ namespace CellDotNet.Cuda
 {
 	class PtxInstructionSelector
 	{
-		public ICollection<BasicBlock> Select(List<BasicBlock> inputblocks)
+		public List<BasicBlock> Select(List<BasicBlock> inputblocks)
 		{
 			// construct all output blocks up front, so we can reference them for branches.
 			var blockmap = inputblocks.ToDictionary(ib => ib, ib => new BasicBlock());
@@ -29,11 +29,23 @@ namespace CellDotNet.Cuda
 		void Select(ListInstruction inputinst, BasicBlock ob, Dictionary<BasicBlock, BasicBlock> blockmap)
 		{
 			ListInstruction new1, new2;
+			PtxCode opcode;
+			GlobalVReg s1 = inputinst.Source1;
+			GlobalVReg s2 = inputinst.Source2;
+			GlobalVReg s3 = inputinst.Source3;
+			GlobalVReg d = inputinst.Destination;
 
 			switch (inputinst.IRCode)
 			{
 				case IRCode.Add:
-//					new1 = new ListInstruction(PtxCode.None);
+					switch (inputinst.Destination.StackType)
+					{
+						case StackType.I4: opcode = PtxCode.Add_S32; break;
+						case StackType.R4: opcode = PtxCode.Add_F32; break;
+						default: throw new InvalidIRException();
+					}
+					new1 = new ListInstruction(opcode) { Source1 = s1, Source2 = s2, Destination = d };
+					ob.Append(new1);
 					break;
 				case IRCode.Add_Ovf:
 				case IRCode.Add_Ovf_Un:

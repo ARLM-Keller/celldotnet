@@ -89,5 +89,21 @@ namespace CellDotNet.Cuda
 			var branchinst = cm.Blocks[0].Instructions.Single(inst => inst.Operand is BasicBlock);
 			IsTrue(ReferenceEquals(branchinst.Operand, cm.Blocks[1]) || ReferenceEquals(branchinst.Operand, cm.Blocks[2]), "Should have branched to one of the blocks.");
 		}
+
+		[Test]
+		public void TestBuildListIR_Parameter()
+		{
+			Action<int> action = i => { i.ToString(); };
+			var cm = new CudaMethod(action.Method);
+			cm.PerformProcessing(CudaMethod.CompileState.ListContructionDone);
+
+			AreEqual(1, cm.Blocks.Count);
+			List<ListInstruction> ilist = cm.Blocks[0].Instructions.ToList();
+			AreEqual(4, ilist.Count); // ldarga, call, pop, ret.
+
+			AreEqual(IRCode.Ldarga, ilist[0].IRCode);
+			IsTrue(ilist[0].Operand is GlobalVReg, "Argument not vreg, but " + ilist[0].Operand.GetType());
+			
+		}
 	}
 }

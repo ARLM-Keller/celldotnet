@@ -42,6 +42,18 @@ namespace CellDotNet.Intermediate
 	}
 
 	[Serializable]
+	public class InvalidIRException : Exception
+	{
+		public InvalidIRException() { }
+		public InvalidIRException(string message) : base(message) { }
+		public InvalidIRException(string message, Exception inner) : base(message, inner) { }
+		protected InvalidIRException(
+		  SerializationInfo info,
+		  StreamingContext context)
+			: base(info, context) { }
+	}
+
+	[Serializable]
 	class ILNotImplementedException : Exception
 	{
 		public ILNotImplementedException() { }

@@ -22,11 +22,20 @@ namespace CellDotNet.Cuda
 		UnmanangedPointer,
 	}
 
+
+	/// <summary>
+	/// This one currently represents any variables, argument, value on the stack, constant or special register.
+	/// </summary>
 	class GlobalVReg
 	{
 		public StackType StackType { get; private set; }
 		public Type ReflectionType { get; private set; }
 		public int ID { get; private set; }
+
+		/// <summary>
+		/// Byte offset in parameter space or stack.
+		/// </summary>
+		public int Offset { get; set; }
 
 		private object _value;
 

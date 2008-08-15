@@ -20,6 +20,11 @@ namespace CellDotNet.Cuda
 			Operand = operand;
 		}
 
+		public ListInstruction(PtxCode opcode)
+		{
+			_opCode = (int) opcode;
+		}
+
 		public ListInstruction(PtxCode opcode, object operand)
 		{
 			_opCode = (int) opcode;
