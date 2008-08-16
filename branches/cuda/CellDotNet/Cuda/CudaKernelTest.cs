@@ -19,6 +19,7 @@ namespace CellDotNet.Cuda
 		{
 			Action<int> del = delegate(int i) { TestIR_MultipleMethods_CallMethod(i); };
 			var kernel = new CudaKernel<Action<int>>(del);
+			kernel.PerformProcessing(CudaKernelCompileState.IRConstructionDone);
 
 			AreEqual(2, kernel.Methods.Count);
 			var q = from cm in kernel.Methods

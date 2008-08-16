@@ -108,6 +108,7 @@ namespace CellDotNet.Cuda
 		[Test]
 		public void TestConditionalBranchPredication_Int()
 		{
+			// This one turns into the ble opcode - should really be more thorough and test other conditional branches.
 			Action<int> action = i =>
 			                     	{
 										if (i > 5)
@@ -120,7 +121,6 @@ namespace CellDotNet.Cuda
 			ListInstruction br = instlist.Single(inst => inst.IRCode == IRCode.Br);
 			IsNotNull(br.Predicate);
 			IsTrue(typeof (PredicateValue).IsAssignableFrom(br.Predicate.ReflectionType), "The branch needs to be properly predicated.");
-			
 		}
 	}
 }

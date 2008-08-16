@@ -4,21 +4,21 @@ using System.Reflection;
 
 namespace CellDotNet.Cuda
 {
+	enum CudaKernelCompileState
+	{
+		None,
+		IRConstructionDone,
+
+		InstructionSelectionDone
+	}
+
 	public class CudaKernel<T> where T : class
 	{
-		public enum CompileState
-		{
-			None,
-			IRConstructionDone,
-
-			InstructionSelectionDone
-		}
-
-		private CompileState _state;
+		private CudaKernelCompileState _state;
 
 		private readonly T _kernelWrapperDelegate;
 		private List<CudaMethod> _methods;
-		private MethodInfo _kernelMethod;
+		private readonly MethodInfo _kernelMethod;
 
 		public CudaKernel(T kerneldelegate)
 		{
@@ -37,21 +37,21 @@ namespace CellDotNet.Cuda
 			del(arg);
 		}
 
-		public void PerformProcessing(CompileState targetstate)
+		internal void PerformProcessing(CudaKernelCompileState targetstate)
 		{
-			if (targetstate > _state && _state == CompileState.IRConstructionDone)
+			if (targetstate > _state && _state == CudaKernelCompileState.IRConstructionDone - 1)
 			{
 				_methods = PerformIRConstruction(_kernelMethod);
-				_state = CompileState.IRConstructionDone;
+				_state = CudaKernelCompileState.IRConstructionDone;
 			}
-			if (targetstate > _state && _state == CompileState.InstructionSelectionDone)
+			if (targetstate > _state && _state == CudaKernelCompileState.InstructionSelectionDone - 1)
 			{
 				PerformInstructionSelection(_methods);
-				_state = CompileState.IRConstructionDone;
+				_state = CudaKernelCompileState.IRConstructionDone;
 			}			
 		}
 
-		private void AssertState(CompileState requiredState)
+		private void AssertState(CudaKernelCompileState requiredState)
 		{
 			if (_state != requiredState)
 				throw new InvalidOperationException(string.Format("Operation is invalid for the current state. " +
@@ -60,7 +60,7 @@ namespace CellDotNet.Cuda
 
 		private void PerformInstructionSelection(List<CudaMethod> methods)
 		{
-			AssertState(CompileState.InstructionSelectionDone - 1);
+			AssertState(CudaKernelCompileState.InstructionSelectionDone - 1);
 
 			foreach (CudaMethod method in methods)
 			{
@@ -72,7 +72,7 @@ namespace CellDotNet.Cuda
 
 		private List<CudaMethod> PerformIRConstruction(MethodInfo kernelMethod)
 		{
-			AssertState(CompileState.IRConstructionDone - 1);
+			AssertState(CudaKernelCompileState.IRConstructionDone - 1);
 
 			var methodmap = new Dictionary<MethodBase, CudaMethod>();
 			var methodWorkList = new Stack<MethodBase>();

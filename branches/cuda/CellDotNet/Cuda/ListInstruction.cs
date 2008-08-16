@@ -36,6 +36,21 @@ namespace CellDotNet.Cuda
 			Operand = operand;
 		}
 
+		/// <summary>
+		/// Copy constructor. Next and previous are not copied.
+		/// </summary>
+		public ListInstruction(PtxCode opcode, ListInstruction template)
+		{
+			_opCode = (int) opcode;
+			// Yes, virtcalls here, so MethodCallListInstruction probably shouldn't use this constructor.
+			Source1 = template.Source1;
+			Source2 = template.Source2;
+			Source3 = template.Source3;
+			Predicate = template.Predicate;
+			PredicateNegation = template.PredicateNegation;
+			Operand = template.Operand;
+		}
+
 		private readonly int _opCode;
 
 		/// <summary>

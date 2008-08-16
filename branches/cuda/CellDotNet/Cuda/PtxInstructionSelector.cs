@@ -49,14 +49,7 @@ namespace CellDotNet.Cuda
 						default:
 							throw new InvalidIRException();
 					}
-					new1 = new ListInstruction(opcode)
-					       	{
-					       		Source1 = s1,
-					       		Source2 = s2,
-					       		Destination = d,
-					       		Predicate = inst.Predicate,
-					       		PredicateNegation = inst.PredicateNegation
-					       	};
+					new1 = new ListInstruction(opcode, inst);
 					ob.Append(new1);
 					return;
 				case IRCode.Add_Ovf:
@@ -79,7 +72,7 @@ namespace CellDotNet.Cuda
 				case IRCode.Brtrue:
 					throw new InvalidIRException("Conditional branch code " + inst.IRCode + " encountered.");
 				case IRCode.Br:
-					new1 = new ListInstruction(PtxCode.Bra) {Predicate = inst.Predicate, PredicateNegation = inst.PredicateNegation};
+					new1 = new ListInstruction(PtxCode.Bra, inst) {Operand = blockmap[(BasicBlock) inst.Operand]};
 					ob.Append(new1);
 					return;
 				case IRCode.Break:
@@ -147,7 +140,7 @@ namespace CellDotNet.Cuda
 						case StackType.R4: opcode = PtxCode.Ld_Param_F32; break;
 						default: throw new InvalidIRException();
 					}
-					new1 = new ListInstruction(opcode) {Source1 = s1, Destination = d};
+					new1 = new ListInstruction(opcode, inst);
 					ob.Append(new1);
 					return;
 				case IRCode.Ldarga:
