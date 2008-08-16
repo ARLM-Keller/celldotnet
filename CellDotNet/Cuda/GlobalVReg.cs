@@ -22,66 +22,83 @@ namespace CellDotNet.Cuda
 		UnmanangedPointer,
 	}
 
+	/// <summary>
+	/// Used by <see cref="GlobalVReg"/> to make is possible to determine how vregs should be treated and declared.
+	/// </summary>
+	enum VRegStorage
+	{
+		None,
+		Register,
+		Global,
+		Local,
+		Parameter,
+		Shared,
+		Texture,
+		Constant,
+		SpecialRegister,
+		Immediate
+	}
 
 	/// <summary>
 	/// This one currently represents any variables, argument, value on the stack, constant or special register.
 	/// </summary>
 	class GlobalVReg
 	{
+		public VRegStorage Storage { get; private set; }
 		public StackType StackType { get; private set; }
 		public Type ReflectionType { get; private set; }
-		public int ID { get; private set; }
+		public object ImmediateValue { get; private set; }
 
 		/// <summary>
-		/// Used by ptx gen to declare parameters.
+		/// A name / textual representation which will be used in assembler, 
+		/// except for values of type <see cref="VRegStorage.Constant"/> which will use <see cref="ImmediateValue"/>.
 		/// </summary>
-		public bool IsParameter { get; set; }
+		public string Name { get; set; }
 
-		private object _assemblyRepresentation;
 
 		private GlobalVReg() { }
 
-		public static GlobalVReg FromNumericType(StackType stacktype, int id)
+		public static GlobalVReg FromNumericType(StackType stacktype, VRegStorage storage)
 		{
-			return new GlobalVReg { StackType = stacktype, ID = id };
+			return new GlobalVReg { StackType = stacktype };
 		}
 
-		public static GlobalVReg FromType(StackType stacktype, Type reflectionType, int id)
+		public static GlobalVReg FromType(StackType stacktype, Type reflectionType, VRegStorage storage)
 		{
-			return new GlobalVReg { StackType = stacktype, ReflectionType = reflectionType, ID = id };
+			return new GlobalVReg { StackType = stacktype, Storage = storage, ReflectionType = reflectionType };
 		}
 
-		public static GlobalVReg FromValue(StackType stacktype, Type reflectionType, object assemblyRepresentation)
+		public static GlobalVReg FromValue(StackType stacktype, Type reflectionType, object immediateValue, VRegStorage storage)
 		{
-			return new GlobalVReg { StackType = stacktype, ReflectionType = reflectionType, _assemblyRepresentation = assemblyRepresentation };
+			return new GlobalVReg { StackType = stacktype, Storage = storage, ReflectionType = reflectionType, ImmediateValue = immediateValue };
 		}
 
 		public override string ToString()
 		{
-			return _assemblyRepresentation != null ? _assemblyRepresentation.ToString() : base.ToString();
+			return ImmediateValue != null ? ImmediateValue.ToString() : base.ToString();
 		}
 
-		public static GlobalVReg FromStackTypeDescription(StackTypeDescription stackType, int id)
+		public static GlobalVReg FromStackTypeDescription(StackTypeDescription stackType, VRegStorage storage)
 		{
 			switch (stackType.CliType)
 			{
 				case CliType.Int32:
-					return FromNumericType(StackType.I4, id);
+					return FromNumericType(StackType.I4, storage);
 				case CliType.Int64:
-					return FromNumericType(StackType.I8, id);
+					return FromNumericType(StackType.I8, storage);
 				case CliType.Float32:
-					return FromNumericType(StackType.R4, id);
+					return FromNumericType(StackType.R4, storage);
 				case CliType.Float64:
-					return FromNumericType(StackType.R8, id);
+					return FromNumericType(StackType.R8, storage);
 				case CliType.ObjectType:
-					return FromType(StackType.Object, stackType.ComplexType.ReflectionType, id);
+					return FromType(StackType.Object, stackType.ComplexType.ReflectionType, storage);
 				case CliType.ValueType:
-					return FromType(StackType.ValueType, stackType.ComplexType.ReflectionType, id);
+					return FromType(StackType.ValueType, stackType.ComplexType.ReflectionType, storage);
 				case CliType.ManagedPointer:
-					return FromNumericType(StackType.ManagedPointer, id);
+					return FromNumericType(StackType.ManagedPointer, storage);
 //					throw new NotImplementedException();
 				case CliType.NativeInt:
-					return FromNumericType(StackType.UnmanangedPointer, id);
+					return FromNumericType(StackType.UnmanangedPointer, storage);
 				default:
 					throw new ArgumentOutOfRangeException("stackType", "Bad CliType: " + stackType.CliType);
 			}

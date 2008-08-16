@@ -29,13 +29,12 @@ namespace CellDotNet.Cuda
 		private readonly MethodBase _method;
 
 		public List<BasicBlock> Blocks { get; private set; }
-		private int _nextVarIdx = 1;
+		public List<GlobalVReg> Parameters { get; private set; }
 
 		public CudaMethod(MethodBase method)
 		{
 			Utilities.AssertArgumentNotNull(method, "method");
 			_method = method;
-//			throw new NotImplementedException();
 		}
 
 		public void PerformProcessing(CudaMethod.CompileState targetstate)
@@ -53,7 +52,11 @@ namespace CellDotNet.Cuda
 
 			if (targetstate > _state && _state <= CompileState.TreeConstructionDone)
 			{
-				Blocks = PerformListConstruction(treeblocks, parameters, variables);
+				List<BasicBlock> newblocks;
+				List<GlobalVReg> newparams;
+				PerformListConstruction(treeblocks, parameters, variables, out newblocks, out newparams);
+				Blocks = newblocks;
+				Parameters = newparams;
 				_state = CompileState.ListContructionDone;
 			}
 			if (targetstate > _state && _state <= CompileState.ConditionalBranchHandlingDone - 1)
@@ -122,7 +125,7 @@ namespace CellDotNet.Cuda
 							BasicBlock target = (BasicBlock) inst.Operand;
 							if (cmpopcode != 0)
 							{
-								pred = GlobalVReg.FromType(StackType.ValueType, typeof(PredicateValue), _nextVarIdx++);
+								pred = GlobalVReg.FromType(StackType.ValueType, typeof(PredicateValue), VRegStorage.Register);
 								var newcmp = new ListInstruction(cmpopcode) { Source1 = inst.Source1, Source2 = inst.Source2, Destination = pred };
 								block.Replace(inst, newcmp);
 								inst = newcmp;
@@ -231,21 +234,26 @@ namespace CellDotNet.Cuda
 
 		class TreeConverter
 		{
-			public int NextVariableIndex { get; set; }
-
 			private Dictionary<MethodVariable, GlobalVReg> _variableMap;
 
 
 			/// <summary>
 			/// Constructs list IR from tree IR.
 			/// </summary>
-			public List<BasicBlock> PerformListConstruction(List<IRBasicBlock> treeblocks, List<MethodParameter> oldparameters, List<MethodVariable> oldvariables)
+			public void PerformListConstruction(List<IRBasicBlock> treeblocks, List<MethodParameter> oldparameters,
+			                                    List<MethodVariable> oldvariables, out List<BasicBlock> newblocks,
+			                                    out List<GlobalVReg> newparams)
 			{
 				_variableMap = new Dictionary<MethodVariable, GlobalVReg>();
+				newparams = new List<GlobalVReg>(oldparameters.Count);
 				foreach (MethodParameter parameter in oldparameters)
-					_variableMap.Add(parameter, GlobalVReg.FromStackTypeDescription(parameter.StackType, NextVariableIndex++));
+				{
+					var vreg = GlobalVReg.FromStackTypeDescription(parameter.StackType, VRegStorage.Parameter);
+					newparams.Add(vreg);
+					_variableMap.Add(parameter, vreg);
+				}
 				foreach (MethodVariable variable in oldvariables)
-					_variableMap.Add(variable, GlobalVReg.FromStackTypeDescription(variable.StackType, NextVariableIndex++));
+					_variableMap.Add(variable, GlobalVReg.FromStackTypeDescription(variable.StackType, VRegStorage.Register));
 
 				// construct all output blocks up front, so we can reference them for branches.
 				var blockmap = treeblocks.ToDictionary(tb => tb, tb => new BasicBlock());
@@ -260,7 +268,7 @@ namespace CellDotNet.Cuda
 					}
 				}
 
-				return treeblocks.Select(tb => blockmap[tb]).ToList();
+				newblocks = treeblocks.Select(tb => blockmap[tb]).ToList();
 			}
 
 			/// <summary>
@@ -306,7 +314,7 @@ namespace CellDotNet.Cuda
 				block.Append(newinst);
 				if (returnsValue)
 				{
-					newinst.Destination = GlobalVReg.FromStackTypeDescription(treenode.StackType, NextVariableIndex++);
+					newinst.Destination = GlobalVReg.FromStackTypeDescription(treenode.StackType, VRegStorage.Register);
 					return newinst.Destination;
 				}
 				return null;
@@ -318,13 +326,9 @@ namespace CellDotNet.Cuda
 		/// <summary>
 		/// Constructs list IR from tree IR.
 		/// </summary>
-		List<BasicBlock> PerformListConstruction(List<IRBasicBlock> treeblocks, List<MethodParameter> parameters, List<MethodVariable> variables)
+		void PerformListConstruction(List<IRBasicBlock> treeblocks, List<MethodParameter> parameters, List<MethodVariable> variables, out List<BasicBlock> newblocks, out List<GlobalVReg> newparams)
 		{
-			var tc = new TreeConverter {NextVariableIndex = _nextVarIdx};
-			List<BasicBlock> newblocklist = tc.PerformListConstruction(treeblocks, parameters, variables);
-			_nextVarIdx = tc.NextVariableIndex;
-
-			return newblocklist;
+			new TreeConverter().PerformListConstruction(treeblocks, parameters, variables, out newblocks, out newparams);
 		}
 
 
