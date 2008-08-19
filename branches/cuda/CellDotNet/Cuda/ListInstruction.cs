@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using CellDotNet.Intermediate;
+using JetBrains.Annotations;
 
 namespace CellDotNet.Cuda
 {
@@ -70,6 +71,7 @@ namespace CellDotNet.Cuda
 			get { return (PtxCode) _opCode; }
 		}
 
+		[CanBeNull]
 		public object Operand { get; set; }
 		public GlobalVReg OperandAsGlobalVRegNonNull
 		{
@@ -79,6 +81,7 @@ namespace CellDotNet.Cuda
 				return Operand as GlobalVReg;
 			}
 		}
+		[CanBeNull]
 		public GlobalVReg OperandAsGlobalVReg
 		{
 			get { return Operand as GlobalVReg; }
@@ -87,11 +90,16 @@ namespace CellDotNet.Cuda
 		public ListInstruction Next { get; set; }
 		public ListInstruction Previous { get; set; }
 
+		[CanBeNull]
 		public virtual GlobalVReg Source1 { get; set; }
+		[CanBeNull]
 		public virtual GlobalVReg Source2 { get; set; }
+		[CanBeNull]
 		public virtual GlobalVReg Source3 { get; set; }
+		[CanBeNull]
 		public GlobalVReg Destination { get; set; }
 
+		[CanBeNull]
 		public GlobalVReg Predicate { get; set; }
 		public bool PredicateNegation { get; set; }
 	}

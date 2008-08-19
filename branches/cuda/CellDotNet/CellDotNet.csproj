@@ -72,8 +72,11 @@
     <Compile Include="CommonDelegates.cs" />
     <Compile Include="CompileContextTest.cs" />
     <Compile Include="Cuda\BasicBlock.cs" />
+    <Compile Include="Cuda\Exceptions.cs" />
     <Compile Include="Cuda\GlobalVReg.cs" />
     <Compile Include="Cuda\PredicateValue.cs" />
+    <Compile Include="Cuda\PtxCompiler.cs" />
+    <Compile Include="Cuda\PtxCompilerTest.cs" />
     <Compile Include="Cuda\PtxEmitter.cs" />
     <Compile Include="Cuda\PtxInstructionSelector.cs" />
     <Compile Include="Cuda\CudaKernel.cs" />
@@ -207,6 +210,8 @@
     <Compile Include="SpeContextTest.cs" />
     <Compile Include="SpeDelegateRunner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TemporaryFile.cs" />
+    <Compile Include="TemporaryFileTest.cs" />
     <Compile Include="TreeDrawer.cs" />
     <Compile Include="UnitTest.cs" />
     <Compile Include="Utilities.cs" />

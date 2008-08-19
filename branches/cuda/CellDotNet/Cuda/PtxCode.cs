@@ -29,19 +29,17 @@ namespace CellDotNet.Cuda
 		Min_F32,
 		Max_S32,
 		Max_F32,
-
 		Bra,
 		Ld_Param_S32,
 		Ld_Param_F32,
-		Ret,
-		Call,
-		Exit,
-		Mov_S32,
-		Shl_S32,
 		St_Global_S32,
 		St_Global_F32,
 		Ld_Global_S32,
 		Ld_Global_F32,
+		Ret,
+		Call,
+		Exit,
+		Mov_S32,
 		Mov_F32
 	}
 }
