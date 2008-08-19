@@ -71,6 +71,14 @@ namespace CellDotNet.Cuda
 		}
 
 		public object Operand { get; set; }
+		public GlobalVReg OperandAsGlobalVRegNonNull
+		{
+			get
+			{
+				Utilities.DebugAssert((Operand as GlobalVReg) != null, "(Operand as GlobalVReg) != null");
+				return Operand as GlobalVReg;
+			}
+		}
 		public GlobalVReg OperandAsGlobalVReg
 		{
 			get { return Operand as GlobalVReg; }

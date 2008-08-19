@@ -36,9 +36,14 @@ namespace CellDotNet.Cuda
 				case IRCode.Add:
 					switch (inst.Destination.StackType)
 					{
-						case StackType.I4: opcode = PtxCode.Add_S32; break;
-						case StackType.R4: opcode = PtxCode.Add_F32; break;
-						default: throw new InvalidIRException();
+						case StackType.I4:
+							opcode = PtxCode.Add_S32;
+							break;
+						case StackType.R4:
+							opcode = PtxCode.Add_F32;
+							break;
+						default:
+							throw new InvalidIRException();
 					}
 					new1 = new ListInstruction(opcode, inst);
 					ob.Append(new1);
@@ -130,50 +135,64 @@ namespace CellDotNet.Cuda
 				case IRCode.Ldarg:
 					switch (inst.Destination.StackType)
 					{
-						case StackType.Object: opcode = PtxCode.Ld_Param_S32; break;
-						case StackType.I4: opcode = PtxCode.Ld_Param_S32; break;
-						case StackType.R4: opcode = PtxCode.Ld_Param_F32; break;
-						default: throw new InvalidIRException();
+						case StackType.Object:
+							opcode = PtxCode.Ld_Param_S32;
+							break;
+						case StackType.I4:
+							opcode = PtxCode.Ld_Param_S32;
+							break;
+						case StackType.R4:
+							opcode = PtxCode.Ld_Param_F32;
+							break;
+						default:
+							throw new InvalidIRException();
 					}
 					new1 = new ListInstruction(opcode, inst);
 					ob.Append(new1);
 					return;
 				case IRCode.Ldarga:
 				case IRCode.Ldc_I4:
+					ob.Append(new ListInstruction(PtxCode.Mov_S32, inst) { Source1 = GlobalVReg.FromImmediate(inst.Operand, StackType.I4), Operand = null });
+					return;
 				case IRCode.Ldc_I8:
+					break;
 				case IRCode.Ldc_R4:
+					ob.Append(new ListInstruction(PtxCode.Mov_F32, inst) { Source1 = GlobalVReg.FromImmediate(inst.Operand, StackType.R4), Operand = null });
+					return;
 				case IRCode.Ldc_R8:
+					break;
 				case IRCode.Ldelem:
 				case IRCode.Ldelem_I:
 				case IRCode.Ldelem_I1:
 				case IRCode.Ldelem_I2:
-				case IRCode.Ldelem_I4:
 				case IRCode.Ldelem_I8:
-				case IRCode.Ldelem_R4:
+					break;
+				case IRCode.Ldelem_R4: SelectLdElem(inst, ob, PtxCode.Ld_Global_F32, 4); return;
 				case IRCode.Ldelem_R8:
 				case IRCode.Ldelem_Ref:
 				case IRCode.Ldelem_U1:
 				case IRCode.Ldelem_U2:
-				case IRCode.Ldelem_U4:
 					break;
+				case IRCode.Ldelem_I4:
+				case IRCode.Ldelem_U4: SelectLdElem(inst, ob, PtxCode.Ld_Global_S32, 4); return;
 				case IRCode.Ldelema:
 					{
 						var offset = GlobalVReg.FromNumericType(StackType.I4, VRegStorage.Register);
-						var elementsize = inst.OperandAsGlobalVReg.GetElementSize();
+						var elementsize = inst.OperandAsGlobalVRegNonNull.GetElementSize();
 						// Determine byte offset.
 						ob.Append(new ListInstruction(PtxCode.Mul_Lo_S32, inst)
-						       	{
-						       		Destination = offset,
-						       		Source1 = inst.Source2, // index
-						       		Source2 = GlobalVReg.FromImmediate(StackType.I4, elementsize)
-						       	});
-//						var address = GlobalVReg.FromNumericType(StackType.I4, VRegStorage.Register);
+						          	{
+						          		Destination = offset,
+						          		Source1 = inst.Source2,
+						          		// index
+						          		Source2 = GlobalVReg.FromImmediate(elementsize, StackType.I4)
+						          	});
 						// Determine element address.
 						ob.Append(new ListInstruction(PtxCode.Add_S32, inst)
 						          	{
 						          		Destination = inst.Destination,
-										Source1 = inst.Source1,
-										Source2 = offset
+						          		Source1 = inst.Source1,
+						          		Source2 = offset
 						          	});
 						return;
 					}
@@ -197,7 +216,7 @@ namespace CellDotNet.Cuda
 					break;
 				case IRCode.Ldnull:
 					// RH 20080816: Using i4 for now.
-					ob.Append(new ListInstruction(PtxCode.Mov, inst) { Source1 = GlobalVReg.FromImmediate(StackType.I4, 0) });
+					ob.Append(new ListInstruction(PtxCode.Mov_S32, inst) {Source1 = GlobalVReg.FromImmediate(0, StackType.I4)});
 					break;
 				case IRCode.Ldobj:
 				case IRCode.Ldsfld:
@@ -263,7 +282,10 @@ namespace CellDotNet.Cuda
 					ob.Append(new ListInstruction(PtxCode.St_Global_S32, inst));
 					return;
 				case IRCode.Stind_I8:
+					break;
 				case IRCode.Stind_R4:
+					ob.Append(new ListInstruction(PtxCode.St_Global_F32, inst));
+					return;
 				case IRCode.Stind_R8:
 				case IRCode.Stind_Ref:
 				case IRCode.Stloc:
@@ -287,6 +309,32 @@ namespace CellDotNet.Cuda
 			}
 
 			throw new NotImplementedException("Opcode not implemented in instruction selector: " + inst.IRCode);
+		}
+
+		private void SelectLdElem(ListInstruction ldElemInst, BasicBlock ob, PtxCode ptxLoadCode, int elementsize)
+		{
+			var offset = GlobalVReg.FromNumericType(StackType.I4, VRegStorage.Register);
+			// Determine byte offset.
+			ob.Append(new ListInstruction(PtxCode.Mul_Lo_S32, ldElemInst)
+			          	{
+			          		Destination = offset,
+			          		Source1 = ldElemInst.Source2, // index
+			          		Source2 = GlobalVReg.FromImmediate(elementsize, StackType.I4)
+			          	});
+			// Determine element address.
+			var address = GlobalVReg.FromNumericType(StackType.I4, VRegStorage.Register);
+			ob.Append(new ListInstruction(PtxCode.Add_S32, ldElemInst)
+			          	{
+			          		Destination = address,
+			          		Source1 = ldElemInst.Source1,
+			          		Source2 = offset
+			          	});
+			ob.Append(new ListInstruction(ptxLoadCode, ldElemInst)
+			          	{
+			          		Destination = ldElemInst.Destination,
+			          		Source1 = address,
+			          		Source2 = null
+			          	});
 		}
 	}
 }

@@ -36,9 +36,12 @@ namespace CellDotNet.Cuda
 		Ret,
 		Call,
 		Exit,
-		Mov,
+		Mov_S32,
 		Shl_S32,
 		St_Global_S32,
-		St_Global_F32
+		St_Global_F32,
+		Ld_Global_S32,
+		Ld_Global_F32,
+		Mov_F32
 	}
 }
