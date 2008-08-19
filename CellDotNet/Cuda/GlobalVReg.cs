@@ -80,7 +80,13 @@ namespace CellDotNet.Cuda
 
 		public string GetAssemblyText()
 		{
-			return ImmediateValue != null ? ImmediateValue.ToString() : Name;
+			if (ImmediateValue != null)
+			{
+				if (ImmediateValue is float || ImmediateValue is double)
+					return ImmediateValue + ".0";
+				return ImmediateValue.ToString();
+			}
+			else return Name;
 		}
 
 		public static GlobalVReg FromStackTypeDescription(StackTypeDescription stackType, VRegStorage storage)

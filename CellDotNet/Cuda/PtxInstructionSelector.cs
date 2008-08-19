@@ -79,11 +79,43 @@ namespace CellDotNet.Cuda
 				case IRCode.Callvirt:
 				case IRCode.Castclass:
 				case IRCode.Ceq:
+					switch (inst.Source1.StackType)
+					{
+						case StackType.I4: opcode = PtxCode.Setp_Eq_S32; break;
+						case StackType.R4: opcode = PtxCode.Setp_Eq_F32; break;
+						default: throw new NotImplementedException();
+					}
+					ob.Append(new ListInstruction(opcode, inst));
+					return;
 				case IRCode.Cgt:
+					switch (inst.Source1.StackType)
+					{
+						case StackType.I4: opcode = PtxCode.Setp_Gt_S32; break;
+						case StackType.R4: opcode = PtxCode.Setp_Gt_F32; break;
+						default: throw new NotImplementedException();
+					}
+					ob.Append(new ListInstruction(opcode, inst));
+					return;
 				case IRCode.Cgt_Un:
 				case IRCode.Ckfinite:
 				case IRCode.Clt:
+					switch (inst.Source1.StackType)
+					{
+						case StackType.I4: opcode = PtxCode.Setp_Lt_S32; break;
+						case StackType.R4: opcode = PtxCode.Setp_Lt_F32; break;
+						default: throw new NotImplementedException();
+					}
+					ob.Append(new ListInstruction(opcode, inst));
+					return;
 				case IRCode.Clt_Un:
+					switch (inst.Source1.StackType)
+					{
+						case StackType.I4: opcode = PtxCode.Setp_Lo_S32; break;
+						case StackType.R4: opcode = PtxCode.Setp_Ltu_F32; break;
+						default: throw new NotImplementedException();
+					}
+					ob.Append(new ListInstruction(opcode, inst));
+					return;
 				case IRCode.Constrained:
 				case IRCode.Conv_I:
 				case IRCode.Conv_I1:

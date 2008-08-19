@@ -40,6 +40,14 @@ namespace CellDotNet.Cuda
 		Call,
 		Exit,
 		Mov_S32,
-		Mov_F32
+		Mov_F32,
+		Setp_Gt_S32,
+		Setp_Gt_F32,
+		Setp_Lt_S32,
+		Setp_Lt_F32,
+		Setp_Lo_S32,
+		Setp_Ltu_F32,
+		Setp_Eq_S32,
+		Setp_Eq_F32
 	}
 }

@@ -69,12 +69,168 @@ namespace CellDotNet.Cuda
 		public void TestGlobalArrayArgument_LoadStoreFloat_Copy()
 		{
 			// Check that we avoid repeated argument loads.
-				Action<int, float, float[]> del = (i, val, arr) =>
+			Action<int, float, float[]> del = (i, val, arr) =>
 			                                  	{
 													var arr2 = arr;
 													var i2 = i;
 													arr2[i2] = arr2[i2 + 1];
 												};
+			DumpPtx(del.Method);
+		}
+
+		[Test]
+		public void TestConditional_Gt_Float()
+		{
+			Action<float, float, float[]> del = (f1, f2, arr) =>
+			                                  	{
+			                                  		if (f1 > f2)
+			                                  			arr[0] = 100f;
+			                                  		else
+			                                  			arr[0] = 200f;
+			                                  	};
+			DumpPtx(del.Method);
+		}
+
+		[Test]
+		public void TestConditional_Gt_Int()
+		{
+			Action<int, int, int[]> del = (f1, f2, arr) =>
+			                                  	{
+			                                  		if (f1 > f2)
+			                                  			arr[0] = 100;
+			                                  		else
+			                                  			arr[0] = 200;
+			                                  	};
+			DumpPtx(del.Method);
+		}
+
+		[Test]
+		public void TestConditional_Ge_Float()
+		{
+			Action<float, float, float[]> del = (f1, f2, arr) =>
+			                                  	{
+			                                  		if (f1 >= f2)
+			                                  			arr[0] = 100f;
+			                                  		else
+			                                  			arr[0] = 200f;
+			                                  	};
+			DumpPtx(del.Method);
+		}
+
+		[Test]
+		public void TestConditional_Ge_Int()
+		{
+			Action<int, int, int[]> del = (f1, f2, arr) =>
+			                                  	{
+			                                  		if (f1 >= f2)
+			                                  			arr[0] = 100;
+			                                  		else
+			                                  			arr[0] = 200;
+			                                  	};
+			DumpPtx(del.Method);
+		}
+
+		[Test]
+		public void TestConditional_Lt_Float()
+		{
+			Action<float, float, float[]> del = (f1, f2, arr) =>
+			                                  	{
+			                                  		if (f1 < f2)
+			                                  			arr[0] = 100f;
+			                                  		else
+			                                  			arr[0] = 200f;
+			                                  	};
+			DumpPtx(del.Method);
+		}
+
+		[Test]
+		public void TestConditional_Lt_Int()
+		{
+			Action<int, int, int[]> del = (f1, f2, arr) =>
+			                                  	{
+			                                  		if (f1 < f2)
+			                                  			arr[0] = 100;
+			                                  		else
+			                                  			arr[0] = 200;
+			                                  	};
+			DumpPtx(del.Method);
+		}
+
+		[Test]
+		public void TestConditional_Le_Float()
+		{
+			Action<float, float, float[]> del = (f1, f2, arr) =>
+			                                  	{
+			                                  		if (f1 <= f2)
+			                                  			arr[0] = 100f;
+			                                  		else
+			                                  			arr[0] = 200f;
+			                                  	};
+			DumpPtx(del.Method);
+		}
+
+		[Test]
+		public void TestConditional_Le_Int()
+		{
+			Action<int, int, int[]> del = (f1, f2, arr) =>
+			                                  	{
+			                                  		if (f1 <= f2)
+			                                  			arr[0] = 100;
+			                                  		else
+			                                  			arr[0] = 200;
+			                                  	};
+			DumpPtx(del.Method);
+		}
+
+		[Test]
+		public void TestConditional_Eq_Float()
+		{
+			Action<float, float, float[]> del = (f1, f2, arr) =>
+			                                  	{
+			                                  		if (f1 == f2)
+			                                  			arr[0] = 100f;
+			                                  		else
+			                                  			arr[0] = 200f;
+			                                  	};
+			DumpPtx(del.Method);
+		}
+
+		[Test]
+		public void TestConditional_Eq_Int()
+		{
+			Action<int, int, int[]> del = (f1, f2, arr) =>
+			                                  	{
+			                                  		if (f1 == f2)
+			                                  			arr[0] = 100;
+			                                  		else
+			                                  			arr[0] = 200;
+			                                  	};
+			DumpPtx(del.Method);
+		}
+
+		[Test]
+		public void TestConditional_Ne_Float()
+		{
+			Action<float, float, float[]> del = (f1, f2, arr) =>
+			                                  	{
+			                                  		if (f1 != f2)
+			                                  			arr[0] = 100f;
+			                                  		else
+			                                  			arr[0] = 200f;
+			                                  	};
+			DumpPtx(del.Method);
+		}
+
+		[Test]
+		public void TestConditional_Ne_Int()
+		{
+			Action<int, int, int[]> del = (f1, f2, arr) =>
+			                                  	{
+			                                  		if (f1 != f2)
+			                                  			arr[0] = 100;
+			                                  		else
+			                                  			arr[0] = 200;
+			                                  	};
 			DumpPtx(del.Method);
 		}
 

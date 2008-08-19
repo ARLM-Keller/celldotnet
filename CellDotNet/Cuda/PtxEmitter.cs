@@ -36,7 +36,7 @@ namespace CellDotNet.Cuda
 			{
 				Utilities.DebugAssert(param.Storage == VRegStorage.Parameter, "vreg.Storage == VRegStorage.Parameter");
 
-				ptx.WriteLine("\t.param " + GetPtxType(param.StackType) + " " + param.Name + ";");
+				ptx.WriteLine("\t.param " + GetPtxType(param.StackType, false) + " " + param.Name + ";");
 			}
 
 			NameAndDeclareLocals(method, ptx);
@@ -50,6 +50,7 @@ namespace CellDotNet.Cuda
 		{
 			foreach (BasicBlock block in blocks)
 			{
+				ptx.WriteLine();
 				ptx.WriteLine(block.Name + ":");
 
 				foreach (ListInstruction inst in block.Instructions)
@@ -68,6 +69,14 @@ namespace CellDotNet.Cuda
 						case PtxCode.Ret: opcodename = "ret"; break;
 						case PtxCode.Mov_S32: opcodename = "mov.s32"; break;
 						case PtxCode.Mov_F32: opcodename = "mov.f32"; break;
+						case PtxCode.Setp_Gt_F32: opcodename = "setp.gt.f32"; break;
+						case PtxCode.Setp_Gt_S32: opcodename = "setp.gt.s32"; break;
+						case PtxCode.Setp_Lt_F32: opcodename = "setp.lt.f32"; break;
+						case PtxCode.Setp_Lt_S32: opcodename = "setp.lt.s32"; break;
+						case PtxCode.Setp_Lo_S32: opcodename = "setp.lo.s32"; break;
+						case PtxCode.Setp_Ltu_F32: opcodename = "setp.ltu.f32"; break;
+						case PtxCode.Setp_Eq_S32: opcodename = "setp.eq.s32"; break;
+						case PtxCode.Setp_Eq_F32: opcodename = "setp.eq.f32"; break;
 
 						case PtxCode.Ld_Global_F32: opcodename = "ld.global.f32"; goto case PtxCode.Ld_Global_S32;
 						case PtxCode.Ld_Global_S32:
@@ -204,7 +213,7 @@ namespace CellDotNet.Cuda
 					case StackType.I8: varprefix += "l"; break;
 					case StackType.R4: varprefix += "f"; break;
 					case StackType.R8: varprefix += "d"; break;
-					case StackType.ValueType: varprefix += "p"; break; // Below we'll check that it's really predicates.
+					case StackType.ValueType: varprefix += "pp"; break; // Below we'll check that it's really predicates.
 					default: throw new InvalidIRException("Bad vreg stacktype: " + stackType);
 				}
 
@@ -219,7 +228,7 @@ namespace CellDotNet.Cuda
 
 				{
 					ptx.WriteLine(@"	{0} {1} {2}<{3}>;", GetStorageString(storagegroup.Key.Storage),
-					              GetPtxType(stackType), varprefix, varcount);
+					              GetPtxType(stackType, true), varprefix, varcount);
 				}
 			}
 		}
@@ -242,12 +251,16 @@ namespace CellDotNet.Cuda
 			}
 		}
 
-		private static string GetPtxType(StackType type)
+		private static string GetPtxType(StackType type, bool isKnownToBePredicate)
 		{
 			switch (type)
 			{
 				case StackType.Object: return ".s32";
 				case StackType.ManagedPointer: return ".s32";
+				case StackType.ValueType: 
+					if (isKnownToBePredicate)
+						return ".pred";
+					throw new NotSupportedException("Cannot emit PTX type for non-predicate value type.");
 				case StackType.I4: return ".s32";
 				case StackType.I8: return ".s64";
 				case StackType.R4: return ".f32";
