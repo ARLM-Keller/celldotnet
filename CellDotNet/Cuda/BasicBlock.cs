@@ -9,6 +9,14 @@ namespace CellDotNet.Cuda
 	{
 		public ListInstruction Head { get; private set; }
 		public ListInstruction Tail { get; private set; }
+		public string Name { get; private set; }
+
+		private BasicBlock() { }
+
+		public BasicBlock(string name)
+		{
+			Name = name;
+		}
 
 		public IEnumerable<ListInstruction> Instructions
 		{

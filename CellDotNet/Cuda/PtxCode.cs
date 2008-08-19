@@ -16,8 +16,8 @@ namespace CellDotNet.Cuda
 		Add_F32,
 		Sub_S32,
 		Sub_F32,
-		Mul_S32,
-		Mul_F32,
+		Mul_Lo_S32,
+		Mul_Lo_F32,
 		Div_S32,
 		Div_F32,
 		Rem_S32,
@@ -32,6 +32,13 @@ namespace CellDotNet.Cuda
 
 		Bra,
 		Ld_Param_S32,
-		Ld_Param_F32
+		Ld_Param_F32,
+		Ret,
+		Call,
+		Exit,
+		Mov,
+		Shl_S32,
+		St_Global_S32,
+		St_Global_F32
 	}
 }

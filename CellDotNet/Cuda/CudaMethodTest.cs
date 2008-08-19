@@ -19,7 +19,7 @@ namespace CellDotNet.Cuda
 			                		i.ToString();
 			                	};
 			var cm = new CudaMethod(action.Method);
-			cm.PerformProcessing(CudaMethod.CompileState.TreeConstructionDone);
+			cm.PerformProcessing(CudaMethodCompileState.TreeConstructionDone);
 		}
 
 		[Test]
@@ -35,7 +35,7 @@ namespace CellDotNet.Cuda
 			                		sum.ToString();
 			                	};
 			var cm = new CudaMethod(action.Method);
-			cm.PerformProcessing(CudaMethod.CompileState.TreeConstructionDone);
+			cm.PerformProcessing(CudaMethodCompileState.TreeConstructionDone);
 		}
 
 		[Test]
@@ -44,7 +44,7 @@ namespace CellDotNet.Cuda
 			Func<int, int> del = i => i + 10;
 
 			var cm = new CudaMethod(del.Method);
-			cm.PerformProcessing(CudaMethod.CompileState.ListContructionDone);
+			cm.PerformProcessing(CudaMethodCompileState.ListContructionDone);
 
 			AreEqual(1, cm.Blocks.Count);
 			AreEqual(4, cm.Blocks[0].Instructions.Count());
@@ -68,7 +68,7 @@ namespace CellDotNet.Cuda
 				sum.ToString();
 			};
 			var cm = new CudaMethod(action.Method);
-			cm.PerformProcessing(CudaMethod.CompileState.ListContructionDone);
+			cm.PerformProcessing(CudaMethodCompileState.ListContructionDone);
 		}
 
 		[Test]
@@ -82,7 +82,7 @@ namespace CellDotNet.Cuda
 			                     	};
 
 			var cm = new CudaMethod(del.Method);
-			cm.PerformProcessing(CudaMethod.CompileState.ListContructionDone);
+			cm.PerformProcessing(CudaMethodCompileState.ListContructionDone);
 
 			AreEqual(3, cm.Blocks.Count);
 
@@ -95,7 +95,7 @@ namespace CellDotNet.Cuda
 		{
 			Action<int> action = i => { i.ToString(); };
 			var cm = new CudaMethod(action.Method);
-			cm.PerformProcessing(CudaMethod.CompileState.ListContructionDone);
+			cm.PerformProcessing(CudaMethodCompileState.ListContructionDone);
 
 			AreEqual(1, cm.Blocks.Count);
 			List<ListInstruction> ilist = cm.Blocks[0].Instructions.ToList();
@@ -115,7 +115,7 @@ namespace CellDotNet.Cuda
 											i.ToString();
 			                     	};
 			var cm = new CudaMethod(action.Method);
-			cm.PerformProcessing(CudaMethod.CompileState.ConditionalBranchHandlingDone);
+			cm.PerformProcessing(CudaMethodCompileState.ConditionalBranchHandlingDone);
 
 			List<ListInstruction> instlist = cm.Blocks.SelectMany(b => b.Instructions).ToList();
 			ListInstruction br = instlist.Single(inst => inst.IRCode == IRCode.Br);

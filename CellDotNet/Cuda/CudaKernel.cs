@@ -8,8 +8,10 @@ namespace CellDotNet.Cuda
 	{
 		None,
 		IRConstructionDone,
-
-		InstructionSelectionDone
+		InstructionSelectionDone,
+		PtxEmissionComplete,
+		PtxCompilationComplete,
+		Complete,
 	}
 
 	public class CudaKernel<T> where T : class
@@ -32,10 +34,10 @@ namespace CellDotNet.Cuda
 			Utilities.AssertArgument(_kernelMethod.IsStatic, "Kernel method must be static.");
 		}
 
-		static public void InvokeDelegate(Action<object[]> del, object[] arg)
-		{
-			del(arg);
-		}
+//		static public void InvokeDelegate(Action<object[]> del, object[] arg)
+//		{
+//			del(arg);
+//		}
 
 		internal void PerformProcessing(CudaKernelCompileState targetstate)
 		{
@@ -47,8 +49,32 @@ namespace CellDotNet.Cuda
 			if (targetstate > _state && _state == CudaKernelCompileState.InstructionSelectionDone - 1)
 			{
 				PerformInstructionSelection(_methods);
-				_state = CudaKernelCompileState.IRConstructionDone;
+				_state = CudaKernelCompileState.InstructionSelectionDone;
 			}			
+			if (targetstate > _state && _state == CudaKernelCompileState.PtxEmissionComplete - 1)
+			{
+				PerformPtxEmission(_methods);
+				_state = CudaKernelCompileState.PtxEmissionComplete;
+			}			
+			if (targetstate > _state && _state == CudaKernelCompileState.PtxCompilationComplete - 1)
+			{
+				PerformPtxCompilation(_methods);
+				_state = CudaKernelCompileState.PtxCompilationComplete;
+			}
+		}
+
+		private void PerformPtxCompilation(List<CudaMethod> methods)
+		{
+			throw new NotImplementedException();
+		}
+
+		private void PerformPtxEmission(List<CudaMethod> methods)
+		{
+			var emitter = new PtxEmitter();
+			foreach (CudaMethod method in methods)
+			{
+				emitter.Emit(method);
+			}
 		}
 
 		private void AssertState(CudaKernelCompileState requiredState)
@@ -64,7 +90,7 @@ namespace CellDotNet.Cuda
 
 			foreach (CudaMethod method in methods)
 			{
-				method.PerformProcessing(CudaMethod.CompileState.InstructionSelectionDone);
+				method.PerformProcessing(CudaMethodCompileState.InstructionSelectionDone);
 			}
 
 			throw new NotImplementedException();
@@ -84,7 +110,7 @@ namespace CellDotNet.Cuda
 			{
 				MethodBase methodBase = methodWorkList.Pop();
 				var cm = new CudaMethod(methodBase);
-				cm.PerformProcessing(CudaMethod.CompileState.ListContructionDone);
+				cm.PerformProcessing(CudaMethodCompileState.ListContructionDone);
 				methodmap.Add(methodBase, cm);
 
 				foreach (BasicBlock block in cm.Blocks)
