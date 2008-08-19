@@ -6,14 +6,6 @@ using Microsoft.Win32;
 
 namespace CellDotNet.Cuda
 {
-	enum CudaComputeCapability
-	{
-		Compute10,
-		Compute11,
-		Compute12,
-		Compute13,
-	}
-
 	class PtxCompiler
 	{
 		public string Compile(string ptx)

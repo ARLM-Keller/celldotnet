@@ -9,7 +9,7 @@ namespace CellDotNet.Cuda
 {
 	class PtxEmitter
 	{
-		private TextWriter _methodPtx = new StringWriter();
+		private readonly StringWriter _methodPtx = new StringWriter();
 
 		public void Emit(CudaMethod method)
 		{
@@ -19,7 +19,13 @@ namespace CellDotNet.Cuda
 
 		public String GetEmittedPtx()
 		{
-			return ((StringWriter) _methodPtx).GetStringBuilder().ToString();
+			var methodptx = _methodPtx.GetStringBuilder().ToString();
+			return @"
+	.version 1.2
+	.target sm_11, map_f64_to_f32
+
+
+" + methodptx;
 		}
 
 		void Emit(CudaMethod method, TextWriter ptx)
@@ -113,7 +119,7 @@ namespace CellDotNet.Cuda
 			}
 		}
 
-		private void EmitBasicRegisterOpcode(string opcode, ListInstruction inst, TextWriter ptx)
+		private static void EmitBasicRegisterOpcode(string opcode, ListInstruction inst, TextWriter ptx)
 		{
 			string line = "\t" + GetPredicateInstructionPrefix(inst) + opcode;
 			if (inst.Destination != null)
@@ -134,14 +140,14 @@ namespace CellDotNet.Cuda
 			ptx.WriteLine(line + ";");
 		}
 
-		private string GetPredicateInstructionPrefix(ListInstruction inst)
+		private static string GetPredicateInstructionPrefix(ListInstruction inst)
 		{
 			if (inst.Predicate == null)
 				return "";
 			return "@" + (inst.PredicateNegation ? "!" : "") + inst.Predicate.Name + " ";
 		}
 
-		private void NameAndDeclareLocals(CudaMethod method, TextWriter ptx)
+		private static void NameAndDeclareLocals(CudaMethod method, TextWriter ptx)
 		{
 			// Count and assign names/indices to all register variables.
 			var allregs = new HashSet<GlobalVReg>();
@@ -218,7 +224,7 @@ namespace CellDotNet.Cuda
 			}
 		}
 
-		private string GetStorageString(VRegStorage storage)
+		private static string GetStorageString(VRegStorage storage)
 		{
 			switch (storage)
 			{
@@ -236,7 +242,7 @@ namespace CellDotNet.Cuda
 			}
 		}
 
-		private string GetPtxType(StackType type)
+		private static string GetPtxType(StackType type)
 		{
 			switch (type)
 			{

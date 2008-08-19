@@ -84,7 +84,9 @@ namespace CellDotNet.Cuda
 			cm.PerformProcessing(CudaMethodCompileState.InstructionSelectionDone);
 			var emitter = new PtxEmitter();
 			emitter.Emit(cm);
-			Console.WriteLine(emitter.GetEmittedPtx());
+			string ptx = emitter.GetEmittedPtx();
+			Console.WriteLine(ptx);
+			string cubin = new PtxCompiler().Compile(ptx);
 		}
 	}
 }
