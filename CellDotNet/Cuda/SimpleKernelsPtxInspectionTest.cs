@@ -25,30 +25,56 @@ namespace CellDotNet.Cuda
 		}
 
 		[Test]
-		public void TestGlobalArrayArgumentStoreInt()
+		public void TestGlobalArrayArgument_StoreInt()
 		{
 			Action<int, int, int[]> del = (i, val, arr) => { arr[i] = val; };
 			DumpPtx(del.Method);
 		}
 
 		[Test]
-		public void TestGlobalArrayArgumentStoreFloat()
+		public void TestGlobalArrayArgument_StoreFloat()
 		{
 			Action<int, float, float[]> del = (i, val, arr) => { arr[i] = val; };
 			DumpPtx(del.Method);
 		}
 
 		[Test]
-		public void TestGlobalArrayArgumentLoadStoreInt()
+		public void TestGlobalArrayArgument_LoadStoreInt()
 		{
 			Action<int, int, int[]> del = (i, val, arr) => { arr[i] = arr[i + 1]; };
 			DumpPtx(del.Method);
 		}
 
 		[Test]
-		public void TestGlobalArrayArgumentLoadStoreFloat()
+		public void TestGlobalArrayArgument_LoadStoreFloat()
 		{
 			Action<int, float, float[]> del = (i, val, arr) => { arr[i] = arr[i+1]; };
+			DumpPtx(del.Method);
+		}
+
+		[Test]
+		public void TestGlobalArrayArgument_LoadStoreInt_Copy()
+		{
+			// Check that we avoid repeated argument loads.
+			Action<int, int, int[]> del = (i, val, arr) =>
+			                              	{
+			                              		var arr2 = arr;
+			                              		var i2 = i;
+			                              		arr2[i2] = arr2[i2 + 1];
+			                              	};
+			DumpPtx(del.Method);
+		}
+
+		[Test]
+		public void TestGlobalArrayArgument_LoadStoreFloat_Copy()
+		{
+			// Check that we avoid repeated argument loads.
+				Action<int, float, float[]> del = (i, val, arr) =>
+			                                  	{
+													var arr2 = arr;
+													var i2 = i;
+													arr2[i2] = arr2[i2 + 1];
+												};
 			DumpPtx(del.Method);
 		}
 

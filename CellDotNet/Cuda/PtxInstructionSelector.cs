@@ -212,6 +212,17 @@ namespace CellDotNet.Cuda
 				case IRCode.Ldind_U4:
 				case IRCode.Ldlen:
 				case IRCode.Ldloc:
+					{
+						switch (inst.OperandAsGlobalVReg.StackType)
+						{
+							case StackType.I4:
+							case StackType.Object: opcode = PtxCode.Mov_S32; break;
+							case StackType.R4: opcode = PtxCode.Mov_F32; break;
+							default: throw new NotImplementedException();
+						}
+						ob.Append(new ListInstruction(opcode, inst) { Source1 = inst.OperandAsGlobalVReg });
+							return;
+					}
 				case IRCode.Ldloca:
 					break;
 				case IRCode.Ldnull:
@@ -289,6 +300,17 @@ namespace CellDotNet.Cuda
 				case IRCode.Stind_R8:
 				case IRCode.Stind_Ref:
 				case IRCode.Stloc:
+					{
+						switch (inst.OperandAsGlobalVReg.StackType)
+						{
+							case StackType.I4:
+							case StackType.Object: opcode = PtxCode.Mov_S32; break;
+							case StackType.R4: opcode = PtxCode.Mov_F32; break;
+							default: throw new NotImplementedException();
+						}
+						ob.Append(new ListInstruction(opcode, inst) { Destination = inst.OperandAsGlobalVReg, Operand = null });
+						return;
+					}
 				case IRCode.Stobj:
 				case IRCode.Stsfld:
 				case IRCode.Sub:

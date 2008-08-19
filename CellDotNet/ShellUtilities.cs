@@ -71,10 +71,13 @@ namespace CellDotNet
 					if (p.StandardError.Peek() != -1)
 					{
 						string alloutput = p.StandardError.ReadToEnd();
-						throw new ShellExecutionException(string.Format("The program wrote {0} characters to standard output:\r\n{1}",
-							alloutput.Length, alloutput));
+						throw new ShellExecutionException(alloutput);
+//						throw new ShellExecutionException(string.Format("The program wrote {0} characters to standard output:\r\n{1}",
+//							alloutput.Length, alloutput));
 					}
 				}
+				if (p.ExitCode != 0)
+					throw new ShellExecutionException(sb.ToString());
 
 				return sb.ToString();
 			}

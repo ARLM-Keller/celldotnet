@@ -34,10 +34,29 @@ namespace CellDotNet
 	[TestFixture]
 	public class ShellUtilitiesTest : UnitTest
 	{
-		[Test, Ignore("Isn't reliable...")]
-		public void TestExecuteCommand()
+		/// <summary>
+		/// This isn't reliable on linux.
+		/// </summary>
+		[Test]
+		public void TestExecuteCommand_Output()
 		{
 			string output = ShellUtilities.ExecuteCommandAndGetOutput("hostname", null);
+			AreNotEqual(null, output);
+			AreNotEqual("", output);
+		}
+
+		[Test, ExpectedException(typeof(ShellExecutionException))]
+		public void TestExecuteCommand_Error()
+		{
+			string output = ShellUtilities.ExecuteCommandAndGetOutput(@"C:\NVIDIA\CUDA\bin\ptxas", "asdf");
+			AreNotEqual(null, output);
+			AreNotEqual("", output);
+		}
+
+		[Test, ExpectedException(typeof(System.ComponentModel.Win32Exception))]
+		public void TestExecuteCommand_NoSuchProgram()
+		{
+			string output = ShellUtilities.ExecuteCommandAndGetOutput(@"C:\ptxas", "asdf");
 			AreNotEqual(null, output);
 			AreNotEqual("", output);
 		}
