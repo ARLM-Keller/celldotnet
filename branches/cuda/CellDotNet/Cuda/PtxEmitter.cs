@@ -60,6 +60,21 @@ namespace CellDotNet.Cuda
 						case PtxCode.Sub_F32: opcodename = "sub.f32"; break;
 						case PtxCode.Sub_S32: opcodename = "sub.s32"; break;
 						case PtxCode.Ret: opcodename = "ret"; break;
+						case PtxCode.Mov_S32: opcodename = "mov.s32"; break;
+						case PtxCode.Mov_F32: opcodename = "mov.f32"; break;
+
+						case PtxCode.Ld_Global_F32: opcodename = "ld.global.f32"; goto case PtxCode.Ld_Global_S32;
+						case PtxCode.Ld_Global_S32:
+							if (opcodename == null)
+								opcodename = "ld.global.f32";
+
+							// Immediate addresses and offsets are not handled.
+							ptx.WriteLine("\t{0} {1} {2}, [{3}];",
+								GetPredicateInstructionPrefix(inst),
+								opcodename,
+								inst.Destination.Name,
+								inst.Source1.Name);
+							continue;
 						case PtxCode.Ld_Param_F32: opcodename = "ld.param.f32"; goto case PtxCode.Ld_Param_S32;
 						case PtxCode.Ld_Param_S32:
 							if (opcodename == null)
@@ -70,7 +85,7 @@ namespace CellDotNet.Cuda
 								GetPredicateInstructionPrefix(inst),
 								opcodename,
 								inst.Destination.Name,
-								inst.OperandAsGlobalVReg.Name);
+								inst.OperandAsGlobalVRegNonNull.Name);
 							continue;
 						case PtxCode.St_Global_F32: opcodename = "st.global.f32"; goto case PtxCode.St_Global_S32;
 						case PtxCode.St_Global_S32:
@@ -91,7 +106,7 @@ namespace CellDotNet.Cuda
 
 							break;
 						default:
-							throw new NotImplementedException("opcode: " + inst.PtxCode);
+									throw new NotImplementedException("opcode: " + inst.PtxCode);
 					}
 
 					if (opcodename != null)

@@ -25,9 +25,30 @@ namespace CellDotNet.Cuda
 		}
 
 		[Test]
-		public void TestGlobalArrayArgumentAssignment()
+		public void TestGlobalArrayArgumentStoreInt()
 		{
 			Action<int, int, int[]> del = (i, val, arr) => { arr[i] = val; };
+			DumpPtx(del.Method);
+		}
+
+		[Test]
+		public void TestGlobalArrayArgumentStoreFloat()
+		{
+			Action<int, float, float[]> del = (i, val, arr) => { arr[i] = val; };
+			DumpPtx(del.Method);
+		}
+
+		[Test]
+		public void TestGlobalArrayArgumentLoadStoreInt()
+		{
+			Action<int, int, int[]> del = (i, val, arr) => { arr[i] = arr[i + 1]; };
+			DumpPtx(del.Method);
+		}
+
+		[Test]
+		public void TestGlobalArrayArgumentLoadStoreFloat()
+		{
+			Action<int, float, float[]> del = (i, val, arr) => { arr[i] = arr[i+1]; };
 			DumpPtx(del.Method);
 		}
 

@@ -68,12 +68,14 @@ namespace CellDotNet.Cuda
 			return new GlobalVReg { StackType = stacktype, Storage = storage, ReflectionType = reflectionType };
 		}
 
-		/// <summary>
-		/// For immediate values.
-		/// </summary>
-		public static GlobalVReg FromImmediate(StackType stacktype, object immediateValue)
+		public static GlobalVReg FromImmediate(object immediateValue, StackType stacktype)
 		{
 			return new GlobalVReg { StackType = stacktype, ImmediateValue = immediateValue, Storage = VRegStorage.Immediate };
+		}
+
+		public static GlobalVReg FromImmediate(object immediateValue)
+		{
+			return FromImmediate(immediateValue, GetStackTypeForNumericType(immediateValue));
 		}
 
 		public string GetAssemblyText()
@@ -143,5 +145,17 @@ namespace CellDotNet.Cuda
 					throw new NotImplementedException();
 			}
 		}
+
+		private static StackType GetStackTypeForNumericType(object value)
+		{
+			if (value is int || value is uint)
+				return StackType.I4;
+			if (value is float)
+				return StackType.R4;
+			if (value is Double)
+				return StackType.R8;
+			throw new ArgumentOutOfRangeException("value", value, "wtf");
+		}
+
 	}
 }
