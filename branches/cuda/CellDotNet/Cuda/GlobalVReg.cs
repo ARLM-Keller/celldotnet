@@ -60,7 +60,7 @@ namespace CellDotNet.Cuda
 
 		public static GlobalVReg FromNumericType(StackType stacktype, VRegStorage storage)
 		{
-			return new GlobalVReg { StackType = stacktype };
+			return new GlobalVReg { StackType = stacktype, Storage = storage };
 		}
 
 		public static GlobalVReg FromType(StackType stacktype, Type reflectionType, VRegStorage storage)
@@ -68,14 +68,17 @@ namespace CellDotNet.Cuda
 			return new GlobalVReg { StackType = stacktype, Storage = storage, ReflectionType = reflectionType };
 		}
 
-		public static GlobalVReg FromValue(StackType stacktype, Type reflectionType, object immediateValue, VRegStorage storage)
+		/// <summary>
+		/// For immediate values.
+		/// </summary>
+		public static GlobalVReg FromImmediate(StackType stacktype, object immediateValue)
 		{
-			return new GlobalVReg { StackType = stacktype, Storage = storage, ReflectionType = reflectionType, ImmediateValue = immediateValue };
+			return new GlobalVReg { StackType = stacktype, ImmediateValue = immediateValue, Storage = VRegStorage.Immediate };
 		}
 
-		public override string ToString()
+		public string GetAssemblyText()
 		{
-			return ImmediateValue != null ? ImmediateValue.ToString() : base.ToString();
+			return ImmediateValue != null ? ImmediateValue.ToString() : Name;
 		}
 
 		public static GlobalVReg FromStackTypeDescription(StackTypeDescription stackType, VRegStorage storage)
@@ -91,7 +94,25 @@ namespace CellDotNet.Cuda
 				case CliType.Float64:
 					return FromNumericType(StackType.R8, storage);
 				case CliType.ObjectType:
-					return FromType(StackType.Object, stackType.ComplexType.ReflectionType, storage);
+					{
+						if (stackType.IsArray)
+						{
+//							StackType elementtype;
+//							switch (stackType.GetArrayElementType().CliType)
+//							{
+//								case CliType.Int32: elementtype = StackType.I4; break;
+//								case CliType.Float32: elementtype = StackType.R4; break;
+//								case CliType.Int64: elementtype = StackType.I8; break;
+//								case CliType.Float64: elementtype = StackType.R8; break;
+//								case CliType.: elementtype = StackType.R4; break;
+//									
+//							}
+							// the type isn't very accurate, but it will do for now...
+							return FromType(StackType.Object, typeof(Array), storage);
+						}
+						else
+							return FromType(StackType.Object, stackType.ComplexType.ReflectionType, storage);
+					}
 				case CliType.ValueType:
 					return FromType(StackType.ValueType, stackType.ComplexType.ReflectionType, storage);
 				case CliType.ManagedPointer:
@@ -101,6 +122,25 @@ namespace CellDotNet.Cuda
 					return FromNumericType(StackType.UnmanangedPointer, storage);
 				default:
 					throw new ArgumentOutOfRangeException("stackType", "Bad CliType: " + stackType.CliType);
+			}
+		}
+
+		/// <summary>
+		/// Returns the size, including any padding
+		/// </summary>
+		/// <returns></returns>
+		public int GetElementSize()
+		{
+			switch (StackType)
+			{
+				case StackType.I4:
+				case StackType.R4:
+					return 4;
+				case StackType.I8:
+				case StackType.R8:
+					return 8;
+				default:
+					throw new NotImplementedException();
 			}
 		}
 	}

@@ -10,23 +10,24 @@ using CellDotNet.Spe;
 
 namespace CellDotNet.Cuda
 {
+	internal enum CudaMethodCompileState
+	{
+		None,
+		TreeConstructionDone,
+		ListContructionDone,
+		ConditionalBranchHandlingDone,
+		InstructionSelectionDone
+	}
+
 	/// <summary>
 	/// Equivalent of <see cref="MethodCompiler"/>. Maybe this one should also be used for cell one day.
 	/// </summary>
 	class CudaMethod
 	{
-		internal enum CompileState
-		{
-			None,
-			TreeConstructionDone,
-			ListContructionDone,
-			ConditionalBranchHandlingDone,
-			InstructionSelectionDone
-		}
-
-		private CompileState _state;
+		public CudaMethodCompileState State { get; private set; }
 
 		private readonly MethodBase _method;
+		public string PtxName { get; private set; }
 
 		public List<BasicBlock> Blocks { get; private set; }
 		public List<GlobalVReg> Parameters { get; private set; }
@@ -34,40 +35,44 @@ namespace CellDotNet.Cuda
 		public CudaMethod(MethodBase method)
 		{
 			Utilities.AssertArgumentNotNull(method, "method");
+
+			// Protect lambdas.
+			PtxName = method.Name.Replace('<', '$').Replace('>', '$');
+
 			_method = method;
 		}
 
-		public void PerformProcessing(CudaMethod.CompileState targetstate)
+		public void PerformProcessing(CudaMethodCompileState targetstate)
 		{
 			List<IRBasicBlock> treeblocks = null;
 			List<MethodVariable> variables = null;
 			List<MethodParameter> parameters = null;
 
-			if (targetstate > _state && _state == CompileState.None)
+			if (targetstate > State && State == CudaMethodCompileState.None)
 			{
 				PerformTreeConstruction(_method, out treeblocks, out parameters, out variables);
 				// We're not storing the tree...
 //				_state = CompileState.TreeConstructionDone;
 			}
 
-			if (targetstate > _state && _state <= CompileState.TreeConstructionDone)
+			if (targetstate > State && State <= CudaMethodCompileState.ListContructionDone - 1)
 			{
 				List<BasicBlock> newblocks;
 				List<GlobalVReg> newparams;
-				PerformListConstruction(treeblocks, parameters, variables, out newblocks, out newparams);
+				new TreeConverter().PerformListConstruction(treeblocks, parameters, variables, PtxName, out newblocks, out newparams);
 				Blocks = newblocks;
 				Parameters = newparams;
-				_state = CompileState.ListContructionDone;
+				State = CudaMethodCompileState.ListContructionDone;
 			}
-			if (targetstate > _state && _state <= CompileState.ConditionalBranchHandlingDone - 1)
+			if (targetstate > State && State <= CudaMethodCompileState.ConditionalBranchHandlingDone - 1)
 			{
 				PerformConditionalBranchDecomposition();
-				_state = CompileState.ConditionalBranchHandlingDone;
+				State = CudaMethodCompileState.ConditionalBranchHandlingDone;
 			}
-			if (targetstate > _state && _state == CompileState.InstructionSelectionDone - 1)
+			if (targetstate > State && State == CudaMethodCompileState.InstructionSelectionDone - 1)
 			{
 				PerformInstructionSelection();
-				_state = CompileState.InstructionSelectionDone;
+				State = CudaMethodCompileState.InstructionSelectionDone;
 			}
 		}
 
@@ -236,27 +241,27 @@ namespace CellDotNet.Cuda
 		{
 			private Dictionary<MethodVariable, GlobalVReg> _variableMap;
 
-
 			/// <summary>
 			/// Constructs list IR from tree IR.
 			/// </summary>
-			public void PerformListConstruction(List<IRBasicBlock> treeblocks, List<MethodParameter> oldparameters,
-			                                    List<MethodVariable> oldvariables, out List<BasicBlock> newblocks,
-			                                    out List<GlobalVReg> newparams)
+			public void PerformListConstruction(List<IRBasicBlock> treeblocks, List<MethodParameter> oldparameters, List<MethodVariable> oldvariables, string ptxname, out List<BasicBlock> newblocks, out List<GlobalVReg> newparams)
 			{
 				_variableMap = new Dictionary<MethodVariable, GlobalVReg>();
 				newparams = new List<GlobalVReg>(oldparameters.Count);
-				foreach (MethodParameter parameter in oldparameters)
+				foreach (MethodParameter oldp in oldparameters)
 				{
-					var vreg = GlobalVReg.FromStackTypeDescription(parameter.StackType, VRegStorage.Parameter);
-					newparams.Add(vreg);
-					_variableMap.Add(parameter, vreg);
+					var newp = GlobalVReg.FromStackTypeDescription(oldp.StackType, VRegStorage.Parameter);
+					// TODO: Prefix the name to avoid clashes with other symbols.
+					newp.Name = oldp.Name;
+					newparams.Add(newp);
+					_variableMap.Add(oldp, newp);
 				}
 				foreach (MethodVariable variable in oldvariables)
 					_variableMap.Add(variable, GlobalVReg.FromStackTypeDescription(variable.StackType, VRegStorage.Register));
 
 				// construct all output blocks up front, so we can reference them for branches.
-				var blockmap = treeblocks.ToDictionary(tb => tb, tb => new BasicBlock());
+				var blocknum = 0;
+				var blockmap = treeblocks.ToDictionary(tb => tb, tb => new BasicBlock("LL" + ptxname + blocknum++));
 
 				foreach (IRBasicBlock irblock in treeblocks)
 				{
@@ -301,6 +306,11 @@ namespace CellDotNet.Cuda
 						operand = blockmap[treenode.OperandAsBasicBlock];
 					else if (treenode.Operand is MethodVariable)
 						operand = _variableMap[treenode.OperandAsVariable];
+					else if (treenode.Operand is StackTypeDescription)
+					{
+						operand = GlobalVReg.FromStackTypeDescription(((StackTypeDescription) treenode.Operand), VRegStorage.None);
+//						operand = GlobalVReg.FromStackTypeDescription(StackTypeDescription.Float32, VRegStorage.None);
+					}
 					else
 						operand = treenode.Operand;
 
@@ -322,15 +332,6 @@ namespace CellDotNet.Cuda
 		}
 
 		#endregion
-
-		/// <summary>
-		/// Constructs list IR from tree IR.
-		/// </summary>
-		void PerformListConstruction(List<IRBasicBlock> treeblocks, List<MethodParameter> parameters, List<MethodVariable> variables, out List<BasicBlock> newblocks, out List<GlobalVReg> newparams)
-		{
-			new TreeConverter().PerformListConstruction(treeblocks, parameters, variables, out newblocks, out newparams);
-		}
-
 
 		private void PerformInstructionSelection()
 		{

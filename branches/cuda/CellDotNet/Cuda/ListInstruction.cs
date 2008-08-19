@@ -43,6 +43,7 @@ namespace CellDotNet.Cuda
 		{
 			_opCode = (int) opcode;
 			// Yes, virtcalls here, so MethodCallListInstruction probably shouldn't use this constructor.
+			Destination = template.Destination;
 			Source1 = template.Source1;
 			Source2 = template.Source2;
 			Source3 = template.Source3;
@@ -70,6 +71,10 @@ namespace CellDotNet.Cuda
 		}
 
 		public object Operand { get; set; }
+		public GlobalVReg OperandAsGlobalVReg
+		{
+			get { return Operand as GlobalVReg; }
+		}
 
 		public ListInstruction Next { get; set; }
 		public ListInstruction Previous { get; set; }

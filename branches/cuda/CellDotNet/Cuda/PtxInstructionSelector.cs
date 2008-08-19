@@ -11,7 +11,7 @@ namespace CellDotNet.Cuda
 		public List<BasicBlock> Select(List<BasicBlock> inputblocks)
 		{
 			// construct all output blocks up front, so we can reference them for branches.
-			var blockmap = inputblocks.ToDictionary(ib => ib, ib => new BasicBlock());
+			var blockmap = inputblocks.ToDictionary(ib => ib, ib => new BasicBlock(ib.Name));
 
 			foreach (BasicBlock ib in inputblocks)
 			{
@@ -30,24 +30,15 @@ namespace CellDotNet.Cuda
 		{
 			ListInstruction new1, new2;
 			PtxCode opcode;
-			GlobalVReg s1 = inst.Source1;
-			GlobalVReg s2 = inst.Source2;
-			GlobalVReg s3 = inst.Source3;
-			GlobalVReg d = inst.Destination;
 
 			switch (inst.IRCode)
 			{
 				case IRCode.Add:
 					switch (inst.Destination.StackType)
 					{
-						case StackType.I4:
-							opcode = PtxCode.Add_S32;
-							break;
-						case StackType.R4:
-							opcode = PtxCode.Add_F32;
-							break;
-						default:
-							throw new InvalidIRException();
+						case StackType.I4: opcode = PtxCode.Add_S32; break;
+						case StackType.R4: opcode = PtxCode.Add_F32; break;
+						default: throw new InvalidIRException();
 					}
 					new1 = new ListInstruction(opcode, inst);
 					ob.Append(new1);
@@ -77,6 +68,8 @@ namespace CellDotNet.Cuda
 					return;
 				case IRCode.Break:
 				case IRCode.Call:
+//					ob.Append(new MethodCallListInstruction(PtxCode.Call, inst));
+//					break;
 				case IRCode.Calli:
 				case IRCode.Callvirt:
 				case IRCode.Castclass:
@@ -133,9 +126,11 @@ namespace CellDotNet.Cuda
 				case IRCode.IntrinsicNewObj:
 				case IRCode.Isinst:
 				case IRCode.Jmp:
+					break;
 				case IRCode.Ldarg:
 					switch (inst.Destination.StackType)
 					{
+						case StackType.Object: opcode = PtxCode.Ld_Param_S32; break;
 						case StackType.I4: opcode = PtxCode.Ld_Param_S32; break;
 						case StackType.R4: opcode = PtxCode.Ld_Param_F32; break;
 						default: throw new InvalidIRException();
@@ -160,7 +155,28 @@ namespace CellDotNet.Cuda
 				case IRCode.Ldelem_U1:
 				case IRCode.Ldelem_U2:
 				case IRCode.Ldelem_U4:
+					break;
 				case IRCode.Ldelema:
+					{
+						var offset = GlobalVReg.FromNumericType(StackType.I4, VRegStorage.Register);
+						var elementsize = inst.OperandAsGlobalVReg.GetElementSize();
+						// Determine byte offset.
+						ob.Append(new ListInstruction(PtxCode.Mul_Lo_S32, inst)
+						       	{
+						       		Destination = offset,
+						       		Source1 = inst.Source2, // index
+						       		Source2 = GlobalVReg.FromImmediate(StackType.I4, elementsize)
+						       	});
+//						var address = GlobalVReg.FromNumericType(StackType.I4, VRegStorage.Register);
+						// Determine element address.
+						ob.Append(new ListInstruction(PtxCode.Add_S32, inst)
+						          	{
+						          		Destination = inst.Destination,
+										Source1 = inst.Source1,
+										Source2 = offset
+						          	});
+						return;
+					}
 				case IRCode.Ldfld:
 				case IRCode.Ldflda:
 				case IRCode.Ldftn:
@@ -178,7 +194,11 @@ namespace CellDotNet.Cuda
 				case IRCode.Ldlen:
 				case IRCode.Ldloc:
 				case IRCode.Ldloca:
+					break;
 				case IRCode.Ldnull:
+					// RH 20080816: Using i4 for now.
+					ob.Append(new ListInstruction(PtxCode.Mov, inst) { Source1 = GlobalVReg.FromImmediate(StackType.I4, 0) });
+					break;
 				case IRCode.Ldobj:
 				case IRCode.Ldsfld:
 				case IRCode.Ldsflda:
@@ -213,7 +233,11 @@ namespace CellDotNet.Cuda
 				case IRCode.Refanyval:
 				case IRCode.Rem:
 				case IRCode.Rem_Un:
+					break;
 				case IRCode.Ret:
+					new1 = new ListInstruction(PtxCode.Ret);
+					ob.Append(new1);
+					return;
 				case IRCode.Rethrow:
 				case IRCode.Shl:
 				case IRCode.Shr:
@@ -234,7 +258,10 @@ namespace CellDotNet.Cuda
 				case IRCode.Stind_I:
 				case IRCode.Stind_I1:
 				case IRCode.Stind_I2:
+					break;
 				case IRCode.Stind_I4:
+					ob.Append(new ListInstruction(PtxCode.St_Global_S32, inst));
+					return;
 				case IRCode.Stind_I8:
 				case IRCode.Stind_R4:
 				case IRCode.Stind_R8:
@@ -248,6 +275,9 @@ namespace CellDotNet.Cuda
 				case IRCode.Switch:
 				case IRCode.Tailcall:
 				case IRCode.Throw:
+					// kind of a hack, but convenient at least for initial testing.
+					ob.Append(new ListInstruction(PtxCode.Exit));
+					break;
 				case IRCode.Unaligned:
 				case IRCode.Unbox:
 				case IRCode.Unbox_Any:
