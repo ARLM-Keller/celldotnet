@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Win32.SafeHandles;
 
 namespace CellDotNet.Cuda.DriverApi
@@ -38,15 +39,34 @@ namespace CellDotNet.Cuda.DriverApi
 	/// </summary>
 	class CUcontext : SafeHandleZeroOrMinusOneIsInvalid
 	{
+		public CUcontext() : base(true)
+		{
+		}
+
 		public CUcontext(bool ownsHandle)
 			: base(ownsHandle)
 		{
 		}
 
+		protected override void Dispose(bool disposing)
+		{
+			// Can't clear it up from the finalizer thread anyway. 
+			// Should consider making this a non-safehandle, since IDisposable is all we really have for CUDA.
+			if (!disposing)
+			{
+				Debug.WriteLine("Cannot clean up CUDA context from finalizer thread.");
+				return;
+			}
+			base.Dispose(disposing);
+		}
+
 		protected override bool ReleaseHandle()
 		{
-			DriverStatusCode rc = DriverUnsafeNativeMethods.cuCtxDestroy(this);
-			return rc == DriverStatusCode.CUDA_SUCCESS;
+			DriverStatusCode rc = DriverUnsafeNativeMethods.cuCtxDestroy(handle);
+			bool success = rc == DriverStatusCode.CUDA_SUCCESS;
+			if (success)
+				SetHandleAsInvalid();
+			return success;
 		}
 	}
 
@@ -55,22 +75,25 @@ namespace CellDotNet.Cuda.DriverApi
 	/// </summary>
 	class CUcontextAttachedHandle : CUcontext
 	{
-		public CUcontextAttachedHandle(bool ownsHandle)
-			: base(ownsHandle)
+		public CUcontextAttachedHandle()
+			: base(true)
 		{
 		}
 
 		protected override bool ReleaseHandle()
 		{
-			DriverStatusCode rc = DriverUnsafeNativeMethods.cuCtxDetach(this);
-			return rc == DriverStatusCode.CUDA_SUCCESS;
+			DriverStatusCode rc = DriverUnsafeNativeMethods.cuCtxDetach(handle);
+
+			bool success = rc == DriverStatusCode.CUDA_SUCCESS;
+			if (success)
+				SetHandleAsInvalid();
+			return success;
 		}
 	}
 
 	class CUmodule : SafeHandleZeroOrMinusOneIsInvalid
 	{
-		public CUmodule(bool ownsHandle)
-			: base(ownsHandle)
+		public CUmodule() : base(true)
 		{
 		}
 

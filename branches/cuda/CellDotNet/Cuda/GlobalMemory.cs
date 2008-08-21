@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using CellDotNet.Cuda.DriverApi;
 
 namespace CellDotNet.Cuda
@@ -12,7 +13,7 @@ namespace CellDotNet.Cuda
 	public class GlobalMemory<T> : IGlobalMemory, IDisposable where T : struct
 	{
 		private CUdeviceptr _handle;
-		private bool _hasfreed;
+		private bool _isdisposed;
 
 		internal GlobalMemory(CUdeviceptr handle)
 		{
@@ -21,11 +22,17 @@ namespace CellDotNet.Cuda
 
 		public void Dispose()
 		{
-			if (_hasfreed) 
+			if (_isdisposed)
 				return;
+			GC.SuppressFinalize(this);
 			DriverStatusCode rc = DriverUnsafeNativeMethods.cuMemFree(_handle);
-			_hasfreed = true;
 			DriverUnsafeNativeMethods.CheckReturnCode(rc);
+			_isdisposed = true;
+		}
+
+		~GlobalMemory()
+		{
+			Debug.WriteLine("Cannot free CUDA memory from finalizer thread.");
 		}
 
 		int IGlobalMemory.GetDeviceAddress()

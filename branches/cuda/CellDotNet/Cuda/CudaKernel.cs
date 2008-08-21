@@ -41,7 +41,7 @@ namespace CellDotNet.Cuda
 		}
 	}
 
-	public class CudaKernel
+	public class CudaKernel : IDisposable
 	{
 		private CudaKernelCompileState _state;
 
@@ -203,7 +203,7 @@ namespace CellDotNet.Cuda
 			get
 			{
 				if (_context == null)
-					_context = new CudaContext(CudaDevice.PreferredDevice);
+					_context = CudaContext.GetCurrentOrNew();
 
 				return _context;
 			}
@@ -226,8 +226,8 @@ namespace CellDotNet.Cuda
 
 		private CudaFunction GetFunction()
 		{
-			// return existing or retreive/create.
-			throw new NotImplementedException();
+			EnsurePrepared();
+			return _function;
 		}
 
 		/// <summary>
@@ -250,6 +250,15 @@ namespace CellDotNet.Cuda
 				return;
 
 			Prepare();
+
+			Utilities.AssertNotNull(_function, "_function");
+		}
+
+		public void Dispose()
+		{
+			if (_context != null)
+				_context.Dispose();
+			_context = null;
 		}
 	}
 }
