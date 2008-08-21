@@ -1,25 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using CellDotNet.Cuda.DriverApi;
 
 namespace CellDotNet.Cuda
 {
-	public class GlobalMemory<T> : IDisposable where T : struct
+	internal interface IGlobalMemory
 	{
-		public GlobalMemory(int elementCount)
+		int GetDeviceAddress();
+	}
+
+	public class GlobalMemory<T> : IGlobalMemory, IDisposable where T : struct
+	{
+		private CUdeviceptr _handle;
+		private bool _hasfreed;
+
+		internal GlobalMemory(CUdeviceptr handle)
 		{
-			throw new NotImplementedException();
+			_handle = handle;
 		}
 
 		public void Dispose()
 		{
-			throw new NotImplementedException();
+			if (_hasfreed) 
+				return;
+			DriverStatusCode rc = DriverUnsafeNativeMethods.cuMemFree(_handle);
+			_hasfreed = true;
+			DriverUnsafeNativeMethods.CheckReturnCode(rc);
 		}
 
-		public T[] GetBuffer()
+		int IGlobalMemory.GetDeviceAddress()
 		{
-			throw new NotImplementedException();
+			return _handle.Ptr;
 		}
 	}
 }

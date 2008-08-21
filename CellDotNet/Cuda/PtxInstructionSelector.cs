@@ -28,7 +28,7 @@ namespace CellDotNet.Cuda
 
 		void Select(ListInstruction inst, BasicBlock ob, Dictionary<BasicBlock, BasicBlock> blockmap)
 		{
-			ListInstruction new1, new2;
+			ListInstruction new1;
 			PtxCode opcode;
 
 			switch (inst.IRCode)
