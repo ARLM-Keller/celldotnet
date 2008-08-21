@@ -40,17 +40,15 @@ namespace CellDotNet.Cuda
 			Initalize();
 		}
 
+		private static bool? s_hasCuda;
+
 		static internal void EnsureCudaInitialized()
 		{
-			try
-			{
-				var rc = DriverUnsafeNativeMethods.cuInit(0);
-				DriverUnsafeNativeMethods.CheckReturnCode(rc);
-			}
-			catch (DllNotFoundException e)
-			{
-				throw new CudaException("Cannot find CUDA dll.", e);
-			}
+			if (s_hasCuda == null)
+				s_hasCuda = DetectCudaDll();
+
+			if (!s_hasCuda.Value)
+				throw new CudaException("CUDA is not available.");
 		}
 
 		private void Initalize()
@@ -99,6 +97,30 @@ namespace CellDotNet.Cuda
 				if (arr.Length == 0)
 					throw new NoSuchDeviceException();
 				return arr[0];
+			}
+		}
+
+		public static bool HasCudaDevice
+		{
+			get
+			{
+				if (s_hasCuda == null)
+					s_hasCuda = DetectCudaDll();
+				return s_hasCuda.Value;
+			}
+		}
+
+		private static bool DetectCudaDll()
+		{
+			try
+			{
+				var rc = DriverUnsafeNativeMethods.cuInit(0);
+				DriverUnsafeNativeMethods.CheckReturnCode(rc);
+				return true;
+			}
+			catch (DllNotFoundException)
+			{
+				return false;
 			}
 		}
 	}
