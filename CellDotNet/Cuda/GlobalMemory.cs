@@ -14,10 +14,20 @@ namespace CellDotNet.Cuda
 	{
 		private CUdeviceptr _handle;
 		private bool _isdisposed;
+		private readonly int _elementSize;
 
-		internal GlobalMemory(CUdeviceptr handle)
+		internal int ElementSize
 		{
-			_handle = handle;
+			get { return _elementSize; }
+		}
+
+		public int Length { get; private set; }
+
+		internal GlobalMemory(CUdeviceptr _handle, int length, int elementSize)
+		{
+			this._handle = _handle;
+			Length = length;
+			_elementSize = elementSize;
 		}
 
 		public void Dispose()
@@ -27,15 +37,16 @@ namespace CellDotNet.Cuda
 			GC.SuppressFinalize(this);
 			DriverStatusCode rc = DriverUnsafeNativeMethods.cuMemFree(_handle);
 			DriverUnsafeNativeMethods.CheckReturnCode(rc);
+			_handle = default(CUdeviceptr);
 			_isdisposed = true;
 		}
 
-		~GlobalMemory()
+		int IGlobalMemory.GetDeviceAddress()
 		{
-			Debug.WriteLine("Cannot free CUDA memory from finalizer thread.");
+			return _handle.Ptr;
 		}
 
-		int IGlobalMemory.GetDeviceAddress()
+		internal int GetDeviceAddress()
 		{
 			return _handle.Ptr;
 		}

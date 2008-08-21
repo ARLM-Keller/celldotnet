@@ -237,7 +237,7 @@ namespace CellDotNet.Cuda
 		private void DumpPtx(MethodInfo method)
 		{
 			// First avoid CudaKernel.
-			CudaMethod cm = new CudaMethod(method);
+			var cm = new CudaMethod(method);
 			cm.PerformProcessing(CudaMethodCompileState.InstructionSelectionDone);
 			var emitter = new PtxEmitter();
 			emitter.Emit(cm);
@@ -249,9 +249,8 @@ namespace CellDotNet.Cuda
 			Console.WriteLine(cubin);
 
 			// .. then try the whole thing.
-			var kernel = CudaKernel.Create(method);
-			kernel.EnsurePrepared();
-
+			using (var kernel = CudaKernel.Create(method))
+				kernel.EnsurePrepared();
 		}
 	}
 }

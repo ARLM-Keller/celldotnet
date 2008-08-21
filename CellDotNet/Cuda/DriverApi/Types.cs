@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using Microsoft.Win32.SafeHandles;
 
 namespace CellDotNet.Cuda.DriverApi
@@ -43,11 +44,6 @@ namespace CellDotNet.Cuda.DriverApi
 		{
 		}
 
-		public CUcontext(bool ownsHandle)
-			: base(ownsHandle)
-		{
-		}
-
 		protected override void Dispose(bool disposing)
 		{
 			// Can't clear it up from the finalizer thread anyway. 
@@ -57,6 +53,7 @@ namespace CellDotNet.Cuda.DriverApi
 				Debug.WriteLine("Cannot clean up CUDA context from finalizer thread.");
 				return;
 			}
+
 			base.Dispose(disposing);
 		}
 
@@ -64,8 +61,9 @@ namespace CellDotNet.Cuda.DriverApi
 		{
 			DriverStatusCode rc = DriverUnsafeNativeMethods.cuCtxDestroy(handle);
 			bool success = rc == DriverStatusCode.CUDA_SUCCESS;
-			if (success)
-				SetHandleAsInvalid();
+			if (!success)
+				Debug.WriteLine("Could not release created CUDA context: " + rc);
+
 			return success;
 		}
 	}
@@ -75,33 +73,20 @@ namespace CellDotNet.Cuda.DriverApi
 	/// </summary>
 	class CUcontextAttachedHandle : CUcontext
 	{
-		public CUcontextAttachedHandle()
-			: base(true)
-		{
-		}
-
 		protected override bool ReleaseHandle()
 		{
 			DriverStatusCode rc = DriverUnsafeNativeMethods.cuCtxDetach(handle);
 
 			bool success = rc == DriverStatusCode.CUDA_SUCCESS;
-			if (success)
-				SetHandleAsInvalid();
+			if (!success)
+				Debug.WriteLine("Could not release attached CUDA context: " + rc);
 			return success;
 		}
 	}
 
-	class CUmodule : SafeHandleZeroOrMinusOneIsInvalid
+	struct CUmodule
 	{
-		public CUmodule() : base(true)
-		{
-		}
-
-		protected override bool ReleaseHandle()
-		{
-			DriverStatusCode rc = DriverUnsafeNativeMethods.cuModuleUnload(this);
-			return rc == DriverStatusCode.CUDA_SUCCESS;
-		}
+		public IntPtr IntPtr;
 	}
 
 	/// <summary>
@@ -125,6 +110,11 @@ namespace CellDotNet.Cuda.DriverApi
 	/// </summary>
 	struct CUdeviceptr
 	{
+		public CUdeviceptr(int ptr)
+		{
+			Ptr = ptr;
+		}
+
 		public int Ptr;
 	}
 }

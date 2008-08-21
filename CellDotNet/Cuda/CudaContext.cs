@@ -12,21 +12,16 @@ namespace CellDotNet.Cuda
 	{
 		private readonly CUcontext _handle;
 
-		public CudaContext(CudaDevice device)
+		private CudaContext(CudaDevice device)
 		{
-//			Debugger.Break();
-//			Console.WriteLine("CudaContext.ctor: device");
 			var rc = DriverUnsafeNativeMethods.cuCtxCreate(out _handle, 0, device.CUdevice);
 			DriverUnsafeNativeMethods.CheckReturnCode(rc);
 
 			Device = device;
 		}
 
-		internal CudaContext(CUcontext handle, CudaDevice device)
+		private CudaContext(CUcontext handle, CudaDevice device)
 		{
-//			Debugger.Break();
-//			Console.WriteLine("CudaContext.ctor: handle");
-
 			_handle = handle;
 			Device = device;
 		}
@@ -44,14 +39,18 @@ namespace CellDotNet.Cuda
 		private static CudaContext GetCurrentOrNew(bool createIfNecessary)
 		{
 			CudaDevice.EnsureCudaInitialized();
-//			Console.WriteLine("CudaContext: GetCurrentOrNew: " + createIfNecessary);
 
 			CUcontextAttachedHandle handle;
 			DriverStatusCode rc = DriverUnsafeNativeMethods.cuCtxAttach(out handle, 0);
-			if (rc == DriverStatusCode.CUDA_ERROR_INVALID_CONTEXT && createIfNecessary)
+			if (rc == DriverStatusCode.CUDA_ERROR_INVALID_CONTEXT)
 			{
-				return new CudaContext(CudaDevice.PreferredDevice);
+				handle.SetHandleAsInvalid();
+				if (createIfNecessary)
+				{
+					return new CudaContext(CudaDevice.PreferredDevice);
+				}
 			}
+
 			DriverUnsafeNativeMethods.CheckReturnCode(rc);
 
 			CUdevice devhandle;
@@ -79,15 +78,17 @@ namespace CellDotNet.Cuda
 
 		public GlobalMemory<T> AllocateLinear<T>(int count) where T : struct
 		{
-			uint bytecount = (uint)count*(uint)Marshal.SizeOf(typeof (T));
+			int elementSize = Marshal.SizeOf(typeof (T));
+			int bytecount = count*elementSize;
 			CUdeviceptr dptr;
-			DriverStatusCode rc = DriverUnsafeNativeMethods.cuMemAlloc(out dptr, bytecount);
+			DriverStatusCode rc = DriverUnsafeNativeMethods.cuMemAlloc(out dptr, (uint) bytecount);
 			DriverUnsafeNativeMethods.CheckReturnCode(rc);
 
-			return new GlobalMemory<T>(dptr);
+			return new GlobalMemory<T>(dptr, count, elementSize);
 		}
 
 #if UNITTEST
+
 		/// <summary>
 		/// 
 		/// </summary>
@@ -97,5 +98,56 @@ namespace CellDotNet.Cuda
 		}
 #endif // UNITTEST
 
+		#region  Memory Copy
+
+		public void CopyHostToDevice<T>(T[] src, int srcIndex, GlobalMemory<T> dest, int destIndex, int elementCount) where T : struct
+		{
+			if (srcIndex + elementCount > src.Length || srcIndex < 0 || elementCount < 0)
+				throw new ArgumentOutOfRangeException("Bad source.");
+			if (destIndex + elementCount > dest.Length || destIndex < 0 || elementCount < 0)
+				throw new ArgumentOutOfRangeException("Bad destination.");
+
+			uint bc = (uint) dest.ElementSize * (uint)elementCount;
+			var devPtr = new CUdeviceptr(dest.GetDeviceAddress() + dest.ElementSize * destIndex);
+			var handle = new GCHandle();
+			try
+			{
+				handle = GCHandle.Alloc(src);
+				IntPtr hostPtr = Marshal.UnsafeAddrOfPinnedArrayElement(src, srcIndex);
+				DriverStatusCode rc = DriverUnsafeNativeMethods.cuMemcpyHtoD(devPtr, hostPtr, bc);
+				DriverUnsafeNativeMethods.CheckReturnCode(rc);
+			}
+			finally
+			{
+				if (handle.IsAllocated)
+					handle.Free();
+			}
+		}
+
+		public void CopyDeviceToHost<T>(GlobalMemory<T> src, int srcIndex, T[] dest, int destIndex, int elementCount) where T : struct
+		{
+			if (srcIndex + elementCount > src.Length || srcIndex < 0 || elementCount < 0)
+				throw new ArgumentOutOfRangeException("Bad source.");
+			if (destIndex + elementCount > dest.Length || destIndex < 0 || elementCount < 0)
+				throw new ArgumentOutOfRangeException("Bad destination.");
+
+			uint bc = (uint)src.ElementSize * (uint)elementCount;
+			var devPtr = new CUdeviceptr(src.GetDeviceAddress() + src.ElementSize * destIndex);
+			var handle = new GCHandle();
+			try
+			{
+				handle = GCHandle.Alloc(src);
+				IntPtr hostPtr = Marshal.UnsafeAddrOfPinnedArrayElement(dest, srcIndex);
+				DriverStatusCode rc = DriverUnsafeNativeMethods.cuMemcpyDtoH(hostPtr, devPtr, bc);
+				DriverUnsafeNativeMethods.CheckReturnCode(rc);
+			}
+			finally
+			{
+				if (handle.IsAllocated)
+					handle.Free();
+			}
+		}
+
+		#endregion
 	}
 }
