@@ -134,6 +134,13 @@ namespace CellDotNet.Cuda
 					"Current state: {0}; required state: {1}.", _state, requiredState));
 		}
 
+		private void AssertStateMinimum(CudaKernelCompileState requiredState)
+		{
+			if (_state != requiredState)
+				throw new InvalidOperationException(string.Format("Operation is invalid for the current state. " +
+					"Current state: {0}; required state: {1}.", _state, requiredState));
+		}
+
 		private void PerformInstructionSelection(List<CudaMethod> methods)
 		{
 			AssertState(CudaKernelCompileState.InstructionSelectionDone - 1);
@@ -259,6 +266,12 @@ namespace CellDotNet.Cuda
 			if (_context != null)
 				_context.Dispose();
 			_context = null;
+		}
+
+		public string GetPtx()
+		{
+			AssertStateMinimum(CudaKernelCompileState.PtxEmissionComplete);
+			return _emitter.GetEmittedPtx();
 		}
 	}
 }

@@ -83,7 +83,12 @@ namespace CellDotNet.Cuda
 			if (ImmediateValue != null)
 			{
 				if (ImmediateValue is float || ImmediateValue is double)
-					return ImmediateValue + ".0";
+				{
+					string s = ImmediateValue.ToString();
+					if (s.IndexOf('.') == -1)
+						return ImmediateValue + ".0";
+					return s;
+				}
 				return ImmediateValue.ToString();
 			}
 			else return Name;

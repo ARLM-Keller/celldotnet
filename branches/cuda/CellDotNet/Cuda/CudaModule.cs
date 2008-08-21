@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using CellDotNet.Cuda.DriverApi;
 
 namespace CellDotNet.Cuda
 {
-	internal class CudaModule
+	internal class CudaModule : IDisposable
 	{
-		private readonly CUmodule _handle;
+		private CUmodule _handle;
 
 		private CudaModule(CUmodule handle)
 		{
@@ -31,6 +29,16 @@ namespace CellDotNet.Cuda
 			DriverUnsafeNativeMethods.CheckReturnCode(rc);
 
 			return new CudaFunction(func);
+		}
+
+		public void Dispose()
+		{
+			if (_handle.IntPtr == IntPtr.Zero)
+				return;
+
+			DriverStatusCode rc = DriverUnsafeNativeMethods.cuModuleUnload(_handle);
+			DriverUnsafeNativeMethods.CheckReturnCode(rc);
+			_handle = default(CUmodule);
 		}
 	}
 }

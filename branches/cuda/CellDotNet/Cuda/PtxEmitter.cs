@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -14,7 +15,11 @@ namespace CellDotNet.Cuda
 		public void Emit(CudaMethod method)
 		{
 			Utilities.AssertArgument(method.State >= CudaMethodCompileState.InstructionSelectionDone, "method.State >= CudaMethodCompileState.InstructionSelectionDone");
-			Emit(method, _methodPtx);
+
+			using (new CultureScope("en-US"))
+			{
+				Emit(method, _methodPtx);
+			}
 		}
 
 		public String GetEmittedPtx()
@@ -270,4 +275,5 @@ namespace CellDotNet.Cuda
 			}
 		}
 	}
+
 }
