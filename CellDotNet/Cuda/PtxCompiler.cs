@@ -8,9 +8,9 @@ namespace CellDotNet.Cuda
 {
 	class PtxCompiler
 	{
-		public string Compile(string ptx)
+		public string CompileToCubin(string ptx)
 		{
-			return Compile(ptx, null, null);
+			return CompileToCubin(ptx, null, null);
 		}
 
 		/// <summary>
@@ -20,7 +20,7 @@ namespace CellDotNet.Cuda
 		/// <param name="optimizationLevel"></param>
 		/// <param name="maxRegisterCount"></param>
 		/// <returns></returns>
-		public string Compile(string ptx, int? optimizationLevel, int? maxRegisterCount)
+		public string CompileToCubin(string ptx, int? optimizationLevel, int? maxRegisterCount)
 		{
 			string cudaPath = (string) Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Installed Products\NVIDIA CUDA", "InstallDir", null);
 			if (cudaPath == null)
