@@ -14,30 +14,76 @@ namespace CellDotNet.Cuda
 		Complete,
 	}
 
-	public class CudaKernel<T> where T : class
+	public class CudaKernel<T> : CudaKernel where T : class
+	{
+		private readonly T _kernelWrapperDelegate;
+
+		internal CudaKernel(MethodInfo kernelMethod) : base(kernelMethod)
+		{
+			throw new NotImplementedException();
+		}
+//
+//		public CudaKernel(T kerneldelegate)
+//		{
+//			if (!(kerneldelegate is Delegate))
+//				throw new ArgumentException("Type argument must be a delegate type.");
+//
+//			// TODO Generate LCG delegate wrapper.
+//			this._kernelWrapperDelegate = kerneldelegate;
+//
+//			_kernelMethod = (kerneldelegate as Delegate).Method;
+//			Utilities.AssertArgument(_kernelMethod.IsStatic, "Kernel method must be static.");
+//		}
+
+		public T Execute
+		{
+			get { return _kernelWrapperDelegate; }
+		}
+	}
+
+	public class CudaKernel
 	{
 		private CudaKernelCompileState _state;
 
-		private readonly T _kernelWrapperDelegate;
 		private List<CudaMethod> _methods;
 		private readonly MethodInfo _kernelMethod;
+		private CudaContext _context;
 
-		public CudaKernel(T kerneldelegate)
+		public CudaKernel(MethodInfo kernelMethod)
 		{
-			if (!(kerneldelegate is Delegate))
-				throw new ArgumentException("Type argument must be a delegate type.");
+			Utilities.AssertArgumentNotNull(kernelMethod, "kernelMethod");
 
-			// TODO Generate LCG delegate wrapper.
-			this._kernelWrapperDelegate = kerneldelegate;
-
-			_kernelMethod = (kerneldelegate as Delegate).Method;
+			_kernelMethod = kernelMethod;
 			Utilities.AssertArgument(_kernelMethod.IsStatic, "Kernel method must be static.");
 		}
 
-//		static public void InvokeDelegate(Action<object[]> del, object[] arg)
-//		{
-//			del(arg);
-//		}
+		public static CudaKernel<T> Create<T>(MethodInfo method) where T : class
+		{
+			return new CudaKernel<T>(method);
+			throw new NotImplementedException();
+		}
+
+		public static CudaKernel Create(MethodInfo method)
+		{
+			return new CudaKernel(method);
+		}
+
+		public static CudaKernel Create(Delegate method)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void ExecuteUntyped(params object[] arguments)
+		{
+			CudaContext ctx = null;
+			string cubin = "cubin lalala";
+			CudaModule module = CudaModule.LoadData(cubin, ctx.Device);
+			string encodedKernelName = "mykernel__11xxy";
+			CudaFunction function = module.GetFunction(encodedKernelName);
+			// Block shape and other stuff is set via CudaKernel methods, even though it needs a function reference.
+			// This is because the context .
+//			function.SetBlockShape();
+		}
 
 		internal void PerformProcessing(CudaKernelCompileState targetstate)
 		{
@@ -145,35 +191,40 @@ namespace CellDotNet.Cuda
 			return new List<CudaMethod>(methodmap.Values);
 		}
 
-		public T Start
-		{
-			get { return _kernelWrapperDelegate; }
-		}
-
 		internal ICollection<CudaMethod> Methods
 		{
 			get { return _methods; }
 		}
 
-		public void StartTmp(object[] args)
+		public CudaContext Context
 		{
-//			 BuildIRTree(_kernelMethod);
-			CudaMethod cm = new CudaMethod(_kernelMethod);
+			get
+			{
+				if (_context == null)
+					_context = new CudaContext(CudaDevice.PreferredDevice);
 
-			/// 1: Compile to PTX
-			/// 2: Compile to cubin
-			/// 3: Load cubin
-			/// 4: Set up arguments/data.
-			/// 5: Start kernel.
+				return _context;
+			}
 		}
 
 		public void SetBlockSize(int x, int y)
 		{
-			throw new NotImplementedException();
+			SetBlockSize(x, y, 1);
+		}
+
+		public void SetBlockSize(int x, int y, int z)
+		{
+			GetFunction().SetBlockSize(x, y, z);
 		}
 
 		public void SetGridSize(int x, int y)
 		{
+			GetFunction().SetGridSize(x, y);
+		}
+
+		private CudaFunction GetFunction()
+		{
+			// return existing or retreive/create.
 			throw new NotImplementedException();
 		}
 	}
