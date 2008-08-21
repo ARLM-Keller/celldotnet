@@ -47,7 +47,7 @@ $LDWend___globfunc__Z3xxxPifii:
 
 
 ";
-			var cubin = new PtxCompiler().Compile(ptx);
+			var cubin = new PtxCompiler().CompileToCubin(ptx);
 			IsNotNull(cubin);
 			IsTrue(cubin != "");
 			IsTrue(cubin.StartsWith("architecture"));

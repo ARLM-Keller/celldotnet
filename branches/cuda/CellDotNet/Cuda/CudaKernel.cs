@@ -48,6 +48,9 @@ namespace CellDotNet.Cuda
 		private List<CudaMethod> _methods;
 		private readonly MethodInfo _kernelMethod;
 		private CudaContext _context;
+		private PtxEmitter _emitter;
+		private string _cubin;
+		private CudaFunction _function;
 
 		public CudaKernel(MethodInfo kernelMethod)
 		{
@@ -60,7 +63,6 @@ namespace CellDotNet.Cuda
 		public static CudaKernel<T> Create<T>(MethodInfo method) where T : class
 		{
 			return new CudaKernel<T>(method);
-			throw new NotImplementedException();
 		}
 
 		public static CudaKernel Create(MethodInfo method)
@@ -68,21 +70,9 @@ namespace CellDotNet.Cuda
 			return new CudaKernel(method);
 		}
 
-		public static CudaKernel Create(Delegate method)
+		public static CudaKernel Create(Delegate del)
 		{
-			throw new NotImplementedException();
-		}
-
-		public void ExecuteUntyped(params object[] arguments)
-		{
-			CudaContext ctx = null;
-			string cubin = "cubin lalala";
-			CudaModule module = CudaModule.LoadData(cubin, ctx.Device);
-			string encodedKernelName = "mykernel__11xxy";
-			CudaFunction function = module.GetFunction(encodedKernelName);
-			// Block shape and other stuff is set via CudaKernel methods, even though it needs a function reference.
-			// This is because the context .
-//			function.SetBlockShape();
+			return new CudaKernel(del.Method);
 		}
 
 		internal void PerformProcessing(CudaKernelCompileState targetstate)
@@ -99,28 +89,42 @@ namespace CellDotNet.Cuda
 			}			
 			if (targetstate > _state && _state == CudaKernelCompileState.PtxEmissionComplete - 1)
 			{
-				PerformPtxEmission(_methods);
+				_emitter = PerformPtxEmission(_methods);
 				_state = CudaKernelCompileState.PtxEmissionComplete;
 			}			
 			if (targetstate > _state && _state == CudaKernelCompileState.PtxCompilationComplete - 1)
 			{
-				PerformPtxCompilation(_methods);
+				_cubin = PerformPtxCompilation(_emitter);
 				_state = CudaKernelCompileState.PtxCompilationComplete;
 			}
 		}
 
-		private void PerformPtxCompilation(List<CudaMethod> methods)
+		public void ExecuteUntyped(params object[] arguments)
 		{
-			throw new NotImplementedException();
+			EnsurePrepared();
+
+			_function.Launch(arguments);
 		}
 
-		private void PerformPtxEmission(List<CudaMethod> methods)
+		private string PerformPtxCompilation(PtxEmitter emitter)
 		{
+			AssertState(CudaKernelCompileState.PtxCompilationComplete - 1);
+
+			string cubin = new PtxCompiler().CompileToCubin(emitter.GetEmittedPtx());
+			return cubin;
+		}
+
+		private PtxEmitter PerformPtxEmission(List<CudaMethod> methods)
+		{
+			AssertState(CudaKernelCompileState.PtxEmissionComplete - 1);
+
 			var emitter = new PtxEmitter();
 			foreach (CudaMethod method in methods)
 			{
 				emitter.Emit(method);
 			}
+
+			return emitter;
 		}
 
 		private void AssertState(CudaKernelCompileState requiredState)
@@ -138,8 +142,6 @@ namespace CellDotNet.Cuda
 			{
 				method.PerformProcessing(CudaMethodCompileState.InstructionSelectionDone);
 			}
-
-			throw new NotImplementedException();
 		}
 
 		private List<CudaMethod> PerformIRConstruction(MethodInfo kernelMethod)
@@ -207,12 +209,12 @@ namespace CellDotNet.Cuda
 			}
 		}
 
-		public void SetBlockSize(int x, int y)
+		public void SetBlockShape(int x, int y)
 		{
-			SetBlockSize(x, y, 1);
+			SetBlockShape(x, y, 1);
 		}
 
-		public void SetBlockSize(int x, int y, int z)
+		public void SetBlockShape(int x, int y, int z)
 		{
 			GetFunction().SetBlockSize(x, y, z);
 		}
@@ -226,6 +228,28 @@ namespace CellDotNet.Cuda
 		{
 			// return existing or retreive/create.
 			throw new NotImplementedException();
+		}
+
+		/// <summary>
+		/// Lock'n load.
+		/// </summary>
+		private void Prepare()
+		{
+			PerformProcessing(CudaKernelCompileState.Complete);
+
+			Utilities.Assert(!string.IsNullOrEmpty(_cubin), "No cubin?");
+			CudaMethod kernelMethod = _methods[0];
+
+			var module = CudaModule.LoadData(_cubin, Context.Device);
+			_function = module.GetFunction(kernelMethod.PtxName);
+		}
+
+		public void EnsurePrepared()
+		{
+			if (_function != null)
+				return;
+
+			Prepare();
 		}
 	}
 }
