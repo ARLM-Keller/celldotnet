@@ -79,9 +79,9 @@ namespace CellDotNet.Cuda
 		public GlobalMemory<T> AllocateLinear<T>(int count) where T : struct
 		{
 			int elementSize = Marshal.SizeOf(typeof (T));
-			int bytecount = count*elementSize;
+			uint bytecount = (uint)count*(uint)elementSize;
 			CUdeviceptr dptr;
-			DriverStatusCode rc = DriverUnsafeNativeMethods.cuMemAlloc(out dptr, (uint) bytecount);
+			DriverStatusCode rc = DriverUnsafeNativeMethods.cuMemAlloc(out dptr, bytecount);
 			DriverUnsafeNativeMethods.CheckReturnCode(rc);
 
 			return new GlobalMemory<T>(dptr, count, elementSize);
