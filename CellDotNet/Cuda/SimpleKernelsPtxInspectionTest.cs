@@ -8,7 +8,7 @@ using NUnit.Framework;
 namespace CellDotNet.Cuda
 {
 	[TestFixture]
-	public class SimpleKernelsPtxInspectionTest
+	public class SimpleKernelsPtxInspectionTest : UnitTest
 	{
 		[Test]
 		public void TestMethodDeclaration_IntInt()
@@ -232,6 +232,31 @@ namespace CellDotNet.Cuda
 			                                  			arr[0] = 200;
 			                                  	};
 			DumpPtx(del.Method);
+		}
+
+		[Test]
+		public void TestArrayStoreMemoryCopy()
+		{
+			Action<int, float, float[]> del = (index, value, arr) =>
+			                                  	{
+			                                  		arr[index] = value;
+			                                  	};
+			using (var kernel = CudaKernel.Create(del))
+			{
+				const int index = 5;
+				const float value = 50f;
+
+				var devmem = kernel.Context.AllocateLinear<float>(10);
+
+				kernel.SetBlockShape(16, 16);
+				kernel.SetGridSize(1, 1);
+				kernel.ExecuteUntyped(index, value, devmem);
+
+				var arr = new float[devmem.Length];
+				kernel.Context.CopyDeviceToHost(devmem, 0, arr, 0, arr.Length);
+
+				AreEqual(value, arr[index]);
+			}
 		}
 
 		private void DumpPtx(MethodInfo method)
