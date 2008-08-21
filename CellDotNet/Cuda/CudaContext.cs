@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -13,14 +14,19 @@ namespace CellDotNet.Cuda
 
 		public CudaContext(CudaDevice device)
 		{
+//			Debugger.Break();
+//			Console.WriteLine("CudaContext.ctor: device");
 			var rc = DriverUnsafeNativeMethods.cuCtxCreate(out _handle, 0, device.CUdevice);
 			DriverUnsafeNativeMethods.CheckReturnCode(rc);
 
 			Device = device;
 		}
 
-		internal CudaContext(CUcontextAttachedHandle handle, CudaDevice device)
+		internal CudaContext(CUcontext handle, CudaDevice device)
 		{
+//			Debugger.Break();
+//			Console.WriteLine("CudaContext.ctor: handle");
+
 			_handle = handle;
 			Device = device;
 		}
@@ -37,6 +43,9 @@ namespace CellDotNet.Cuda
 
 		private static CudaContext GetCurrentOrNew(bool createIfNecessary)
 		{
+			CudaDevice.EnsureCudaInitialized();
+//			Console.WriteLine("CudaContext: GetCurrentOrNew: " + createIfNecessary);
+
 			CUcontextAttachedHandle handle;
 			DriverStatusCode rc = DriverUnsafeNativeMethods.cuCtxAttach(out handle, 0);
 			if (rc == DriverStatusCode.CUDA_ERROR_INVALID_CONTEXT && createIfNecessary)
@@ -77,5 +86,16 @@ namespace CellDotNet.Cuda
 
 			return new GlobalMemory<T>(dptr);
 		}
+
+#if UNITTEST
+		/// <summary>
+		/// 
+		/// </summary>
+		internal IntPtr CudaHandle
+		{
+			get { return _handle.DangerousGetHandle(); }
+		}
+#endif // UNITTEST
+
 	}
 }

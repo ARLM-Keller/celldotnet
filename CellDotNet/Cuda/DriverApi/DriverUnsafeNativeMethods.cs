@@ -41,11 +41,11 @@ namespace CellDotNet.Cuda.DriverApi
 		[DllImport("nvcuda")]
 		public extern static DriverStatusCode cuCtxCreate(out CUcontext pctx, uint flags, CUdevice dev);
 		[DllImport("nvcuda")]
-		public extern static DriverStatusCode cuCtxDestroy(CUcontext ctx);
+		public extern static DriverStatusCode cuCtxDestroy(IntPtr ctx);
 		[DllImport("nvcuda")]
 		public extern static DriverStatusCode cuCtxAttach(out CUcontextAttachedHandle pctx, uint flags);
 		[DllImport("nvcuda")]
-		public extern static DriverStatusCode cuCtxDetach(CUcontext ctx);
+		public extern static DriverStatusCode cuCtxDetach(IntPtr ctx);
 		[DllImport("nvcuda")]
 		public extern static DriverStatusCode cuCtxPushCurrent(CUcontext ctx);
 		[DllImport("nvcuda")]

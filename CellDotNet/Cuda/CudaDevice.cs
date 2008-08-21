@@ -10,12 +10,6 @@ namespace CellDotNet.Cuda
 	/// </summary>
 	public class CudaDevice
 	{
-		static CudaDevice()
-		{
-			var rc = DriverUnsafeNativeMethods.cuInit(0);
-			DriverUnsafeNativeMethods.CheckReturnCode(rc);
-		}
-
 		private readonly CUdevice _cudevice;
 		internal CUdevice CUdevice
 		{
@@ -29,6 +23,8 @@ namespace CellDotNet.Cuda
 
 		internal CudaDevice(int deviceOrdinal)
 		{
+			EnsureCudaInitialized();
+
 			var rc = DriverUnsafeNativeMethods.cuDeviceGet(out _cudevice, deviceOrdinal);
 			DriverUnsafeNativeMethods.CheckReturnCode(rc);
 
@@ -37,9 +33,24 @@ namespace CellDotNet.Cuda
 
 		internal CudaDevice(CUdevice devicehandle)
 		{
+			EnsureCudaInitialized();
+
 			_cudevice = devicehandle;
 
 			Initalize();
+		}
+
+		static internal void EnsureCudaInitialized()
+		{
+			try
+			{
+				var rc = DriverUnsafeNativeMethods.cuInit(0);
+				DriverUnsafeNativeMethods.CheckReturnCode(rc);
+			}
+			catch (DllNotFoundException e)
+			{
+				throw new CudaException("Cannot find CUDA dll.", e);
+			}
 		}
 
 		private void Initalize()
@@ -66,6 +77,8 @@ namespace CellDotNet.Cuda
 		{
 			get
 			{
+				EnsureCudaInitialized();
+
 				int devcount;
 				DriverUnsafeNativeMethods.cuDeviceGetCount(out devcount);
 				var arr = new CudaDevice[devcount];
