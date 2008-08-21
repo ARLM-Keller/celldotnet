@@ -10,10 +10,6 @@ namespace CellDotNet.Cuda
 	[TestFixture]
 	public class CudaContextTest : UnitTest
 	{
-		private static void DummyKernel()
-		{
-		}
-
 		[Test]
 		public void TestAttach()
 		{

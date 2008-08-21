@@ -275,7 +275,12 @@ namespace CellDotNet.Cuda
 
 			// .. then try the whole thing.
 			using (var kernel = CudaKernel.Create(method))
-				kernel.EnsurePrepared();
+			{
+				if (CudaDevice.HasCudaDevice)
+					kernel.EnsurePrepared();
+				else
+					kernel.PerformProcessing(CudaKernelCompileState.Complete);
+			}
 		}
 	}
 }
