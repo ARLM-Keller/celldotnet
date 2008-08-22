@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.Win32;
 
@@ -56,7 +57,7 @@ namespace CellDotNet.Cuda
 				}
 				catch (ShellExecutionException e)
 				{
-					throw new PtxCompilationException("An error occurred while compiling PTX.", e);
+					throw new PtxCompilationException("An error occurred while compiling PTX.PTX:\r\n" + ptx, e);
 				}
 				catch (Win32Exception e)
 				{

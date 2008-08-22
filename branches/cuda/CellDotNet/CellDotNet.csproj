@@ -78,6 +78,7 @@
     <Compile Include="Cuda\CudaFunction.cs" />
     <Compile Include="Cuda\CudaModule.cs" />
     <Compile Include="Cuda\DriverApi\Enums.cs" />
+    <Compile Include="Cuda\DriverApi\ILOpcodeExecutionTest.cs" />
     <Compile Include="Cuda\DriverApi\Types.cs" />
     <Compile Include="Cuda\DriverApi\DriverUnsafeNativeMethods.cs" />
     <Compile Include="Cuda\Enums.cs" />
@@ -96,7 +97,8 @@
     <Compile Include="Cuda\Attributes.cs" />
     <Compile Include="Cuda\ListInstruction.cs" />
     <Compile Include="Cuda\PtxCode.cs" />
-    <Compile Include="Cuda\SimpleKernelsPtxInspectionTest.cs" />
+    <Compile Include="Cuda\SimpleKernelsCompilationTest.cs" />
+    <Compile Include="Cuda\SpecialMethodInfo.cs" />
     <Compile Include="Cuda\ThreadIndex.cs" />
     <Compile Include="CultureScope.cs" />
     <Compile Include="DelegateWrapper.cs" />
