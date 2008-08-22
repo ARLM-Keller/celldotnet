@@ -12,6 +12,7 @@ namespace CellDotNet.Cuda
 		/// Not a PTX instruction, but this ensures that PTX and IR opcodes do not overlap and cause confusion.
 		/// </summary>
 		Ptx_First = 500,
+		Add_S16,
 		Add_S32,
 		Add_F32,
 		Sub_S32,
@@ -30,10 +31,13 @@ namespace CellDotNet.Cuda
 		Max_S32,
 		Max_F32,
 		Bra,
+		Ld_Param_S16,
 		Ld_Param_S32,
 		Ld_Param_F32,
+		St_Global_S16,
 		St_Global_S32,
 		St_Global_F32,
+		Ld_Global_S16,
 		Ld_Global_S32,
 		Ld_Global_F32,
 		Ret,
@@ -45,9 +49,10 @@ namespace CellDotNet.Cuda
 		Setp_Gt_F32,
 		Setp_Lt_S32,
 		Setp_Lt_F32,
-		Setp_Lo_S32,
+		Setp_Lo_U32,
 		Setp_Ltu_F32,
 		Setp_Eq_S32,
-		Setp_Eq_F32
+		Setp_Eq_F32,
+		Cvt_S32_S16,
 	}
 }

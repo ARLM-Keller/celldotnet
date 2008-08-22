@@ -36,6 +36,20 @@ namespace CellDotNet.Cuda
 		}
 
 		[Test]
+		public void TestIR_MultipleMethods2()
+		{
+			Action<int> del = delegate(int i)
+			                  	{
+			                  		TestIR_MultipleMethods_CallMethod(i);
+			                  		TestIR_MultipleMethods_CallMethod(i);
+			                  	};
+			var kernel = CudaKernel.Create(del.Method);
+			kernel.PerformProcessing(CudaKernelCompileState.IRConstructionDone);
+			AreEqual(2, kernel.Methods.Count);
+		}
+
+
+		[Test]
 		public void TestApiFeel()
 		{
 			Action<float[], int> del = delegate(float[] arr, int i) { arr[0] = 3.4f; };
@@ -49,6 +63,22 @@ namespace CellDotNet.Cuda
 
 				kernel.SetBlockShape(32, 8);
 				kernel.SetGridSize(10, 10);
+				kernel.ExecuteUntyped(mem, 1);
+			}
+		}
+
+		[Test]
+		public void Test1x1Block()
+		{
+			Action<float[], int> del = delegate(float[] arr, int i) { arr[0] = 3.4f; };
+
+			using (var kernel = CudaKernel.Create(del.Method))
+			{
+				kernel.PerformProcessing(CudaKernelCompileState.PtxEmissionComplete);
+				GlobalMemory<float> mem = kernel.Context.AllocateLinear<float>(200);
+
+				kernel.SetBlockShape(1, 1);
+				kernel.SetGridSize(11, 1);
 				kernel.ExecuteUntyped(mem, 1);
 			}
 		}

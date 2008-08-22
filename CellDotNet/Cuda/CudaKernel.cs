@@ -155,7 +155,7 @@ namespace CellDotNet.Cuda
 		{
 			AssertState(CudaKernelCompileState.IRConstructionDone - 1);
 
-			var methodmap = new Dictionary<MethodBase, CudaMethod>();
+			var processedMethods = new Dictionary<MethodBase, CudaMethod>();
 			var methodWorkList = new Stack<MethodBase>();
 			var instructionsNeedingPatching = new List<ListInstruction>();
 
@@ -163,10 +163,12 @@ namespace CellDotNet.Cuda
 			methodWorkList.Push(kernelMethod);
 			while (methodWorkList.Count != 0)
 			{
-				MethodBase methodBase = methodWorkList.Pop();
-				var cm = new CudaMethod(methodBase);
+				MethodBase currentMethod = methodWorkList.Pop();
+				if (processedMethods.ContainsKey(currentMethod))
+					continue;
+				var cm = new CudaMethod(currentMethod);
 				cm.PerformProcessing(CudaMethodCompileState.ListContructionDone);
-				methodmap.Add(methodBase, cm);
+				processedMethods.Add(currentMethod, cm);
 
 				foreach (BasicBlock block in cm.Blocks)
 				{
@@ -176,16 +178,20 @@ namespace CellDotNet.Cuda
 							continue;
 
 						CudaMethod calledmethod;
-						if (methodmap.TryGetValue((MethodBase) inst.Operand, out calledmethod))
+						var operandMethod = (MethodBase) inst.Operand;
+						if (processedMethods.TryGetValue(operandMethod, out calledmethod))
 						{
 							// The encountered MethodBase has been encountered before.
 							inst.Operand = calledmethod;
+							continue;
 						}
-						else
+
+						if (!SpecialMethodInfo.IsSpecialMethod(operandMethod))
 						{
 							// The encountered MethodBase has not been encountered before, so it's pushed onto 
 							// a work list, and make a note that the current instruction needs to be patched later.
-							methodWorkList.Push((MethodBase)inst.Operand);
+							// This means that a method can appear on the work list multiple times.
+							methodWorkList.Push(operandMethod);
 							instructionsNeedingPatching.Add(inst);
 						}
 					}
@@ -194,10 +200,10 @@ namespace CellDotNet.Cuda
 
 			foreach (ListInstruction inst in instructionsNeedingPatching)
 			{
-				inst.Operand = methodmap[(MethodBase) inst.Operand];
+				inst.Operand = processedMethods[(MethodBase) inst.Operand];
 			}
 
-			return new List<CudaMethod>(methodmap.Values);
+			return new List<CudaMethod>(processedMethods.Values);
 		}
 
 		internal ICollection<CudaMethod> Methods

@@ -12,6 +12,7 @@ namespace CellDotNet.Cuda
 	enum StackType
 	{
 		None,
+		I2,
 		I4,
 		I8,
 		R4,
@@ -76,6 +77,11 @@ namespace CellDotNet.Cuda
 		public static GlobalVReg FromImmediate(object immediateValue)
 		{
 			return FromImmediate(immediateValue, GetStackTypeForNumericType(immediateValue));
+		}
+
+		public static GlobalVReg FromSpecialRegister(StackType stacktype, VRegStorage storage, string text)
+		{
+			return new GlobalVReg {Name = text, StackType = stacktype, Storage = storage};
 		}
 
 		public string GetAssemblyText()

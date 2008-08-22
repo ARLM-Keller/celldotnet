@@ -659,6 +659,9 @@ namespace CellDotNet.Intermediate
 
 			switch (storeInst.Opcode.IRCode)
 			{
+				case IRCode.Stelem_I2:
+					stindOpcode = IROpCodes.Stind_I2;
+					break;
 				case IRCode.Stelem_I4:
 					stindOpcode = IROpCodes.Stind_I4;
 					break;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using CellDotNet.Intermediate;
 
@@ -36,14 +37,10 @@ namespace CellDotNet.Cuda
 				case IRCode.Add:
 					switch (inst.Destination.StackType)
 					{
-						case StackType.I4:
-							opcode = PtxCode.Add_S32;
-							break;
-						case StackType.R4:
-							opcode = PtxCode.Add_F32;
-							break;
-						default:
-							throw new InvalidIRException();
+						case StackType.I2: opcode = PtxCode.Add_S16; break;
+						case StackType.I4: opcode = PtxCode.Add_S32; break;
+						case StackType.R4: opcode = PtxCode.Add_F32; break;
+						default: throw new InvalidIRException();
 					}
 					new1 = new ListInstruction(opcode, inst);
 					ob.Append(new1);
@@ -74,7 +71,8 @@ namespace CellDotNet.Cuda
 				case IRCode.Break:
 				case IRCode.Call:
 //					ob.Append(new MethodCallListInstruction(PtxCode.Call, inst));
-//					break;
+					HandleCall(inst, ob);
+					return;
 				case IRCode.Calli:
 				case IRCode.Callvirt:
 				case IRCode.Castclass:
@@ -110,7 +108,7 @@ namespace CellDotNet.Cuda
 				case IRCode.Clt_Un:
 					switch (inst.Source1.StackType)
 					{
-						case StackType.I4: opcode = PtxCode.Setp_Lo_S32; break;
+						case StackType.I4: opcode = PtxCode.Setp_Lo_U32; break;
 						case StackType.R4: opcode = PtxCode.Setp_Ltu_F32; break;
 						default: throw new NotImplementedException();
 					}
@@ -167,17 +165,10 @@ namespace CellDotNet.Cuda
 				case IRCode.Ldarg:
 					switch (inst.Destination.StackType)
 					{
-						case StackType.Object:
-							opcode = PtxCode.Ld_Param_S32;
-							break;
-						case StackType.I4:
-							opcode = PtxCode.Ld_Param_S32;
-							break;
-						case StackType.R4:
-							opcode = PtxCode.Ld_Param_F32;
-							break;
-						default:
-							throw new InvalidIRException();
+						case StackType.Object: opcode = PtxCode.Ld_Param_S32; break;
+						case StackType.I4: opcode = PtxCode.Ld_Param_S32; break;
+						case StackType.R4: opcode = PtxCode.Ld_Param_F32; break;
+						default: throw new InvalidIRException();
 					}
 					new1 = new ListInstruction(opcode, inst);
 					ob.Append(new1);
@@ -319,8 +310,10 @@ namespace CellDotNet.Cuda
 				case IRCode.Stfld:
 				case IRCode.Stind_I:
 				case IRCode.Stind_I1:
-				case IRCode.Stind_I2:
 					break;
+				case IRCode.Stind_I2:
+					ob.Append(new ListInstruction(PtxCode.St_Global_S16, inst));
+					return;
 				case IRCode.Stind_I4:
 					ob.Append(new ListInstruction(PtxCode.St_Global_S32, inst));
 					return;
@@ -363,6 +356,42 @@ namespace CellDotNet.Cuda
 			}
 
 			throw new NotImplementedException("Opcode not implemented in instruction selector: " + inst.IRCode);
+		}
+
+		private void HandleCall(ListInstruction inst, BasicBlock ob)
+		{
+			SpecialMethodInfo smi;
+			if (!(inst.Operand is MethodBase))
+			{
+				if (inst.Operand is CudaMethod)
+					throw new NotImplementedException("Method calls are not implemented. Method: " +
+					                                  ((CudaMethod) inst.Operand).PtxName);
+				else
+					throw new InvalidIRException("Bad method call operand: " + inst.Operand);
+			}
+			if (!SpecialMethodInfo.TryGetMethodInfo((MethodBase)inst.Operand, out smi))
+				throw new InvalidIRException("Special method without metadata encountered.");
+
+			if (smi.IsGlobalVReg)
+			{
+				PtxCode ptxcode;
+				switch (smi.GlobalVReg.StackType)
+				{
+					case StackType.I2: ptxcode = PtxCode.Cvt_S32_S16; break;
+					case StackType.I4: ptxcode = PtxCode.Mov_S32; break;
+					default: throw new InvalidIRException();
+				}
+				ob.Append(new ListInstruction(ptxcode)
+				          	{
+								Destination = inst.Destination,
+								Source1 = smi.GlobalVReg,
+				          		Predicate = inst.Predicate,
+				          		PredicateNegation = inst.PredicateNegation
+				          	});
+				return;
+			}
+
+			throw new NotImplementedException();
 		}
 
 		private void SelectLdElem(ListInstruction ldElemInst, BasicBlock ob, PtxCode ptxLoadCode, int elementsize)

@@ -50,6 +50,15 @@ namespace CellDotNet.Cuda
 					offset += 4;
 					continue;
 				}
+				if (arg is short || arg is ushort)
+				{
+					uint value = arg is short ? (ushort)(short)arg : (ushort)arg;
+
+					rc = DriverUnsafeNativeMethods.cuParamSeti(_handle, offset, value);
+					DriverUnsafeNativeMethods.CheckReturnCode(rc);
+					offset += 4;
+					continue;
+				}
 				if (arg is float)
 				{
 					rc = DriverUnsafeNativeMethods.cuParamSetf(_handle, offset, (float)arg);
