@@ -57,5 +57,6 @@ namespace CellDotNet.Cuda
 		Cvt_S32_U16,
 		Setp_Hi_U32,
 		Setp_Gtu_F32,
+		Bar_Sync
 	}
 }

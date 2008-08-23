@@ -84,6 +84,7 @@
     <Compile Include="Cuda\Enums.cs" />
     <Compile Include="Cuda\Exceptions.cs" />
     <Compile Include="Cuda\GlobalVReg.cs" />
+    <Compile Include="Cuda\IntrinsicsTest.cs" />
     <Compile Include="Cuda\PredicateValue.cs" />
     <Compile Include="Cuda\PtxCompiler.cs" />
     <Compile Include="Cuda\PtxCompilerTest.cs" />

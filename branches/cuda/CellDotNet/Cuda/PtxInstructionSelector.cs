@@ -437,6 +437,24 @@ namespace CellDotNet.Cuda
 				          	});
 				return;
 			}
+			if (smi.IsSinglePtxCode)
+			{
+				var newinst = new ListInstruction(smi.PtxCode)
+				{
+					Destination = inst.Destination,
+					Source1 = smi.GlobalVReg,
+					Predicate = inst.Predicate,
+					PredicateNegation = inst.PredicateNegation
+				};
+				switch (smi.PtxCode)
+				{
+					case PtxCode.Bar_Sync:
+						newinst.Source1 = GlobalVReg.FromImmediate(0, StackType.I4);
+						break;
+				}
+				ob.Append(newinst);
+				return;
+			}
 
 			throw new NotImplementedException();
 		}
