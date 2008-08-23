@@ -136,7 +136,7 @@ namespace CellDotNet.Cuda
 
 		private void AssertStateMinimum(CudaKernelCompileState requiredState)
 		{
-			if (_state != requiredState)
+			if (_state < requiredState)
 				throw new InvalidOperationException(string.Format("Operation is invalid for the current state. " +
 					"Current state: {0}; required state: {1}.", _state, requiredState));
 		}
@@ -209,6 +209,11 @@ namespace CellDotNet.Cuda
 		internal ICollection<CudaMethod> Methods
 		{
 			get { return _methods; }
+		}
+
+		internal MethodBase KernelMethod
+		{
+			get { return _kernelMethod; }
 		}
 
 		public CudaContext Context

@@ -37,7 +37,7 @@ namespace CellDotNet.Cuda
 				case IRCode.Add:
 					switch (inst.Destination.StackType)
 					{
-						case StackType.I2: opcode = PtxCode.Add_S16; break;
+//						case StackType.I2: opcode = PtxCode.Add_S16; break;
 						case StackType.I4: opcode = PtxCode.Add_S32; break;
 						case StackType.R4: opcode = PtxCode.Add_F32; break;
 						default: throw new InvalidIRException();
@@ -76,6 +76,7 @@ namespace CellDotNet.Cuda
 				case IRCode.Calli:
 				case IRCode.Callvirt:
 				case IRCode.Castclass:
+					break;
 				case IRCode.Ceq:
 					switch (inst.Source1.StackType)
 					{
@@ -95,7 +96,16 @@ namespace CellDotNet.Cuda
 					ob.Append(new ListInstruction(opcode, inst));
 					return;
 				case IRCode.Cgt_Un:
+					switch (inst.Source1.StackType)
+					{
+						case StackType.I4: opcode = PtxCode.Setp_Hi_U32; break;
+						case StackType.R4: opcode = PtxCode.Setp_Gtu_F32; break;
+						default: throw new NotImplementedException();
+					}
+					ob.Append(new ListInstruction(opcode, inst));
+					return;
 				case IRCode.Ckfinite:
+					break;
 				case IRCode.Clt:
 					switch (inst.Source1.StackType)
 					{
@@ -377,7 +387,7 @@ namespace CellDotNet.Cuda
 				PtxCode ptxcode;
 				switch (smi.GlobalVReg.StackType)
 				{
-					case StackType.I2: ptxcode = PtxCode.Cvt_S32_S16; break;
+					case StackType.I2: ptxcode = PtxCode.Cvt_S32_U16; break;
 					case StackType.I4: ptxcode = PtxCode.Mov_S32; break;
 					default: throw new InvalidIRException();
 				}

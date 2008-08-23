@@ -53,6 +53,8 @@ namespace CellDotNet.Cuda
 		Setp_Ltu_F32,
 		Setp_Eq_S32,
 		Setp_Eq_F32,
-		Cvt_S32_S16,
+		Cvt_S32_U16,
+		Setp_Hi_U32,
+		Setp_Gtu_F32
 	}
 }

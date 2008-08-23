@@ -10,74 +10,86 @@ namespace CellDotNet.Cuda.DriverApi
 	public class ILOpcodeExecutionTest : UnitTest
 	{
 		[Test]
-		public void Test_Lt_F4()
+		public void Test_Blt_F4()
 		{
 			Action<float[], float, float> del = (arr, arg1, arg2) => arr[0] = arg1 < arg2 ? arg1 : arg2;
 
 			using (var kernel = CudaKernel.Create(del))
 			{
-				VerifyExecution(kernel, 3.5f, 3.6f, 3.5f);
-				VerifyExecution(kernel, 3.6f, 3.5f, 3.5f);
+				VerifyExecution(kernel, 3.5f, 3.6f);
+				VerifyExecution(kernel, 3.6f, 3.5f);
 			}
 		}
 
 		[Test]
-		public void Test_Lt_I4()
+		public void Test_Blt_I4()
 		{
 			Action<int[], int, int> del = (arr, arg1, arg2) => arr[0] = arg1 < arg2 ? arg1 : arg2;
 
 			using (var kernel = CudaKernel.Create(del))
 			{
-				VerifyExecution(kernel, 3, 4, 3);
-				VerifyExecution(kernel, 4, 3, 3);
-				VerifyExecution(kernel, -3, 4, -3);
-				VerifyExecution(kernel, 4, -3, -3);
+				VerifyExecution(kernel, 3, 4);
+				VerifyExecution(kernel, 4, 3);
+				VerifyExecution(kernel, -3, 4);
+				VerifyExecution(kernel, 4, -3);
 			}
 		}
 
 		[Test]
-		public void Test_Lt_U4()
+		public void Test_Blt_U4()
 		{
 			Action<uint[], uint, uint> del = (arr, arg1, arg2) => arr[0] = arg1 < arg2 ? arg1 : arg2;
 
 			using (var kernel = CudaKernel.Create(del))
 			{
-				VerifyExecution(kernel, 3u, 4u, 3u);
-				VerifyExecution(kernel, 4u, 3u, 3u);
-				VerifyExecution(kernel, 3u, uint.MaxValue, 3u);
-				VerifyExecution(kernel, uint.MaxValue, 3u, 3u);
+				VerifyExecution(kernel, 3u, 4u);
+				VerifyExecution(kernel, 4u, 3u);
+				VerifyExecution(kernel, 3u, uint.MaxValue);
+				VerifyExecution(kernel, uint.MaxValue, 3u);
+			}
+		}
+	
+		[Test]
+		public void Test_Ble_F4()
+		{
+			Action<float[], float, float> del = (arr, arg1, arg2) => arr[0] = arg1 <= arg2 ? arg1 : arg2;
+
+			using (var kernel = CudaKernel.Create(del))
+			{
+				VerifyExecution(kernel, 3.5f, 3.6f);
+				VerifyExecution(kernel, 3.6f, 3.5f);
 			}
 		}
 
 		[Test]
-		public void Test_Lt_I2()
+		public void Test_Ble_I4()
 		{
-			Action<short[], short, short> del = (arr, arg1, arg2) => arr[0] = arg1 < arg2 ? arg1 : arg2;
+			Action<int[], int, int> del = (arr, arg1, arg2) => arr[0] = arg1 <= arg2 ? arg1 : arg2;
 
 			using (var kernel = CudaKernel.Create(del))
 			{
-				VerifyExecution<short>(kernel, 3, 4, 3);
-				VerifyExecution<short>(kernel, 4, 3, 3);
-				VerifyExecution<short>(kernel, -3, 4, -3);
-				VerifyExecution<short>(kernel, 4, -3, -3);
+				VerifyExecution(kernel, 3, 4);
+				VerifyExecution(kernel, 4, 3);
+				VerifyExecution(kernel, -3, 4);
+				VerifyExecution(kernel, 4, -3);
 			}
 		}
 
 		[Test]
-		public void Test_Lt_U2()
+		public void Test_Ble_U4()
 		{
-			Action<ushort[], ushort, ushort> del = (arr, arg1, arg2) => arr[0] = arg1 < arg2 ? arg1 : arg2;
+			Action<uint[], uint, uint> del = (arr, arg1, arg2) => arr[0] = arg1 <= arg2 ? arg1 : arg2;
 
 			using (var kernel = CudaKernel.Create(del))
 			{
-				VerifyExecution<ushort>(kernel, 3, 4, 3);
-				VerifyExecution<ushort>(kernel, 4, 3, 3);
-				VerifyExecution<ushort>(kernel, 3, ushort.MaxValue, 3);
-				VerifyExecution<ushort>(kernel, ushort.MaxValue, 3, 3);
+				VerifyExecution(kernel, 3u, 4u);
+				VerifyExecution(kernel, 4u, 3u);
+				VerifyExecution(kernel, 3u, uint.MaxValue);
+				VerifyExecution(kernel, uint.MaxValue, 3u);
 			}
 		}
 
-		void VerifyExecution<T>(CudaKernel kernel, T arg1, T arg2, T expectedResult) where T : struct
+		void VerifyExecution<T>(CudaKernel kernel, T arg1, T arg2) where T : struct
 		{
 			if (!CudaDevice.HasCudaDevice)
 			{
@@ -94,6 +106,15 @@ namespace CellDotNet.Cuda.DriverApi
 			var arr = new T[devmem.Length];
 			kernel.Context.CopyDeviceToHost(devmem, 0, arr, 0, arr.Length);
 
+			// Invoke to got correct result.
+			var refExec = new T[devmem.Length];
+			kernel.KernelMethod.Invoke(null, new object[] {refExec, arg1, arg2});
+			var expectedResult = refExec[0];
+
+			if (!arr[0].Equals(expectedResult))
+			{
+				Console.WriteLine("Failing PTX: " + kernel.GetPtx());
+			}
 			AreEqual(expectedResult, arr[0]);
 		}
 	}

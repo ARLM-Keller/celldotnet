@@ -64,7 +64,7 @@ namespace CellDotNet.Cuda
 					switch (inst.PtxCode)
 					{
 						case PtxCode.Add_F32: opcodename = "add.f32"; break;
-						case PtxCode.Add_S16: opcodename = "add.s16"; break;
+//						case PtxCode.Add_S16: opcodename = "add.s16"; break;
 						case PtxCode.Add_S32: opcodename = "add.s32"; break;
 						case PtxCode.Div_F32: opcodename = "div.f32"; break;
 						case PtxCode.Div_S32: opcodename = "div.s32"; break;
@@ -77,16 +77,18 @@ namespace CellDotNet.Cuda
 						case PtxCode.Mov_F32: opcodename = "mov.f32"; break;
 						case PtxCode.Setp_Gt_F32: opcodename = "setp.gt.f32"; break;
 						case PtxCode.Setp_Gt_S32: opcodename = "setp.gt.s32"; break;
+						case PtxCode.Setp_Gtu_F32: opcodename = "setp.gtu.f32"; break;
+						case PtxCode.Setp_Hi_U32: opcodename = "setp.hi.u32"; break;
 						case PtxCode.Setp_Lt_F32: opcodename = "setp.lt.f32"; break;
 						case PtxCode.Setp_Lt_S32: opcodename = "setp.lt.s32"; break;
 						case PtxCode.Setp_Lo_U32: opcodename = "setp.lo.u32"; break;
 						case PtxCode.Setp_Ltu_F32: opcodename = "setp.ltu.f32"; break;
 						case PtxCode.Setp_Eq_S32: opcodename = "setp.eq.s32"; break;
 						case PtxCode.Setp_Eq_F32: opcodename = "setp.eq.f32"; break;
-						case PtxCode.Cvt_S32_S16: opcodename = "cvt.s32.s16"; break;
+						case PtxCode.Cvt_S32_U16: opcodename = "cvt.s32.u16"; break;
 
 						case PtxCode.Ld_Global_F32: opcodename = "ld.global.f32"; goto case PtxCode.Ld_Global_S32;
-						case PtxCode.Ld_Global_S16: opcodename = "ld.global.s16"; goto case PtxCode.Ld_Global_S32;
+//						case PtxCode.Ld_Global_S16: opcodename = "ld.global.s16"; goto case PtxCode.Ld_Global_S32;
 						case PtxCode.Ld_Global_S32:
 							if (opcodename == null)
 								opcodename = "ld.global.s32";
@@ -99,7 +101,7 @@ namespace CellDotNet.Cuda
 								inst.Source1.Name);
 							continue;
 						case PtxCode.Ld_Param_F32: opcodename = "ld.param.f32"; goto case PtxCode.Ld_Param_S32;
-						case PtxCode.Ld_Param_S16: opcodename = "ld.param.s16"; goto case PtxCode.Ld_Param_S32;
+//						case PtxCode.Ld_Param_S16: opcodename = "ld.param.s16"; goto case PtxCode.Ld_Param_S32;
 						case PtxCode.Ld_Param_S32:
 							if (opcodename == null)
 								opcodename = "ld.param.s32";
@@ -112,7 +114,7 @@ namespace CellDotNet.Cuda
 								inst.OperandAsGlobalVRegNonNull.Name);
 							continue;
 						case PtxCode.St_Global_F32: opcodename = "st.global.f32"; goto case PtxCode.St_Global_S32;
-						case PtxCode.St_Global_S16: opcodename = "st.global.s16"; goto case PtxCode.St_Global_S32;
+//						case PtxCode.St_Global_S16: opcodename = "st.global.s16"; goto case PtxCode.St_Global_S32;
 						case PtxCode.St_Global_S32:
 								if (opcodename == null)
 								opcodename = "st.global.s32";
