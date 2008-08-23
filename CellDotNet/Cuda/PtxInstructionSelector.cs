@@ -37,7 +37,6 @@ namespace CellDotNet.Cuda
 				case IRCode.Add:
 					switch (inst.Destination.StackType)
 					{
-//						case StackType.I2: opcode = PtxCode.Add_S16; break;
 						case StackType.I4: opcode = PtxCode.Add_S32; break;
 						case StackType.R4: opcode = PtxCode.Add_F32; break;
 						default: throw new InvalidIRException();
@@ -160,7 +159,17 @@ namespace CellDotNet.Cuda
 				case IRCode.Conv_U8:
 				case IRCode.Cpblk:
 				case IRCode.Cpobj:
+					break;
 				case IRCode.Div:
+					switch (inst.Destination.StackType)
+					{
+						case StackType.I4: opcode = PtxCode.Div_S32; break;
+						case StackType.R4: opcode = PtxCode.Div_F32; break;
+						default: throw new InvalidIRException();
+					}
+					new1 = new ListInstruction(opcode, inst);
+					ob.Append(new1);
+					return;
 				case IRCode.Div_Un:
 				case IRCode.Dup:
 				case IRCode.Endfilter:
@@ -272,7 +281,17 @@ namespace CellDotNet.Cuda
 				case IRCode.Leave_S:
 				case IRCode.Localloc:
 				case IRCode.Mkrefany:
+					break;
 				case IRCode.Mul:
+					switch (inst.Destination.StackType)
+					{
+						case StackType.I4: opcode = PtxCode.Mul_Lo_S32; break;
+						case StackType.R4: opcode = PtxCode.Mul_F32; break;
+						default: throw new InvalidIRException();
+					}
+					new1 = new ListInstruction(opcode, inst);
+					ob.Append(new1);
+					return;
 				case IRCode.Mul_Ovf:
 				case IRCode.Mul_Ovf_Un:
 				case IRCode.Neg:
@@ -348,7 +367,17 @@ namespace CellDotNet.Cuda
 					}
 				case IRCode.Stobj:
 				case IRCode.Stsfld:
+					break;
 				case IRCode.Sub:
+					switch (inst.Destination.StackType)
+					{
+						case StackType.I4: opcode = PtxCode.Sub_S32; break;
+						case StackType.R4: opcode = PtxCode.Sub_F32; break;
+						default: throw new InvalidIRException();
+					}
+					new1 = new ListInstruction(opcode, inst);
+					ob.Append(new1);
+					return;
 				case IRCode.Sub_Ovf:
 				case IRCode.Sub_Ovf_Un:
 				case IRCode.Switch:

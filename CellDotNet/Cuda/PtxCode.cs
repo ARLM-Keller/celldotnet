@@ -18,7 +18,7 @@ namespace CellDotNet.Cuda
 		Sub_S32,
 		Sub_F32,
 		Mul_Lo_S32,
-		Mul_Lo_F32,
+		Mul_F32,
 		Div_S32,
 		Div_F32,
 		Rem_S32,
