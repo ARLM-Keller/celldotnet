@@ -171,6 +171,14 @@ namespace CellDotNet.Cuda
 					ob.Append(new1);
 					return;
 				case IRCode.Div_Un:
+					switch (inst.Destination.StackType)
+					{
+						case StackType.I4: opcode = PtxCode.Div_U32; break;
+						default: throw new InvalidIRException();
+					}
+					new1 = new ListInstruction(opcode, inst);
+					ob.Append(new1);
+					return;
 				case IRCode.Dup:
 				case IRCode.Endfilter:
 				case IRCode.Endfinally:
