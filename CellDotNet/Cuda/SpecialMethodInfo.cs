@@ -16,6 +16,12 @@ namespace CellDotNet.Cuda
 			{typeof(BlockSize).GetProperty("X").GetGetMethod(), new SpecialMethodInfo(true, GlobalVReg.FromSpecialRegister(StackType.I2, VRegStorage.SpecialRegister, "%ntid.x"))},
 			{typeof(BlockSize).GetProperty("Y").GetGetMethod(), new SpecialMethodInfo(true, GlobalVReg.FromSpecialRegister(StackType.I2, VRegStorage.SpecialRegister, "%ntid.y"))},
 			{typeof(BlockSize).GetProperty("Z").GetGetMethod(), new SpecialMethodInfo(true, GlobalVReg.FromSpecialRegister(StackType.I2, VRegStorage.SpecialRegister, "%ntid.z"))},
+			{typeof(BlockIndex).GetProperty("X").GetGetMethod(), new SpecialMethodInfo(true, GlobalVReg.FromSpecialRegister(StackType.I2, VRegStorage.SpecialRegister, "%ctaid.x"))},
+			{typeof(BlockIndex).GetProperty("Y").GetGetMethod(), new SpecialMethodInfo(true, GlobalVReg.FromSpecialRegister(StackType.I2, VRegStorage.SpecialRegister, "%ctaid.y"))},
+			{typeof(BlockIndex).GetProperty("Z").GetGetMethod(), new SpecialMethodInfo(true, GlobalVReg.FromSpecialRegister(StackType.I2, VRegStorage.SpecialRegister, "%ctaid.z"))},
+			{typeof(GridSize).GetProperty("X").GetGetMethod(), new SpecialMethodInfo(true, GlobalVReg.FromSpecialRegister(StackType.I2, VRegStorage.SpecialRegister, "%nctaid.x"))},
+			{typeof(GridSize).GetProperty("Y").GetGetMethod(), new SpecialMethodInfo(true, GlobalVReg.FromSpecialRegister(StackType.I2, VRegStorage.SpecialRegister, "%nctaid.y"))},
+			{typeof(GridSize).GetProperty("Z").GetGetMethod(), new SpecialMethodInfo(true, GlobalVReg.FromSpecialRegister(StackType.I2, VRegStorage.SpecialRegister, "%nctaid.z"))},
 		};
 
 		public bool IsGlobalVReg { get; private set; }

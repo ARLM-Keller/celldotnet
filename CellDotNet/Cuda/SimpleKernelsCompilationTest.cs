@@ -194,6 +194,36 @@ namespace CellDotNet.Cuda
 			}
 		}
 
+		[Test]
+		public void CheckBlockIndexZY()
+		{
+			Action<int[]> del = arr =>
+			{
+				int val = BlockIndex.X + (BlockIndex.Y * GridSize.X);
+				arr[val] = val;
+			};
+			using (var kernel = CudaKernel.Create(del))
+			{
+				const int gridSizeX = 2;
+				const int gridSizeY = 2;
+
+				var devmem = kernel.Context.AllocateLinear<int>(gridSizeX * gridSizeY);
+				kernel.SetBlockShape(1, 1);
+				kernel.SetGridSize(gridSizeX, gridSizeY);
+				kernel.ExecuteUntyped(devmem);
+
+				var arr = new int[devmem.Length];
+				kernel.Context.CopyDeviceToHost(devmem, 0, arr, 0, arr.Length);
+
+				var arrCorrect = new int[devmem.Length];
+				for (int x = 0; x < gridSizeX; x++)
+					for (int y = 0; y < gridSizeY; y++)
+						arrCorrect[x + y * gridSizeX] = x + y * gridSizeX;
+
+				AreEqual(arrCorrect, arr);
+			}
+		}
+
 		private void DumpPtx(MethodInfo method)
 		{
 			// First avoid CudaKernel.
