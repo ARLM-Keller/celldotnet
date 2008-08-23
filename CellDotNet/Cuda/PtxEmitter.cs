@@ -68,6 +68,7 @@ namespace CellDotNet.Cuda
 						case PtxCode.Add_S32: opcodename = "add.s32"; break;
 						case PtxCode.Div_F32: opcodename = "div.f32"; break;
 						case PtxCode.Div_S32: opcodename = "div.s32"; break;
+						case PtxCode.Div_U32: opcodename = "div.u32"; break;
 						case PtxCode.Mul_F32: opcodename = "mul.f32"; break;
 						case PtxCode.Mul_Lo_S32: opcodename = "mul.lo.s32"; break;
 						case PtxCode.Sub_F32: opcodename = "sub.f32"; break;

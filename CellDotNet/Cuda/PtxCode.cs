@@ -20,6 +20,7 @@ namespace CellDotNet.Cuda
 		Mul_Lo_S32,
 		Mul_F32,
 		Div_S32,
+		Div_U32,
 		Div_F32,
 		Rem_S32,
 		Abs_S32,
@@ -55,6 +56,6 @@ namespace CellDotNet.Cuda
 		Setp_Eq_F32,
 		Cvt_S32_U16,
 		Setp_Hi_U32,
-		Setp_Gtu_F32
+		Setp_Gtu_F32,
 	}
 }

@@ -79,162 +79,6 @@ namespace CellDotNet.Cuda
 		}
 
 		[Test]
-		public void TestConditional_Gt_Float()
-		{
-			Action<float, float, float[]> del = (f1, f2, arr) =>
-			                                  	{
-			                                  		if (f1 > f2)
-			                                  			arr[0] = 100f;
-			                                  		else
-			                                  			arr[0] = 200f;
-			                                  	};
-			DumpPtx(del.Method);
-		}
-
-		[Test]
-		public void TestConditional_Gt_Int()
-		{
-			Action<int, int, int[]> del = (f1, f2, arr) =>
-			                                  	{
-			                                  		if (f1 > f2)
-			                                  			arr[0] = 100;
-			                                  		else
-			                                  			arr[0] = 200;
-			                                  	};
-			DumpPtx(del.Method);
-		}
-
-		[Test]
-		public void TestConditional_Ge_Float()
-		{
-			Action<float, float, float[]> del = (f1, f2, arr) =>
-			                                  	{
-			                                  		if (f1 >= f2)
-			                                  			arr[0] = 100f;
-			                                  		else
-			                                  			arr[0] = 200f;
-			                                  	};
-			DumpPtx(del.Method);
-		}
-
-		[Test]
-		public void TestConditional_Ge_Int()
-		{
-			Action<int, int, int[]> del = (f1, f2, arr) =>
-			                                  	{
-			                                  		if (f1 >= f2)
-			                                  			arr[0] = 100;
-			                                  		else
-			                                  			arr[0] = 200;
-			                                  	};
-			DumpPtx(del.Method);
-		}
-
-		[Test]
-		public void TestConditional_Lt_Float()
-		{
-			Action<float, float, float[]> del = (f1, f2, arr) =>
-			                                  	{
-			                                  		if (f1 < f2)
-			                                  			arr[0] = 100f;
-			                                  		else
-			                                  			arr[0] = 200f;
-			                                  	};
-			DumpPtx(del.Method);
-		}
-
-		[Test]
-		public void TestConditional_Lt_Int()
-		{
-			Action<int, int, int[]> del = (f1, f2, arr) =>
-			                                  	{
-			                                  		if (f1 < f2)
-			                                  			arr[0] = 100;
-			                                  		else
-			                                  			arr[0] = 200;
-			                                  	};
-			DumpPtx(del.Method);
-		}
-
-		[Test]
-		public void TestConditional_Le_Float()
-		{
-			Action<float, float, float[]> del = (f1, f2, arr) =>
-			                                  	{
-			                                  		if (f1 <= f2)
-			                                  			arr[0] = 100f;
-			                                  		else
-			                                  			arr[0] = 200f;
-			                                  	};
-			DumpPtx(del.Method);
-		}
-
-		[Test]
-		public void TestConditional_Le_Int()
-		{
-			Action<int, int, int[]> del = (f1, f2, arr) =>
-			                                  	{
-			                                  		if (f1 <= f2)
-			                                  			arr[0] = 100;
-			                                  		else
-			                                  			arr[0] = 200;
-			                                  	};
-			DumpPtx(del.Method);
-		}
-
-		[Test]
-		public void TestConditional_Eq_Float()
-		{
-			Action<float, float, float[]> del = (f1, f2, arr) =>
-			                                  	{
-			                                  		if (f1 == f2)
-			                                  			arr[0] = 100f;
-			                                  		else
-			                                  			arr[0] = 200f;
-			                                  	};
-			DumpPtx(del.Method);
-		}
-
-		[Test]
-		public void TestConditional_Eq_Int()
-		{
-			Action<int, int, int[]> del = (f1, f2, arr) =>
-			                                  	{
-			                                  		if (f1 == f2)
-			                                  			arr[0] = 100;
-			                                  		else
-			                                  			arr[0] = 200;
-			                                  	};
-			DumpPtx(del.Method);
-		}
-
-		[Test]
-		public void TestConditional_Ne_Float()
-		{
-			Action<float, float, float[]> del = (f1, f2, arr) =>
-			                                  	{
-			                                  		if (f1 != f2)
-			                                  			arr[0] = 100f;
-			                                  		else
-			                                  			arr[0] = 200f;
-			                                  	};
-			DumpPtx(del.Method);
-		}
-
-		[Test]
-		public void TestConditional_Ne_Int()
-		{
-			Action<int, int, int[]> del = (f1, f2, arr) =>
-			                                  	{
-			                                  		if (f1 != f2)
-			                                  			arr[0] = 100;
-			                                  		else
-			                                  			arr[0] = 200;
-			                                  	};
-			DumpPtx(del.Method);
-		}
-
-		[Test]
 		public void TestArrayStoreMemoryCopy()
 		{
 			Action<int, float, float[]> del = (index, value, arr) =>
@@ -298,9 +142,11 @@ namespace CellDotNet.Cuda
 			};
 			using (var kernel = CudaKernel.Create(del))
 			{
-				var devmem = kernel.Context.AllocateLinear<int>(256);
+				const int blockSizeX = 16;
+				const int blockSizeY = 16;
 
-				kernel.SetBlockShape(16, 16);
+				var devmem = kernel.Context.AllocateLinear<int>(blockSizeX * blockSizeY);
+				kernel.SetBlockShape(blockSizeX, blockSizeY);
 				kernel.SetGridSize(1, 1);
 				kernel.ExecuteUntyped(devmem);
 
@@ -308,9 +154,41 @@ namespace CellDotNet.Cuda
 				kernel.Context.CopyDeviceToHost(devmem, 0, arr, 0, arr.Length);
 
 				var arrCorrect = new int[devmem.Length];
-				for (int x = 0; x < 16; x++)
-					for (int y = 0; y < 16; y++)
-						arrCorrect[x + y*16] = x + y*16;
+				for (int x = 0; x < blockSizeX; x++)
+					for (int y = 0; y < blockSizeY; y++)
+						arrCorrect[x + y * blockSizeX] = x + y * blockSizeX;
+
+				AreEqual(arrCorrect, arr);
+			}
+		}
+
+		[Test]
+		public void TestThreadIndexXYZ()
+		{
+			Action<int[]> del = arr =>
+			{
+				int val = ThreadIndex.X + (ThreadIndex.Y*BlockSize.X) + (ThreadIndex.Z*BlockSize.X*BlockSize.Y);
+				arr[val] = val;
+			};
+			using (var kernel = CudaKernel.Create(del))
+			{
+				const int blockSizeX = 16;
+				const int blockSizeY = 16;
+				const int blockSizeZ = 2;
+
+				var devmem = kernel.Context.AllocateLinear<int>(blockSizeX * blockSizeY * blockSizeZ);
+				kernel.SetBlockShape(blockSizeX, blockSizeY, blockSizeZ);
+				kernel.SetGridSize(1, 1);
+				kernel.ExecuteUntyped(devmem);
+
+				var arr = new int[devmem.Length];
+				kernel.Context.CopyDeviceToHost(devmem, 0, arr, 0, arr.Length);
+
+				var arrCorrect = new int[devmem.Length];
+				for (int x = 0; x < blockSizeX; x++)
+					for (int y = 0; y < blockSizeY; y++)
+						for (int z = 0; z < blockSizeZ; z++)
+							arrCorrect[x + y * blockSizeX + z * blockSizeX * blockSizeY] = x + y * blockSizeX + z * blockSizeX * blockSizeY;
 
 				AreEqual(arrCorrect, arr);
 			}

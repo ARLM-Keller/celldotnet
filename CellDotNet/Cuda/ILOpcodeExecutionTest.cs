@@ -62,13 +62,13 @@ namespace CellDotNet.Cuda.DriverApi
 		[Test]
 		public void Test_Blt_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 < arg2 ? arg1 : arg2);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 < arg2 ? arg1 : arg2, false);
 		}
 
 		[Test]
 		public void Test_Blt_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 < arg2 ? arg1 : arg2);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 < arg2 ? arg1 : arg2, false);
 		}
 
 		[Test]
@@ -80,13 +80,13 @@ namespace CellDotNet.Cuda.DriverApi
 		[Test]
 		public void Test_Ble_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 <= arg2 ? arg1 : arg2);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 <= arg2 ? arg1 : arg2, false);
 		}
 
 		[Test]
 		public void Test_Ble_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 <= arg2 ? arg1 : arg2);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 <= arg2 ? arg1 : arg2, false);
 		}
 
 		[Test]
@@ -98,13 +98,13 @@ namespace CellDotNet.Cuda.DriverApi
 		[Test]
 		public void Test_Beq_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 == arg2 ? arg1 : arg2);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 == arg2 ? arg1 : arg2, false);
 		}
 
 		[Test]
 		public void Test_Beq_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 == arg2 ? arg1 : arg2);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 == arg2 ? arg1 : arg2, false);
 		}
 
 		[Test]
@@ -116,13 +116,13 @@ namespace CellDotNet.Cuda.DriverApi
 		[Test]
 		public void Test_Bne_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 != arg2 ? arg1 : arg2);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 != arg2 ? arg1 : arg2, false);
 		}
 
 		[Test]
 		public void Test_Bne_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 != arg2 ? arg1 : arg2);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 != arg2 ? arg1 : arg2, false);
 		}
 
 		[Test]
@@ -134,13 +134,13 @@ namespace CellDotNet.Cuda.DriverApi
 		[Test]
 		public void Test_Bgt_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 > arg2 ? arg1 : arg2);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 > arg2 ? arg1 : arg2, false);
 		}
 
 		[Test]
 		public void Test_Bgt_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 > arg2 ? arg1 : arg2);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 > arg2 ? arg1 : arg2, false);
 		}
 
 		[Test]
@@ -152,13 +152,13 @@ namespace CellDotNet.Cuda.DriverApi
 		[Test]
 		public void Test_Bge_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 >= arg2 ? arg1 : arg2);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 >= arg2 ? arg1 : arg2, false);
 		}
 
 		[Test]
 		public void Test_Bge_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 >= arg2 ? arg1 : arg2);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 >= arg2 ? arg1 : arg2, false);
 		}
 
 		[Test]
@@ -170,15 +170,14 @@ namespace CellDotNet.Cuda.DriverApi
 		[Test]
 		public void Test_Add_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 + arg2);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 + arg2, false);
 		}
 
 		[Test]
 		public void Test_Add_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 + arg2);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 + arg2, false);
 		}
-
 
 		[Test]
 		public void Test_Sub_F4()
@@ -189,13 +188,13 @@ namespace CellDotNet.Cuda.DriverApi
 		[Test]
 		public void Test_Sub_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 - arg2);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 - arg2, false);
 		}
 
 		[Test]
 		public void Test_Sub_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 - arg2);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 - arg2, false);
 		}
 
 		[Test]
@@ -207,13 +206,13 @@ namespace CellDotNet.Cuda.DriverApi
 		[Test]
 		public void Test_Mul_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 * arg2);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 * arg2, false);
 		}
 
 		[Test]
 		public void Test_Mul_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 * arg2);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 * arg2, false);
 		}
 
 		[Test]
@@ -225,13 +224,13 @@ namespace CellDotNet.Cuda.DriverApi
 		[Test]
 		public void Test_Div_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 / arg2);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 / arg2, false);
 		}
 
 		[Test]
 		public void Test_Div_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 / arg2);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 / arg2, false);
 		}
 
 		private void VerifyExecution_Binary_F4(Action<float[], float, float> del)
@@ -263,29 +262,45 @@ namespace CellDotNet.Cuda.DriverApi
 			}
 		}
 
-		private void VerifyExecution_Binary_I4(Action<int[], int, int> del)
+		private void VerifyExecution_Binary_I4(Action<int[], int, int> del, bool testBadArguments)
 		{
 			using (var kernel = CudaKernel.Create(del))
 			{
-				VerifyExecution(kernel, 3, 4);
-				VerifyExecution(kernel, 4, 3);
-				VerifyExecution(kernel, -3, 4);
-				VerifyExecution(kernel, 4, -3);
-				
-				VerifyExecution(kernel, 4, -1);
-				VerifyExecution(kernel, int.MinValue, -1);
-				VerifyExecution(kernel, 4, 0);
+				if (!testBadArguments)
+				{
+					VerifyExecution(kernel, 3, 4);
+					VerifyExecution(kernel, 4, 3);
+					VerifyExecution(kernel, -3, 4);
+					VerifyExecution(kernel, 4, -3);
+				}		
+				else
+				{
+					// the ones that can cause exceptions.
+					VerifyExecution(kernel, 4, -1);
+					VerifyExecution(kernel, int.MinValue, -1);
+					VerifyExecution(kernel, 4, 0);
+				}
 			}
 		}
 
-		private void VerifyExecution_Binary_U4(Action<uint[], uint, uint> del)
+		private void VerifyExecution_Binary_U4(Action<uint[], uint, uint> del, bool testBadArguments)
 		{
 			using (var kernel = CudaKernel.Create(del))
 			{
-				VerifyExecution(kernel, 3u, 4u);
-				VerifyExecution(kernel, 4u, 3u);
-				VerifyExecution(kernel, 3u, uint.MaxValue);
-				VerifyExecution(kernel, uint.MaxValue, 3u);
+				if (!testBadArguments)
+				{
+					VerifyExecution(kernel, 3u, 4u);
+					VerifyExecution(kernel, 4u, 3u);
+					VerifyExecution(kernel, 3u, uint.MaxValue);
+					VerifyExecution(kernel, uint.MaxValue, 3u);
+				}
+				else
+				{
+					// the ones that can cause exceptions.
+					VerifyExecution(kernel, 4u, uint.MaxValue);
+					VerifyExecution(kernel, uint.MinValue, uint.MaxValue);
+					VerifyExecution(kernel, 4u, 0u);
+				}
 			}
 		}
 

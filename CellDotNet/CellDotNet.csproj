@@ -78,7 +78,7 @@
     <Compile Include="Cuda\CudaFunction.cs" />
     <Compile Include="Cuda\CudaModule.cs" />
     <Compile Include="Cuda\DriverApi\Enums.cs" />
-    <Compile Include="Cuda\DriverApi\ILOpcodeExecutionTest.cs" />
+    <Compile Include="Cuda\ILOpcodeExecutionTest.cs" />
     <Compile Include="Cuda\DriverApi\Types.cs" />
     <Compile Include="Cuda\DriverApi\DriverUnsafeNativeMethods.cs" />
     <Compile Include="Cuda\Enums.cs" />
