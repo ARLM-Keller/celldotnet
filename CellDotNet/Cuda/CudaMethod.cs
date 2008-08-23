@@ -96,7 +96,7 @@ namespace CellDotNet.Cuda
 							cmpopcode = IRCode.Ceq;
 							goto case IRCode.Brtrue;
                         case IRCode.Bge:
-							cmpopcode = isFP ? IRCode.Cgt_Un : IRCode.Clt;
+							cmpopcode = isFP ? IRCode.Clt_Un : IRCode.Clt;
 							goto case IRCode.Brfalse;
 						case IRCode.Bge_Un:
 							cmpopcode = IRCode.Clt_Un;
