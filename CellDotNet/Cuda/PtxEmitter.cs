@@ -87,6 +87,7 @@ namespace CellDotNet.Cuda
 						case PtxCode.Setp_Eq_S32: opcodename = "setp.eq.s32"; break;
 						case PtxCode.Setp_Eq_F32: opcodename = "setp.eq.f32"; break;
 						case PtxCode.Cvt_S32_U16: opcodename = "cvt.s32.u16"; break;
+						case PtxCode.Bar_Sync: opcodename = "bar.sync"; break;
 
 						case PtxCode.Ld_Global_F32: opcodename = "ld.global.f32"; goto case PtxCode.Ld_Global_S32;
 //						case PtxCode.Ld_Global_S16: opcodename = "ld.global.s16"; goto case PtxCode.Ld_Global_S32;
@@ -151,7 +152,7 @@ namespace CellDotNet.Cuda
 				if (inst.Destination != null)
 					line += ", ";
 
-				line += inst.Source1.GetAssemblyText();
+				line += " " + inst.Source1.GetAssemblyText();
 				if (inst.Source2 != null)
 				{
 					line += ", " + inst.Source2.GetAssemblyText();
