@@ -242,6 +242,11 @@ namespace CellDotNet.Cuda
 			GetFunction().SetGridSize(x, y);
 		}
 
+//		public void SetGridSize(int x, int y, int z)
+//		{
+//			GetFunction().SetGridSize(x, y, z);
+//		}
+
 		private CudaFunction GetFunction()
 		{
 			EnsurePrepared();

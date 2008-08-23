@@ -5,7 +5,7 @@ namespace CellDotNet.Cuda
 {
 	internal class CudaFunction
 	{
-		private int? _gridWidth, _gridHeight;
+		private int? _gridSizeX, _gridSizeY, _gridSizeZ;
 		private readonly CUfunction _handle;
 
 		public CudaFunction(CUfunction pointer)
@@ -22,14 +22,20 @@ namespace CellDotNet.Cuda
 
 		public void SetGridSize(int x, int y)
 		{
+			SetGridSize(x, y, 1);
+		}
+
+		private void SetGridSize(int x, int y, int z)
+		{
 			// TODO: Validate.
-			_gridWidth = x;
-			_gridHeight = y;
+			_gridSizeX = x;
+			_gridSizeY = y;
+			_gridSizeZ = z;
 		}
 
 		public void Launch(object[] arguments)
 		{
-			if (_gridWidth == null || _gridHeight == null)
+			if (_gridSizeX == null || _gridSizeY == null)
 				throw new InvalidOperationException("No grid size has been set.");
 
 			int offset = 0;
@@ -72,7 +78,7 @@ namespace CellDotNet.Cuda
 			rc = DriverUnsafeNativeMethods.cuParamSetSize(_handle, (uint)offset);
 			DriverUnsafeNativeMethods.CheckReturnCode(rc);
 
-			rc = DriverUnsafeNativeMethods.cuLaunchGrid(_handle, _gridWidth.Value, _gridHeight.Value);
+			rc = DriverUnsafeNativeMethods.cuLaunchGrid(_handle, _gridSizeX.Value, _gridSizeY.Value);
 			DriverUnsafeNativeMethods.CheckReturnCode(rc);
 		}
 
