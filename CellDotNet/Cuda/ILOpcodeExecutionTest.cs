@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using NUnit.Framework;
 
-namespace CellDotNet.Cuda.DriverApi
+namespace CellDotNet.Cuda
 {
 	[TestFixture]
 	public class ILOpcodeExecutionTest : UnitTest

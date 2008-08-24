@@ -130,7 +130,7 @@ namespace CellDotNet.Cuda
 							BasicBlock target = (BasicBlock) inst.Operand;
 							if (cmpopcode != 0)
 							{
-								pred = GlobalVReg.FromType(StackType.ValueType, typeof(PredicateValue), VRegType.Register);
+								pred = GlobalVReg.FromType(StackType.ValueType, VRegType.Register, CudaStateSpace.Register, typeof(PredicateValue));
 								var newcmp = new ListInstruction(cmpopcode) { Source1 = inst.Source1, Source2 = inst.Source2, Destination = pred };
 								block.Replace(inst, newcmp);
 								inst = newcmp;
@@ -250,14 +250,14 @@ namespace CellDotNet.Cuda
 				newparams = new List<GlobalVReg>(oldparameters.Count);
 				foreach (MethodParameter oldp in oldparameters)
 				{
-					var newp = GlobalVReg.FromStackTypeDescription(oldp.StackType, VRegType.Parameter);
+					var newp = GlobalVReg.FromStackTypeDescription(oldp.StackType, VRegType.Address, CudaStateSpace.Parameter);
 					// TODO: Prefix the name to avoid clashes with other symbols.
 					newp.Name = oldp.Name;
 					newparams.Add(newp);
 					_variableMap.Add(oldp, newp);
 				}
 				foreach (MethodVariable variable in oldvariables)
-					_variableMap.Add(variable, GlobalVReg.FromStackTypeDescription(variable.StackType, VRegType.Register));
+					_variableMap.Add(variable, GlobalVReg.FromStackTypeDescription(variable.StackType, VRegType.Register, CudaStateSpace.Register));
 
 				// construct all output blocks up front, so we can reference them for branches.
 				var blocknum = 0;
@@ -308,7 +308,7 @@ namespace CellDotNet.Cuda
 						operand = _variableMap[treenode.OperandAsVariable];
 					else if (treenode.Operand is StackTypeDescription)
 					{
-						operand = GlobalVReg.FromStackTypeDescription(((StackTypeDescription) treenode.Operand), VRegType.None);
+						operand = GlobalVReg.FromStackTypeDescription(((StackTypeDescription) treenode.Operand), VRegType.None, CudaStateSpace.None);
 //						operand = GlobalVReg.FromStackTypeDescription(StackTypeDescription.Float32, VRegType.None);
 					}
 					else
@@ -324,7 +324,7 @@ namespace CellDotNet.Cuda
 				block.Append(newinst);
 				if (returnsValue)
 				{
-					newinst.Destination = GlobalVReg.FromStackTypeDescription(treenode.StackType, VRegType.Register);
+					newinst.Destination = GlobalVReg.FromStackTypeDescription(treenode.StackType, VRegType.Register, CudaStateSpace.Register);
 					return newinst.Destination;
 				}
 				return null;
