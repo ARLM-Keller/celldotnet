@@ -39,7 +39,7 @@ namespace CellDotNet.Cuda
 	{");
 			foreach (GlobalVReg param in method.Parameters)
 			{
-				Utilities.DebugAssert(param.Storage == VRegStorage.Parameter, "vreg.Storage == VRegStorage.Parameter");
+				Utilities.DebugAssert(param.Type == VRegType.Parameter, "vreg.Type == VRegType.Parameter");
 
 				ptx.WriteLine("\t.param " + GetPtxType(param.StackType, false) + " " + param.Name + ";");
 			}
@@ -196,25 +196,25 @@ namespace CellDotNet.Cuda
 			}
 
 			foreach (var storagegroup in allregs
-				.GroupBy(reg => new { reg.Storage, reg.StackType }))
+				.GroupBy(reg => new { Storage = reg.Type, reg.StackType }))
 			{
 				string varprefix = "%";
 				var stackType = storagegroup.Key.StackType;
 
 				switch (storagegroup.Key.Storage)
 				{
-					case VRegStorage.Constant:
-					case VRegStorage.Immediate:
-					case VRegStorage.Parameter:
-					case VRegStorage.SpecialRegister:
+					case VRegType.Constant:
+					case VRegType.Immediate:
+					case VRegType.Parameter:
+					case VRegType.SpecialRegister:
 						continue;
-					case VRegStorage.Texture:
+					case VRegType.Texture:
 						// Need to gather the textures.
 						throw new NotSupportedException("Textures are not supported.");
-					case VRegStorage.Global: varprefix += "g"; break;
-					case VRegStorage.Local: varprefix += "l"; break;
-					case VRegStorage.Register: varprefix += "r"; break;
-					case VRegStorage.Shared: varprefix += "s"; break;
+					case VRegType.Global: varprefix += "g"; break;
+					case VRegType.Local: varprefix += "l"; break;
+					case VRegType.Register: varprefix += "r"; break;
+					case VRegType.Shared: varprefix += "s"; break;
 					default:
 						throw new InvalidIRException("Bad vreg storage	: " + storagegroup.Key.Storage);
 				}
@@ -247,21 +247,21 @@ namespace CellDotNet.Cuda
 			}
 		}
 
-		private static string GetStorageString(VRegStorage storage)
+		private static string GetStorageString(VRegType type)
 		{
-			switch (storage)
+			switch (type)
 			{
-				case VRegStorage.Constant: return ".constant";
-				case VRegStorage.Immediate: throw new ArgumentOutOfRangeException("storage", "Can't do immediate.");
-				case VRegStorage.Parameter: return ".param";
-				case VRegStorage.SpecialRegister: throw new ArgumentOutOfRangeException("storage", "Can't do special register.");
-				case VRegStorage.Texture: return ".tex";
-				case VRegStorage.Global: return ".global";
-				case VRegStorage.Local: return ".local";
-				case VRegStorage.Register: return ".reg";
-				case VRegStorage.Shared: return ".shared";
+				case VRegType.Constant: return ".constant";
+				case VRegType.Immediate: throw new ArgumentOutOfRangeException("type", "Can't do immediate.");
+				case VRegType.Parameter: return ".param";
+				case VRegType.SpecialRegister: throw new ArgumentOutOfRangeException("type", "Can't do special register.");
+				case VRegType.Texture: return ".tex";
+				case VRegType.Global: return ".global";
+				case VRegType.Local: return ".local";
+				case VRegType.Register: return ".reg";
+				case VRegType.Shared: return ".shared";
 				default:
-					throw new InvalidIRException("Bad vreg storage: " + storage);
+					throw new InvalidIRException("Bad vreg type: " + type);
 			}
 		}
 

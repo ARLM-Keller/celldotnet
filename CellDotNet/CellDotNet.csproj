@@ -85,6 +85,7 @@
     <Compile Include="Cuda\Exceptions.cs" />
     <Compile Include="Cuda\GlobalVReg.cs" />
     <Compile Include="Cuda\IntrinsicsTest.cs" />
+    <Compile Include="Cuda\MemoryTest.cs" />
     <Compile Include="Cuda\PredicateValue.cs" />
     <Compile Include="Cuda\PtxCompiler.cs" />
     <Compile Include="Cuda\PtxCompilerTest.cs" />
@@ -98,6 +99,7 @@
     <Compile Include="Cuda\Attributes.cs" />
     <Compile Include="Cuda\ListInstruction.cs" />
     <Compile Include="Cuda\PtxCode.cs" />
+    <Compile Include="Cuda\Shared1D.cs" />
     <Compile Include="Cuda\SimpleKernelsCompilationTest.cs" />
     <Compile Include="Cuda\SpecialMethodInfo.cs" />
     <Compile Include="Cuda\ThreadIndex.cs" />

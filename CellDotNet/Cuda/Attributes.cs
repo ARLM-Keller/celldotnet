@@ -6,31 +6,31 @@ using System.Text;
 namespace CellDotNet.Cuda
 {
 	/// <summary>
-	/// Specifies the size of a static array (in shared memory).
+	/// Specifies the size of a static array.
 	/// </summary>
 	public class StaticArrayAttribute : Attribute
 	{
 		public int SizeX { get; private set; }
-		public int SizeY { get; private set; }
-		public int SizeZ { get; private set; }
+//		public int SizeY { get; private set; }
+//		public int SizeZ { get; private set; }
 
 		public StaticArrayAttribute(int sizeX)
 		{
 			SizeX = sizeX;
 		}
 
-		public StaticArrayAttribute(int sizeX, int sizeY)
-		{
-			SizeX = sizeX;
-			SizeY = sizeY;
-		}
+//		public StaticArrayAttribute(int sizeX, int sizeY)
+//		{
+//			SizeX = sizeX;
+//			SizeY = sizeY;
+//		}
 
-		public StaticArrayAttribute(int sizeX, int sizeY, int sizeZ)
-		{
-			SizeX = sizeX;
-			SizeY = sizeY;
-			SizeZ = sizeZ;
-		}
+//		public StaticArrayAttribute(int sizeX, int sizeY, int sizeZ)
+//		{
+//			SizeX = sizeX;
+//			SizeY = sizeY;
+//			SizeZ = sizeZ;
+//		}
 	}
 
 	public enum CudaMemoryType
