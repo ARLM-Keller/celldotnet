@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using CellDotNet.Intermediate;
 
@@ -26,7 +27,7 @@ namespace CellDotNet.Cuda
 	/// <summary>
 	/// Used by <see cref="GlobalVReg"/> to make is possible to determine how vregs should be treated and declared.
 	/// </summary>
-	enum VRegStorage
+	enum VRegType
 	{
 		None,
 		Register,
@@ -37,7 +38,11 @@ namespace CellDotNet.Cuda
 		Texture,
 		Constant,
 		SpecialRegister,
-		Immediate
+		Immediate,
+		/// <summary>
+		/// An address value as defined by a ptx array.
+		/// </summary>
+		Address
 	}
 
 	/// <summary>
@@ -45,33 +50,33 @@ namespace CellDotNet.Cuda
 	/// </summary>
 	class GlobalVReg
 	{
-		public VRegStorage Storage { get; private set; }
+		public VRegType Type { get; private set; }
 		public StackType StackType { get; private set; }
 		public Type ReflectionType { get; private set; }
 		public object ImmediateValue { get; private set; }
 
 		/// <summary>
 		/// A name / textual representation which will be used in assembler, 
-		/// except for values of type <see cref="VRegStorage.Constant"/> which will use <see cref="ImmediateValue"/>.
+		/// except for values of type <see cref="VRegType.Constant"/> which will use <see cref="ImmediateValue"/>.
 		/// </summary>
 		public string Name { get; set; }
 
 
 		private GlobalVReg() { }
 
-		public static GlobalVReg FromNumericType(StackType stacktype, VRegStorage storage)
+		public static GlobalVReg FromNumericType(StackType stacktype, VRegType type)
 		{
-			return new GlobalVReg { StackType = stacktype, Storage = storage };
+			return new GlobalVReg { StackType = stacktype, Type = type };
 		}
 
-		public static GlobalVReg FromType(StackType stacktype, Type reflectionType, VRegStorage storage)
+		public static GlobalVReg FromType(StackType stacktype, Type reflectionType, VRegType type)
 		{
-			return new GlobalVReg { StackType = stacktype, Storage = storage, ReflectionType = reflectionType };
+			return new GlobalVReg { StackType = stacktype, Type = type, ReflectionType = reflectionType };
 		}
 
 		public static GlobalVReg FromImmediate(object immediateValue, StackType stacktype)
 		{
-			return new GlobalVReg { StackType = stacktype, ImmediateValue = immediateValue, Storage = VRegStorage.Immediate };
+			return new GlobalVReg { StackType = stacktype, ImmediateValue = immediateValue, Type = VRegType.Immediate };
 		}
 
 		public static GlobalVReg FromImmediate(object immediateValue)
@@ -79,9 +84,19 @@ namespace CellDotNet.Cuda
 			return FromImmediate(immediateValue, GetStackTypeForNumericType(immediateValue));
 		}
 
-		public static GlobalVReg FromSpecialRegister(StackType stacktype, VRegStorage storage, string text)
+		public static GlobalVReg FromSpecialRegister(StackType stacktype, VRegType type, string text)
 		{
-			return new GlobalVReg {Name = text, StackType = stacktype, Storage = storage};
+			return new GlobalVReg {Name = text, StackType = stacktype, Type = type};
+		}
+
+		public static GlobalVReg FromStaticField(FieldInfo field)
+		{
+			return new GlobalVReg { StackType = GetStackType(field.FieldType), Name = EncodeFieldName(field), Type = VRegType.Address };
+		}
+
+		private static string EncodeFieldName(FieldInfo field)
+		{
+			return field.Name;
 		}
 
 		public string GetAssemblyText()
@@ -100,18 +115,18 @@ namespace CellDotNet.Cuda
 			else return Name;
 		}
 
-		public static GlobalVReg FromStackTypeDescription(StackTypeDescription stackType, VRegStorage storage)
+		public static GlobalVReg FromStackTypeDescription(StackTypeDescription stackType, VRegType type)
 		{
 			switch (stackType.CliType)
 			{
 				case CliType.Int32:
-					return FromNumericType(StackType.I4, storage);
+					return FromNumericType(StackType.I4, type);
 				case CliType.Int64:
-					return FromNumericType(StackType.I8, storage);
+					return FromNumericType(StackType.I8, type);
 				case CliType.Float32:
-					return FromNumericType(StackType.R4, storage);
+					return FromNumericType(StackType.R4, type);
 				case CliType.Float64:
-					return FromNumericType(StackType.R8, storage);
+					return FromNumericType(StackType.R8, type);
 				case CliType.ObjectType:
 					{
 						if (stackType.IsArray)
@@ -127,18 +142,18 @@ namespace CellDotNet.Cuda
 //									
 //							}
 							// the type isn't very accurate, but it will do for now...
-							return FromType(StackType.Object, typeof(Array), storage);
+							return FromType(StackType.Object, typeof(Array), type);
 						}
 						else
-							return FromType(StackType.Object, stackType.ComplexType.ReflectionType, storage);
+							return FromType(StackType.Object, stackType.ComplexType.ReflectionType, type);
 					}
 				case CliType.ValueType:
-					return FromType(StackType.ValueType, stackType.ComplexType.ReflectionType, storage);
+					return FromType(StackType.ValueType, stackType.ComplexType.ReflectionType, type);
 				case CliType.ManagedPointer:
-					return FromNumericType(StackType.ManagedPointer, storage);
+					return FromNumericType(StackType.ManagedPointer, type);
 //					throw new NotImplementedException();
 				case CliType.NativeInt:
-					return FromNumericType(StackType.UnmanangedPointer, storage);
+					return FromNumericType(StackType.UnmanangedPointer, type);
 				default:
 					throw new ArgumentOutOfRangeException("stackType", "Bad CliType: " + stackType.CliType);
 			}
@@ -174,5 +189,22 @@ namespace CellDotNet.Cuda
 			throw new ArgumentOutOfRangeException("value", value, "wtf");
 		}
 
+		private static StackType GetStackType(Type type)
+		{
+			switch (System.Type.GetTypeCode(type))
+			{
+				case TypeCode.Int32:
+				case TypeCode.UInt32:
+					return StackType.I4;
+				case TypeCode.Single:
+					return StackType.R4;
+				case TypeCode.Object:
+					if (type.IsAssignableFrom(typeof(ValueType)))
+						throw new NotSupportedException("Only some built-in value types are supported.");
+					return StackType.Object;
+				default:
+					throw new ArgumentOutOfRangeException("type", type, "wtf");
+			}
+		}
 	}
 }

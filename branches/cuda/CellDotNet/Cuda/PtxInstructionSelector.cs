@@ -9,6 +9,13 @@ namespace CellDotNet.Cuda
 {
 	class PtxInstructionSelector
 	{
+		public HashSet<FieldInfo> UsedStaticFields { get; private set; }
+
+		public PtxInstructionSelector()
+		{
+			UsedStaticFields = new HashSet<FieldInfo>();
+		}
+
 		public List<BasicBlock> Select(List<BasicBlock> inputblocks)
 		{
 			// construct all output blocks up front, so we can reference them for branches.
@@ -227,7 +234,7 @@ namespace CellDotNet.Cuda
 				case IRCode.Ldelem_U4: SelectLdElem(inst, ob, PtxCode.Ld_Global_S32, 4); return;
 				case IRCode.Ldelema:
 					{
-						var offset = GlobalVReg.FromNumericType(StackType.I4, VRegStorage.Register);
+						var offset = GlobalVReg.FromNumericType(StackType.I4, VRegType.Register);
 						var elementsize = inst.OperandAsGlobalVRegNonNull.GetElementSize();
 						// Determine byte offset.
 						ob.Append(new ListInstruction(PtxCode.Mul_Lo_S32, inst)
@@ -280,7 +287,14 @@ namespace CellDotNet.Cuda
 					ob.Append(new ListInstruction(PtxCode.Mov_S32, inst) {Source1 = GlobalVReg.FromImmediate(0, StackType.I4)});
 					break;
 				case IRCode.Ldobj:
+					break;
 				case IRCode.Ldsfld:
+					{
+						var field = (FieldInfo)inst.Operand;
+						UsedStaticFields.Add(field);
+						ob.Append(new ListInstruction(PtxCode.Mov_S32, inst) {Source1 = GlobalVReg.FromStaticField(field) });
+						return;
+					}
 				case IRCode.Ldsflda:
 				case IRCode.Ldstr:
 				case IRCode.Ldtoken:
@@ -461,7 +475,7 @@ namespace CellDotNet.Cuda
 
 		private void SelectLdElem(ListInstruction ldElemInst, BasicBlock ob, PtxCode ptxLoadCode, int elementsize)
 		{
-			var offset = GlobalVReg.FromNumericType(StackType.I4, VRegStorage.Register);
+			var offset = GlobalVReg.FromNumericType(StackType.I4, VRegType.Register);
 			// Determine byte offset.
 			ob.Append(new ListInstruction(PtxCode.Mul_Lo_S32, ldElemInst)
 			          	{
@@ -470,7 +484,7 @@ namespace CellDotNet.Cuda
 			          		Source2 = GlobalVReg.FromImmediate(elementsize, StackType.I4)
 			          	});
 			// Determine element address.
-			var address = GlobalVReg.FromNumericType(StackType.I4, VRegStorage.Register);
+			var address = GlobalVReg.FromNumericType(StackType.I4, VRegType.Register);
 			ob.Append(new ListInstruction(PtxCode.Add_S32, ldElemInst)
 			          	{
 			          		Destination = address,
