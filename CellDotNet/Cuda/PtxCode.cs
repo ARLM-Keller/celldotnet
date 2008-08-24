@@ -41,6 +41,10 @@ namespace CellDotNet.Cuda
 		Ld_Global_S16,
 		Ld_Global_S32,
 		Ld_Global_F32,
+		Ld_Shared_S32,
+		St_Shared_S32,
+		Ld_Shared_F32,
+		St_Shared_F32,
 		Ret,
 		Call,
 		Exit,
@@ -57,6 +61,6 @@ namespace CellDotNet.Cuda
 		Cvt_S32_U16,
 		Setp_Hi_U32,
 		Setp_Gtu_F32,
-		Bar_Sync
+		Bar_Sync,
 	}
 }

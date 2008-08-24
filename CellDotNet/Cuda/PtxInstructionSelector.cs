@@ -77,7 +77,7 @@ namespace CellDotNet.Cuda
 				case IRCode.Break:
 				case IRCode.Call:
 //					ob.Append(new MethodCallListInstruction(PtxCode.Call, inst));
-					HandleCall(inst, ob);
+					HandleCall((MethodCallListInstruction) inst, ob);
 					return;
 				case IRCode.Calli:
 				case IRCode.Callvirt:
@@ -419,7 +419,7 @@ namespace CellDotNet.Cuda
 			throw new NotImplementedException("Opcode not implemented in instruction selector: " + inst.IRCode);
 		}
 
-		private void HandleCall(ListInstruction inst, BasicBlock ob)
+		private void HandleCall(MethodCallListInstruction inst, BasicBlock ob)
 		{
 			SpecialMethodInfo smi;
 			if (!(inst.Operand is MethodBase))
@@ -436,7 +436,7 @@ namespace CellDotNet.Cuda
 			if (smi.IsGlobalVReg)
 			{
 				PtxCode ptxcode;
-				switch (smi.GlobalVReg.StackType)
+				switch (smi.HardcodedGlobalVReg.StackType)
 				{
 					case StackType.I2: ptxcode = PtxCode.Cvt_S32_U16; break;
 					case StackType.I4: ptxcode = PtxCode.Mov_S32; break;
@@ -445,7 +445,7 @@ namespace CellDotNet.Cuda
 				ob.Append(new ListInstruction(ptxcode)
 				          	{
 								Destination = inst.Destination,
-								Source1 = smi.GlobalVReg,
+								Source1 = smi.HardcodedGlobalVReg,
 				          		Predicate = inst.Predicate,
 				          		PredicateNegation = inst.PredicateNegation
 				          	});
@@ -454,12 +454,17 @@ namespace CellDotNet.Cuda
 			if (smi.IsSinglePtxCode)
 			{
 				var newinst = new ListInstruction(smi.PtxCode)
-				{
-					Destination = inst.Destination,
-					Source1 = smi.GlobalVReg,
-					Predicate = inst.Predicate,
-					PredicateNegation = inst.PredicateNegation
-				};
+				              	{
+				              		Destination = inst.Destination,
+				              		Source1 = inst.Parameters.ElementAtOrDefault(0),
+				              		Source2 = inst.Parameters.ElementAtOrDefault(1),
+				              		Source3 = inst.Parameters.ElementAtOrDefault(2),
+									Predicate = inst.Predicate,
+									PredicateNegation = inst.PredicateNegation,
+				              	};
+				if (smi.HardcodedGlobalVReg != null)
+					newinst.Source1 = smi.HardcodedGlobalVReg;
+
 				switch (smi.PtxCode)
 				{
 					case PtxCode.Bar_Sync:

@@ -8,6 +8,7 @@ namespace CellDotNet.Cuda
 	/// <summary>
 	/// Specifies the size of a static array.
 	/// </summary>
+	[AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
 	public class StaticArrayAttribute : Attribute
 	{
 		public int SizeX { get; private set; }
@@ -16,6 +17,8 @@ namespace CellDotNet.Cuda
 
 		public StaticArrayAttribute(int sizeX)
 		{
+			if (sizeX < 0)
+				throw new ArgumentOutOfRangeException("sizeX");
 			SizeX = sizeX;
 		}
 
