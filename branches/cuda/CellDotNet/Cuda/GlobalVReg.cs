@@ -26,9 +26,26 @@ namespace CellDotNet.Cuda
 	}
 
 	/// <summary>
-	/// Used by <see cref="GlobalVReg"/> to make is possible to determine how vregs should be treated and declared.
+	/// Used by <see cref="GlobalVReg"/> to make is possible to determine how vregs should be treated.
+	/// TODO: Fix this comment: When the value is <see cref="Register"/>, the vreg's state space is often  <see cref="CudaStateSpace.Register"/>.
 	/// </summary>
 	enum VRegType
+	{
+		None,
+		Register,
+		SpecialRegister,
+		/// <summary>
+		/// An address value as defined by a ptx array.
+		/// </summary>
+		Address,
+		Immediate,
+	}
+
+	/// <summary>
+	/// Describes the kinds of storage allocation a symbol uses, and allows <see cref="GlobalVReg"/> to
+	/// determine how to declare symbols.
+	/// </summary>
+	internal enum CudaStateSpace
 	{
 		None,
 		Register,
@@ -37,13 +54,7 @@ namespace CellDotNet.Cuda
 		Parameter,
 		Shared,
 		Texture,
-		Constant,
-		SpecialRegister,
-		Immediate,
-		/// <summary>
-		/// An address value as defined by a ptx array.
-		/// </summary>
-		Address
+		Constant
 	}
 
 	/// <summary>
@@ -52,6 +63,7 @@ namespace CellDotNet.Cuda
 	class GlobalVReg
 	{
 		public VRegType Type { get; private set; }
+		public CudaStateSpace StateSpace { get; private set; }
 		public StackType StackType { get; private set; }
 
 		[CanBeNull]
@@ -64,7 +76,7 @@ namespace CellDotNet.Cuda
 
 		/// <summary>
 		/// A name / textual representation which will be used in assembler, 
-		/// except for values of type <see cref="VRegType.Constant"/> which will use <see cref="ImmediateValue"/>.
+		/// except for values of type <see cref="VRegType.Immediate"/> which will use <see cref="ImmediateValue"/>.
 		/// </summary>
 		public string Name { get; set; }
 
@@ -94,14 +106,14 @@ namespace CellDotNet.Cuda
 
 		private GlobalVReg() { }
 
-		public static GlobalVReg FromNumericType(StackType stacktype, VRegType type)
+		public static GlobalVReg FromNumericType(StackType stacktype, VRegType type, CudaStateSpace stateSpace)
 		{
-			return new GlobalVReg { StackType = stacktype, Type = type };
+			return new GlobalVReg { StackType = stacktype, Type = type, StateSpace = stateSpace };
 		}
 
-		public static GlobalVReg FromType(StackType stacktype, Type reflectionType, VRegType type)
+		public static GlobalVReg FromType(StackType stacktype, VRegType type, CudaStateSpace stateSpace, Type reflectionType)
 		{
-			return new GlobalVReg { StackType = stacktype, Type = type, ReflectionType = reflectionType };
+			return new GlobalVReg { StackType = stacktype, Type = type, ReflectionType = reflectionType, StateSpace = stateSpace};
 		}
 
 		public static GlobalVReg FromImmediate(object immediateValue, StackType stacktype)
@@ -133,7 +145,7 @@ namespace CellDotNet.Cuda
 				if (att == null)
 					throw new CudaException("Field " + field.Name + " does not have a StaticArray size specification.");
 
-				pi = new PointerInfo(VRegType.Shared, att.SizeX);
+				pi = new PointerInfo(CudaStateSpace.Shared, att.SizeX);
 				type = VRegType.Address;
 			}
 			else
@@ -170,18 +182,18 @@ namespace CellDotNet.Cuda
 			else return Name;
 		}
 
-		public static GlobalVReg FromStackTypeDescription(StackTypeDescription stackType, VRegType type)
+		public static GlobalVReg FromStackTypeDescription(StackTypeDescription stackType, VRegType type, CudaStateSpace stateSpace)
 		{
 			switch (stackType.CliType)
 			{
 				case CliType.Int32:
-					return FromNumericType(StackType.I4, type);
+					return FromNumericType(StackType.I4, type, stateSpace);
 				case CliType.Int64:
-					return FromNumericType(StackType.I8, type);
+					return FromNumericType(StackType.I8, type, stateSpace);
 				case CliType.Float32:
-					return FromNumericType(StackType.R4, type);
+					return FromNumericType(StackType.R4, type, stateSpace);
 				case CliType.Float64:
-					return FromNumericType(StackType.R8, type);
+					return FromNumericType(StackType.R8, type, stateSpace);
 				case CliType.ObjectType:
 					{
 						if (stackType.IsArray)
@@ -197,18 +209,18 @@ namespace CellDotNet.Cuda
 //									
 //							}
 							// the type isn't very accurate, but it will do for now...
-							return FromType(StackType.Object, typeof(Array), type);
+							return FromType(StackType.Object, type, stateSpace, typeof(Array));
 						}
 						else
-							return FromType(StackType.Object, stackType.ComplexType.ReflectionType, type);
+							return FromType(StackType.Object, type, stateSpace, stackType.ComplexType.ReflectionType);
 					}
 				case CliType.ValueType:
-					return FromType(StackType.ValueType, stackType.ComplexType.ReflectionType, type);
+					return FromType(StackType.ValueType, type, stateSpace, stackType.ComplexType.ReflectionType);
 				case CliType.ManagedPointer:
-					return FromNumericType(StackType.ManagedPointer, type);
+					return FromNumericType(StackType.ManagedPointer, type, stateSpace);
 //					throw new NotImplementedException();
 				case CliType.NativeInt:
-					return FromNumericType(StackType.UnmanangedPointer, type);
+					return FromNumericType(StackType.UnmanangedPointer, type, stateSpace);
 				default:
 					throw new ArgumentOutOfRangeException("stackType", "Bad CliType: " + stackType.CliType);
 			}
@@ -271,10 +283,10 @@ namespace CellDotNet.Cuda
 	/// </summary>
 	class PointerInfo
 	{
-		public VRegType TargetSpace { get; private set; }
+		public CudaStateSpace TargetSpace { get; private set; }
 		public int ElementCount { get; private set; }
 
-		public PointerInfo(VRegType targetSpace, int elementCount)
+		public PointerInfo(CudaStateSpace targetSpace, int elementCount)
 		{
 			TargetSpace = targetSpace;
 			ElementCount = elementCount;

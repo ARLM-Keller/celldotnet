@@ -234,7 +234,7 @@ namespace CellDotNet.Cuda
 				case IRCode.Ldelem_U4: SelectLdElem(inst, ob, PtxCode.Ld_Global_S32, 4); return;
 				case IRCode.Ldelema:
 					{
-						var offset = GlobalVReg.FromNumericType(StackType.I4, VRegType.Register);
+						var offset = GlobalVReg.FromNumericType(StackType.I4, VRegType.Register, CudaStateSpace.Register);
 						var elementsize = inst.OperandAsGlobalVRegNonNull.GetElementSize();
 						// Determine byte offset.
 						ob.Append(new ListInstruction(PtxCode.Mul_Lo_S32, inst)
@@ -480,7 +480,7 @@ namespace CellDotNet.Cuda
 
 		private void SelectLdElem(ListInstruction ldElemInst, BasicBlock ob, PtxCode ptxLoadCode, int elementsize)
 		{
-			var offset = GlobalVReg.FromNumericType(StackType.I4, VRegType.Register);
+			var offset = GlobalVReg.FromNumericType(StackType.I4, VRegType.Register, CudaStateSpace.Register);
 			// Determine byte offset.
 			ob.Append(new ListInstruction(PtxCode.Mul_Lo_S32, ldElemInst)
 			          	{
@@ -489,7 +489,7 @@ namespace CellDotNet.Cuda
 			          		Source2 = GlobalVReg.FromImmediate(elementsize, StackType.I4)
 			          	});
 			// Determine element address.
-			var address = GlobalVReg.FromNumericType(StackType.I4, VRegType.Register);
+			var address = GlobalVReg.FromNumericType(StackType.I4, VRegType.Register, CudaStateSpace.Register);
 			ob.Append(new ListInstruction(PtxCode.Add_S32, ldElemInst)
 			          	{
 			          		Destination = address,

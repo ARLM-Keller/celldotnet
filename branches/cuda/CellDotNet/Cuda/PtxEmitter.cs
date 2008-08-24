@@ -36,6 +36,7 @@ namespace CellDotNet.Cuda
 
 		private string GetGlocalsDeclarations()
 		{
+			return "";
 			foreach (GlobalVReg symbol in _globalSymbols)
 			{
 				switch (symbol.Type)
@@ -56,7 +57,7 @@ namespace CellDotNet.Cuda
 	{");
 			foreach (GlobalVReg param in method.Parameters)
 			{
-				Utilities.DebugAssert(param.Type == VRegType.Parameter, "vreg.Type == VRegType.Parameter");
+				Utilities.DebugAssert(param.StateSpace == CudaStateSpace.Parameter, "vreg.Type == VRegType.Parameter");
 
 				ptx.WriteLine("\t.param " + GetPtxType(param.StackType, false) + " " + param.Name + ";");
 			}
@@ -213,34 +214,21 @@ namespace CellDotNet.Cuda
 				}
 			}
 
+			foreach (GlobalVReg reg in allregs)
+				if (reg.Type == VRegType.Address)
+					_globalSymbols.Add(reg);
+
+			// Register: Type == VRegType.Register, disregard StateSpace value.
+			// Parameter: Type == VRegType.Address, disregard StateSpace value.
+
 			foreach (var storagegroup in allregs
-				.GroupBy(reg => new { Storage = reg.Type, reg.StackType }))
+				.Where(reg => reg.Type == VRegType.Register)
+				.GroupBy(reg => new {reg.StateSpace, reg.StackType }))
 			{
 				string varprefix = "%";
 				var stackType = storagegroup.Key.StackType;
 
-				switch (storagegroup.Key.Storage)
-				{
-					case VRegType.Constant:
-					case VRegType.Immediate:
-					case VRegType.Parameter:
-					case VRegType.SpecialRegister:
-						continue;
-					case VRegType.Address:
-						foreach (GlobalVReg reg in storagegroup)
-							_globalSymbols.Add(reg);
-						continue;
-					case VRegType.Texture:
-						// Need to gather the textures.
-						throw new NotSupportedException("Textures are not supported.");
-					case VRegType.Global: varprefix += "g"; break;
-					case VRegType.Local: varprefix += "l"; break;
-					case VRegType.Register: varprefix += "r"; break;
-					case VRegType.Shared: varprefix += "s"; break;
-					default:
-						throw new InvalidIRException("Bad vreg storage	: " + storagegroup.Key.Storage);
-				}
-
+//				varprefix += "r";
 				switch (stackType)
 				{
 					case StackType.Object: varprefix += "o"; break;
@@ -263,27 +251,25 @@ namespace CellDotNet.Cuda
 				}
 
 				{
-					ptx.WriteLine(@"	{0} {1} {2}<{3}>;", GetStorageString(storagegroup.Key.Storage),
+					ptx.WriteLine(@"	{0} {1} {2}<{3}>;", GetStorageString(storagegroup.Key.StateSpace),
 					              GetPtxType(stackType, true), varprefix, varcount);
 				}
 			}
 		}
 
-		private static string GetStorageString(VRegType type)
+		private static string GetStorageString(CudaStateSpace stateSpace)
 		{
-			switch (type)
+			switch (stateSpace)
 			{
-				case VRegType.Constant: return ".constant";
-				case VRegType.Immediate: throw new ArgumentOutOfRangeException("type", "Can't do immediate.");
-				case VRegType.Parameter: return ".param";
-				case VRegType.SpecialRegister: throw new ArgumentOutOfRangeException("type", "Can't do special register.");
-				case VRegType.Texture: return ".tex";
-				case VRegType.Global: return ".global";
-				case VRegType.Local: return ".local";
-				case VRegType.Register: return ".reg";
-				case VRegType.Shared: return ".shared";
+				case CudaStateSpace.Constant: return ".constant";
+				case CudaStateSpace.Parameter: return ".param";
+				case CudaStateSpace.Texture: return ".tex";
+				case CudaStateSpace.Global: return ".global";
+				case CudaStateSpace.Local: return ".local";
+				case CudaStateSpace.Register: return ".reg";
+				case CudaStateSpace.Shared: return ".shared";
 				default:
-					throw new InvalidIRException("Bad vreg type: " + type);
+					throw new InvalidIRException("Bad vreg type: " + stateSpace);
 			}
 		}
 
