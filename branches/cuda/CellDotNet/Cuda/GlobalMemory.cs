@@ -34,7 +34,6 @@ namespace CellDotNet.Cuda
 		{
 			if (_isdisposed)
 				return;
-			GC.SuppressFinalize(this);
 			DriverStatusCode rc = DriverUnsafeNativeMethods.cuMemFree(_handle);
 			DriverUnsafeNativeMethods.CheckReturnCode(rc);
 			_handle = default(CUdeviceptr);

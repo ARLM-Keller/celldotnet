@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using CellDotNet.Intermediate;
+using JetBrains.Annotations;
 
 namespace CellDotNet.Cuda
 {
@@ -52,14 +53,43 @@ namespace CellDotNet.Cuda
 	{
 		public VRegType Type { get; private set; }
 		public StackType StackType { get; private set; }
+
+		[CanBeNull]
 		public Type ReflectionType { get; private set; }
-		public object ImmediateValue { get; private set; }
+
+		private object ImmediateValue { get; set; }
+
+		[CanBeNull]
+		public PointerInfo PointerInfo { get; private set; }
 
 		/// <summary>
 		/// A name / textual representation which will be used in assembler, 
 		/// except for values of type <see cref="VRegType.Constant"/> which will use <see cref="ImmediateValue"/>.
 		/// </summary>
 		public string Name { get; set; }
+
+		#region class GlobalFieldEqualityComparer
+
+		/// <summary>
+		/// Used by <see cref="PtxEmitter"/> to remember the fields that need 
+		/// to be declared globally, and to only declare each once.
+		/// </summary>
+		public class GlobalFieldEqualityComparer : IEqualityComparer<GlobalVReg>
+		{
+			public bool Equals(GlobalVReg x, GlobalVReg y)
+			{
+				Utilities.DebugAssert(x.Type == VRegType.Address && y.Type == VRegType.Address);
+				return x.Name == y.Name;
+			}
+
+			public int GetHashCode(GlobalVReg obj)
+			{
+				Utilities.DebugAssert(obj.Type == VRegType.Address);
+				return obj.Name.GetHashCode();
+			}
+		}
+
+		#endregion
 
 
 		private GlobalVReg() { }
@@ -91,7 +121,32 @@ namespace CellDotNet.Cuda
 
 		public static GlobalVReg FromStaticField(FieldInfo field)
 		{
-			return new GlobalVReg { StackType = GetStackType(field.FieldType), Name = EncodeFieldName(field), Type = VRegType.Address };
+			PointerInfo pi;
+			VRegType type;
+
+			if (!field.IsStatic)
+				throw new NotSupportedException("Only static fields are supported.");
+			if (field.FieldType.IsGenericType &&
+			    field.FieldType.GetGenericTypeDefinition().IsAssignableFrom(typeof (Shared1D<int>).GetGenericTypeDefinition()))
+			{
+				var att = (StaticArrayAttribute) field.GetCustomAttributes(typeof (StaticArrayAttribute), false).SingleOrDefault();
+				if (att == null)
+					throw new CudaException("Field " + field.Name + " does not have a StaticArray size specification.");
+
+				pi = new PointerInfo(VRegType.Shared, att.SizeX);
+				type = VRegType.Address;
+			}
+			else
+				throw new NotSupportedException("Only Shared1D static fields are currently supported.");
+
+			return new GlobalVReg
+			       	{
+			       		ReflectionType = field.FieldType,
+			       		StackType = GetStackType(field.FieldType),
+			       		Name = EncodeFieldName(field),
+			       		Type = type,
+			       		PointerInfo = pi
+			       	};
 		}
 
 		private static string EncodeFieldName(FieldInfo field)
@@ -200,11 +255,29 @@ namespace CellDotNet.Cuda
 					return StackType.R4;
 				case TypeCode.Object:
 					if (type.IsAssignableFrom(typeof(ValueType)))
-						throw new NotSupportedException("Only some built-in value types are supported.");
+						throw new NotSupportedException("Only some built-in value types like int and float are supported.");
 					return StackType.Object;
 				default:
 					throw new ArgumentOutOfRangeException("type", type, "wtf");
 			}
+		}
+	}
+
+	/// <summary>
+	/// Describe the intended use of a pointer in PTX: The target state space, and for buffers, the buffer size.
+	/// <para>
+	/// This information is necessary for declaring global ptx variables based on cli fields.
+	/// </para>
+	/// </summary>
+	class PointerInfo
+	{
+		public VRegType TargetSpace { get; private set; }
+		public int ElementCount { get; private set; }
+
+		public PointerInfo(VRegType targetSpace, int elementCount)
+		{
+			TargetSpace = targetSpace;
+			ElementCount = elementCount;
 		}
 	}
 }

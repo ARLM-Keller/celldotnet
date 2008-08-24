@@ -83,8 +83,8 @@ namespace CellDotNet.Intermediate
 					return new TypeDescription(type.MakeByRefType());
 				else if (type.IsPointer)
 					return new TypeDescription(type.MakePointerType());
-				else if (type.IsGenericType)
-					throw new NotImplementedException("Generic types are not yet implemented.");
+//				else if (type.IsGenericType)
+//					throw new NotImplementedException("Generic types are not yet implemented.");
 				else
 					return new TypeDescription(type);
 			}
@@ -281,9 +281,13 @@ namespace CellDotNet.Intermediate
 				case IRCode.Unbox: // unbox
 				case IRCode.Ldflda: // ldflda
 				case IRCode.Ldsfld: // ldsfld
+					t = GetStackTypeDescription(inst.OperandAsField.FieldType);
+					break;
 				case IRCode.Ldsflda: // ldsflda
-				case IRCode.Stsfld: // stsfld
 					throw new NotImplementedException(inst.Opcode.IRCode.ToString());
+				case IRCode.Stsfld: // stsfld
+					t = StackTypeDescription.None;
+					break;
 				case IRCode.Stobj: // stobj
 					t = StackTypeDescription.None;
 					break;

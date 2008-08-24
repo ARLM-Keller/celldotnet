@@ -111,17 +111,23 @@ namespace CellDotNet.Cuda
 			Parameters = new List<GlobalVReg>(2);
 		}
 
+#pragma warning disable 0809 // "Obsolete member 'CellDotNet.Cuda.MethodCallListInstruction.Source1' overrides non-obsolete member 'CellDotNet.Cuda.ListInstruction.Source1'"
+
+		[Obsolete("Not obsolete, but use Parameters instead.")]
 		public override GlobalVReg Source1
 		{
 			get { throw new InvalidOperationException(); }
 			set { throw new InvalidOperationException(); }
 		}
 
+		[Obsolete("Not obsolete, but use Parameters instead.")]
 		public override GlobalVReg Source2
 		{
 			get { throw new InvalidOperationException(); }
 			set { throw new InvalidOperationException(); }
 		}
+
+#pragma warning restore 0809
 
 		public List<GlobalVReg> Parameters { get; private set; }
 	}

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using CellDotNet.Intermediate;
 
 namespace CellDotNet.Cuda
@@ -11,6 +9,7 @@ namespace CellDotNet.Cuda
 	class PtxEmitter
 	{
 		private readonly StringWriter _methodPtx = new StringWriter();
+		private HashSet<GlobalVReg> _globalSymbols = new HashSet<GlobalVReg>(new GlobalVReg.GlobalFieldEqualityComparer());
 
 		public void Emit(CudaMethod method)
 		{
@@ -30,7 +29,25 @@ namespace CellDotNet.Cuda
 	.target sm_11, map_f64_to_f32
 
 
+" + GetGlocalsDeclarations() + @"
+
 " + methodptx;
+		}
+
+		private string GetGlocalsDeclarations()
+		{
+			foreach (GlobalVReg symbol in _globalSymbols)
+			{
+				switch (symbol.Type)
+				{
+//					case VRegType.Address:
+//						GetStorageString(symbol.Type);
+//					default:
+//						throw new NotSupportedException(symbol.Type);
+				}
+				
+			}
+			throw new NotImplementedException();
 		}
 
 		void Emit(CudaMethod method, TextWriter ptx)
@@ -89,8 +106,9 @@ namespace CellDotNet.Cuda
 						case PtxCode.Cvt_S32_U16: opcodename = "cvt.s32.u16"; break;
 						case PtxCode.Bar_Sync: opcodename = "bar.sync"; break;
 
+						case PtxCode.Ld_Shared_F32: opcodename = "ld.shared.f32"; goto case PtxCode.Ld_Global_S32;
+						case PtxCode.Ld_Shared_S32: opcodename = "ld.shared.s32"; goto case PtxCode.Ld_Global_S32;
 						case PtxCode.Ld_Global_F32: opcodename = "ld.global.f32"; goto case PtxCode.Ld_Global_S32;
-//						case PtxCode.Ld_Global_S16: opcodename = "ld.global.s16"; goto case PtxCode.Ld_Global_S32;
 						case PtxCode.Ld_Global_S32:
 							if (opcodename == null)
 								opcodename = "ld.global.s32";
@@ -103,7 +121,6 @@ namespace CellDotNet.Cuda
 								inst.Source1.Name);
 							continue;
 						case PtxCode.Ld_Param_F32: opcodename = "ld.param.f32"; goto case PtxCode.Ld_Param_S32;
-//						case PtxCode.Ld_Param_S16: opcodename = "ld.param.s16"; goto case PtxCode.Ld_Param_S32;
 						case PtxCode.Ld_Param_S32:
 							if (opcodename == null)
 								opcodename = "ld.param.s32";
@@ -115,8 +132,9 @@ namespace CellDotNet.Cuda
 								inst.Destination.Name,
 								inst.OperandAsGlobalVRegNonNull.Name);
 							continue;
+						case PtxCode.St_Shared_F32: opcodename = "st.shared.f32"; goto case PtxCode.St_Global_S32;
+						case PtxCode.St_Shared_S32: opcodename = "st.shared.s32"; goto case PtxCode.St_Global_S32;
 						case PtxCode.St_Global_F32: opcodename = "st.global.f32"; goto case PtxCode.St_Global_S32;
-//						case PtxCode.St_Global_S16: opcodename = "st.global.s16"; goto case PtxCode.St_Global_S32;
 						case PtxCode.St_Global_S32:
 								if (opcodename == null)
 								opcodename = "st.global.s32";
@@ -170,7 +188,7 @@ namespace CellDotNet.Cuda
 			return "@" + (inst.PredicateNegation ? "!" : "") + inst.Predicate.Name + " ";
 		}
 
-		private static void NameAndDeclareLocals(CudaMethod method, TextWriter ptx)
+		private void NameAndDeclareLocals(CudaMethod method, TextWriter ptx)
 		{
 			// Count and assign names/indices to all register variables.
 			var allregs = new HashSet<GlobalVReg>();
@@ -207,6 +225,10 @@ namespace CellDotNet.Cuda
 					case VRegType.Immediate:
 					case VRegType.Parameter:
 					case VRegType.SpecialRegister:
+						continue;
+					case VRegType.Address:
+						foreach (GlobalVReg reg in storagegroup)
+							_globalSymbols.Add(reg);
 						continue;
 					case VRegType.Texture:
 						// Need to gather the textures.
