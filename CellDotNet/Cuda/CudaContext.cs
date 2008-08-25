@@ -145,6 +145,15 @@ namespace CellDotNet.Cuda
 			}
 		}
 
+		public T[] CopyDeviceToHost<T>(GlobalMemory<T> src, int srcIndex, int elementCount) where T : struct
+		{
+			if (elementCount < 0)
+				throw new ArgumentOutOfRangeException("elementCount");
+			var buf = new T[elementCount];
+			CopyDeviceToHost(src, srcIndex, buf, 0, elementCount);
+			return buf;
+		}
+
 		#endregion
 	}
 }

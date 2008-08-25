@@ -11,5 +11,10 @@ namespace CellDotNet.Cuda
 		{
 			throw new NotImplementedException();
 		}
+
+		public static int GetClock()
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

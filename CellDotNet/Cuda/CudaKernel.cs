@@ -227,6 +227,11 @@ namespace CellDotNet.Cuda
 			}
 		}
 
+		public void SetBlockShape(int x)
+		{
+			SetBlockShape(x, 1, 1);
+		}
+
 		public void SetBlockShape(int x, int y)
 		{
 			SetBlockShape(x, y, 1);
@@ -237,15 +242,15 @@ namespace CellDotNet.Cuda
 			GetFunction().SetBlockSize(x, y, z);
 		}
 
+		public void SetGridSize(int x)
+		{
+			SetGridSize(x, 1);
+		}
+
 		public void SetGridSize(int x, int y)
 		{
 			GetFunction().SetGridSize(x, y);
 		}
-
-//		public void SetGridSize(int x, int y, int z)
-//		{
-//			GetFunction().SetGridSize(x, y, z);
-//		}
 
 		private CudaFunction GetFunction()
 		{
@@ -263,7 +268,7 @@ namespace CellDotNet.Cuda
 			Utilities.Assert(!string.IsNullOrEmpty(_cubin), "No cubin?");
 			CudaMethod kernelMethod = _methods[0];
 
-			var module = CudaModule.LoadData(_cubin, Context.Device);
+			var module = CudaModule.LoadData(_cubin);
 			_function = module.GetFunction(kernelMethod.PtxName);
 		}
 
