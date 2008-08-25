@@ -238,7 +238,7 @@ namespace CellDotNet.Cuda
 				case IRCode.Ldelema:
 					{
 						var elementsize = inst.OperandAsGlobalVRegNonNull.GetElementSize();
-						GenerateComputeElementAddress(inst, elementsize, ob);
+						GenerateComputeElementAddress(inst, inst.Destination, inst.Source1, inst.Source2, elementsize, ob);
 						return;
 					}
 				case IRCode.Ldfld:
@@ -419,24 +419,30 @@ namespace CellDotNet.Cuda
 			throw new NotImplementedException("Opcode not implemented in instruction selector: " + inst.IRCode);
 		}
 
-		private void GenerateComputeElementAddress(ListInstruction inst, int elementsize, BasicBlock ob)
+		private void GenerateComputeElementAddress(ListInstruction inst, GlobalVReg destination, GlobalVReg baseAddress, GlobalVReg index, int elementsize, BasicBlock ob)
 		{
 			var offset = GlobalVReg.FromNumericType(StackType.I4, VRegType.Register, CudaStateSpace.Register);
+
 			// Determine byte offset.
-			ob.Append(new ListInstruction(PtxCode.Mul_Lo_S32, inst)
+			Utilities.AssertArgument(elementsize == 4, "Only four-byte elements are currently supported.");
+			const int shiftcount = 2;
+			ob.Append(new ListInstruction(PtxCode.Shl_B32)
 			          	{
 			          		Destination = offset,
-			          		Source1 = inst.Source2,
-			          		// index
-			          		Source2 = GlobalVReg.FromImmediate(elementsize, StackType.I4)
+			          		Source1 = index,
+			          		Source2 = GlobalVReg.FromImmediate(shiftcount, StackType.I4),
+							Predicate = inst.Predicate,
+							PredicateNegation = inst.PredicateNegation
 			          	});
 			// Determine element address.
-			ob.Append(new ListInstruction(PtxCode.Add_S32, inst)
+			ob.Append(new ListInstruction(PtxCode.Add_S32)
 			          	{
-			          		Destination = inst.Destination,
-			          		Source1 = inst.Source1,
-			          		Source2 = offset
-			          	});
+			          		Destination = destination,
+			          		Source1 = baseAddress,
+			          		Source2 = offset,
+							Predicate = inst.Predicate,
+							PredicateNegation = inst.PredicateNegation
+						});
 		}
 
 		private void HandleCall(MethodCallListInstruction inst, BasicBlock ob)
@@ -501,24 +507,46 @@ namespace CellDotNet.Cuda
 				{
 					case SpecialMethodCode.Shared1DLoad:
 						{
-							Type elementType = calledMethod.DeclaringType.GetGenericArguments().Single();
-							Utilities.DebugAssert(elementType == typeof(int) || elementType == typeof(uint) || elementType == typeof(float));
-							GenerateComputeElementAddress(inst, 4, ob);
+							var address = GlobalVReg.FromNumericType(StackType.ManagedPointer, VRegType.Register, CudaStateSpace.Register);
+							GenerateComputeElementAddress(inst, address, inst.Parameters[0], inst.Parameters[1], 4, ob);
+							PtxCode code;
+							switch (inst.Destination.StackType)
+							{
+								case StackType.I4: code = PtxCode.Ld_Shared_S32; break;
+								case StackType.R4: code = PtxCode.Ld_Shared_F32; break;
+								default: throw new InvalidIRException();
+							}
+							ob.Append(new ListInstruction(code)
+							          	{
+							          		Destination = inst.Destination,
+							          		Source1 = address,
+							          		Predicate = inst.Predicate,
+							          		PredicateNegation = inst.PredicateNegation
+							          	});
 						}
 						break;
 					case SpecialMethodCode.Shared1DStore:
+						{
+							var address = GlobalVReg.FromNumericType(StackType.ManagedPointer, VRegType.Register, CudaStateSpace.Register);
+							GenerateComputeElementAddress(inst, address, inst.Parameters[0], inst.Parameters[1], 4, ob);
+							PtxCode code;
+							GlobalVReg value = inst.Parameters[2];
+							switch (value.StackType)
+							{
+								case StackType.I4: code = PtxCode.St_Shared_S32; break;
+								case StackType.R4: code = PtxCode.St_Shared_F32; break;
+								default: throw new InvalidIRException();
+							}
+							ob.Append(new ListInstruction(code)
+							{
+								Source1 = address,
+								Source2 = value,
+								Predicate = inst.Predicate,
+								PredicateNegation = inst.PredicateNegation
+							});
+						}
 						break;
 				}
-				var newinst = new ListInstruction(smi.PtxCode)
-				              	{
-				              		Destination = inst.Destination,
-				              		Source1 = inst.Parameters.ElementAtOrDefault(0),
-				              		Source2 = inst.Parameters.ElementAtOrDefault(1),
-				              		Source3 = inst.Parameters.ElementAtOrDefault(2),
-									Predicate = inst.Predicate,
-									PredicateNegation = inst.PredicateNegation,
-				              	};
-				ob.Append(newinst);
 				return;
 			}
 
