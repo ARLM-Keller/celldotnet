@@ -13,7 +13,7 @@ namespace CellDotNet.Cuda
 			_handle = handle;
 		}
 
-		public static CudaModule LoadData(string cubin, CudaDevice device)
+		public static CudaModule LoadData(string cubin)
 		{
 			CUmodule handle;
 			DriverStatusCode rc = DriverUnsafeNativeMethods.cuModuleLoadData(out handle, cubin);
@@ -26,6 +26,8 @@ namespace CellDotNet.Cuda
 		{
 			CUfunction func;
 			DriverStatusCode rc = DriverUnsafeNativeMethods.cuModuleGetFunction(out func, _handle, name);
+			if (rc == DriverStatusCode.CUDA_ERROR_NOT_FOUND)
+				throw new ArgumentException("Module does not contain a function named '" + name + "'.");
 			DriverUnsafeNativeMethods.CheckReturnCode(rc);
 
 			return new CudaFunction(func);
