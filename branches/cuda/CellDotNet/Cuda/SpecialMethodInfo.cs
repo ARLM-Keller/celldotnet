@@ -6,12 +6,12 @@ using System.Text;
 
 namespace CellDotNet.Cuda
 {
-//	enum SpecialMethodCode
-//	{
-//		None,
-//		Shared1DLoad,
-//		Shared1DStore,
-//	}
+	enum SpecialMethodCode
+	{
+		None,
+		Shared1DLoad,
+		Shared1DStore,
+	}
 
 	class SpecialMethodInfo
 	{
@@ -32,22 +32,22 @@ namespace CellDotNet.Cuda
 	
 			{new Action(CudaRuntime.SyncThreads).Method, new SpecialMethodInfo(PtxCode.Bar_Sync)},
 
-			{typeof(Shared1D<int>).GetProperty("Item").GetGetMethod(), new SpecialMethodInfo(PtxCode.Ld_Shared_S32)},
-			{typeof(Shared1D<int>).GetProperty("Item").GetSetMethod(), new SpecialMethodInfo(PtxCode.St_Shared_S32)},
-			{typeof(Shared1D<uint>).GetProperty("Item").GetGetMethod(), new SpecialMethodInfo(PtxCode.Ld_Shared_S32)},
-			{typeof(Shared1D<uint>).GetProperty("Item").GetSetMethod(), new SpecialMethodInfo(PtxCode.St_Shared_S32)},
-			{typeof(Shared1D<float>).GetProperty("Item").GetGetMethod(), new SpecialMethodInfo(PtxCode.Ld_Shared_F32)},
-			{typeof(Shared1D<float>).GetProperty("Item").GetSetMethod(), new SpecialMethodInfo(PtxCode.St_Shared_F32)},
+			{typeof(Shared1D<int>).GetProperty("Item").GetGetMethod(), new SpecialMethodInfo(SpecialMethodCode.Shared1DLoad)},
+			{typeof(Shared1D<int>).GetProperty("Item").GetSetMethod(), new SpecialMethodInfo(SpecialMethodCode.Shared1DStore)},
+			{typeof(Shared1D<uint>).GetProperty("Item").GetGetMethod(), new SpecialMethodInfo(SpecialMethodCode.Shared1DLoad)},
+			{typeof(Shared1D<uint>).GetProperty("Item").GetSetMethod(), new SpecialMethodInfo(SpecialMethodCode.Shared1DStore)},
+			{typeof(Shared1D<float>).GetProperty("Item").GetGetMethod(), new SpecialMethodInfo(SpecialMethodCode.Shared1DLoad)},
+			{typeof(Shared1D<float>).GetProperty("Item").GetSetMethod(), new SpecialMethodInfo(SpecialMethodCode.Shared1DStore)},
 
 		};
 
 		public bool IsSinglePtxCode { get; private set; }
-//		public bool IsSpecialMethodCode { get; private set; }
+		public bool IsSpecialMethodCode { get; private set; }
 		public bool IsGlobalVReg { get; private set; }
 
 		public PtxCode PtxCode { get; private set; }
 		public GlobalVReg HardcodedGlobalVReg { get; private set; }
-//		public SpecialMethodCode SpecialMethodCode { get; private set; }
+		public SpecialMethodCode SpecialMethodCode { get; private set; }
 
 		public SpecialMethodInfo(PtxCode ptxCode)
 		{
@@ -61,11 +61,11 @@ namespace CellDotNet.Cuda
 			HardcodedGlobalVReg = globalVReg;
 		}
 
-//		public SpecialMethodInfo(SpecialMethodCode specialMethodCode)
-//		{
-//			IsSpecialMethodCode = true;
-//			SpecialMethodCode = specialMethodCode;
-//		}
+		public SpecialMethodInfo(SpecialMethodCode specialMethodCode)
+		{
+			IsSpecialMethodCode = true;
+			SpecialMethodCode = specialMethodCode;
+		}
 
 		public static bool TryGetMethodInfo(MethodBase method, out SpecialMethodInfo specialMethodInfo)
 		{

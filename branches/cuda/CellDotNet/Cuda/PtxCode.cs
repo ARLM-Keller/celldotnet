@@ -62,5 +62,11 @@ namespace CellDotNet.Cuda
 		Setp_Hi_U32,
 		Setp_Gtu_F32,
 		Bar_Sync,
+		And_B32,
+		Or_B32,
+		Xor_B32,
+		Shl_B32,
+		Shr_S32,
+		Shr_U32,
 	}
 }

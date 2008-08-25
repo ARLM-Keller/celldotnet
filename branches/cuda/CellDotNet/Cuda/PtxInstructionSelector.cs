@@ -53,7 +53,10 @@ namespace CellDotNet.Cuda
 					return;
 				case IRCode.Add_Ovf:
 				case IRCode.Add_Ovf_Un:
+					break;
 				case IRCode.And:
+					ob.Append(new ListInstruction(PtxCode.And_B32, inst));
+					return;
 				case IRCode.Arglist:
 					break;
 				case IRCode.Beq:
@@ -234,23 +237,8 @@ namespace CellDotNet.Cuda
 				case IRCode.Ldelem_U4: SelectLdElem(inst, ob, PtxCode.Ld_Global_S32, 4); return;
 				case IRCode.Ldelema:
 					{
-						var offset = GlobalVReg.FromNumericType(StackType.I4, VRegType.Register, CudaStateSpace.Register);
 						var elementsize = inst.OperandAsGlobalVRegNonNull.GetElementSize();
-						// Determine byte offset.
-						ob.Append(new ListInstruction(PtxCode.Mul_Lo_S32, inst)
-						          	{
-						          		Destination = offset,
-						          		Source1 = inst.Source2,
-						          		// index
-						          		Source2 = GlobalVReg.FromImmediate(elementsize, StackType.I4)
-						          	});
-						// Determine element address.
-						ob.Append(new ListInstruction(PtxCode.Add_S32, inst)
-						          	{
-						          		Destination = inst.Destination,
-						          		Source1 = inst.Source1,
-						          		Source2 = offset
-						          	});
+						GenerateComputeElementAddress(inst, elementsize, ob);
 						return;
 					}
 				case IRCode.Ldfld:
@@ -321,7 +309,10 @@ namespace CellDotNet.Cuda
 				case IRCode.Newobj:
 				case IRCode.Nop:
 				case IRCode.Not:
+					break;
 				case IRCode.Or:
+					ob.Append(new ListInstruction(PtxCode.Or_B32, inst));
+					return;
 				case IRCode.Pop:
 				case IRCode.PpeCall:
 				case IRCode.Prefix1:
@@ -343,9 +334,16 @@ namespace CellDotNet.Cuda
 					ob.Append(new1);
 					return;
 				case IRCode.Rethrow:
+					break;
 				case IRCode.Shl:
+					ob.Append(new ListInstruction(PtxCode.Shl_B32, inst));
+					return;
 				case IRCode.Shr:
+					ob.Append(new ListInstruction(PtxCode.Shr_S32, inst));
+					return;
 				case IRCode.Shr_Un:
+					ob.Append(new ListInstruction(PtxCode.Shr_U32, inst));
+					return;
 				case IRCode.Sizeof:
 				case IRCode.SpuInstructionMethodCall:
 				case IRCode.Starg:
@@ -412,11 +410,33 @@ namespace CellDotNet.Cuda
 				case IRCode.Unbox:
 				case IRCode.Unbox_Any:
 				case IRCode.Volatile:
-				case IRCode.Xor:
 					break;
+				case IRCode.Xor:
+					ob.Append(new ListInstruction(PtxCode.Xor_B32, inst));
+					return;
 			}
 
 			throw new NotImplementedException("Opcode not implemented in instruction selector: " + inst.IRCode);
+		}
+
+		private void GenerateComputeElementAddress(ListInstruction inst, int elementsize, BasicBlock ob)
+		{
+			var offset = GlobalVReg.FromNumericType(StackType.I4, VRegType.Register, CudaStateSpace.Register);
+			// Determine byte offset.
+			ob.Append(new ListInstruction(PtxCode.Mul_Lo_S32, inst)
+			          	{
+			          		Destination = offset,
+			          		Source1 = inst.Source2,
+			          		// index
+			          		Source2 = GlobalVReg.FromImmediate(elementsize, StackType.I4)
+			          	});
+			// Determine element address.
+			ob.Append(new ListInstruction(PtxCode.Add_S32, inst)
+			          	{
+			          		Destination = inst.Destination,
+			          		Source1 = inst.Source1,
+			          		Source2 = offset
+			          	});
 		}
 
 		private void HandleCall(MethodCallListInstruction inst, BasicBlock ob)
@@ -430,7 +450,8 @@ namespace CellDotNet.Cuda
 				else
 					throw new InvalidIRException("Bad method call operand: " + inst.Operand);
 			}
-			if (!SpecialMethodInfo.TryGetMethodInfo((MethodBase)inst.Operand, out smi))
+			var calledMethod = (MethodBase)inst.Operand;
+			if (!SpecialMethodInfo.TryGetMethodInfo(calledMethod, out smi))
 				throw new InvalidIRException("Special method without metadata encountered.");
 
 			if (smi.IsGlobalVReg)
@@ -471,6 +492,32 @@ namespace CellDotNet.Cuda
 						newinst.Source1 = GlobalVReg.FromImmediate(0, StackType.I4);
 						break;
 				}
+				ob.Append(newinst);
+				return;
+			}
+			if (smi.IsSpecialMethodCode)
+			{
+				switch (smi.SpecialMethodCode)
+				{
+					case SpecialMethodCode.Shared1DLoad:
+						{
+							Type elementType = calledMethod.DeclaringType.GetGenericArguments().Single();
+							Utilities.DebugAssert(elementType == typeof(int) || elementType == typeof(uint) || elementType == typeof(float));
+							GenerateComputeElementAddress(inst, 4, ob);
+						}
+						break;
+					case SpecialMethodCode.Shared1DStore:
+						break;
+				}
+				var newinst = new ListInstruction(smi.PtxCode)
+				              	{
+				              		Destination = inst.Destination,
+				              		Source1 = inst.Parameters.ElementAtOrDefault(0),
+				              		Source2 = inst.Parameters.ElementAtOrDefault(1),
+				              		Source3 = inst.Parameters.ElementAtOrDefault(2),
+									Predicate = inst.Predicate,
+									PredicateNegation = inst.PredicateNegation,
+				              	};
 				ob.Append(newinst);
 				return;
 			}

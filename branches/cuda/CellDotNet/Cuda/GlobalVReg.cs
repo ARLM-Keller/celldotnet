@@ -135,6 +135,7 @@ namespace CellDotNet.Cuda
 		{
 			PointerInfo pi;
 			VRegType type;
+			CudaStateSpace stateSpace;
 
 			if (!field.IsStatic)
 				throw new NotSupportedException("Only static fields are supported.");
@@ -145,7 +146,8 @@ namespace CellDotNet.Cuda
 				if (att == null)
 					throw new CudaException("Field " + field.Name + " does not have a StaticArray size specification.");
 
-				pi = new PointerInfo(CudaStateSpace.Shared, att.SizeX);
+				pi = new PointerInfo(att.SizeX);
+				stateSpace = CudaStateSpace.Shared;
 				type = VRegType.Address;
 			}
 			else
@@ -157,7 +159,8 @@ namespace CellDotNet.Cuda
 			       		StackType = GetStackType(field.FieldType),
 			       		Name = EncodeFieldName(field),
 			       		Type = type,
-			       		PointerInfo = pi
+			       		PointerInfo = pi,
+						StateSpace = stateSpace
 			       	};
 		}
 
@@ -283,12 +286,17 @@ namespace CellDotNet.Cuda
 	/// </summary>
 	class PointerInfo
 	{
-		public CudaStateSpace TargetSpace { get; private set; }
+//		public CudaStateSpace TargetSpace { get; private set; }
 		public int ElementCount { get; private set; }
 
-		public PointerInfo(CudaStateSpace targetSpace, int elementCount)
+//		public PointerInfo(CudaStateSpace targetSpace, int elementCount)
+//		{
+//			TargetSpace = targetSpace;
+//			ElementCount = elementCount;
+//		}
+
+		public PointerInfo(int elementCount)
 		{
-			TargetSpace = targetSpace;
 			ElementCount = elementCount;
 		}
 	}
