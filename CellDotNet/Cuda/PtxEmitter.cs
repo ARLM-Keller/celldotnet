@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using CellDotNet.Intermediate;
 
 namespace CellDotNet.Cuda
@@ -29,26 +30,28 @@ namespace CellDotNet.Cuda
 	.target sm_11, map_f64_to_f32
 
 
-" + GetGlocalsDeclarations() + @"
+" + GetGlobalDeclarations() + @"
 
 " + methodptx;
 		}
 
-		private string GetGlocalsDeclarations()
+		private string GetGlobalDeclarations()
 		{
-			return "";
+			var declarations = new StringBuilder();
 			foreach (GlobalVReg symbol in _globalSymbols)
 			{
-				switch (symbol.Type)
+				Utilities.DebugAssert(symbol.Type == VRegType.Address);
+				string decl = 
+					GetStorageString(symbol.StateSpace) + " " + 
+					GetPtxType(symbol.StackType, false) + " " + 
+					symbol.Name;
+				if (symbol.PointerInfo != null && symbol.PointerInfo.ElementCount != 1)
 				{
-//					case VRegType.Address:
-//						GetStorageString(symbol.Type);
-//					default:
-//						throw new NotSupportedException(symbol.Type);
+					decl += "[" + symbol.PointerInfo.ElementCount + "]";
 				}
-				
+				declarations.AppendFormat("\t{0};\n", decl);
 			}
-			throw new NotImplementedException();
+			return declarations.ToString();
 		}
 
 		void Emit(CudaMethod method, TextWriter ptx)
@@ -91,6 +94,12 @@ namespace CellDotNet.Cuda
 						case PtxCode.Mul_Lo_S32: opcodename = "mul.lo.s32"; break;
 						case PtxCode.Sub_F32: opcodename = "sub.f32"; break;
 						case PtxCode.Sub_S32: opcodename = "sub.s32"; break;
+						case PtxCode.And_B32: opcodename = "and.b32"; break;
+						case PtxCode.Or_B32: opcodename = "or.b32"; break;
+						case PtxCode.Xor_B32: opcodename = "xor.b32"; break;
+						case PtxCode.Shl_B32: opcodename = "shl.b32"; break;
+						case PtxCode.Shr_S32: opcodename = "shr.s32"; break;
+						case PtxCode.Shr_U32: opcodename = "shr.u32"; break;
 						case PtxCode.Ret: opcodename = "ret"; break;
 						case PtxCode.Mov_S32: opcodename = "mov.s32"; break;
 						case PtxCode.Mov_F32: opcodename = "mov.f32"; break;

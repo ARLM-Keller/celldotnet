@@ -231,6 +231,65 @@ namespace CellDotNet.Cuda
 			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 / arg2, false);
 		}
 
+		[Test]
+		public void Test_And_I4()
+		{
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 & arg2, true);
+		}
+
+		[Test]
+		public void Test_And_U4()
+		{
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 & arg2, true);
+		}
+
+		[Test]
+		public void Test_Or_I4()
+		{
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 | arg2, true);
+		}
+
+		[Test]
+		public void Test_Or_U4()
+		{
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 | arg2, true);
+		}
+		[Test]
+		public void Test_Xor_I4()
+		{
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 ^ arg2, true);
+		}
+
+		[Test]
+		public void Test_Xor_U4()
+		{
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 ^ arg2, true);
+		}
+
+		[Test]
+		public void Test_Shl_I4()
+		{
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 << arg2, true);
+		}
+
+		[Test]
+		public void Test_Shl_U4()
+		{
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 << (int)arg2, true);
+		}
+
+		[Test]
+		public void Test_Shr_I4()
+		{
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 >> arg2, true);
+		}
+
+		[Test]
+		public void Test_Shr_U4()
+		{
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 >> (int)arg2, true);
+		}
+
 		private void VerifyExecution_Binary_F4(Action<float[], float, float> del)
 		{
 			using (var kernel = CudaKernel.Create(del))
@@ -285,14 +344,12 @@ namespace CellDotNet.Cuda
 		{
 			using (var kernel = CudaKernel.Create(del))
 			{
-				if (!testBadArguments)
-				{
-					VerifyExecution(kernel, 3u, 4u);
-					VerifyExecution(kernel, 4u, 3u);
-					VerifyExecution(kernel, 3u, uint.MaxValue);
-					VerifyExecution(kernel, uint.MaxValue, 3u);
-				}
-				else
+				VerifyExecution(kernel, 3u, 4u);
+				VerifyExecution(kernel, 4u, 3u);
+				VerifyExecution(kernel, 3u, uint.MaxValue);
+				VerifyExecution(kernel, uint.MaxValue, 3u);
+
+				if (testBadArguments)
 				{
 					// the ones that can cause exceptions.
 					VerifyExecution(kernel, 4u, uint.MaxValue);

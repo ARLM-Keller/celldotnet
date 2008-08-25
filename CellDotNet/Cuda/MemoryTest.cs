@@ -41,6 +41,7 @@ namespace CellDotNet.Cuda
 		public void TestSharedMemory()
 		{
 			// Should also test use of same buffer from different methods.
+			// Should also test use of multiple buffers to check that they are being allocated with a correct combination of element size and count, so that two buffers don't overlap.
 			Action<int[]> del = arr =>
 			{
 				sharedbuffer[ThreadIndex.X] = ThreadIndex.X + 1;
@@ -59,6 +60,8 @@ namespace CellDotNet.Cuda
 				kernel.ExecuteUntyped(devmem);
 				var ret = new int[devmem.Length];
 				kernel.Context.CopyDeviceToHost(devmem, 0, ret, 0, devmem.Length);
+
+				Console.WriteLine(kernel.GetPtx());
 
 				AreEqual(3, ret[0]);
 			}
