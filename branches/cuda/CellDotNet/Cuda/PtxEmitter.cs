@@ -115,6 +115,9 @@ namespace CellDotNet.Cuda
 						case PtxCode.Setp_Eq_F32: opcodename = "setp.eq.f32"; break;
 						case PtxCode.Cvt_S32_U16: opcodename = "cvt.s32.u16"; break;
 						case PtxCode.Bar_Sync: opcodename = "bar.sync"; break;
+						case PtxCode.Cvt_Rzi_S32_F32: opcodename = "cvt.rzi.s32.f32"; break;
+						case PtxCode.Cvt_Rzi_U32_F32: opcodename = "cvt.rzi.u32.f32"; break;
+						case PtxCode.Cvt_Rn_F32_S32: opcodename = "cvt.rn.f32.s32"; break;
 
 						case PtxCode.Ld_Shared_F32: opcodename = "ld.shared.f32"; goto case PtxCode.Ld_Global_S32;
 						case PtxCode.Ld_Shared_S32: opcodename = "ld.shared.s32"; goto case PtxCode.Ld_Global_S32;

@@ -68,5 +68,8 @@ namespace CellDotNet.Cuda
 		Shl_B32,
 		Shr_S32,
 		Shr_U32,
+		Cvt_Rzi_S32_F32,
+		Cvt_Rzi_U32_F32,
+		Cvt_Rn_F32_S32
 	}
 }

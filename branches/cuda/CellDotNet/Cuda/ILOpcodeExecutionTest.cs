@@ -290,6 +290,87 @@ namespace CellDotNet.Cuda
 			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 >> (int)arg2, true);
 		}
 
+		[Test]
+		public void Test_Conv_I4_R4()
+		{
+			Action<int[], float> del = (arr, arg) => arr[0] = (int) arg;
+			using (var kernel = CudaKernel.Create(del))
+			{
+				// Don't test for overflow and NaN results, because the results aren't defined, and in practice they
+				// deviate from .net.
+				VerifyExecution<int>(kernel, 0f);
+				VerifyExecution<int>(kernel, 1f);
+				VerifyExecution<int>(kernel, -1f);
+				VerifyExecution<int>(kernel, 1.1f);
+				VerifyExecution<int>(kernel, 1.5f);
+				VerifyExecution<int>(kernel, 1.6f);
+				VerifyExecution<int>(kernel, 2.1f);
+				VerifyExecution<int>(kernel, 2.5f);
+				VerifyExecution<int>(kernel, 2.6f);
+				VerifyExecution<int>(kernel, 3f);
+				VerifyExecution<uint>(kernel, 1345243.3634f);
+
+				VerifyExecution<int>(kernel, -1.1f);
+				VerifyExecution<int>(kernel, -1.5f);
+				VerifyExecution<int>(kernel, -1.6f);
+				VerifyExecution<int>(kernel, -2.1f);
+				VerifyExecution<int>(kernel, -2.5f);
+				VerifyExecution<int>(kernel, -2.6f);
+				VerifyExecution<int>(kernel, -3f);
+			}
+		}
+
+		[Test]
+		public void Test_Conv_U4_R4()
+		{
+			Action<uint[], float> del = (arr, arg) => arr[0] = (uint) arg;
+			using (var kernel = CudaKernel.Create(del))
+			{
+				VerifyExecution<uint>(kernel, 0f);
+				VerifyExecution<uint>(kernel, 1f);
+				VerifyExecution<uint>(kernel, 1.1f);
+				VerifyExecution<uint>(kernel, 1.5f);
+				VerifyExecution<uint>(kernel, 1.6f);
+				VerifyExecution<uint>(kernel, 2.1f);
+				VerifyExecution<uint>(kernel, 2.5f);
+				VerifyExecution<uint>(kernel, 2.6f);
+				VerifyExecution<uint>(kernel, 3f);
+				VerifyExecution<uint>(kernel, 1345243.3634f);
+			}
+		}
+
+		[Test]
+		public void Test_Conv_R4_I4()
+		{
+			Action<float[], int> del = (arr, arg) => arr[0] = arg;
+			using (var kernel = CudaKernel.Create(del))
+			{
+				VerifyExecution<float>(kernel, 0);
+				VerifyExecution<float>(kernel, 1);
+				VerifyExecution<float>(kernel, 10);
+				VerifyExecution<float>(kernel, 200000);
+				VerifyExecution<float>(kernel, int.MaxValue);
+				VerifyExecution<float>(kernel, -1);
+				VerifyExecution<float>(kernel, -10);
+				VerifyExecution<float>(kernel, -200000);
+				VerifyExecution<float>(kernel, int.MinValue);
+			}
+		}
+
+		[Test]
+		public void Test_Conv_R4_U4_Unsupported()
+		{
+			Action<float[], uint> del = (arr, arg) => arr[0] = arg;
+			using (var kernel = CudaKernel.Create(del))
+			{
+				VerifyExecution<float>(kernel, 0u);
+				VerifyExecution<float>(kernel, 1u);
+				VerifyExecution<float>(kernel, 10u);
+				VerifyExecution<float>(kernel, 200000u);
+				VerifyExecution<float>(kernel, uint.MaxValue);
+			}
+		}
+
 		private void VerifyExecution_Binary_F4(Action<float[], float, float> del)
 		{
 			using (var kernel = CudaKernel.Create(del))
@@ -392,6 +473,11 @@ namespace CellDotNet.Cuda
 
 		void VerifyExecution<T>(CudaKernel kernel) where T : struct
 		{
+			VerifyExecution<T>(kernel, null);
+		}
+
+		void VerifyExecution<T>(CudaKernel kernel, object argument) where T : struct
+		{
 			if (!CudaDevice.HasCudaDevice)
 			{
 				kernel.PerformProcessing(CudaKernelCompileState.PtxEmissionComplete);
@@ -402,14 +488,20 @@ namespace CellDotNet.Cuda
 
 			kernel.SetBlockShape(1, 1);
 			kernel.SetGridSize(1, 1);
-			kernel.ExecuteUntyped(devmem);
+			if (argument != null)
+				kernel.ExecuteUntyped(devmem, argument);
+			else
+				kernel.ExecuteUntyped(devmem);
 
 			var arr = new T[devmem.Length];
 			kernel.Context.CopyDeviceToHost(devmem, 0, arr, 0, arr.Length);
 
 			// Invoke to got correct result.
 			var refExec = new T[devmem.Length];
-			kernel.KernelMethod.Invoke(null, new object[] {refExec});
+			if (argument != null)
+				kernel.KernelMethod.Invoke(null, new object[] {refExec, argument});
+			else
+				kernel.KernelMethod.Invoke(null, new object[] {refExec});
 			var expectedResult = refExec[0];
 
 			if (!arr[0].Equals(expectedResult))

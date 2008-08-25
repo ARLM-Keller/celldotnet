@@ -137,7 +137,13 @@ namespace CellDotNet.Cuda
 				case IRCode.Conv_I:
 				case IRCode.Conv_I1:
 				case IRCode.Conv_I2:
+					break;
 				case IRCode.Conv_I4:
+					switch (inst.Source1.StackType)
+					{
+						case StackType.R4: ob.Append(new ListInstruction(PtxCode.Cvt_Rzi_S32_F32, inst)); return;
+						default: throw new NotSupportedException();
+					}
 				case IRCode.Conv_I8:
 				case IRCode.Conv_Ovf_I:
 				case IRCode.Conv_Ovf_I_Un:
@@ -160,12 +166,23 @@ namespace CellDotNet.Cuda
 				case IRCode.Conv_Ovf_U8:
 				case IRCode.Conv_Ovf_U8_Un:
 				case IRCode.Conv_R_Un:
+					break;
 				case IRCode.Conv_R4:
+					switch (inst.Source1.StackType)
+					{
+						case StackType.I4: ob.Append(new ListInstruction(PtxCode.Cvt_Rn_F32_S32, inst)); return;
+						default: throw new NotSupportedException();
+					}
 				case IRCode.Conv_R8:
 				case IRCode.Conv_U:
 				case IRCode.Conv_U1:
 				case IRCode.Conv_U2:
 				case IRCode.Conv_U4:
+					switch (inst.Source1.StackType)
+					{
+						case StackType.R4: ob.Append(new ListInstruction(PtxCode.Cvt_Rzi_U32_F32, inst)); return;
+						default: throw new NotSupportedException();
+					}
 				case IRCode.Conv_U8:
 				case IRCode.Cpblk:
 				case IRCode.Cpobj:
