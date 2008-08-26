@@ -29,9 +29,10 @@ namespace CellDotNet.Cuda
 			{typeof(GridSize).GetProperty("X").GetGetMethod(), new SpecialMethodInfo(GlobalVReg.FromSpecialRegister(StackType.I2, VRegType.SpecialRegister, "%nctaid.x"))},
 			{typeof(GridSize).GetProperty("Y").GetGetMethod(), new SpecialMethodInfo(GlobalVReg.FromSpecialRegister(StackType.I2, VRegType.SpecialRegister, "%nctaid.y"))},
 			{typeof(GridSize).GetProperty("Z").GetGetMethod(), new SpecialMethodInfo(GlobalVReg.FromSpecialRegister(StackType.I2, VRegType.SpecialRegister, "%nctaid.z"))},
-	
+
 			{new Action(CudaRuntime.SyncThreads).Method, new SpecialMethodInfo(PtxCode.Bar_Sync)},
 			{new Func<int>(CudaRuntime.GetClock).Method, new SpecialMethodInfo(GlobalVReg.FromSpecialRegister(StackType.I4, VRegType.SpecialRegister, "%clock"))},
+			{typeof(CudaRuntime).GetProperty("WarpSize").GetGetMethod(), new SpecialMethodInfo(GlobalVReg.FromSpecialRegister(StackType.I2, VRegType.Immediate, "WARP_SZ"))},
 
 			{typeof(Shared1D<int>).GetProperty("Item").GetGetMethod(), new SpecialMethodInfo(SpecialMethodCode.Shared1DLoad)},
 			{typeof(Shared1D<int>).GetProperty("Item").GetSetMethod(), new SpecialMethodInfo(SpecialMethodCode.Shared1DStore)},

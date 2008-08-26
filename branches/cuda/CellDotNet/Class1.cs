@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using CellDotNet.Cuda;
 using CellDotNet.Spe;
 using System.Linq;
 
@@ -50,7 +51,17 @@ namespace CellDotNet
 
 		private static void RunRasmus()
 		{
-			new SpeContextTest().SpeSimpleDMATest();
+			new IntrinsicsTest().TestClock();
+//			typeof(Shared1D<float>).
+			return;
+
+			new CudaContextTest().TestAllocMemCopy();
+
+			new CudaContextTest().TestAttach();
+			new CudaContextTest().TestDispose1();
+			new CudaContextTest().TestDispose2();
+
+//			new SpeContextTest().SpeSimpleDMATest();
 			return;
 
 			CodeGenUtils.GeneratePatchCode(@"\\10.0.3.13\linux\codetests\dp.s", @"C:\Temp\pstext\out.cs", new HashSet<string>(StringComparer.Ordinal)

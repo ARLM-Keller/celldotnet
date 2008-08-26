@@ -16,5 +16,10 @@ namespace CellDotNet.Cuda
 		{
 			throw new NotImplementedException();
 		}
+
+		public static int WarpSize
+		{
+			get { throw new NotImplementedException(); } 
+		}
 	}
 }

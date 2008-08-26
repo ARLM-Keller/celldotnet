@@ -173,7 +173,7 @@ namespace CellDotNet.Cuda
 				kernel.SetGridSize(1, 1);
 				kernel.ExecuteUntyped(mem);
 				var arr = kernel.Context.CopyDeviceToHost(mem, 0, 16);
-				IsTrue(arr[0] == 4 || arr[0] == 8, "Unexpected %clock. Timing 1: " + arr[1] + "; timing 2: " + arr[2] + "; ptx:\r\n" + kernel.GetPtx());
+				IsTrue(arr[0] >= 4 || arr[0] <= 30, "Unexpected %clock. Timing 1: " + arr[1] + "; timing 2: " + arr[2] + "; ptx:\r\n" + kernel.GetPtx());
 			}
 		}
 
@@ -223,7 +223,29 @@ namespace CellDotNet.Cuda
 				function.Launch(new object[] { mem });
 				var arr = ctx.CopyDeviceToHost(mem, 0, mem.Length);
 
-				IsTrue(arr[0] == 4 || arr[0] == 8, "Unexpected %clock. Timing 1: " + arr[1] + "; timing 2: " + arr[2]);
+				IsTrue(arr[0] >= 4 || arr[0] <= 30, "Unexpected %clock. Timing 1: " + arr[1] + "; timing 2: " + arr[2]);
+			}
+		}
+
+		[Test]
+		public void TestWarpSize()
+		{
+			Action<int[]> del = arr =>
+			{
+				arr[0] = CudaRuntime.WarpSize;
+			};
+			using (var kernel = CudaKernel.Create(del))
+			{
+				kernel.PerformProcessing(CudaKernelCompileState.Complete);
+				bool hasWarpSize = kernel.GetPtx().IndexOf("WARP_SZ") != -1;
+				IsTrue(hasWarpSize);
+
+				var mem = kernel.Context.AllocateLinear<int>(16);
+				kernel.SetBlockShape(1, 1);
+				kernel.SetGridSize(1, 1);
+				kernel.ExecuteUntyped(mem);
+				var arr = kernel.Context.CopyDeviceToHost(mem, 0, 16);
+				AreEqual(32, arr[0]);
 			}
 		}
 	}
