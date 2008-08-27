@@ -70,9 +70,24 @@ namespace CellDotNet.Cuda
 				case IRCode.Blt_Un:
 				case IRCode.Bne_Un:
 				case IRCode.Box:
+					break;
 				case IRCode.Brfalse:
+					{
+						Utilities.DebugAssert(inst.Predicate == null);
+						GlobalVReg pred = GlobalVReg.FromType(StackType.ValueType, VRegType.Register, CudaStateSpace.Register, typeof(PredicateValue));
+						ob.Append(new ListInstruction(PtxCode.Setp_Eq_S32) { Destination = pred, Source1 = inst.Source1, Source2 = GlobalVReg.FromImmediate(0) });
+						ob.Append(new ListInstruction(PtxCode.Bra) { Operand = inst.Operand, Predicate = pred });
+					}
+					return;
 				case IRCode.Brtrue:
-					throw new InvalidIRException("Conditional branch code " + inst.IRCode + " encountered.");
+					{
+						Utilities.DebugAssert(inst.Predicate == null);
+						GlobalVReg pred = GlobalVReg.FromType(StackType.ValueType, VRegType.Register, CudaStateSpace.Register, typeof(PredicateValue));
+						ob.Append(new ListInstruction(PtxCode.Setp_Eq_S32) { Destination = pred, Source1 = inst.Source1, Source2 = GlobalVReg.FromImmediate(0) });
+						ob.Append(new ListInstruction(PtxCode.Bra) { Operand = inst.Operand, Predicate = pred, PredicateNegation = true });
+					}
+					return;
+//					throw new InvalidIRException("Conditional branch code " + inst.IRCode + " encountered.");
 				case IRCode.Br:
 					new1 = new ListInstruction(PtxCode.Bra, inst) {Operand = blockmap[(BasicBlock) inst.Operand]};
 					ob.Append(new1);
