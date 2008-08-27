@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using CellDotNet.Intermediate;
 using NUnit.Framework;
+using System.Linq;
 
 namespace CellDotNet.Cuda
 {
@@ -49,6 +51,38 @@ namespace CellDotNet.Cuda
 				VerifyExecution<uint>(kernel);
 			using (var kernel = CudaKernel.Create(new Action<uint[]>(arr => arr[0] = uint.MinValue)))
 				VerifyExecution<uint>(kernel);
+		}
+
+		[Test]
+		public void Test_Brtrue()
+		{
+			Action<int[], int> del = (arr, i) => { if (i == 0) arr[0] = 100; };
+			using (var kernel = CudaKernel.Create(del))
+			{
+				kernel.PerformProcessing(CudaKernelCompileState.IRConstructionDone);
+				ListInstruction brtrue = kernel.Methods.Single().Blocks
+					.SelectMany(b => b.Instructions)
+					.SingleOrDefault(inst => inst.IRCode == IRCode.Brtrue);
+				IsNotNull(brtrue, "Did not find brtrue instruction to test.");
+				VerifyExecution<int>(kernel, 0);
+				VerifyExecution<int>(kernel, 1);
+			}
+		}
+
+		[Test]
+		public void Test_Brfalse()
+		{
+			Action<int[], int> del = (arr, i) => { if (i != 0) arr[0] = 100; };
+			using (var kernel = CudaKernel.Create(del))
+			{
+				kernel.PerformProcessing(CudaKernelCompileState.IRConstructionDone);
+				ListInstruction brtrue = kernel.Methods.Single().Blocks
+					.SelectMany(b => b.Instructions)
+					.SingleOrDefault(inst => inst.IRCode == IRCode.Brfalse);
+				IsNotNull(brtrue, "Did not find bfalse instruction to test.");
+				VerifyExecution<int>(kernel, 0);
+				VerifyExecution<int>(kernel, 1);
+			}
 		}
 
 		[Test]
@@ -476,7 +510,7 @@ namespace CellDotNet.Cuda
 			VerifyExecution<T>(kernel, null);
 		}
 
-		void VerifyExecution<T>(CudaKernel kernel, object argument) where T : struct
+		void VerifyExecution<T>(CudaKernel kernel, object optionalArgument) where T : struct
 		{
 			if (!CudaDevice.HasCudaDevice)
 			{
@@ -488,8 +522,8 @@ namespace CellDotNet.Cuda
 
 			kernel.SetBlockShape(1, 1);
 			kernel.SetGridSize(1, 1);
-			if (argument != null)
-				kernel.ExecuteUntyped(devmem, argument);
+			if (optionalArgument != null)
+				kernel.ExecuteUntyped(devmem, optionalArgument);
 			else
 				kernel.ExecuteUntyped(devmem);
 
@@ -498,8 +532,8 @@ namespace CellDotNet.Cuda
 
 			// Invoke to got correct result.
 			var refExec = new T[devmem.Length];
-			if (argument != null)
-				kernel.KernelMethod.Invoke(null, new object[] {refExec, argument});
+			if (optionalArgument != null)
+				kernel.KernelMethod.Invoke(null, new object[] {refExec, optionalArgument});
 			else
 				kernel.KernelMethod.Invoke(null, new object[] {refExec});
 			var expectedResult = refExec[0];

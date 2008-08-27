@@ -93,67 +93,66 @@ namespace CellDotNet.Cuda
 					switch (inst.IRCode)
 					{
 						case IRCode.Beq:
-							cmpopcode = IRCode.Ceq;
-							goto case IRCode.Brtrue;
-                        case IRCode.Bge:
+							ReplaceConditional(inst, block, IRCode.Ceq, false);
+							break;
+						case IRCode.Bge:
 							cmpopcode = isFP ? IRCode.Clt_Un : IRCode.Clt;
-							goto case IRCode.Brfalse;
+							ReplaceConditional(inst, block, cmpopcode, true);
+							break;
 						case IRCode.Bge_Un:
-							cmpopcode = IRCode.Clt_Un;
-							goto case IRCode.Brfalse;
+							ReplaceConditional(inst, block, IRCode.Clt_Un, true);
+							break;
 						case IRCode.Bgt:
-							cmpopcode = IRCode.Cgt;
-							goto case IRCode.Brtrue;
+							ReplaceConditional(inst, block, IRCode.Cgt, false);
+							break;
 						case IRCode.Bgt_Un:
-							cmpopcode = IRCode.Cgt_Un;
-							goto case IRCode.Brtrue;
+							ReplaceConditional(inst, block, IRCode.Cgt_Un, false);
+							break;
 						case IRCode.Ble:
 							cmpopcode = isFP ? IRCode.Cgt_Un : IRCode.Cgt;
-							goto case IRCode.Brfalse;
+							ReplaceConditional(inst, block, cmpopcode, true);
+							break;
 						case IRCode.Ble_Un:
 							cmpopcode = isFP ? IRCode.Cgt : IRCode.Cgt_Un;
-							goto case IRCode.Brfalse;
+							ReplaceConditional(inst, block, cmpopcode, true);
+							break;
 						case IRCode.Blt:
-							cmpopcode = IRCode.Clt;
-							goto case IRCode.Brtrue;
+							ReplaceConditional(inst, block, IRCode.Clt, false);
+							break;
 						case IRCode.Blt_Un:
-							cmpopcode = IRCode.Clt_Un;
-							goto case IRCode.Brtrue;
+							ReplaceConditional(inst, block, IRCode.Clt_Un, false);
+							break;
 						case IRCode.Bne_Un:
-							cmpopcode = IRCode.Ceq;
-							goto case IRCode.Brfalse;
+							ReplaceConditional(inst, block, IRCode.Ceq, true);
+							break;
 						case IRCode.Brfalse:
-							predicatenegation = true;
-							goto case IRCode.Brtrue;
 						case IRCode.Brtrue:
-							Utilities.DebugAssert(inst.Predicate == null, "Can't handle existing predicate.");
-							BasicBlock target = (BasicBlock) inst.Operand;
-							if (cmpopcode != 0)
-							{
-								pred = GlobalVReg.FromType(StackType.ValueType, VRegType.Register, CudaStateSpace.Register, typeof(PredicateValue));
-								var newcmp = new ListInstruction(cmpopcode) { Source1 = inst.Source1, Source2 = inst.Source2, Destination = pred };
-								block.Replace(inst, newcmp);
-								inst = newcmp;
-							}
-							else if (inst.Source1.ReflectionType != typeof(PredicateValue))
-							{
-								// We don't handle the case where the condition is a native int, because that would mean
-								// using ptx setp here, and it's probably best to avoid ptx opcodes before instruction selection.
-								// Alternatively, an intrinsic method call could be used.
-								throw new NotImplementedException();
-							}
-
-							var newbranch = new ListInstruction(IRCode.Br, target) { Predicate = pred, PredicateNegation = predicatenegation };
-
-							block.InsertAfter(inst, newbranch);
-
-							/// remember to forward when adding.
+							// We don't handle the case where the condition is a native int, because that would mean
+							// using ptx setp here, and it's probably best to avoid ptx opcodes before instruction selection.
+							// Alternatively, an intrinsic method call could be used.
+							// 
+							// At least for now (20080827), we will handle them in the instruction selector.
 							break;
 					}
 
 					inst = inst.Next;
 				}
 			}
+		}
+
+		private static void ReplaceConditional(ListInstruction inst, BasicBlock block, IRCode cmpopcode, bool predicateNegation)
+		{
+			Utilities.DebugAssert(inst.Predicate == null, "Can't handle existing predicate.");
+			var target = (BasicBlock) inst.Operand;
+
+			GlobalVReg pred = GlobalVReg.FromType(StackType.ValueType, VRegType.Register, CudaStateSpace.Register, typeof (PredicateValue));
+			var newcmp = new ListInstruction(cmpopcode) {Source1 = inst.Source1, Source2 = inst.Source2, Destination = pred};
+			block.Replace(inst, newcmp);
+			inst = newcmp;
+
+			var newbranch = new ListInstruction(IRCode.Br, target) {Predicate = pred, PredicateNegation = predicateNegation};
+
+			block.InsertAfter(inst, newbranch);
 		}
 
 		static void PerformTreeConstruction(MethodBase method, out List<IRBasicBlock> treeBlocks,
