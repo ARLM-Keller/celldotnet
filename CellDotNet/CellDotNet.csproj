@@ -99,6 +99,7 @@
     <Compile Include="Cuda\Attributes.cs" />
     <Compile Include="Cuda\ListInstruction.cs" />
     <Compile Include="Cuda\PtxCode.cs" />
+    <Compile Include="Cuda\Samples\ClockSample.cs" />
     <Compile Include="Cuda\Shared1D.cs" />
     <Compile Include="Cuda\SimpleKernelsCompilationTest.cs" />
     <Compile Include="Cuda\SpecialMethodInfo.cs" />
