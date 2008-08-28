@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Threading;
+using System.Diagnostics;
 
 namespace CellDotNet.Cuda.Samples
 {
+	delegate void Action<T1, T2, T3, T4, T5>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5);
+
 	internal class MatrixMulSample
 	{
 		private const int BLOCK_SIZE = 16;
@@ -102,6 +103,93 @@ namespace CellDotNet.Cuda.Samples
 			C[c + wB * ty + tx] = Csub;
 		}
 
+		/// <summary>
+		/// The kernel.
+		/// </summary>
+		/// <param name="C"></param>
+		/// <param name="A"></param>
+		/// <param name="B"></param>
+		/// <param name="wA"></param>
+		/// <param name="wB"></param>
+		static private void MatrixMul_Unrolled(float[] C, float[] A, float[] B, int wA, int wB)
+		{
+			// Block index
+			int bx = BlockIndex.X;
+			int by = BlockIndex.Y;
+
+			// Thread index
+			int tx = ThreadIndex.X;
+			int ty = ThreadIndex.Y;
+
+			// Index of the first sub-matrix of A processed by the block
+			int aBegin = wA * BLOCK_SIZE * by;
+
+			// Index of the last sub-matrix of A processed by the block
+			int aEnd = aBegin + wA - 1;
+
+			// Step size used to iterate through the sub-matrices of A
+			int aStep = BLOCK_SIZE;
+
+			// Index of the first sub-matrix of B processed by the block
+			int bBegin = BLOCK_SIZE * bx;
+
+			// Step size used to iterate through the sub-matrices of B
+			int bStep = BLOCK_SIZE * wB;
+
+			// Csub is used to store the element of the block sub-matrix
+			// that is computed by the thread
+			float Csub = 0;
+
+			// Loop over all the sub-matrices of A and B
+			// required to compute the block sub-matrix
+			for (int a = aBegin, b = bBegin;
+				 a <= aEnd;
+				 a += aStep, b += bStep)
+			{
+				// Load the matrices from device memory
+				// to shared memory; each thread loads
+				// one element of each matrix
+				As[ty * BLOCK_SIZE + tx] = A[a + wA * ty + tx];
+				Bs[ty * BLOCK_SIZE + tx] = B[b + wB * ty + tx];
+
+				// Synchronize to make sure the matrices are loaded
+				CudaRuntime.SyncThreads();
+
+				// Multiply the two matrices together;
+				// each thread computes one element
+				// of the block sub-matrix
+				int tyBlock = ty * BLOCK_SIZE;
+				{
+					Csub += As[tyBlock + 0] * Bs[0 * BLOCK_SIZE + tx];
+					Csub += As[tyBlock + 1] * Bs[1 * BLOCK_SIZE + tx];
+					Csub += As[tyBlock + 2] * Bs[2 * BLOCK_SIZE + tx];
+					Csub += As[tyBlock + 3] * Bs[3 * BLOCK_SIZE + tx];
+					Csub += As[tyBlock + 4] * Bs[4 * BLOCK_SIZE + tx];
+					Csub += As[tyBlock + 5] * Bs[5 * BLOCK_SIZE + tx];
+					Csub += As[tyBlock + 6] * Bs[6 * BLOCK_SIZE + tx];
+					Csub += As[tyBlock + 7] * Bs[7 * BLOCK_SIZE + tx];
+					Csub += As[tyBlock + 8] * Bs[8 * BLOCK_SIZE + tx];
+					Csub += As[tyBlock + 9] * Bs[9 * BLOCK_SIZE + tx];
+					Csub += As[tyBlock + 10] * Bs[10 * BLOCK_SIZE + tx];
+					Csub += As[tyBlock + 11] * Bs[11 * BLOCK_SIZE + tx];
+					Csub += As[tyBlock + 12] * Bs[12 * BLOCK_SIZE + tx];
+					Csub += As[tyBlock + 13] * Bs[13 * BLOCK_SIZE + tx];
+					Csub += As[tyBlock + 14] * Bs[14 * BLOCK_SIZE + tx];
+					Csub += As[tyBlock + 15] * Bs[15 * BLOCK_SIZE + tx];
+				}
+
+				// Synchronize to make sure that the preceding
+				// computation is done before loading two new
+				// sub-matrices of A and B in the next iteration
+				CudaRuntime.SyncThreads();
+			}
+
+			// Write the block sub-matrix to device memory;
+			// each thread writes one element
+			int c = wB * BLOCK_SIZE * by + BLOCK_SIZE * bx;
+			C[c + wB * ty + tx] = Csub;
+		}
+
 
 		/// <summary>
 		/// Compute reference data set <c>C = A * B</c>.
@@ -131,17 +219,19 @@ namespace CellDotNet.Cuda.Samples
 
 		Random rand;
 
-		public void runTest()
+		public void RunTest()
+		{
+			int count = 10;
+			for (int i = 0; i < count; i++)
+			{
+				RunTest(true);
+			}
+		}
+
+		public void RunTest(bool unrolled)
 		{
 			// set seed for rand()
 			rand = new Random(2006);
-
-//			HighResolutionTimer t = new HighResolutionTimer();
-//			t.Start();
-//			Thread.Sleep(450);
-//			t.Stop();
-//			Console.WriteLine("time: " + t.Seconds);
-//			return;
 
 			// allocate host memory for matrices A and B
 			int size_A = WA * HA;
@@ -151,12 +241,19 @@ namespace CellDotNet.Cuda.Samples
 			var h_B = new float[size_B];
 
 			// initialize host memory
-			randomInit(h_A);
-			randomInit(h_B);
+			RandomInit(h_A);
+			RandomInit(h_B);
 
-			MethodInfo method = GetType().GetMethod("MatrixMul", BindingFlags.Static | BindingFlags.NonPublic);
-			using (CudaKernel kernel = CudaKernel.Create(method))
+			Action<float[], float[], float[], int, int> del;
+			if (unrolled)
+				del = MatrixMul_Unrolled;
+			else
+				del = MatrixMul;
+			using (CudaKernel kernel = CudaKernel.Create(del))
 			{
+				kernel.PerformProcessing(CudaKernelCompileState.Complete);
+				Debug.WriteLine(kernel.GetPtx());
+
 				// allocate device memory
 				GlobalMemory<float> d_A = kernel.Context.AllocateLinear<float>(size_A);
 				GlobalMemory<float> d_B = kernel.Context.AllocateLinear<float>(size_B);
@@ -173,7 +270,7 @@ namespace CellDotNet.Cuda.Samples
 				var h_C = new float[size_C];
 
 				// setup execution parameters
-				kernel.SetBlockShape(BLOCK_SIZE, BLOCK_SIZE);
+				kernel.SetBlockSize(BLOCK_SIZE, BLOCK_SIZE);
 				kernel.SetGridSize(WC / BLOCK_SIZE, HC / BLOCK_SIZE);
 
 				// create and start timer
@@ -188,28 +285,31 @@ namespace CellDotNet.Cuda.Samples
 
 				// stop and destroy timer
 				timer.Stop();
-				Console.WriteLine("Processing time: {0} (ms)", timer.Seconds * 1000);
+				Console.WriteLine("Processing time: {0:F04} (ms)", timer.Seconds * 1000);
 
 				// compute reference solution
 				var reference = new float[size_C];
+				timer.Start();
 				ComputeGold(reference, h_A, h_B, HA, WA, WB);
+				timer.Stop();
+				Console.WriteLine("Processing time - .net: {0:F04} (ms)", timer.Seconds * 1000);
 
 				// check result
-				bool res = cutCompareL2fe(reference, h_C, size_C, 1e-6f);
+				bool res = CutCompareL2fe(reference, h_C, size_C, 1e-6f);
 				Console.WriteLine("Test {0}", res ? "PASSED" : "FAILED");
 				if (!res)
-					printDiff(reference, h_C, WC, HC);
+					PrintDiff(reference, h_C, WC, HC);
 			}
 		}
 
 		// Allocates a matrix with random float entries.
-		void randomInit(float[] data)
+		void RandomInit(float[] data)
 		{
 			for (int i = 0; i < data.Length; ++i)
 				data[i] = (float)rand.NextDouble();
 		}
 
-		static void printDiff(float[] data1, float[] data2, int width, int height)
+		static void PrintDiff(float[] data1, float[] data2, int width, int height)
 		{
 			int i, j, k;
 			int error_count = 0;
@@ -239,7 +339,7 @@ namespace CellDotNet.Cuda.Samples
 		/// <returns>
 		/// true if <paramref>reference</paramref> and <paramref>data</paramref> are identical, otherwise false.
 		/// </returns>
-		private static bool cutCompareL2fe(float[] reference, float[] data, int len, float epsilon)
+		private static bool CutCompareL2fe(float[] reference, float[] data, int len, float epsilon)
 		{
 			Utilities.AssertArgumentRange(epsilon >= 0, "epsilon", epsilon);
 
@@ -272,6 +372,5 @@ namespace CellDotNet.Cuda.Samples
 
 			return result;
 		}
-
 	}
 }

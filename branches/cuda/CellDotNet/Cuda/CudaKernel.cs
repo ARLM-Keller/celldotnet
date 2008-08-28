@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 
 namespace CellDotNet.Cuda
@@ -51,6 +52,7 @@ namespace CellDotNet.Cuda
 		private PtxEmitter _emitter;
 		private string _cubin;
 		private CudaFunction _function;
+		private string _kernelPtxName;
 
 		public CudaKernel(MethodInfo kernelMethod)
 		{
@@ -58,6 +60,32 @@ namespace CellDotNet.Cuda
 
 			_kernelMethod = kernelMethod;
 			Utilities.AssertArgument(_kernelMethod.IsStatic, "Kernel method must be static.");
+		}
+
+		private CudaKernel()
+		{
+		}
+
+		private void InitializeFromCubin(string cubin)
+		{
+			Utilities.AssertArgument(!string.IsNullOrEmpty(cubin), "");
+
+			var r = new StringReader(cubin);
+			string s;
+			_kernelPtxName = null;
+			while ((s = r.ReadLine()) != null)
+			{
+				if (s.Contains("name = "))
+				{
+					int startIndex = s.IndexOf("name = ");
+					_kernelPtxName = s.Substring(startIndex + "name = ".Length).TrimEnd();
+				}
+			}
+			if (_kernelPtxName == null)
+				throw new ArgumentException("Can't find name of first kernel function.");
+
+			_cubin = cubin;
+			_state = CudaKernelCompileState.PtxCompilationComplete;
 		}
 
 		public static CudaKernel<T> Create<T>(MethodInfo method) where T : class
@@ -73,6 +101,13 @@ namespace CellDotNet.Cuda
 		public static CudaKernel Create(Delegate del)
 		{
 			return new CudaKernel(del.Method);
+		}
+
+		public static CudaKernel FromCubin(string cubin)
+		{
+			var k = new CudaKernel();
+			k.InitializeFromCubin(cubin);
+			return k;
 		}
 
 		internal void PerformProcessing(CudaKernelCompileState targetstate)
@@ -227,17 +262,17 @@ namespace CellDotNet.Cuda
 			}
 		}
 
-		public void SetBlockShape(int x)
+		public void SetBlockSize(int x)
 		{
-			SetBlockShape(x, 1, 1);
+			SetBlockSize(x, 1, 1);
 		}
 
-		public void SetBlockShape(int x, int y)
+		public void SetBlockSize(int x, int y)
 		{
-			SetBlockShape(x, y, 1);
+			SetBlockSize(x, y, 1);
 		}
 
-		public void SetBlockShape(int x, int y, int z)
+		public void SetBlockSize(int x, int y, int z)
 		{
 			GetFunction().SetBlockSize(x, y, z);
 		}
@@ -265,11 +300,15 @@ namespace CellDotNet.Cuda
 		{
 			PerformProcessing(CudaKernelCompileState.Complete);
 
+			// Making sure that a context is present, so CudaModule.LoadData works.
+			Context.Equals(null);
+
 			Utilities.Assert(!string.IsNullOrEmpty(_cubin), "No cubin?");
-			CudaMethod kernelMethod = _methods[0];
 
 			var module = CudaModule.LoadData(_cubin);
-			_function = module.GetFunction(kernelMethod.PtxName);
+			if (_kernelPtxName == null)
+				_kernelPtxName = _methods[0].PtxName;
+			_function = module.GetFunction(_kernelPtxName);
 		}
 
 		public void EnsurePrepared()

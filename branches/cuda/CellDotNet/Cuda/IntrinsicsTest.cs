@@ -24,7 +24,7 @@ namespace CellDotNet.Cuda
 
 				var devmem = kernel.Context.AllocateLinear<int>(16);
 
-				kernel.SetBlockShape(16, 1);
+				kernel.SetBlockSize(16, 1);
 				kernel.SetGridSize(1, 1);
 				kernel.ExecuteUntyped(devmem);
 
@@ -52,7 +52,7 @@ namespace CellDotNet.Cuda
 				const int blockSizeY = 16;
 
 				var devmem = kernel.Context.AllocateLinear<int>(blockSizeX * blockSizeY);
-				kernel.SetBlockShape(blockSizeX, blockSizeY);
+				kernel.SetBlockSize(blockSizeX, blockSizeY);
 				kernel.SetGridSize(1, 1);
 				kernel.ExecuteUntyped(devmem);
 
@@ -83,7 +83,7 @@ namespace CellDotNet.Cuda
 				const int blockSizeZ = 2;
 
 				var devmem = kernel.Context.AllocateLinear<int>(blockSizeX * blockSizeY * blockSizeZ);
-				kernel.SetBlockShape(blockSizeX, blockSizeY, blockSizeZ);
+				kernel.SetBlockSize(blockSizeX, blockSizeY, blockSizeZ);
 				kernel.SetGridSize(1, 1);
 				kernel.ExecuteUntyped(devmem);
 
@@ -114,7 +114,7 @@ namespace CellDotNet.Cuda
 				const int gridSizeY = 2;
 
 				var devmem = kernel.Context.AllocateLinear<int>(gridSizeX * gridSizeY);
-				kernel.SetBlockShape(1, 1);
+				kernel.SetBlockSize(1, 1);
 				kernel.SetGridSize(gridSizeX, gridSizeY);
 				kernel.ExecuteUntyped(devmem);
 
@@ -142,7 +142,7 @@ namespace CellDotNet.Cuda
 									};
 			using (var kernel = CudaKernel.Create(del))
 			{
-				kernel.SetBlockShape(16, 16);
+				kernel.SetBlockSize(16, 16);
 				kernel.SetGridSize(1, 1);
 				kernel.ExecuteUntyped();
 				bool hasBar = kernel.GetPtx().IndexOf("bar.sync") != -1;
@@ -169,7 +169,7 @@ namespace CellDotNet.Cuda
 				IsTrue(hasClock);
 
 				var mem = kernel.Context.AllocateLinear<int>(16);
-				kernel.SetBlockShape(1, 1);
+				kernel.SetBlockSize(1, 1);
 				kernel.SetGridSize(1, 1);
 				kernel.ExecuteUntyped(mem);
 				var arr = kernel.Context.CopyDeviceToHost(mem, 0, 16);
@@ -241,7 +241,7 @@ namespace CellDotNet.Cuda
 				IsTrue(hasWarpSize);
 
 				var mem = kernel.Context.AllocateLinear<int>(16);
-				kernel.SetBlockShape(1, 1);
+				kernel.SetBlockSize(1, 1);
 				kernel.SetGridSize(1, 1);
 				kernel.ExecuteUntyped(mem);
 				var arr = kernel.Context.CopyDeviceToHost(mem, 0, 16);
