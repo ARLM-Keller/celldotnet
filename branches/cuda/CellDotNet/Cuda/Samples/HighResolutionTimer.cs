@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace CellDotNet.Cuda.Samples
 {
+	[Obsolete]
 	public class HighResolutionTimer
 	{
 		[DllImport("Kernel32.dll")]
