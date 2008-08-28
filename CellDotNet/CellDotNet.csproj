@@ -102,6 +102,7 @@
     <Compile Include="Cuda\Samples\ClockSample.cs" />
     <Compile Include="Cuda\Samples\HighResolutionTimer.cs" />
     <Compile Include="Cuda\Samples\MatrixMulSample.cs" />
+    <Compile Include="Cuda\Samples\TransposeSample.cs" />
     <Compile Include="Cuda\Shared1D.cs" />
     <Compile Include="Cuda\SimpleKernelsCompilationTest.cs" />
     <Compile Include="Cuda\SpecialMethodInfo.cs" />
