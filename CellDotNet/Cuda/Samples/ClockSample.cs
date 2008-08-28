@@ -67,7 +67,7 @@ namespace CellDotNet.Cuda.Samples
 				GlobalMemory<int> timermem = kernel.Context.AllocateLinear<int>(NUM_BLOCKS*2);
 
 				kernel.Context.CopyHostToDevice(input, 0, inputmem, 0, input.Length);
-				kernel.SetBlockShape(NUM_THREADS);
+				kernel.SetBlockSize(NUM_THREADS);
 				kernel.SetGridSize(NUM_BLOCKS);
 
 				kernel.ExecuteUntyped(inputmem, outputmem, timermem);

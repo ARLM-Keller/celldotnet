@@ -23,7 +23,7 @@ namespace CellDotNet.Cuda
 
 				var devmem = kernel.Context.AllocateLinear<float>(10);
 
-				kernel.SetBlockShape(16, 16);
+				kernel.SetBlockSize(16, 16);
 				kernel.SetGridSize(1, 1);
 				kernel.ExecuteUntyped(index, value, devmem);
 
@@ -46,7 +46,7 @@ namespace CellDotNet.Cuda
 			{
 				var devmem = kernel.Context.AllocateLinear<int>(10);
 
-				kernel.SetBlockShape(16, 16);
+				kernel.SetBlockSize(16, 16);
 				kernel.SetGridSize(1, 1);
 				kernel.ExecuteUntyped(devmem);
 
@@ -80,7 +80,7 @@ namespace CellDotNet.Cuda
 
 				var devmem = kernel.Context.AllocateLinear<int>(16);
 				kernel.SetGridSize(1, 1);
-				kernel.SetBlockShape(2, 1);
+				kernel.SetBlockSize(2, 1);
 				kernel.ExecuteUntyped(devmem);
 				var ret = new int[devmem.Length];
 				kernel.Context.CopyDeviceToHost(devmem, 0, ret, 0, devmem.Length);
@@ -111,7 +111,7 @@ namespace CellDotNet.Cuda
 
 				var devmem = kernel.Context.AllocateLinear<uint>(16);
 				kernel.SetGridSize(1, 1);
-				kernel.SetBlockShape(2, 1);
+				kernel.SetBlockSize(2, 1);
 				kernel.ExecuteUntyped(devmem);
 				var ret = new uint[devmem.Length];
 				kernel.Context.CopyDeviceToHost(devmem, 0, ret, 0, devmem.Length);
@@ -142,7 +142,7 @@ namespace CellDotNet.Cuda
 
 				var devmem = kernel.Context.AllocateLinear<float>(16);
 				kernel.SetGridSize(1, 1);
-				kernel.SetBlockShape(2, 1);
+				kernel.SetBlockSize(2, 1);
 				kernel.ExecuteUntyped(devmem);
 				var ret = new float[devmem.Length];
 				kernel.Context.CopyDeviceToHost(devmem, 0, ret, 0, devmem.Length);

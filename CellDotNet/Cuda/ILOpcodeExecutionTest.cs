@@ -484,7 +484,7 @@ namespace CellDotNet.Cuda
 
 			var devmem = kernel.Context.AllocateLinear<T>(16);
 
-			kernel.SetBlockShape(1, 1);
+			kernel.SetBlockSize(1, 1);
 			kernel.SetGridSize(1, 1);
 			kernel.ExecuteUntyped(devmem, arg1, arg2);
 
@@ -520,7 +520,7 @@ namespace CellDotNet.Cuda
 
 			var devmem = kernel.Context.AllocateLinear<T>(16);
 
-			kernel.SetBlockShape(1, 1);
+			kernel.SetBlockSize(1, 1);
 			kernel.SetGridSize(1, 1);
 			if (optionalArgument != null)
 				kernel.ExecuteUntyped(devmem, optionalArgument);
