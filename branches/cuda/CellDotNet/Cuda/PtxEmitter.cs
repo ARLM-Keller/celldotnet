@@ -160,7 +160,7 @@ namespace CellDotNet.Cuda
 								inst.Source2.Name);
 							continue;
 						case PtxCode.Bra:
-							ptx.WriteLine(GetPredicateInstructionPrefix(inst) + " bra " + ((BasicBlock)inst.Operand).Name + ";");
+							ptx.WriteLine("\t" + GetPredicateInstructionPrefix(inst) + " bra " + ((BasicBlock)inst.Operand).Name + ";");
 							continue;
 //						case PtxCode.Call:
 						default:
