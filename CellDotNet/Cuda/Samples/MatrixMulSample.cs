@@ -12,9 +12,9 @@ namespace CellDotNet.Cuda.Samples
 		private const int BLOCK_SIZE = 16;
 		// Matrix dimensions
 		// (chosen as multiples of the thread block size for simplicity)
-		const int WA = (3 * BLOCK_SIZE); // Matrix A width
+		const int WA = (30 * BLOCK_SIZE); // Matrix A width
 		const int HA = (5 * BLOCK_SIZE); // Matrix A height
-		const int WB = (8 * BLOCK_SIZE); // Matrix B width
+		const int WB = (200 * BLOCK_SIZE); // Matrix B width
 		const int HB = WA;  // Matrix B height
 		const int WC = WB;  // Matrix C width 
 		const int HC = HA;  // Matrix C height
@@ -232,7 +232,7 @@ namespace CellDotNet.Cuda.Samples
 						mslist.Add(ms.Value);
 				}
 				mslist.Sort();
-				double average = mslist.Skip(2).Take(count1 - 4).Average();
+				double average = mslist.Skip(2).Take(mslist.Count - 4).Average();
 				Console.WriteLine("Average: {0:F04}", average);
 			};
 
@@ -303,7 +303,7 @@ namespace CellDotNet.Cuda.Samples
 			kernel.SetGridSize(WC/BLOCK_SIZE, HC/BLOCK_SIZE);
 
 			// create and start timer
-			var timer = new HighResolutionTimer();
+			var timer = new Stopwatch();
 			timer.Start();
 
 			// execute the kernel
@@ -314,15 +314,15 @@ namespace CellDotNet.Cuda.Samples
 
 			// stop and destroy timer
 			timer.Stop();
-			double ms = timer.Seconds*1000;
-			Console.WriteLine("Kernele time: {0:F04} (ms)", ms);
+			Console.WriteLine("Kernel time: {0:F04} (ms)", timer.Elapsed.TotalMilliseconds);
+			timer.Reset();
 
 			// compute reference solution
 			var reference = new float[size_C];
 			timer.Start();
 			ComputeGold(reference, h_A, h_B, HA, WA, WB);
 			timer.Stop();
-			Console.WriteLine("Kernel time, reference solution: {0:F04} (ms)", timer.Seconds*1000);
+			Console.WriteLine("Kernel time, reference solution: {0:F04} (ms)", timer.Elapsed.TotalMilliseconds);
 
 			// check result
 			bool res = CutCompareL2fe(reference, h_C, size_C, 1e-6f);
@@ -334,7 +334,7 @@ namespace CellDotNet.Cuda.Samples
 			d_B.Free();
 			d_C.Free();
 
-			return res ? ms : (double?) null;
+			return res ? timer.Elapsed.TotalMilliseconds : (double?)null;
 		}
 
 		// Allocates a matrix with random float entries.

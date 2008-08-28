@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace CellDotNet.Cuda.Samples
@@ -96,8 +97,6 @@ namespace CellDotNet.Cuda.Samples
 				h_idata[i] = i; // rand(); 
 			}
 
-//			Action<float[], float[], int, int> del = Transpose;
-
 			using (CudaKernel trans = CudaKernel.Create(new Action<float[], float[], int, int>(Transpose)))
 			using (CudaKernel transNaive = CudaKernel.Create(new Action<float[], float[], int, int>(TransposeNaive)))
 			{
@@ -122,8 +121,7 @@ namespace CellDotNet.Cuda.Samples
 
 				Console.WriteLine("Transposing a {0} by {1} matrix of floats...", size_x, size_y);
 
-				HighResolutionTimer timer;
-				timer = new HighResolutionTimer();
+				var timer = new Stopwatch();
 				// execute the kernel
 				timer.Start();
 				for (int i = 0; i < numIterations; ++i)
@@ -132,7 +130,8 @@ namespace CellDotNet.Cuda.Samples
 				}
 				trans.Context.Synchronize();
 				timer.Stop();
-				float naiveTime = (float) timer.Seconds*1000;
+				var naiveTime = (float) timer.Elapsed.TotalMilliseconds;
+				timer.Reset();
 
 				// execute the kernel
 
@@ -143,7 +142,7 @@ namespace CellDotNet.Cuda.Samples
 				}
 				trans.Context.Synchronize();
 				timer.Stop();
-				float optimizedTime = (float) timer.Seconds*1000;
+				var optimizedTime = (float)timer.Elapsed.TotalMilliseconds;
 
 				Console.WriteLine("Naive transpose average time:     {0:F03} ms", naiveTime/numIterations);
 				Console.WriteLine("Optimized transpose average time: {0:F03} ms", optimizedTime/numIterations);
