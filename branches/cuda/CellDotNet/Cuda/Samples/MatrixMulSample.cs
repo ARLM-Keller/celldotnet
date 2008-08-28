@@ -12,9 +12,9 @@ namespace CellDotNet.Cuda.Samples
 		private const int BLOCK_SIZE = 16;
 		// Matrix dimensions
 		// (chosen as multiples of the thread block size for simplicity)
-		const int WA = (30 * BLOCK_SIZE); // Matrix A width
+		const int WA = (3 * BLOCK_SIZE); // Matrix A width
 		const int HA = (5 * BLOCK_SIZE); // Matrix A height
-		const int WB = (200 * BLOCK_SIZE); // Matrix B width
+		const int WB = (8 * BLOCK_SIZE); // Matrix B width
 		const int HB = WA;  // Matrix B height
 		const int WC = WB;  // Matrix C width 
 		const int HC = HA;  // Matrix C height
@@ -314,11 +314,12 @@ namespace CellDotNet.Cuda.Samples
 
 			// stop and destroy timer
 			timer.Stop();
-			Console.WriteLine("Kernel time: {0:F04} (ms)", timer.Elapsed.TotalMilliseconds);
-			timer.Reset();
+			double ms = timer.Elapsed.TotalMilliseconds;
+			Console.WriteLine("Kernel time: {0:F04} (ms)", ms);
 
 			// compute reference solution
 			var reference = new float[size_C];
+			timer = new Stopwatch();
 			timer.Start();
 			ComputeGold(reference, h_A, h_B, HA, WA, WB);
 			timer.Stop();
@@ -334,7 +335,7 @@ namespace CellDotNet.Cuda.Samples
 			d_B.Free();
 			d_C.Free();
 
-			return res ? timer.Elapsed.TotalMilliseconds : (double?)null;
+			return res ? ms : (double?)null;
 		}
 
 		// Allocates a matrix with random float entries.
