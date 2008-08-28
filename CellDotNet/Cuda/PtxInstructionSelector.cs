@@ -243,6 +243,7 @@ namespace CellDotNet.Cuda
 					ob.Append(new1);
 					return;
 				case IRCode.Ldarga:
+					break;
 				case IRCode.Ldc_I4:
 					ob.Append(new ListInstruction(PtxCode.Mov_S32, inst) { Source1 = GlobalVReg.FromImmediate(inst.Operand, StackType.I4), Operand = null });
 					return;
@@ -288,6 +289,7 @@ namespace CellDotNet.Cuda
 				case IRCode.Ldind_U2:
 				case IRCode.Ldind_U4:
 				case IRCode.Ldlen:
+					break;
 				case IRCode.Ldloc:
 					{
 						switch (inst.OperandAsGlobalVReg.StackType)
@@ -298,7 +300,7 @@ namespace CellDotNet.Cuda
 							default: throw new NotImplementedException();
 						}
 						ob.Append(new ListInstruction(opcode, inst) { Source1 = inst.OperandAsGlobalVReg });
-							return;
+						return;
 					}
 				case IRCode.Ldloca:
 					break;
@@ -339,7 +341,9 @@ namespace CellDotNet.Cuda
 				case IRCode.Neg:
 				case IRCode.Newarr:
 				case IRCode.Newobj:
+					break;
 				case IRCode.Nop:
+					return;
 				case IRCode.Not:
 					break;
 				case IRCode.Or:

@@ -157,7 +157,7 @@ namespace CellDotNet.Cuda
 								GetPredicateInstructionPrefix(inst),
 								opcodename,
 								inst.Source1.Name,
-								inst.Source2.Name);
+								inst.Source2.GetAssemblyText());
 							continue;
 						case PtxCode.Bra:
 							ptx.WriteLine("\t" + GetPredicateInstructionPrefix(inst) + " bra " + ((BasicBlock)inst.Operand).Name + ";");

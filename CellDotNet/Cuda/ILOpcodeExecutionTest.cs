@@ -250,6 +250,7 @@ namespace CellDotNet.Cuda
 		[Test]
 		public void Test_Div_F4()
 		{
+			// This one fails because of inaccuracy - should fix the test.
 			VerifyExecution_Binary_F4((arr, arg1, arg2) => arr[0] = arg1 / arg2);
 		}
 

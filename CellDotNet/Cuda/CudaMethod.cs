@@ -308,10 +308,22 @@ namespace CellDotNet.Cuda
 					else if (treenode.Operand is StackTypeDescription)
 					{
 						operand = GlobalVReg.FromStackTypeDescription(((StackTypeDescription) treenode.Operand), VRegType.None, CudaStateSpace.None);
-//						operand = GlobalVReg.FromStackTypeDescription(StackTypeDescription.Float32, VRegType.None);
 					}
 					else
 						operand = treenode.Operand;
+
+
+					// Some special cases/optimizations.
+					switch (treenode.Opcode.IRCode)
+					{
+						case IRCode.Ldloc:
+							return (GlobalVReg) operand;
+						case IRCode.Ldc_I4:
+							return GlobalVReg.FromImmediate(operand, StackType.I4);
+						case IRCode.Ldc_R4:
+							return GlobalVReg.FromImmediate(operand, StackType.R4);
+					}
+
 
 					newinst = new ListInstruction(treenode.Opcode.IRCode, operand);
 					if (treenode.Left != null)
