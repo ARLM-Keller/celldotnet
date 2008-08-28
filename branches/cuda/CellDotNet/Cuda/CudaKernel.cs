@@ -79,10 +79,11 @@ namespace CellDotNet.Cuda
 				{
 					int startIndex = s.IndexOf("name = ");
 					_kernelPtxName = s.Substring(startIndex + "name = ".Length).TrimEnd();
+					break;
 				}
 			}
 			if (_kernelPtxName == null)
-				throw new ArgumentException("Can't find name of first kernel function.");
+				throw new ArgumentException("Can't find name of first kernel function. Is this a cubin?");
 
 			_cubin = cubin;
 			_state = CudaKernelCompileState.PtxCompilationComplete;

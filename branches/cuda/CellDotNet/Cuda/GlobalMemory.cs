@@ -30,6 +30,17 @@ namespace CellDotNet.Cuda
 			_elementSize = elementSize;
 		}
 
+		/// <summary>
+		/// Frees the device memory. Same as calling Dispose.
+		/// </summary>
+        public void Free()
+        {
+        	Dispose();
+        }
+
+		/// <summary>
+		/// Frees the device memory.
+		/// </summary>
 		public void Dispose()
 		{
 			if (_isdisposed)
