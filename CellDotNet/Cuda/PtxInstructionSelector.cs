@@ -350,6 +350,7 @@ namespace CellDotNet.Cuda
 					ob.Append(new ListInstruction(PtxCode.Or_B32, inst));
 					return;
 				case IRCode.Pop:
+					return;
 				case IRCode.PpeCall:
 				case IRCode.Prefix1:
 				case IRCode.Prefix2:
