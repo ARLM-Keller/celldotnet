@@ -88,241 +88,295 @@ namespace CellDotNet.Cuda
 		[Test]
 		public void Test_Blt_F4()
 		{
-			VerifyExecution_Binary_F4((arr, arg1, arg2) => arr[0] = arg1 < arg2 ? arg1 : arg2);
+			VerifyExecution_Binary_F4((arr, arg1, arg2) => arr[0] = arg1 < arg2 ? arg1 : arg2, IRCode.Blt);
 		}
 
 		[Test]
 		public void Test_Blt_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 < arg2 ? arg1 : arg2, false);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 < arg2 ? arg1 : arg2, IRCode.Blt, false);
 		}
 
 		[Test]
 		public void Test_Blt_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 < arg2 ? arg1 : arg2, false);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 < arg2 ? arg1 : arg2, IRCode.Blt_Un, false);
+		}
+
+		[Test]
+		public void Test_Clt_F4()
+		{
+			VerifyExecution_Binary_F4((arr, arg1, arg2) => { bool b = arg1 < arg2; if (b) arr[0] = 1f; }, IRCode.Clt);
+		}
+
+		[Test]
+		public void Test_Clt_I4()
+		{
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => { bool b = arg1 < arg2; if (b) arr[0] = 1; }, IRCode.Clt, false);
+		}
+
+		[Test]
+		public void Test_Clt_U4()
+		{
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => { bool b = arg1 < arg2; if (b) arr[0] = 1; }, IRCode.Clt_Un, false);
 		}
 
 		[Test]
 		public void Test_Ble_F4()
 		{
-			VerifyExecution_Binary_F4((arr, arg1, arg2) => arr[0] = arg1 <= arg2 ? arg1 : arg2);
+			VerifyExecution_Binary_F4((arr, arg1, arg2) => arr[0] = arg1 <= arg2 ? arg1 : arg2, IRCode.Ble);
 		}
 
 		[Test]
 		public void Test_Ble_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 <= arg2 ? arg1 : arg2, false);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 <= arg2 ? arg1 : arg2, IRCode.Ble, false);
 		}
 
 		[Test]
 		public void Test_Ble_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 <= arg2 ? arg1 : arg2, false);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 <= arg2 ? arg1 : arg2, IRCode.Ble_Un, false);
 		}
 
 		[Test]
 		public void Test_Beq_F4()
 		{
-			VerifyExecution_Binary_F4((arr, arg1, arg2) => arr[0] = arg1 == arg2 ? arg1 : arg2);
+			VerifyExecution_Binary_F4((arr, arg1, arg2) => arr[0] = arg1 == arg2 ? arg1 : arg2, IRCode.Beq);
 		}
 
 		[Test]
 		public void Test_Beq_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 == arg2 ? arg1 : arg2, false);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 == arg2 ? arg1 : arg2, IRCode.Beq, false);
 		}
 
 		[Test]
 		public void Test_Beq_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 == arg2 ? arg1 : arg2, false);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 == arg2 ? arg1 : arg2, IRCode.Beq, false);
+		}
+
+		[Test]
+		public void Test_Ceq_F4()
+		{
+			VerifyExecution_Binary_F4((arr, arg1, arg2) => { bool b = arg1 == arg2; if (b) arr[0] = 1f; }, IRCode.Ceq);
+		}
+
+		[Test]
+		public void Test_Ceq_I4()
+		{
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => { bool b = arg1 == arg2; if (b) arr[0] = 1; }, IRCode.Ceq, false);
+		}
+
+		[Test]
+		public void Test_Ceq_U4()
+		{
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => { bool b = arg1 == arg2; if (b) arr[0] = 1; }, IRCode.Ceq, false);
 		}
 
 		[Test]
 		public void Test_Bne_F4()
 		{
-			VerifyExecution_Binary_F4((arr, arg1, arg2) => arr[0] = arg1 != arg2 ? arg1 : arg2);
+			VerifyExecution_Binary_F4((arr, arg1, arg2) => arr[0] = arg1 != arg2 ? arg1 : arg2, IRCode.Bne_Un);
 		}
 
 		[Test]
 		public void Test_Bne_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 != arg2 ? arg1 : arg2, false);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 != arg2 ? arg1 : arg2, IRCode.Bne_Un, false);
 		}
 
 		[Test]
 		public void Test_Bne_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 != arg2 ? arg1 : arg2, false);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 != arg2 ? arg1 : arg2, IRCode.Bne_Un, false);
+		}
+
+		[Test]
+		public void Test_Cgt_F4()
+		{
+			VerifyExecution_Binary_F4((arr, arg1, arg2) => { bool b = arg1 > arg2; if (b) arr[0] = 1f; }, IRCode.Cgt);
+		}
+
+		[Test]
+		public void Test_Cgt_I4()
+		{
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => { bool b = arg1 > arg2; if (b) arr[0] = 1; }, IRCode.Cgt, false);
+		}
+
+		[Test]
+		public void Test_Cgt_U4()
+		{
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => { bool b = arg1 > arg2; if (b) arr[0] = 1; }, IRCode.Cgt_Un, false);
 		}
 
 		[Test]
 		public void Test_Bgt_F4()
 		{
-			VerifyExecution_Binary_F4((arr, arg1, arg2) => arr[0] = arg1 > arg2 ? arg1 : arg2);
+			VerifyExecution_Binary_F4((arr, arg1, arg2) => arr[0] = arg1 > arg2 ? arg1 : arg2, IRCode.Bgt);
 		}
 
 		[Test]
 		public void Test_Bgt_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 > arg2 ? arg1 : arg2, false);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 > arg2 ? arg1 : arg2, IRCode.Bgt, false);
 		}
 
 		[Test]
 		public void Test_Bgt_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 > arg2 ? arg1 : arg2, false);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 > arg2 ? arg1 : arg2, IRCode.Bgt_Un, false);
 		}
 
 		[Test]
 		public void Test_Bge_F4()
 		{
-			VerifyExecution_Binary_F4((arr, arg1, arg2) => arr[0] = arg1 >= arg2 ? arg1 : arg2);
+			VerifyExecution_Binary_F4((arr, arg1, arg2) => arr[0] = arg1 >= arg2 ? arg1 : arg2, IRCode.Bge);
 		}
 
 		[Test]
 		public void Test_Bge_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 >= arg2 ? arg1 : arg2, false);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 >= arg2 ? arg1 : arg2, IRCode.Bge, false);
 		}
 
 		[Test]
 		public void Test_Bge_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 >= arg2 ? arg1 : arg2, false);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 >= arg2 ? arg1 : arg2, IRCode.Bge_Un, false);
 		}
 
 		[Test]
 		public void Test_Add_F4()
 		{
-			VerifyExecution_Binary_F4((arr, arg1, arg2) => arr[0] = arg1 + arg2);
+			VerifyExecution_Binary_F4((arr, arg1, arg2) => arr[0] = arg1 + arg2, IRCode.Add);
 		}
 
 		[Test]
 		public void Test_Add_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 + arg2, false);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 + arg2, IRCode.Add, false);
 		}
 
 		[Test]
 		public void Test_Add_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 + arg2, false);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 + arg2, IRCode.Add, false);
 		}
 
 		[Test]
 		public void Test_Sub_F4()
 		{
-			VerifyExecution_Binary_F4((arr, arg1, arg2) => arr[0] = arg1 - arg2);
+			VerifyExecution_Binary_F4((arr, arg1, arg2) => arr[0] = arg1 - arg2, IRCode.Sub);
 		}
 
 		[Test]
 		public void Test_Sub_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 - arg2, false);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 - arg2, IRCode.Sub, false);
 		}
 
 		[Test]
 		public void Test_Sub_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 - arg2, false);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 - arg2, IRCode.Sub, false);
 		}
 
 		[Test]
 		public void Test_Mul_F4()
 		{
-			VerifyExecution_Binary_F4((arr, arg1, arg2) => arr[0] = arg1 * arg2);
+			VerifyExecution_Binary_F4((arr, arg1, arg2) => arr[0] = arg1 * arg2, IRCode.Mul);
 		}
 
 		[Test]
 		public void Test_Mul_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 * arg2, false);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 * arg2, IRCode.Mul, false);
 		}
 
 		[Test]
 		public void Test_Mul_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 * arg2, false);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 * arg2, IRCode.Mul, false);
 		}
 
 		[Test]
 		public void Test_Div_F4()
 		{
 			// This one fails because of inaccuracy - should fix the test.
-			VerifyExecution_Binary_F4((arr, arg1, arg2) => arr[0] = arg1 / arg2);
+			VerifyExecution_Binary_F4((arr, arg1, arg2) => arr[0] = arg1 / arg2, IRCode.Div);
 		}
 
 		[Test]
 		public void Test_Div_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 / arg2, false);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 / arg2, IRCode.Div, false);
 		}
 
 		[Test]
 		public void Test_Div_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 / arg2, false);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 / arg2, IRCode.Div_Un, false);
 		}
 
 		[Test]
 		public void Test_And_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 & arg2, true);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 & arg2, IRCode.And, true);
 		}
 
 		[Test]
 		public void Test_And_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 & arg2, true);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 & arg2, IRCode.And, true);
 		}
 
 		[Test]
 		public void Test_Or_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 | arg2, true);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 | arg2, IRCode.Or, true);
 		}
 
 		[Test]
 		public void Test_Or_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 | arg2, true);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 | arg2, IRCode.Or, true);
 		}
 		[Test]
 		public void Test_Xor_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 ^ arg2, true);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 ^ arg2, IRCode.Xor, true);
 		}
 
 		[Test]
 		public void Test_Xor_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 ^ arg2, true);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 ^ arg2, IRCode.Xor, true);
 		}
 
 		[Test]
 		public void Test_Shl_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 << arg2, true);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 << arg2, IRCode.Shl, true);
 		}
 
 		[Test]
 		public void Test_Shl_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 << (int)arg2, true);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 << (int)arg2, IRCode.Shl, true);
 		}
 
 		[Test]
 		public void Test_Shr_I4()
 		{
-			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 >> arg2, true);
+			VerifyExecution_Binary_I4((arr, arg1, arg2) => arr[0] = arg1 >> arg2, IRCode.Shr, true);
 		}
 
 		[Test]
 		public void Test_Shr_U4()
 		{
-			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 >> (int)arg2, true);
+			VerifyExecution_Binary_U4((arr, arg1, arg2) => arr[0] = arg1 >> (int)arg2, IRCode.Shr_Un, true);
 		}
 
 		[Test]
@@ -406,10 +460,12 @@ namespace CellDotNet.Cuda
 			}
 		}
 
-		private void VerifyExecution_Binary_F4(Action<float[], float, float> del)
+		private void VerifyExecution_Binary_F4(Action<float[], float, float> del, IRCode ircode)
 		{
 			using (var kernel = CudaKernel.Create(del))
 			{
+				PrepareAndAssertOpcodePresent(kernel, ircode);
+
 				VerifyExecution(kernel, 3.5f, 3.6f);
 				VerifyExecution(kernel, 3.6f, 3.5f);
 				VerifyExecution(kernel, 3.5f, -3.6f);
@@ -435,10 +491,12 @@ namespace CellDotNet.Cuda
 			}
 		}
 
-		private void VerifyExecution_Binary_I4(Action<int[], int, int> del, bool testBadArguments)
+		private void VerifyExecution_Binary_I4(Action<int[], int, int> del, IRCode ircode, bool testBadArguments)
 		{
 			using (var kernel = CudaKernel.Create(del))
 			{
+				PrepareAndAssertOpcodePresent(kernel, ircode);
+
 				if (!testBadArguments)
 				{
 					VerifyExecution(kernel, 3, 4);
@@ -456,10 +514,12 @@ namespace CellDotNet.Cuda
 			}
 		}
 
-		private void VerifyExecution_Binary_U4(Action<uint[], uint, uint> del, bool testBadArguments)
+		private void VerifyExecution_Binary_U4(Action<uint[], uint, uint> del, IRCode ircode, bool testBadArguments)
 		{
 			using (var kernel = CudaKernel.Create(del))
 			{
+				PrepareAndAssertOpcodePresent(kernel, ircode);
+
 				VerifyExecution(kernel, 3u, 4u);
 				VerifyExecution(kernel, 4u, 3u);
 				VerifyExecution(kernel, 3u, uint.MaxValue);
@@ -473,6 +533,14 @@ namespace CellDotNet.Cuda
 					VerifyExecution(kernel, 4u, 0u);
 				}
 			}
+		}
+
+		private void PrepareAndAssertOpcodePresent(CudaKernel kernel, IRCode ircode)
+		{
+			kernel.PerformProcessing(CudaKernelCompileState.IRConstructionDone);
+			bool usesDesiredOpcode = kernel.Methods.First().Blocks.SelectMany(b => b.Instructions).Any(inst => inst.IRCode == ircode);
+			IsTrue(usesDesiredOpcode, "Opcode " + ircode + " is not being used in the IL.");
+			kernel.PerformProcessing(CudaKernelCompileState.Complete);
 		}
 
 		void VerifyExecution<T>(CudaKernel kernel, T arg1, T arg2) where T : struct

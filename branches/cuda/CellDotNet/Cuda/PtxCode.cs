@@ -50,6 +50,11 @@ namespace CellDotNet.Cuda
 		Exit,
 		Mov_S32,
 		Mov_F32,
+
+		/// <summary>
+		/// Pseudo value used to recognize setp opcodes.
+		/// </summary>
+		Setp_First,
 		Setp_Gt_S32,
 		Setp_Gt_F32,
 		Setp_Lt_S32,
@@ -58,9 +63,15 @@ namespace CellDotNet.Cuda
 		Setp_Ltu_F32,
 		Setp_Eq_S32,
 		Setp_Eq_F32,
-		Cvt_S32_U16,
 		Setp_Hi_U32,
 		Setp_Gtu_F32,
+
+		/// <summary>
+		/// Pseudo value used to recognize setp opcodes.
+		/// </summary>
+		Setp_Last,
+
+		Cvt_S32_U16,
 		Bar_Sync,
 		And_B32,
 		Or_B32,
@@ -70,6 +81,7 @@ namespace CellDotNet.Cuda
 		Shr_U32,
 		Cvt_Rzi_S32_F32,
 		Cvt_Rzi_U32_F32,
-		Cvt_Rn_F32_S32
+		Cvt_Rn_F32_S32,
+		Selp_S32
 	}
 }

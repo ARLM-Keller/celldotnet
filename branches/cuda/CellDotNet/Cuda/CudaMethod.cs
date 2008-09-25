@@ -349,7 +349,40 @@ namespace CellDotNet.Cuda
 			var selector = new PtxInstructionSelector();
 			Blocks = selector.Select(Blocks);
 
+
+			FixS32ComparisonResultsPtxPass(Blocks);
+
 //			throw new NotImplementedException();
+		}
+
+		/// <summary>
+		/// Comparisons in IL return an i4, so we need to insert a predicate vreg and then convert it to an i4.
+		/// Comparisons resulting from conditional branche decomposition indicate that they return predicates, so we 
+		/// don't need to do anything in those cases.
+		/// This should probably ideally be done before instruction selection.
+		/// </summary>
+		private static void FixS32ComparisonResultsPtxPass(List<BasicBlock> blocks)
+		{
+			foreach (var block in blocks)
+			{
+				ListInstruction inst = block.Head;
+				while (inst != null)
+				{
+					if (inst.PtxCode >= PtxCode.Setp_First && inst.PtxCode <= PtxCode.Setp_Last &&
+					    inst.Destination.StackType == StackType.I4)
+					{
+						var pred = GlobalVReg.FromType(StackType.ValueType, VRegType.Register, CudaStateSpace.Register, typeof(PredicateValue));
+						var cmp = new ListInstruction(inst.PtxCode, inst) { Destination = pred };
+						var conv = new ListInstruction(PtxCode.Selp_S32, inst) { Destination = inst.Destination, Source1 = GlobalVReg.FromImmediate(1, StackType.I4), Source2 = GlobalVReg.FromImmediate(0, StackType.I4), Source3 = pred };
+
+						block.Replace(inst, cmp);
+						block.InsertAfter(cmp, conv);
+						inst = cmp;
+					}
+
+					inst = inst.Next;
+				}
+			}
 		}
 	}
 }
